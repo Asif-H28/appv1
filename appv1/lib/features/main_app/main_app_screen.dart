@@ -3,62 +3,79 @@ import 'package:flutter/services.dart';
 import '../../../core/constants/app_colors.dart';
 import 'pages/home_page.dart';
 import 'pages/profile_page.dart';
-import 'pages/settings_page.dart';
 import 'pages/organization_page.dart';
+import 'pages/settings_page.dart';
 
 class MainAppScreen extends StatefulWidget {
-  final String role;
-  final String email;
-  final String org;
+  final int? initialTab;
 
-  const MainAppScreen({
-    Key? key,
-    required this.role,
-    required this.email,
-    required this.org,
-  }) : super(key: key);
+  const MainAppScreen({Key? key, this.initialTab}) : super(key: key);
 
   @override
-  _MainAppScreenState createState() => _MainAppScreenState();
+  State<MainAppScreen> createState() => _MainAppScreenState();
 }
 
 class _MainAppScreenState extends State<MainAppScreen> {
-  int _currentIndex = 0; // ← Home selected by default!
+  int _currentIndex = 0;
 
-  final List<Widget> _pages = [
-    HomePage(), // 0: Home (default)
-    ProfilePage(),
-    OrganizationPage(),
-    SettingsPage(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    // Auto Org tab after signup
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.initialTab != null && widget.initialTab! < 4) {
+        setState(() => _currentIndex = widget.initialTab!);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.dark,
           systemNavigationBarColor: AppColors.background,
           systemNavigationBarIconBrightness: Brightness.dark,
         ),
-        child: _pages[_currentIndex],
+        child: IndexedStack(
+          index: _currentIndex,
+          children: [
+            HomePage(), // 0
+            ProfilePage(), // 1
+            OrganizationPage(), // 2 ← AUTO!
+            SettingsPage(), // 3
+          ],
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed, // Fixed width for 4 items
+        type: BottomNavigationBarType.fixed,
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.textSecondary,
         backgroundColor: AppColors.surface,
-        elevation: 8,
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        elevation: 12,
+        items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.business),
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.business_outlined),
+            activeIcon: Icon(Icons.business),
             label: 'Organization',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
+            icon: Icon(Icons.settings_outlined),
+            activeIcon: Icon(Icons.settings),
             label: 'Settings',
           ),
         ],
