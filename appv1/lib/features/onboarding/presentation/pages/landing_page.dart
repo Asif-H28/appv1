@@ -9,6 +9,7 @@ import '../../../../core/utils/validators.dart';
 import '../../../main_app/main_app_screen.dart';
 import '../../../main_app/pages/login_page.dart';
 import '../widgets/custom_textfield.dart';
+import '../widgets/student_register_sheet.dart';
 
 class LandingPage extends StatefulWidget {
   @override
@@ -1479,26 +1480,13 @@ class _RoleSelectionSheet extends StatelessWidget {
                   description: 'View timetable,\nresults & notices',
                   color: Colors.orange,
                   onTap: () {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Row(
-                          children: [
-                            Icon(
-                              Icons.info_outline,
-                              color: Colors.white,
-                              size: 18,
-                            ),
-                            SizedBox(width: 8),
-                            Text('Student registration coming soon!'),
-                          ],
-                        ),
-                        behavior: SnackBarBehavior.floating,
-                        backgroundColor: Colors.orange[700],
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
+                    Navigator.pop(context); // close role selection sheet
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (_) =>
+                          StudentRegisterSheet(orgName: orgName, orgId: orgId),
                     );
                   },
                 ),

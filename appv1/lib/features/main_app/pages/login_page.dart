@@ -5,6 +5,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../onboarding/presentation/pages/landing_page.dart';
+import '../../student/student_join_org_page.dart';
+import '../../student/student_register_page.dart';
 import '../../teacher/presentation/pages/teacher_main_screen.dart';
 import '../../teacher/presentation/pages/teacher_pending_screen.dart';
 import '../main_app_screen.dart';
@@ -248,7 +250,7 @@ class _LoginPageState extends State<LoginPage>
                       children: [
                         _AdminLoginTab(accentColor: AppColors.primary),
                         _TeacherLoginTab(accentColor: Colors.teal),
-                        _TeacherLoginTab(accentColor: Colors.teal),
+                        _StudentLoginTab(accentColor: Colors.orange),
                       ],
                     ),
                   ),
@@ -974,91 +976,91 @@ class __TeacherLoginTabState extends State<_TeacherLoginTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Header card ──
-            Container(
-              padding: EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    widget.accentColor.withOpacity(0.08),
-                    widget.accentColor.withOpacity(0.02),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: widget.accentColor.withOpacity(0.15)),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          widget.accentColor,
-                          widget.accentColor.withOpacity(0.7),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: [
-                        BoxShadow(
-                          color: widget.accentColor.withOpacity(0.3),
-                          blurRadius: 10,
-                          offset: Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      Icons.school_rounded,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                  ),
-                  SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Teacher Sign In',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                        SizedBox(height: 2),
-                        Text(
-                          'Access your classroom dashboard',
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: widget.accentColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      'Teacher',
-                      style: TextStyle(
-                        color: widget.accentColor,
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 28),
+            // // ── Header card ──
+            // Container(
+            //   padding: EdgeInsets.all(16),
+            //   decoration: BoxDecoration(
+            //     gradient: LinearGradient(
+            //       colors: [
+            //         widget.accentColor.withOpacity(0.08),
+            //         widget.accentColor.withOpacity(0.02),
+            //       ],
+            //     ),
+            //     borderRadius: BorderRadius.circular(18),
+            //     border: Border.all(color: widget.accentColor.withOpacity(0.15)),
+            //   ),
+            //   child: Row(
+            //     children: [
+            //       Container(
+            //         width: 50,
+            //         height: 50,
+            //         decoration: BoxDecoration(
+            //           gradient: LinearGradient(
+            //             colors: [
+            //               widget.accentColor,
+            //               widget.accentColor.withOpacity(0.7),
+            //             ],
+            //             begin: Alignment.topLeft,
+            //             end: Alignment.bottomRight,
+            //           ),
+            //           borderRadius: BorderRadius.circular(14),
+            //           boxShadow: [
+            //             BoxShadow(
+            //               color: widget.accentColor.withOpacity(0.3),
+            //               blurRadius: 10,
+            //               offset: Offset(0, 4),
+            //             ),
+            //           ],
+            //         ),
+            //         child: Icon(
+            //           Icons.school_rounded,
+            //           color: Colors.white,
+            //           size: 24,
+            //         ),
+            //       ),
+            //       SizedBox(width: 14),
+            //       Expanded(
+            //         child: Column(
+            //           crossAxisAlignment: CrossAxisAlignment.start,
+            //           children: [
+            //             Text(
+            //               'Teacher Sign In',
+            //               style: TextStyle(
+            //                 fontWeight: FontWeight.bold,
+            //                 fontSize: 16,
+            //                 color: AppColors.textPrimary,
+            //               ),
+            //             ),
+            //             SizedBox(height: 2),
+            //             Text(
+            //               'Access your classroom dashboard',
+            //               style: TextStyle(
+            //                 color: AppColors.textSecondary,
+            //                 fontSize: 12,
+            //               ),
+            //             ),
+            //           ],
+            //         ),
+            //       ),
+            //       Container(
+            //         padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            //         decoration: BoxDecoration(
+            //           color: widget.accentColor.withOpacity(0.1),
+            //           borderRadius: BorderRadius.circular(20),
+            //         ),
+            //         child: Text(
+            //           'Teacher',
+            //           style: TextStyle(
+            //             color: widget.accentColor,
+            //             fontSize: 11,
+            //             fontWeight: FontWeight.bold,
+            //           ),
+            //         ),
+            //       ),
+            //     ],
+            //   ),
+            // ),
+            // SizedBox(height: 28),
 
             // ── Email ──
             _inputLabel('Email Address'),
@@ -1352,5 +1354,394 @@ class __TeacherLoginTabState extends State<_TeacherLoginTab> {
         fillColor: Colors.white,
         contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         errorStyle: TextStyle(color: Colors.red[400], fontSize: 12),
+      );
+}
+
+// ─────────────────────────────────────────
+//  STUDENT LOGIN TAB
+// ─────────────────────────────────────────
+class _StudentLoginTab extends StatefulWidget {
+  final Color accentColor;
+  const _StudentLoginTab({required this.accentColor});
+
+  @override
+  __StudentLoginTabState createState() => __StudentLoginTabState();
+}
+
+class __StudentLoginTabState extends State<_StudentLoginTab> {
+  final _formKey = GlobalKey<FormState>();
+  final _emailCtrl = TextEditingController();
+  final _passCtrl = TextEditingController();
+  bool _isLoading = false;
+  bool _obscure = true;
+
+  @override
+  void dispose() {
+    _emailCtrl.dispose();
+    _passCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _login() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _isLoading = true);
+    try {
+      final response = await http.post(
+        Uri.parse('https://appv1backend.onrender.com/api/student/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': _emailCtrl.text.trim(),
+          'password': _passCtrl.text.trim(),
+        }),
+      );
+
+      debugPrint('STUDENT LOGIN STATUS: ${response.statusCode}');
+      debugPrint('STUDENT LOGIN BODY: ${response.body}');
+
+      if (mounted) setState(() => _isLoading = false);
+
+      Map<String, dynamic> body = {};
+      try {
+        body = jsonDecode(response.body) as Map<String, dynamic>;
+      } catch (_) {
+        if (mounted) _snack('Unexpected server response.', Colors.red[600]!);
+        return;
+      }
+
+      if (response.statusCode == 200) {
+        final student =
+            body['student'] as Map<String, dynamic>? ??
+            body['data'] as Map<String, dynamic>? ??
+            {};
+
+        // ── Save to prefs ──
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('isLoggedIn', true);
+        await prefs.setString('userRole', 'student');
+        await prefs.setString(
+          'studentId',
+          student['studentId']?.toString() ?? '',
+        );
+        await prefs.setString('studentName', student['name']?.toString() ?? '');
+        await prefs.setString(
+          'studentEmail',
+          student['email']?.toString() ?? '',
+        );
+
+        if (!mounted) return;
+
+        final classId = student['classId']?.toString() ?? '';
+        final joinStatus = student['joinStatus']?.toString() ?? 'none';
+
+        if (classId.isNotEmpty && joinStatus == 'approved') {
+          // ── Already in a class → go to student home ──
+          // TODO: Replace with your StudentHomePage()
+          _snack(
+            'Welcome back, ${student['name'] ?? 'Student'}! 👋',
+            Colors.green[600]!,
+          );
+        } else {
+          // ── Not joined yet or pending → go to join flow ──
+          Navigator.of(context, rootNavigator: true).pushReplacement(
+            MaterialPageRoute(builder: (_) => StudentJoinOrgPage()),
+          );
+        }
+      } else {
+        final msg =
+            body['message']?.toString() ??
+            body['error']?.toString() ??
+            'Login failed.';
+        if (mounted) _snack(msg, Colors.red[600]!);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        _snack(
+          e.toString().contains('SocketException')
+              ? 'No internet connection.'
+              : 'Something went wrong.',
+          Colors.red[600]!,
+        );
+      }
+    }
+  }
+
+  void _snack(String msg, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          msg,
+          style: TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+        ),
+        backgroundColor: color,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: EdgeInsets.fromLTRB(24, 28, 24, 32),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── Email ──
+            _inputLabel('Email Address'),
+            SizedBox(height: 8),
+            _inputContainer(
+              child: TextFormField(
+                controller: _emailCtrl,
+                keyboardType: TextInputType.emailAddress,
+                cursorColor: widget.accentColor,
+                style: TextStyle(fontSize: 13, color: AppColors.textPrimary),
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Email is required';
+                  if (!v.contains('@')) return 'Enter a valid email';
+                  return null;
+                },
+                decoration: _inputDeco(
+                  hint: 'student@email.com',
+                  icon: Icons.email_outlined,
+                ),
+              ),
+            ),
+            SizedBox(height: 14),
+
+            // ── Password ──
+            _inputLabel('Password'),
+            SizedBox(height: 8),
+            _inputContainer(
+              child: TextFormField(
+                controller: _passCtrl,
+                obscureText: _obscure,
+                cursorColor: widget.accentColor,
+                style: TextStyle(fontSize: 13, color: AppColors.textPrimary),
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Password is required';
+                  if (v.length < 6) return 'Minimum 6 characters';
+                  return null;
+                },
+                decoration:
+                    _inputDeco(
+                      hint: '••••••••',
+                      icon: Icons.lock_outline_rounded,
+                    ).copyWith(
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscure
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                          color: AppColors.textSecondary,
+                          size: 18,
+                        ),
+                        onPressed: () => setState(() => _obscure = !_obscure),
+                      ),
+                    ),
+              ),
+            ),
+            SizedBox(height: 24),
+
+            // ── Sign In Button ──
+            SizedBox(
+              width: double.infinity,
+              height: 44,
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _login,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: widget.accentColor,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: widget.accentColor.withOpacity(0.5),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 0,
+                ),
+                child: _isLoading
+                    ? SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Sign In as Student',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
+                          SizedBox(width: 6),
+                          Icon(Icons.arrow_forward_rounded, size: 16),
+                        ],
+                      ),
+              ),
+            ),
+            SizedBox(height: 24),
+
+            // ── Divider ──
+            Row(
+              children: [
+                Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  child: Text(
+                    'New student?',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+                Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
+              ],
+            ),
+            SizedBox(height: 18),
+
+            // ── Register card ──
+            GestureDetector(
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => StudentRegisterPage()),
+              ),
+              child: Container(
+                padding: EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      widget.accentColor.withOpacity(0.07),
+                      widget.accentColor.withOpacity(0.02),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: widget.accentColor.withOpacity(0.2),
+                    width: 1.5,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: widget.accentColor.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(
+                        Icons.person_add_rounded,
+                        color: widget.accentColor,
+                        size: 20,
+                      ),
+                    ),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Create Student Account',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            'Register and join your classroom',
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 13,
+                      color: widget.accentColor,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _inputLabel(String label) => Text(
+    label,
+    style: TextStyle(
+      color: AppColors.textPrimary,
+      fontWeight: FontWeight.w600,
+      fontSize: 12,
+    ),
+  );
+
+  Widget _inputContainer({required Widget child}) => Container(
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.05),
+          blurRadius: 8,
+          offset: Offset(0, 2),
+        ),
+      ],
+      border: Border.all(color: Colors.grey.withOpacity(0.12)),
+    ),
+    child: child,
+  );
+
+  InputDecoration _inputDeco({required String hint, required IconData icon}) =>
+      InputDecoration(
+        hintText: hint,
+        hintStyle: TextStyle(
+          color: AppColors.textSecondary.withOpacity(0.5),
+          fontSize: 13,
+        ),
+        prefixIcon: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 12),
+          child: Icon(icon, color: widget.accentColor, size: 18),
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: widget.accentColor.withOpacity(0.4),
+            width: 1.5,
+          ),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.red[300]!, width: 1.5),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.red[300]!, width: 1.5),
+        ),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        errorStyle: TextStyle(color: Colors.red[400], fontSize: 11),
       );
 }
