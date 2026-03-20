@@ -20,8 +20,6 @@ class ClassroomCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final className = classroom['className']?.toString() ?? 'Class';
     final subjects = classroom['subjects'] as List? ?? [];
-    final students = classroom['students'] as List? ?? [];
-    final classId = classroom['classId']?.toString() ?? '';
 
     int totalLessons = 0;
     int completedLessons = 0;
@@ -34,284 +32,161 @@ class ClassroomCard extends StatelessWidget {
     }
 
     final progress = totalLessons > 0 ? completedLessons / totalLessons : 0.0;
+    final progressPercent = (progress * 100).toStringAsFixed(0);
 
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(3),
         boxShadow: [
           BoxShadow(
-            color: _accent.withOpacity(0.10),
-            blurRadius: 12,
-            offset: Offset(0, 4),
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 6,
+            offset: Offset(0, 2),
           ),
         ],
-        border: Border.all(color: _accent.withOpacity(0.12)),
+        border: Border.all(color: _accent.withOpacity(0.15)),
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(3),
         child: InkWell(
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(3),
           onTap: onTap,
           child: Padding(
-            padding: EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+            child: Row(
               children: [
-                Row(
-                  children: [
-                    // ── Icon ──
-                    Container(
-                      width: 52,
-                      height: 52,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [_accent, _accent.withOpacity(0.7)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: [
-                          BoxShadow(
-                            color: _accent.withOpacity(0.3),
-                            blurRadius: 8,
-                            offset: Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: Text(
-                          className.isNotEmpty
-                              ? className[0].toUpperCase()
-                              : 'C',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                // ── Avatar ──
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [_accent, _accent.withOpacity(0.65)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  child: Center(
+                    child: Text(
+                      className.isNotEmpty ? className[0].toUpperCase() : 'C',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(width: 14),
+                  ),
+                ),
+                SizedBox(width: 11),
 
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                // ── Name + subtitle ──
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        className,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                          color: AppColors.textPrimary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      SizedBox(height: 3),
+                      Row(
                         children: [
+                          Icon(
+                            Icons.menu_book_rounded,
+                            size: 10,
+                            color: _accent.withOpacity(0.7),
+                          ),
+                          SizedBox(width: 3),
                           Text(
-                            className,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                              color: AppColors.textPrimary,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          SizedBox(height: 3),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.tag_rounded,
-                                size: 11,
-                                color: AppColors.textSecondary,
-                              ),
-                              SizedBox(width: 2),
-                              Text(
-                                classId,
-                                style: TextStyle(
-                                  color: AppColors.textSecondary,
-                                  fontSize: 11,
-                                  fontFamily: 'monospace',
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // ── Delete menu ──
-                    PopupMenuButton<String>(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      icon: Icon(Icons.more_vert, color: Colors.grey[400]),
-                      onSelected: (val) {
-                        if (val == 'delete') onDelete();
-                      },
-                      itemBuilder: (_) => [
-                        PopupMenuItem(
-                          value: 'delete',
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.delete_rounded,
-                                color: Colors.red[600],
-                                size: 18,
-                              ),
-                              SizedBox(width: 8),
-                              Text(
-                                'Delete Classroom',
-                                style: TextStyle(color: Colors.red[600]),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                SizedBox(height: 14),
-
-                // ── Divider ──
-                Divider(height: 1, color: _accent.withOpacity(0.08)),
-                SizedBox(height: 14),
-
-                // ── Stats row ──
-                Row(
-                  children: [
-                    _statBadge(
-                      Icons.menu_book_rounded,
-                      '${subjects.length}',
-                      'Subjects',
-                    ),
-                    SizedBox(width: 8),
-                    _statBadge(
-                      Icons.people_rounded,
-                      '${students.length}',
-                      'Students',
-                    ),
-                    SizedBox(width: 8),
-                    _statBadge(Icons.task_rounded, '$totalLessons', 'Lessons'),
-                  ],
-                ),
-                SizedBox(height: 14),
-
-                // ── Progress ──
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Lesson Progress',
-                          style: TextStyle(
-                            fontSize: 11.5,
-                            color: AppColors.textSecondary,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        Row(
-                          children: [
-                            Text(
-                              '$completedLessons/$totalLessons completed',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: _accent,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            SizedBox(width: 6),
-                            Text(
-                              totalLessons > 0
-                                  ? '(${(progress * 100).toStringAsFixed(0)}%)'
-                                  : '(0%)',
-                              style: TextStyle(
-                                fontSize: 10.5,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 8),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
-                      child: LinearProgressIndicator(
-                        value: progress,
-                        minHeight: 7,
-                        backgroundColor: _accent.withOpacity(0.1),
-                        valueColor: AlwaysStoppedAnimation<Color>(_accent),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 12),
-
-                // ── Bottom row ──
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: _accent.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: _accent.withOpacity(0.2)),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'View Details',
+                            '${subjects.length} subjects',
                             style: TextStyle(
                               color: _accent,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
-                          SizedBox(width: 4),
+                          SizedBox(width: 8),
                           Icon(
-                            Icons.arrow_forward_rounded,
-                            color: _accent,
-                            size: 14,
+                            Icons.touch_app_rounded,
+                            size: 10,
+                            color: AppColors.textSecondary,
+                          ),
+                          SizedBox(width: 2),
+                          Text(
+                            'Tap to view',
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 10,
+                            ),
                           ),
                         ],
                       ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 10),
+
+                // ── Circular progress (same size as delete btn) ──
+                SizedBox(
+                  width: 28,
+                  height: 28,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      SizedBox(
+                        width: 28,
+                        height: 28,
+                        child: CircularProgressIndicator(
+                          value: progress,
+                          strokeWidth: 2.8,
+                          backgroundColor: _accent.withOpacity(0.1),
+                          valueColor: AlwaysStoppedAnimation<Color>(_accent),
+                        ),
+                      ),
+                      Text(
+                        '$progressPercent%',
+                        style: TextStyle(
+                          fontSize: 7,
+                          fontWeight: FontWeight.bold,
+                          color: _accent,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 7),
+
+                // ── Delete icon (28×28 to match progress) ──
+                GestureDetector(
+                  onTap: onDelete,
+                  child: Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.07),
+                      borderRadius: BorderRadius.circular(3),
+                      border: Border.all(color: Colors.red.withOpacity(0.2)),
                     ),
-                  ],
+                    child: Icon(
+                      Icons.delete_outline_rounded,
+                      color: Colors.red[400],
+                      size: 14,
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _statBadge(IconData icon, String value, String label) {
-    return Expanded(
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: _accent.withOpacity(0.06),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: _accent.withOpacity(0.12)),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: _accent, size: 18),
-            SizedBox(height: 4),
-            Text(
-              value,
-              style: TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              label,
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 10.5),
-            ),
-          ],
         ),
       ),
     );
