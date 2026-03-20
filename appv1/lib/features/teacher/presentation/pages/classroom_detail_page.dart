@@ -6,6 +6,8 @@ import '../widgets/subject_lessons_tab.dart';
 import '../widgets/classroom_students_tab.dart';
 import '../widgets/classroom_notices_tab.dart';
 import '../widgets/classroom_notes_tab.dart';
+import '../widgets/classroom_requests_tab.dart';
+import '../widgets/classroom_tests_tab.dart';
 
 class ClassroomDetailPage extends StatefulWidget {
   final String classId;
@@ -34,12 +36,14 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
     {'icon': Icons.people_rounded, 'label': 'Students'},
     {'icon': Icons.campaign_rounded, 'label': 'Notices'},
     {'icon': Icons.description_rounded, 'label': 'Notes'},
+    {'icon': Icons.person_add_rounded, 'label': 'Requests'},
+    {'icon': Icons.quiz_rounded, 'label': 'Tests'},
   ];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: _tabs.length, vsync: this);
+    _tabController = TabController(length: 6, vsync: this);
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
         setState(() => _currentTab = _tabController.index);
@@ -141,6 +145,11 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
     final className = _classroom['className']?.toString() ?? widget.className;
     final subjects = _classroom['subjects'] as List? ?? [];
     final students = _classroom['students'] as List? ?? [];
+
+    // ── Typed subjects list reused for both SubjectLessonsTab & ClassroomTestsTab ──
+    final typedSubjects = subjects
+        .map((s) => s as Map<String, dynamic>)
+        .toList();
 
     int totalLessons = 0;
     int completedLessons = 0;
@@ -307,9 +316,7 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
                       children: [
                         SubjectLessonsTab(
                           classId: widget.classId,
-                          subjects: subjects
-                              .map((s) => s as Map<String, dynamic>)
-                              .toList(),
+                          subjects: typedSubjects,
                           onRefresh: _fetchClassroom,
                         ),
                         ClassroomStudentsTab(
@@ -319,6 +326,17 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
                         ),
                         ClassroomNoticesTab(classId: widget.classId),
                         ClassroomNotesTab(classId: widget.classId),
+                        ClassroomRequestsTab(classId: widget.classId),
+                        // ── Tests tab with classSubjects auto-fill ──
+                        ClassroomTestsTab(
+                          classId: widget.classId,
+                          teacherId: _classroom['teacherId']?.toString() ?? '',
+                          teacherName:
+                              _classroom['teacherName']?.toString() ?? '',
+                          orgId: _classroom['orgId']?.toString() ?? '',
+                          className: className,
+                          classSubjects: typedSubjects, // ← NEW
+                        ),
                       ],
                     ),
             ),
@@ -328,7 +346,6 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
     );
   }
 
-  // ── Smart tab bar: active shows icon + label, inactive shows icon only ──
   Widget _buildTabBar() {
     return Container(
       height: 38,
@@ -358,7 +375,6 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
             duration: Duration(milliseconds: 200),
             child: Center(
               child: isActive
-                  // ── Active: icon + label ──
                   ? Row(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -374,7 +390,6 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
                         ),
                       ],
                     )
-                  // ── Inactive: icon only ──
                   : Icon(icon, size: 15),
             ),
           );

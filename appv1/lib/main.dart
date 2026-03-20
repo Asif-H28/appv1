@@ -57,10 +57,12 @@ class __StartupRouterState extends State<_StartupRouter> {
     Widget screen;
 
     if (isLoggedIn && userRole == 'admin') {
-      // Already logged in → go straight to home
+      screen = MainAppScreen(initialTab: 0);
+    } else if (isLoggedIn && userRole == 'teacher') {
+      screen = MainAppScreen(initialTab: 0);
+    } else if (isLoggedIn && userRole == 'student') {
       screen = MainAppScreen(initialTab: 0);
     } else {
-      // Not logged in → show login page
       screen = LoginPage();
     }
 
