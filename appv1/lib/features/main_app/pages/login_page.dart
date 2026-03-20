@@ -6,7 +6,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../onboarding/presentation/pages/landing_page.dart';
 import '../../student/student_join_org_page.dart';
-import '../../student/student_register_page.dart';
+import '../../student/student_main_screen.dart';
+import '../../student/student_pending_screen.dart';
+import '../../student/student_rejected_screen.dart';
 import '../../teacher/presentation/pages/teacher_main_screen.dart';
 import '../../teacher/presentation/pages/teacher_pending_screen.dart';
 import '../main_app_screen.dart';
@@ -18,6 +20,7 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage>
     with SingleTickerProviderStateMixin {
+  static const Color _accent = Colors.teal;
   late TabController _tabController;
   int _selectedTab = 0;
 
@@ -26,7 +29,8 @@ class _LoginPageState extends State<LoginPage>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() {
-      setState(() => _selectedTab = _tabController.index);
+      if (!_tabController.indexIsChanging)
+        setState(() => _selectedTab = _tabController.index);
     });
   }
 
@@ -35,9 +39,6 @@ class _LoginPageState extends State<LoginPage>
     _tabController.dispose();
     super.dispose();
   }
-
-  Color get _tabAccent =>
-      [AppColors.primary, Colors.teal, Colors.orange][_selectedTab];
 
   @override
   Widget build(BuildContext context) {
@@ -48,214 +49,143 @@ class _LoginPageState extends State<LoginPage>
           statusBarColor: Colors.transparent,
           statusBarIconBrightness: Brightness.light,
         ),
-        child: Stack(
+        child: Column(
           children: [
-            // ── Decorative background blobs ──
-            Positioned(
-              top: -60,
-              right: -60,
-              child: AnimatedContainer(
-                duration: Duration(milliseconds: 400),
-                width: 220,
-                height: 220,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _tabAccent.withOpacity(0.12),
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [_accent, _accent.withOpacity(0.75)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
               ),
-            ),
-            Positioned(
-              top: 100,
-              right: 20,
-              child: Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withOpacity(0.07),
-                ),
-              ),
-            ),
-            Positioned(
-              top: 200,
-              left: -30,
-              child: AnimatedContainer(
-                duration: Duration(milliseconds: 400),
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _tabAccent.withOpacity(0.07),
-                ),
-              ),
-            ),
-
-            Column(
-              children: [
-                // ─── Gradient Header ───
-                AnimatedContainer(
-                  duration: Duration(milliseconds: 350),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [_tabAccent, _tabAccent.withOpacity(0.7)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                  ),
-                  child: SafeArea(
-                    bottom: false,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+              child: SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(16, 16, 16, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
                         children: [
-                          // ── Logo row ──
-                          Row(
+                          Container(
+                            padding: EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(3),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.3),
+                              ),
+                            ),
+                            child: Icon(
+                              Icons.sync_alt,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                          SizedBox(width: 10),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                padding: EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.25),
-                                  borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.3),
-                                  ),
-                                ),
-                                child: Icon(
-                                  Icons.sync_alt,
+                              Text(
+                                'SchoolSync',
+                                style: TextStyle(
                                   color: Colors.white,
-                                  size: 26,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.4,
                                 ),
                               ),
-                              SizedBox(width: 12),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'SchoolSync',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                  Text(
-                                    'School Management Platform',
-                                    style: TextStyle(
-                                      color: Colors.white.withOpacity(0.75),
-                                      fontSize: 11,
-                                    ),
-                                  ),
-                                ],
+                              Text(
+                                'School Management Platform',
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.75),
+                                  fontSize: 10.5,
+                                ),
                               ),
                             ],
                           ),
-                          SizedBox(height: 22),
-
-                          Text(
-                            'Welcome back 👋',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 26,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            'Sign in to continue to your organization',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.8),
-                              fontSize: 13.5,
-                            ),
-                          ),
-                          SizedBox(height: 24),
-
-                          // ─── Tab Bar ───
-                          Container(
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(
-                                color: Colors.white.withOpacity(0.2),
-                              ),
-                            ),
-                            child: TabBar(
-                              controller: _tabController,
-                              indicator: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(11),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
-                                    blurRadius: 8,
-                                    offset: Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              indicatorSize: TabBarIndicatorSize.tab,
-                              labelColor: _tabAccent,
-                              unselectedLabelColor: Colors.white.withOpacity(
-                                0.85,
-                              ),
-                              labelStyle: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                              ),
-                              unselectedLabelStyle: TextStyle(
-                                fontWeight: FontWeight.w500,
-                                fontSize: 13,
-                              ),
-                              padding: EdgeInsets.all(4),
-                              dividerColor: Colors.transparent,
-                              tabs: [
-                                _buildTab(
-                                  Icons.admin_panel_settings_outlined,
-                                  'Admin',
-                                  0,
-                                ),
-                                _buildTab(Icons.school_outlined, 'Teacher', 1),
-                                _buildTab(Icons.person_outline, 'Student', 2),
-                              ],
-                            ),
-                          ),
-                          SizedBox(height: 20),
                         ],
                       ),
-                    ),
-                  ),
-                ),
-
-                // ─── White Body ───
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.background,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(32),
-                        topRight: Radius.circular(32),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.08),
-                          blurRadius: 20,
-                          offset: Offset(0, -4),
+                      SizedBox(height: 16),
+                      Text(
+                        'Welcome back 👋',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
                         ),
-                      ],
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: TabBarView(
-                      controller: _tabController,
-                      children: [
-                        _AdminLoginTab(accentColor: AppColors.primary),
-                        _TeacherLoginTab(accentColor: Colors.teal),
-                        _StudentLoginTab(accentColor: Colors.orange),
-                      ],
-                    ),
+                      ),
+                      SizedBox(height: 3),
+                      Text(
+                        'Sign in to continue to your organization',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.8),
+                          fontSize: 12.5,
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                      Container(
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(3),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.2),
+                          ),
+                        ),
+                        child: TabBar(
+                          controller: _tabController,
+                          indicator: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                          indicatorSize: TabBarIndicatorSize.tab,
+                          labelColor: _accent,
+                          unselectedLabelColor: Colors.white.withOpacity(0.85),
+                          labelStyle: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                          unselectedLabelStyle: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 12,
+                          ),
+                          padding: EdgeInsets.all(3),
+                          dividerColor: Colors.transparent,
+                          tabs: [
+                            _tab(
+                              Icons.admin_panel_settings_outlined,
+                              'Admin',
+                              0,
+                            ),
+                            _tab(Icons.school_outlined, 'Teacher', 1),
+                            _tab(Icons.person_outline, 'Student', 2),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                    ],
                   ),
                 ),
-              ],
+              ),
+            ),
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppColors.background,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _AdminLoginTab(accent: _accent),
+                    _TeacherLoginTab(accent: _accent),
+                    _StudentLoginTab(accent: _accent),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
@@ -263,20 +193,20 @@ class _LoginPageState extends State<LoginPage>
     );
   }
 
-  Widget _buildTab(IconData icon, String label, int index) {
-    final isSelected = _selectedTab == index;
+  Widget _tab(IconData icon, String label, int index) {
+    final active = _selectedTab == index;
     return Tab(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 15),
-          SizedBox(width: 5),
+          Icon(icon, size: 13),
+          SizedBox(width: 4),
           Text(
             label,
             style: TextStyle(
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-              fontSize: 13,
+              fontWeight: active ? FontWeight.bold : FontWeight.w500,
+              fontSize: 12,
             ),
           ),
         ],
@@ -285,56 +215,258 @@ class _LoginPageState extends State<LoginPage>
   }
 }
 
-// ─────────────────────────────────────────
-//  ADMIN LOGIN TAB
-// ─────────────────────────────────────────
-class _AdminLoginTab extends StatefulWidget {
-  final Color accentColor;
-  const _AdminLoginTab({required this.accentColor});
+// ─────────────────────────────────────────────────────────
+// SHARED HELPERS
+// ─────────────────────────────────────────────────────────
 
+Widget _loginLabel(String text) => Text(
+  text,
+  style: TextStyle(
+    fontSize: 10.5,
+    fontWeight: FontWeight.w700,
+    color: AppColors.textSecondary,
+    letterSpacing: 0.5,
+  ),
+);
+
+InputDecoration _loginFieldDeco({
+  required String hint,
+  required IconData icon,
+  required Color accent,
+  Widget? suffixIcon,
+}) => InputDecoration(
+  hintText: hint,
+  hintStyle: TextStyle(
+    color: AppColors.textSecondary.withOpacity(0.5),
+    fontSize: 13,
+  ),
+  prefixIcon: Icon(icon, color: accent, size: 16),
+  suffixIcon: suffixIcon,
+  border: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(3),
+    borderSide: BorderSide(color: Colors.grey[200]!),
+  ),
+  enabledBorder: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(3),
+    borderSide: BorderSide(color: Colors.grey[200]!),
+  ),
+  focusedBorder: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(3),
+    borderSide: BorderSide(color: accent.withOpacity(0.5), width: 1.5),
+  ),
+  errorBorder: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(3),
+    borderSide: BorderSide(color: Colors.red[300]!, width: 1.5),
+  ),
+  focusedErrorBorder: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(3),
+    borderSide: BorderSide(color: Colors.red[300]!, width: 1.5),
+  ),
+  filled: true,
+  fillColor: Colors.white,
+  isDense: true,
+  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+  errorStyle: TextStyle(color: Colors.red[400], fontSize: 11),
+);
+
+Widget _signInBtn({
+  required Color accent,
+  required bool isLoading,
+  required String label,
+  required VoidCallback? onTap,
+}) => Theme(
+  data: ThemeData(
+    colorScheme: ColorScheme.light(primary: accent, onPrimary: Colors.white),
+  ),
+  child: SizedBox(
+    width: double.infinity,
+    height: 46,
+    child: ElevatedButton(
+      onPressed: onTap,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: accent,
+        foregroundColor: Colors.white,
+        disabledBackgroundColor: accent.withOpacity(0.45),
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+      ),
+      child: isLoading
+          ? Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2,
+                  ),
+                ),
+                SizedBox(width: 8),
+                Text(
+                  'Signing in...',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            )
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(width: 6),
+                Icon(
+                  Icons.arrow_forward_rounded,
+                  size: 15,
+                  color: Colors.white,
+                ),
+              ],
+            ),
+    ),
+  ),
+);
+
+Widget _bottomCard({
+  required Color accent,
+  required IconData icon,
+  required String title,
+  required String subtitle,
+  required VoidCallback onTap,
+}) => GestureDetector(
+  onTap: onTap,
+  child: Container(
+    padding: EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: accent.withOpacity(0.04),
+      borderRadius: BorderRadius.circular(3),
+      border: Border.all(color: accent.withOpacity(0.2)),
+    ),
+    child: Row(
+      children: [
+        Container(
+          padding: EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: accent.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(3),
+          ),
+          child: Icon(icon, color: accent, size: 18),
+        ),
+        SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
+              ),
+            ],
+          ),
+        ),
+        Icon(Icons.arrow_forward_ios_rounded, size: 12, color: accent),
+      ],
+    ),
+  ),
+);
+
+Widget _divider(String label) => Row(
+  children: [
+    Expanded(child: Divider(color: Colors.grey[200]!, thickness: 1)),
+    Padding(
+      padding: EdgeInsets.symmetric(horizontal: 12),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: AppColors.textSecondary,
+          fontSize: 11.5,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    ),
+    Expanded(child: Divider(color: Colors.grey[200]!, thickness: 1)),
+  ],
+);
+
+void _showSnack(BuildContext ctx, String msg, Color color) {
+  ScaffoldMessenger.of(ctx).showSnackBar(
+    SnackBar(
+      content: Text(
+        msg,
+        style: TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+      ),
+      backgroundColor: color,
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+    ),
+  );
+}
+
+// ─────────────────────────────────────────────────────────
+// ADMIN LOGIN TAB
+// ─────────────────────────────────────────────────────────
+
+class _AdminLoginTab extends StatefulWidget {
+  final Color accent;
+  const _AdminLoginTab({required this.accent});
   @override
   __AdminLoginTabState createState() => __AdminLoginTabState();
 }
 
 class __AdminLoginTabState extends State<_AdminLoginTab> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _passCtrl = TextEditingController();
   bool _isLoading = false;
-  bool _obscurePassword = true;
+  bool _obscure = true;
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
+    _emailCtrl.dispose();
+    _passCtrl.dispose();
     super.dispose();
   }
 
-  Future<void> _handleAdminLogin() async {
+  Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
     if (_isLoading) return;
     setState(() => _isLoading = true);
-
     try {
-      final response = await http.post(
+      final res = await http.post(
         Uri.parse('https://appv1backend.onrender.com/api/org/admin/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'adminEmail': _emailController.text.trim(),
-          'adminPassword': _passwordController.text,
+          'adminEmail': _emailCtrl.text.trim(),
+          'adminPassword': _passCtrl.text,
         }),
       );
-
       if (!mounted) return;
-      final body = jsonDecode(response.body) as Map<String, dynamic>;
-
-      if (response.statusCode == 200 && body['success'] == true) {
+      final body = jsonDecode(res.body) as Map<String, dynamic>;
+      if (res.statusCode == 200 && body['success'] == true) {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool('isLoggedIn', true);
         await prefs.setString('userRole', 'admin');
-        await prefs.setString('userEmail', _emailController.text.trim());
+        await prefs.setString('userEmail', _emailCtrl.text.trim());
         await prefs.setString('authToken', body['token'] ?? '');
-
         final org = body['organization'] as Map<String, dynamic>? ?? {};
         await prefs.setString('orgId', org['orgId']?.toString() ?? '');
         await prefs.setString('userOrg', org['name']?.toString() ?? '');
@@ -342,521 +474,175 @@ class __AdminLoginTabState extends State<_AdminLoginTab> {
           'adminEmail',
           org['adminEmail']?.toString() ?? '',
         );
-
         if (!mounted) return;
         setState(() => _isLoading = false);
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
-                SizedBox(width: 8),
-                Text(
-                  'Welcome back, Admin!',
-                  style: TextStyle(fontWeight: FontWeight.w600),
-                ),
-              ],
-            ),
-            backgroundColor: Colors.green[600],
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        );
-
+        _showSnack(context, 'Welcome back, Admin!', Colors.green[600]!);
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => MainAppScreen(initialTab: 0)),
         );
       } else {
         setState(() => _isLoading = false);
-        _showError(
-          body['message']?.toString() ??
-              'Login failed. Please check your credentials.',
+        _showSnack(
+          context,
+          body['message']?.toString() ?? 'Login failed.',
+          Colors.red[600]!,
         );
       }
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
       setState(() => _isLoading = false);
-      _showError(
-        e.toString().contains('SocketException')
-            ? 'No internet connection.'
-            : 'Something went wrong. Please try again.',
-      );
+      _showSnack(context, 'No internet connection.', Colors.red[600]!);
     }
-  }
-
-  void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(Icons.error_outline, color: Colors.white, size: 18),
-            SizedBox(width: 8),
-            Expanded(child: Text(message)),
-          ],
-        ),
-        backgroundColor: Colors.red[600],
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: EdgeInsets.fromLTRB(24, 28, 24, 32),
+      padding: EdgeInsets.fromLTRB(16, 20, 16, 32),
       child: Form(
         key: _formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Header card with role icon ──
-            // Container(
-            //   padding: EdgeInsets.all(18),
-            //   decoration: BoxDecoration(
-            //     gradient: LinearGradient(
-            //       colors: [
-            //         widget.accentColor.withOpacity(0.08),
-            //         widget.accentColor.withOpacity(0.03),
-            //       ],
-            //       begin: Alignment.topLeft,
-            //       end: Alignment.bottomRight,
-            //     ),
-            //     borderRadius: BorderRadius.circular(20),
-            //     border: Border.all(color: widget.accentColor.withOpacity(0.15)),
-            //   ),
-            //   child: Row(
-            //     children: [
-            //       Container(
-            //         width: 52,
-            //         height: 52,
-            //         decoration: BoxDecoration(
-            //           gradient: LinearGradient(
-            //             colors: [
-            //               widget.accentColor,
-            //               widget.accentColor.withOpacity(0.7),
-            //             ],
-            //             begin: Alignment.topLeft,
-            //             end: Alignment.bottomRight,
-            //           ),
-            //           borderRadius: BorderRadius.circular(16),
-            //           boxShadow: [
-            //             BoxShadow(
-            //               color: widget.accentColor.withOpacity(0.35),
-            //               blurRadius: 10,
-            //               offset: Offset(0, 4),
-            //             ),
-            //           ],
-            //         ),
-            //         child: Icon(
-            //           Icons.admin_panel_settings,
-            //           color: Colors.white,
-            //           size: 26,
-            //         ),
-            //       ),
-            //       SizedBox(width: 14),
-            //       Expanded(
-            //         child: Column(
-            //           crossAxisAlignment: CrossAxisAlignment.start,
-            //           children: [
-            //             Text(
-            //               'Admin Sign In',
-            //               style: TextStyle(
-            //                 fontSize: 17,
-            //                 fontWeight: FontWeight.bold,
-            //                 color: AppColors.textPrimary,
-            //               ),
-            //             ),
-            //             SizedBox(height: 2),
-            //             Text(
-            //               'Access your organization dashboard',
-            //               style: TextStyle(
-            //                 color: AppColors.textSecondary,
-            //                 fontSize: 12,
-            //               ),
-            //             ),
-            //           ],
-            //         ),
-            //       ),
-            //       Container(
-            //         padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            //         decoration: BoxDecoration(
-            //           color: widget.accentColor.withOpacity(0.1),
-            //           borderRadius: BorderRadius.circular(20),
-            //         ),
-            //         child: Text(
-            //           'Admin',
-            //           style: TextStyle(
-            //             color: widget.accentColor,
-            //             fontSize: 11,
-            //             fontWeight: FontWeight.bold,
-            //           ),
-            //         ),
-            //       ),
-            //     ],
-            //   ),
-            // ),
-            // SizedBox(height: 28),
-
-            // ── Email ──
-            _inputLabel('Email Address'),
-            SizedBox(height: 8),
-            _inputContainer(
-              child: TextFormField(
-                controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
-                cursorColor: widget.accentColor,
-                style: TextStyle(fontSize: 15, color: AppColors.textPrimary),
-                validator: (v) {
-                  if (v == null || v.isEmpty) return 'Email is required';
-                  if (!v.contains('@')) return 'Enter a valid email';
-                  return null;
-                },
-                decoration: _inputDeco(
-                  hint: 'admin@organization.com',
-                  icon: Icons.email_outlined,
+            _loginLabel('EMAIL ADDRESS'),
+            SizedBox(height: 6),
+            TextFormField(
+              controller: _emailCtrl,
+              keyboardType: TextInputType.emailAddress,
+              cursorColor: widget.accent,
+              style: TextStyle(fontSize: 13, color: AppColors.textPrimary),
+              validator: (v) {
+                if (v == null || v.isEmpty) return 'Email is required';
+                if (!v.contains('@')) return 'Enter a valid email';
+                return null;
+              },
+              decoration: _loginFieldDeco(
+                hint: 'admin@organization.com',
+                icon: Icons.email_outlined,
+                accent: widget.accent,
+              ),
+            ),
+            SizedBox(height: 12),
+            _loginLabel('PASSWORD'),
+            SizedBox(height: 6),
+            TextFormField(
+              controller: _passCtrl,
+              obscureText: _obscure,
+              cursorColor: widget.accent,
+              style: TextStyle(fontSize: 13, color: AppColors.textPrimary),
+              validator: (v) {
+                if (v == null || v.isEmpty) return 'Password is required';
+                if (v.length < 6) return 'Minimum 6 characters';
+                return null;
+              },
+              decoration: _loginFieldDeco(
+                hint: '••••••••',
+                icon: Icons.lock_outline_rounded,
+                accent: widget.accent,
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscure
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    color: AppColors.textSecondary,
+                    size: 17,
+                  ),
+                  onPressed: () => setState(() => _obscure = !_obscure),
                 ),
               ),
             ),
-            SizedBox(height: 16),
-
-            // ── Password ──
-            _inputLabel('Password'),
-            SizedBox(height: 8),
-            _inputContainer(
-              child: TextFormField(
-                controller: _passwordController,
-                obscureText: _obscurePassword,
-                cursorColor: widget.accentColor,
-                style: TextStyle(fontSize: 15, color: AppColors.textPrimary),
-                validator: (v) {
-                  if (v == null || v.isEmpty) return 'Password is required';
-                  if (v.length < 6) return 'Minimum 6 characters';
-                  return null;
-                },
-                decoration:
-                    _inputDeco(
-                      hint: '••••••••',
-                      icon: Icons.lock_outline_rounded,
-                    ).copyWith(
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
-                          color: AppColors.textSecondary,
-                          size: 20,
-                        ),
-                        onPressed: () => setState(
-                          () => _obscurePassword = !_obscurePassword,
-                        ),
-                      ),
-                    ),
-              ),
-            ),
-
-            // ── Forgot password ──
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: () {},
                 style: TextButton.styleFrom(
-                  padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                  padding: EdgeInsets.symmetric(horizontal: 0, vertical: 6),
                 ),
                 child: Text(
                   'Forgot Password?',
                   style: TextStyle(
-                    color: widget.accentColor,
+                    color: widget.accent,
                     fontWeight: FontWeight.w600,
-                    fontSize: 13,
+                    fontSize: 12,
                   ),
                 ),
               ),
             ),
-            SizedBox(height: 6),
-
-            // ── Sign In Button ──
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _handleAdminLogin,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: widget.accentColor,
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor: widget.accentColor.withOpacity(0.5),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  elevation: 0,
-                ),
-                child: AnimatedSwitcher(
-                  duration: Duration(milliseconds: 200),
-                  child: _isLoading
-                      ? Row(
-                          key: ValueKey('loading'),
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2.5,
-                              ),
-                            ),
-                            SizedBox(width: 12),
-                            Text(
-                              'Signing in...',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        )
-                      : Row(
-                          key: ValueKey('idle'),
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Sign In',
-                              style: TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.3,
-                              ),
-                            ),
-                            SizedBox(width: 8),
-                            Icon(Icons.arrow_forward_rounded, size: 20),
-                          ],
-                        ),
-                ),
-              ),
+            SizedBox(height: 4),
+            _signInBtn(
+              accent: widget.accent,
+              isLoading: _isLoading,
+              label: 'Sign In',
+              onTap: _isLoading ? null : _login,
             ),
-
-            SizedBox(height: 32),
-
-            // ── Divider ──
-            Row(
-              children: [
-                Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 14),
-                  child: Text(
-                    'New to SchoolSync?',
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-                Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
-              ],
-            ),
-            SizedBox(height: 20),
-
-            // ── Create / Join Org Card ──
-            GestureDetector(
+            SizedBox(height: 24),
+            _divider('New to SchoolSync?'),
+            SizedBox(height: 14),
+            _bottomCard(
+              accent: widget.accent,
+              icon: Icons.add_business_rounded,
+              title: 'Create or Join Organization',
+              subtitle: 'Set up your school on SchoolSync',
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => LandingPage()),
               ),
-              child: Container(
-                padding: EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      widget.accentColor.withOpacity(0.07),
-                      widget.accentColor.withOpacity(0.02),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(
-                    color: widget.accentColor.withOpacity(0.2),
-                    width: 1.5,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: widget.accentColor.withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.add_business_rounded,
-                        color: widget.accentColor,
-                        size: 22,
-                      ),
-                    ),
-                    SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Create or Join Organization',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14.5,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          SizedBox(height: 2),
-                          Text(
-                            'Set up your school on SchoolSync',
-                            style: TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      size: 14,
-                      color: widget.accentColor,
-                    ),
-                  ],
-                ),
-              ),
             ),
-            SizedBox(height: 16),
           ],
         ),
       ),
     );
   }
-
-  Widget _inputLabel(String label) => Text(
-    label,
-    style: TextStyle(
-      color: AppColors.textPrimary,
-      fontWeight: FontWeight.w600,
-      fontSize: 13.5,
-    ),
-  );
-
-  Widget _inputContainer({required Widget child}) => Container(
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(14),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.05),
-          blurRadius: 10,
-          offset: Offset(0, 2),
-        ),
-      ],
-      border: Border.all(color: Colors.grey.withOpacity(0.12)),
-    ),
-    child: child,
-  );
-
-  InputDecoration _inputDeco({required String hint, required IconData icon}) {
-    return InputDecoration(
-      hintText: hint,
-      hintStyle: TextStyle(
-        color: AppColors.textSecondary.withOpacity(0.5),
-        fontSize: 14,
-      ),
-      prefixIcon: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 14),
-        child: Icon(icon, color: widget.accentColor, size: 20),
-      ),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide.none,
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide.none,
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(
-          color: widget.accentColor.withOpacity(0.4),
-          width: 1.5,
-        ),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: Colors.red[300]!, width: 1.5),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: Colors.red[300]!, width: 1.5),
-      ),
-      filled: true,
-      fillColor: Colors.white,
-      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      errorStyle: TextStyle(color: Colors.red[400], fontSize: 12),
-    );
-  }
 }
 
-// ─────────────────────────────────────────
-//  COMING SOON TAB
-// ─────────────────────────────────────────
-// ─────────────────────────────────────────
-//  TEACHER LOGIN TAB  (add to login_page.dart)
-// ─────────────────────────────────────────
-class _TeacherLoginTab extends StatefulWidget {
-  final Color accentColor;
-  const _TeacherLoginTab({required this.accentColor});
+// ─────────────────────────────────────────────────────────
+// TEACHER LOGIN TAB
+// ─────────────────────────────────────────────────────────
 
+class _TeacherLoginTab extends StatefulWidget {
+  final Color accent;
+  const _TeacherLoginTab({required this.accent});
   @override
   __TeacherLoginTabState createState() => __TeacherLoginTabState();
 }
 
 class __TeacherLoginTabState extends State<_TeacherLoginTab> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _passCtrl = TextEditingController();
   bool _isLoading = false;
-  bool _obscurePassword = true;
+  bool _obscure = true;
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
+    _emailCtrl.dispose();
+    _passCtrl.dispose();
     super.dispose();
   }
 
-  Future<void> _handleTeacherLogin() async {
+  Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
     if (_isLoading) return;
     setState(() => _isLoading = true);
-
     try {
-      // ── Step 1: Login ──
-      final response = await http.post(
+      final res = await http.post(
         Uri.parse('https://appv1backend.onrender.com/api/teacher/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'email': _emailController.text.trim(),
-          'password': _passwordController.text,
+          'email': _emailCtrl.text.trim(),
+          'password': _passCtrl.text,
         }),
       );
-
       if (!mounted) return;
-      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      final body = jsonDecode(res.body) as Map<String, dynamic>;
 
-      if (response.statusCode != 200 || body['success'] != true) {
+      if (res.statusCode != 200 || body['success'] != true) {
         setState(() => _isLoading = false);
-        _showError(
-          body['message']?.toString() ??
-              'Login failed. Please check your credentials.',
+        _showSnack(
+          context,
+          body['message']?.toString() ?? 'Login failed.',
+          Colors.red[600]!,
         );
         return;
       }
@@ -865,8 +651,7 @@ class __TeacherLoginTabState extends State<_TeacherLoginTab> {
       final teacherId = teacher['teacherId']?.toString() ?? '';
       final token = body['token']?.toString() ?? '';
 
-      // ── Step 2: Fetch teacher profile to check verified status ──
-      final profileResponse = await http.get(
+      final profileRes = await http.get(
         Uri.parse(
           'https://appv1backend.onrender.com/api/teacher/$teacherId/profile',
         ),
@@ -875,414 +660,144 @@ class __TeacherLoginTabState extends State<_TeacherLoginTab> {
           'Authorization': 'Bearer $token',
         },
       );
-
       if (!mounted) return;
-      final profileBody =
-          jsonDecode(profileResponse.body) as Map<String, dynamic>;
-
-      final profileData =
+      final profileBody = jsonDecode(profileRes.body) as Map<String, dynamic>;
+      final profile =
           profileBody['teacher'] as Map<String, dynamic>? ?? teacher;
-      final isVerified = profileData['verified'] == true;
+      final isVerified = profile['verified'] == true;
 
-      // ── Persist auth data ──
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('isLoggedIn', true);
       await prefs.setString('userRole', 'teacher');
-      await prefs.setString('userEmail', _emailController.text.trim());
+      await prefs.setString('userEmail', _emailCtrl.text.trim());
       await prefs.setString('authToken', token);
       await prefs.setString('teacherId', teacherId);
-      await prefs.setString(
-        'teacherName',
-        profileData['name']?.toString() ?? '',
-      );
-      await prefs.setString('orgId', profileData['orgId']?.toString() ?? '');
+      await prefs.setString('teacherName', profile['name']?.toString() ?? '');
+      await prefs.setString('orgId', profile['orgId']?.toString() ?? '');
       await prefs.setBool('teacherVerified', isVerified);
 
       if (!mounted) return;
       setState(() => _isLoading = false);
 
       if (isVerified) {
-        // ── Verified → go to Teacher Portal ──
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
-                SizedBox(width: 8),
-                Text(
-                  'Welcome, ${profileData['name'] ?? 'Teacher'}! 👋',
-                  style: TextStyle(fontWeight: FontWeight.w600),
-                ),
-              ],
-            ),
-            backgroundColor: Colors.teal[600],
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
+        _showSnack(
+          context,
+          'Welcome, ${profile['name'] ?? 'Teacher'}! 👋',
+          Colors.teal[600]!,
         );
-
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => TeacherMainScreen()),
         );
       } else {
-        // ── Not verified → go to pending screen ──
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (_) => TeacherPendingScreen(
-              teacherName: profileData['name']?.toString() ?? 'Teacher',
-              orgId: profileData['orgId']?.toString() ?? '',
+              teacherName: profile['name']?.toString() ?? 'Teacher',
+              orgId: profile['orgId']?.toString() ?? '',
             ),
           ),
         );
       }
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
       setState(() => _isLoading = false);
-      _showError(
-        e.toString().contains('SocketException')
-            ? 'No internet connection.'
-            : 'Something went wrong. Please try again.',
-      );
+      _showSnack(context, 'No internet connection.', Colors.red[600]!);
     }
-  }
-
-  void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(Icons.error_outline, color: Colors.white, size: 18),
-            SizedBox(width: 8),
-            Expanded(child: Text(message)),
-          ],
-        ),
-        backgroundColor: Colors.red[600],
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: EdgeInsets.fromLTRB(24, 28, 24, 32),
+      padding: EdgeInsets.fromLTRB(16, 20, 16, 32),
       child: Form(
         key: _formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // // ── Header card ──
-            // Container(
-            //   padding: EdgeInsets.all(16),
-            //   decoration: BoxDecoration(
-            //     gradient: LinearGradient(
-            //       colors: [
-            //         widget.accentColor.withOpacity(0.08),
-            //         widget.accentColor.withOpacity(0.02),
-            //       ],
-            //     ),
-            //     borderRadius: BorderRadius.circular(18),
-            //     border: Border.all(color: widget.accentColor.withOpacity(0.15)),
-            //   ),
-            //   child: Row(
-            //     children: [
-            //       Container(
-            //         width: 50,
-            //         height: 50,
-            //         decoration: BoxDecoration(
-            //           gradient: LinearGradient(
-            //             colors: [
-            //               widget.accentColor,
-            //               widget.accentColor.withOpacity(0.7),
-            //             ],
-            //             begin: Alignment.topLeft,
-            //             end: Alignment.bottomRight,
-            //           ),
-            //           borderRadius: BorderRadius.circular(14),
-            //           boxShadow: [
-            //             BoxShadow(
-            //               color: widget.accentColor.withOpacity(0.3),
-            //               blurRadius: 10,
-            //               offset: Offset(0, 4),
-            //             ),
-            //           ],
-            //         ),
-            //         child: Icon(
-            //           Icons.school_rounded,
-            //           color: Colors.white,
-            //           size: 24,
-            //         ),
-            //       ),
-            //       SizedBox(width: 14),
-            //       Expanded(
-            //         child: Column(
-            //           crossAxisAlignment: CrossAxisAlignment.start,
-            //           children: [
-            //             Text(
-            //               'Teacher Sign In',
-            //               style: TextStyle(
-            //                 fontWeight: FontWeight.bold,
-            //                 fontSize: 16,
-            //                 color: AppColors.textPrimary,
-            //               ),
-            //             ),
-            //             SizedBox(height: 2),
-            //             Text(
-            //               'Access your classroom dashboard',
-            //               style: TextStyle(
-            //                 color: AppColors.textSecondary,
-            //                 fontSize: 12,
-            //               ),
-            //             ),
-            //           ],
-            //         ),
-            //       ),
-            //       Container(
-            //         padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            //         decoration: BoxDecoration(
-            //           color: widget.accentColor.withOpacity(0.1),
-            //           borderRadius: BorderRadius.circular(20),
-            //         ),
-            //         child: Text(
-            //           'Teacher',
-            //           style: TextStyle(
-            //             color: widget.accentColor,
-            //             fontSize: 11,
-            //             fontWeight: FontWeight.bold,
-            //           ),
-            //         ),
-            //       ),
-            //     ],
-            //   ),
-            // ),
-            // SizedBox(height: 28),
-
-            // ── Email ──
-            _inputLabel('Email Address'),
-            SizedBox(height: 8),
-            _inputContainer(
-              child: TextFormField(
-                controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
-                cursorColor: widget.accentColor,
-                style: TextStyle(fontSize: 15, color: AppColors.textPrimary),
-                validator: (v) {
-                  if (v == null || v.isEmpty) return 'Email is required';
-                  if (!v.contains('@')) return 'Enter a valid email';
-                  return null;
-                },
-                decoration: _inputDeco(
-                  hint: 'teacher@school.com',
-                  icon: Icons.email_outlined,
+            _loginLabel('EMAIL ADDRESS'),
+            SizedBox(height: 6),
+            TextFormField(
+              controller: _emailCtrl,
+              keyboardType: TextInputType.emailAddress,
+              cursorColor: widget.accent,
+              style: TextStyle(fontSize: 13, color: AppColors.textPrimary),
+              validator: (v) {
+                if (v == null || v.isEmpty) return 'Email is required';
+                if (!v.contains('@')) return 'Enter a valid email';
+                return null;
+              },
+              decoration: _loginFieldDeco(
+                hint: 'teacher@school.com',
+                icon: Icons.email_outlined,
+                accent: widget.accent,
+              ),
+            ),
+            SizedBox(height: 12),
+            _loginLabel('PASSWORD'),
+            SizedBox(height: 6),
+            TextFormField(
+              controller: _passCtrl,
+              obscureText: _obscure,
+              cursorColor: widget.accent,
+              style: TextStyle(fontSize: 13, color: AppColors.textPrimary),
+              validator: (v) {
+                if (v == null || v.isEmpty) return 'Password is required';
+                if (v.length < 6) return 'Minimum 6 characters';
+                return null;
+              },
+              decoration: _loginFieldDeco(
+                hint: '••••••••',
+                icon: Icons.lock_outline_rounded,
+                accent: widget.accent,
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscure
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    color: AppColors.textSecondary,
+                    size: 17,
+                  ),
+                  onPressed: () => setState(() => _obscure = !_obscure),
                 ),
               ),
             ),
-            SizedBox(height: 16),
-
-            // ── Password ──
-            _inputLabel('Password'),
-            SizedBox(height: 8),
-            _inputContainer(
-              child: TextFormField(
-                controller: _passwordController,
-                obscureText: _obscurePassword,
-                cursorColor: widget.accentColor,
-                style: TextStyle(fontSize: 15, color: AppColors.textPrimary),
-                validator: (v) {
-                  if (v == null || v.isEmpty) return 'Password is required';
-                  if (v.length < 6) return 'Minimum 6 characters';
-                  return null;
-                },
-                decoration:
-                    _inputDeco(
-                      hint: '••••••••',
-                      icon: Icons.lock_outline_rounded,
-                    ).copyWith(
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
-                          color: AppColors.textSecondary,
-                          size: 20,
-                        ),
-                        onPressed: () => setState(
-                          () => _obscurePassword = !_obscurePassword,
-                        ),
-                      ),
-                    ),
-              ),
-            ),
-
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: () {},
                 style: TextButton.styleFrom(
-                  padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                  padding: EdgeInsets.symmetric(horizontal: 0, vertical: 6),
                 ),
                 child: Text(
                   'Forgot Password?',
                   style: TextStyle(
-                    color: widget.accentColor,
+                    color: widget.accent,
                     fontWeight: FontWeight.w600,
-                    fontSize: 13,
+                    fontSize: 12,
                   ),
                 ),
               ),
             ),
-            SizedBox(height: 6),
-
-            // ── Sign In Button ──
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _handleTeacherLogin,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: widget.accentColor,
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor: widget.accentColor.withOpacity(0.5),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  elevation: 0,
-                ),
-                child: AnimatedSwitcher(
-                  duration: Duration(milliseconds: 200),
-                  child: _isLoading
-                      ? Row(
-                          key: ValueKey('loading'),
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2.5,
-                              ),
-                            ),
-                            SizedBox(width: 12),
-                            Text(
-                              'Signing in...',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        )
-                      : Row(
-                          key: ValueKey('idle'),
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Sign In as Teacher',
-                              style: TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.3,
-                              ),
-                            ),
-                            SizedBox(width: 8),
-                            Icon(Icons.arrow_forward_rounded, size: 20),
-                          ],
-                        ),
-                ),
-              ),
+            SizedBox(height: 4),
+            _signInBtn(
+              accent: widget.accent,
+              isLoading: _isLoading,
+              label: 'Sign In as Teacher',
+              onTap: _isLoading ? null : _login,
             ),
-            SizedBox(height: 32),
-
-            Row(
-              children: [
-                Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 14),
-                  child: Text(
-                    'New to SchoolSync?',
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-                Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
-              ],
-            ),
-            SizedBox(height: 20),
-
-            GestureDetector(
+            SizedBox(height: 24),
+            _divider('New to SchoolSync?'),
+            SizedBox(height: 14),
+            _bottomCard(
+              accent: widget.accent,
+              icon: Icons.add_business_rounded,
+              title: 'Create or Join Organization',
+              subtitle: 'Set up your school on SchoolSync',
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => LandingPage()),
-              ),
-              child: Container(
-                padding: EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      widget.accentColor.withOpacity(0.07),
-                      widget.accentColor.withOpacity(0.02),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(
-                    color: widget.accentColor.withOpacity(0.2),
-                    width: 1.5,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: widget.accentColor.withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.add_business_rounded,
-                        color: widget.accentColor,
-                        size: 22,
-                      ),
-                    ),
-                    SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Create or Join Organization',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14.5,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          SizedBox(height: 2),
-                          Text(
-                            'Set up your school on SchoolSync',
-                            style: TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      size: 14,
-                      color: widget.accentColor,
-                    ),
-                  ],
-                ),
               ),
             ),
           ],
@@ -1290,80 +805,15 @@ class __TeacherLoginTabState extends State<_TeacherLoginTab> {
       ),
     );
   }
-
-  Widget _inputLabel(String label) => Text(
-    label,
-    style: TextStyle(
-      color: AppColors.textPrimary,
-      fontWeight: FontWeight.w600,
-      fontSize: 13.5,
-    ),
-  );
-
-  Widget _inputContainer({required Widget child}) => Container(
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(14),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.05),
-          blurRadius: 10,
-          offset: Offset(0, 2),
-        ),
-      ],
-      border: Border.all(color: Colors.grey.withOpacity(0.12)),
-    ),
-    child: child,
-  );
-
-  InputDecoration _inputDeco({required String hint, required IconData icon}) =>
-      InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(
-          color: AppColors.textSecondary.withOpacity(0.5),
-          fontSize: 14,
-        ),
-        prefixIcon: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 14),
-          child: Icon(icon, color: widget.accentColor, size: 20),
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(
-            color: widget.accentColor.withOpacity(0.4),
-            width: 1.5,
-          ),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Colors.red[300]!, width: 1.5),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Colors.red[300]!, width: 1.5),
-        ),
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        errorStyle: TextStyle(color: Colors.red[400], fontSize: 12),
-      );
 }
 
-// ─────────────────────────────────────────
-//  STUDENT LOGIN TAB
-// ─────────────────────────────────────────
-class _StudentLoginTab extends StatefulWidget {
-  final Color accentColor;
-  const _StudentLoginTab({required this.accentColor});
+// ─────────────────────────────────────────────────────────
+// STUDENT LOGIN TAB  ← all debug logs are here
+// ─────────────────────────────────────────────────────────
 
+class _StudentLoginTab extends StatefulWidget {
+  final Color accent;
+  const _StudentLoginTab({required this.accent});
   @override
   __StudentLoginTabState createState() => __StudentLoginTabState();
 }
@@ -1384,9 +834,10 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
 
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_isLoading) return;
     setState(() => _isLoading = true);
     try {
-      final response = await http.post(
+      final res = await http.post(
         Uri.parse('https://appv1backend.onrender.com/api/student/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
@@ -1394,284 +845,261 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
           'password': _passCtrl.text.trim(),
         }),
       );
+      if (!mounted) return;
+      setState(() => _isLoading = false);
 
-      debugPrint('STUDENT LOGIN STATUS: ${response.statusCode}');
-      debugPrint('STUDENT LOGIN BODY: ${response.body}');
-
-      if (mounted) setState(() => _isLoading = false);
+      // ── LOG 1: Raw HTTP response ──────────────────────
+      debugPrint('');
+      debugPrint('╔══════════════════════════════════════════╗');
+      debugPrint('║       STUDENT LOGIN RAW RESPONSE         ║');
+      debugPrint('╠══════════════════════════════════════════╣');
+      debugPrint('║ Status Code : ${res.statusCode}');
+      debugPrint('║ Raw Body    : ${res.body}');
+      debugPrint('╚══════════════════════════════════════════╝');
 
       Map<String, dynamic> body = {};
       try {
-        body = jsonDecode(response.body) as Map<String, dynamic>;
+        body = jsonDecode(res.body) as Map<String, dynamic>;
       } catch (_) {
-        if (mounted) _snack('Unexpected server response.', Colors.red[600]!);
+        debugPrint('❌ JSON decode failed for body: ${res.body}');
+        _showSnack(context, 'Unexpected server response.', Colors.red[600]!);
         return;
       }
 
-      if (response.statusCode == 200) {
-        final student =
-            body['student'] as Map<String, dynamic>? ??
-            body['data'] as Map<String, dynamic>? ??
-            {};
-
-        // ── Save to prefs ──
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setBool('isLoggedIn', true);
-        await prefs.setString('userRole', 'student');
-        await prefs.setString(
-          'studentId',
-          student['studentId']?.toString() ?? '',
+      if (res.statusCode != 200 || body['success'] != true) {
+        debugPrint('❌ Login failed: ${body['message'] ?? body['error']}');
+        _showSnack(
+          context,
+          body['message']?.toString() ??
+              body['error']?.toString() ??
+              'Login failed.',
+          Colors.red[600]!,
         );
-        await prefs.setString('studentName', student['name']?.toString() ?? '');
+        return;
+      }
+
+      final student =
+          body['student'] as Map<String, dynamic>? ??
+          body['data'] as Map<String, dynamic>? ??
+          {};
+
+      // ── LOG 2: Parsed student object ──────────────────
+      debugPrint('');
+      debugPrint('╔══════════════════════════════════════════╗');
+      debugPrint('║         PARSED STUDENT OBJECT            ║');
+      debugPrint('╠══════════════════════════════════════════╣');
+      debugPrint('║ studentId   : ${student['studentId']}');
+      debugPrint('║ name        : ${student['name']}');
+      debugPrint('║ email       : ${student['email']}');
+      debugPrint('║ joinStatus  : ${student['joinStatus']}');
+      debugPrint('║ classId     : ${student['classId']}');
+      debugPrint('║ orgId       : ${student['orgId']}');
+      debugPrint('║ tempOrgId   : ${student['tempOrgId']}');
+      debugPrint('║ tempOrg     : ${student['tempOrg']}');
+      debugPrint('╚══════════════════════════════════════════╝');
+
+      // ── Save to prefs ──
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', true);
+      await prefs.setString('userRole', 'student');
+      await prefs.setString(
+        'studentId',
+        student['studentId']?.toString() ?? '',
+      );
+      await prefs.setString('studentName', student['name']?.toString() ?? '');
+      await prefs.setString('studentEmail', student['email']?.toString() ?? '');
+      await prefs.setString('authToken', body['token']?.toString() ?? '');
+
+      // ── Save tempOrg ──
+      final tempOrg = student['tempOrg'] as Map<String, dynamic>?;
+
+      // ── LOG 3: tempOrg saving ─────────────────────────
+      debugPrint('');
+      debugPrint('╔══════════════════════════════════════════╗');
+      debugPrint('║           SAVING TEMP ORG                ║');
+      debugPrint('╠══════════════════════════════════════════╣');
+      debugPrint('║ tempOrg is null?  : ${tempOrg == null}');
+      debugPrint('║ tempOrg value     : $tempOrg');
+
+      if (tempOrg != null) {
+        await prefs.setString('tempOrg', jsonEncode(tempOrg));
+        await prefs.setString('tempOrgId', tempOrg['orgId']?.toString() ?? '');
         await prefs.setString(
-          'studentEmail',
-          student['email']?.toString() ?? '',
+          'tempOrgName',
+          tempOrg['orgName']?.toString() ?? '',
         );
-
-        if (!mounted) return;
-
-        final classId = student['classId']?.toString() ?? '';
-        final joinStatus = student['joinStatus']?.toString() ?? 'none';
-
-        if (classId.isNotEmpty && joinStatus == 'approved') {
-          // ── Already in a class → go to student home ──
-          // TODO: Replace with your StudentHomePage()
-          _snack(
-            'Welcome back, ${student['name'] ?? 'Student'}! 👋',
-            Colors.green[600]!,
-          );
+        debugPrint('║ ✅ Saved tempOrgId   : ${tempOrg['orgId']}');
+        debugPrint('║ ✅ Saved tempOrgName : ${tempOrg['orgName']}');
+      } else {
+        final flatOrgId = student['tempOrgId']?.toString() ?? '';
+        debugPrint('║ ⚠️  tempOrg null, flatOrgId : $flatOrgId');
+        if (flatOrgId.isNotEmpty) {
+          await prefs.setString('tempOrgId', flatOrgId);
+          debugPrint('║ ✅ Saved flat tempOrgId : $flatOrgId');
         } else {
-          // ── Not joined yet or pending → go to join flow ──
+          debugPrint('║ ❌ No org data found to save!');
+        }
+      }
+      debugPrint('╚══════════════════════════════════════════╝');
+
+      // ── LOG 4: All saved prefs ────────────────────────
+      debugPrint('');
+      debugPrint('╔══════════════════════════════════════════╗');
+      debugPrint('║         ALL SAVED PREFS AFTER LOGIN      ║');
+      debugPrint('╠══════════════════════════════════════════╣');
+      final allKeys = prefs.getKeys();
+      for (final k in allKeys) {
+        debugPrint('║  $k = ${prefs.get(k)}');
+      }
+      debugPrint('╚══════════════════════════════════════════╝');
+
+      if (!mounted) return;
+
+      final joinStatus = student['joinStatus']?.toString() ?? 'none';
+      final classId = student['classId']?.toString() ?? '';
+      final studentName = student['name']?.toString() ?? 'Student';
+
+      // ── LOG 5: Routing decision ───────────────────────
+      debugPrint('');
+      debugPrint('╔══════════════════════════════════════════╗');
+      debugPrint('║           ROUTING DECISION               ║');
+      debugPrint('╠══════════════════════════════════════════╣');
+      debugPrint('║ joinStatus  : $joinStatus');
+      debugPrint('║ classId     : $classId');
+      debugPrint('║ studentName : $studentName');
+      debugPrint('╚══════════════════════════════════════════╝');
+
+      switch (joinStatus) {
+        case 'approved':
+          if (classId.isNotEmpty) {
+            debugPrint('➡️  Routing to: StudentMainScreen');
+            _showSnack(
+              context,
+              'Welcome back, $studentName! 👋',
+              Colors.green[600]!,
+            );
+            Navigator.of(context, rootNavigator: true).pushReplacement(
+              MaterialPageRoute(builder: (_) => StudentMainScreen()),
+            );
+          } else {
+            debugPrint(
+              '➡️  Routing to: StudentJoinOrgPage (approved but no classId)',
+            );
+            Navigator.of(context, rootNavigator: true).pushReplacement(
+              MaterialPageRoute(builder: (_) => StudentJoinOrgPage()),
+            );
+          }
+          break;
+
+        case 'pending':
+          debugPrint('➡️  Routing to: StudentPendingScreen');
+          Navigator.of(context, rootNavigator: true).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) => StudentPendingScreen(studentName: studentName),
+            ),
+          );
+          break;
+
+        case 'rejected':
+          debugPrint('➡️  Routing to: StudentRejectedScreen');
+          Navigator.of(context, rootNavigator: true).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) => StudentRejectedScreen(studentName: studentName),
+            ),
+          );
+          break;
+
+        default:
+          debugPrint(
+            '➡️  Routing to: StudentJoinOrgPage (joinStatus=$joinStatus)',
+          );
           Navigator.of(context, rootNavigator: true).pushReplacement(
             MaterialPageRoute(builder: (_) => StudentJoinOrgPage()),
           );
-        }
-      } else {
-        final msg =
-            body['message']?.toString() ??
-            body['error']?.toString() ??
-            'Login failed.';
-        if (mounted) _snack(msg, Colors.red[600]!);
       }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isLoading = false);
-        _snack(
-          e.toString().contains('SocketException')
-              ? 'No internet connection.'
-              : 'Something went wrong.',
-          Colors.red[600]!,
-        );
-      }
+    } catch (e, stack) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      debugPrint('❌ STUDENT LOGIN EXCEPTION: $e');
+      debugPrint('❌ STACK TRACE: $stack');
+      _showSnack(context, 'No internet connection.', Colors.red[600]!);
     }
-  }
-
-  void _snack(String msg, Color color) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          msg,
-          style: TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
-        ),
-        backgroundColor: color,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: EdgeInsets.fromLTRB(24, 28, 24, 32),
+      padding: EdgeInsets.fromLTRB(16, 20, 16, 32),
       child: Form(
         key: _formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Email ──
-            _inputLabel('Email Address'),
-            SizedBox(height: 8),
-            _inputContainer(
-              child: TextFormField(
-                controller: _emailCtrl,
-                keyboardType: TextInputType.emailAddress,
-                cursorColor: widget.accentColor,
-                style: TextStyle(fontSize: 13, color: AppColors.textPrimary),
-                validator: (v) {
-                  if (v == null || v.isEmpty) return 'Email is required';
-                  if (!v.contains('@')) return 'Enter a valid email';
-                  return null;
-                },
-                decoration: _inputDeco(
-                  hint: 'student@email.com',
-                  icon: Icons.email_outlined,
+            _loginLabel('EMAIL ADDRESS'),
+            SizedBox(height: 6),
+            TextFormField(
+              controller: _emailCtrl,
+              keyboardType: TextInputType.emailAddress,
+              cursorColor: widget.accent,
+              style: TextStyle(fontSize: 13, color: AppColors.textPrimary),
+              validator: (v) {
+                if (v == null || v.isEmpty) return 'Email is required';
+                if (!v.contains('@')) return 'Enter a valid email';
+                return null;
+              },
+              decoration: _loginFieldDeco(
+                hint: 'student@email.com',
+                icon: Icons.email_outlined,
+                accent: widget.accent,
+              ),
+            ),
+            SizedBox(height: 12),
+            _loginLabel('PASSWORD'),
+            SizedBox(height: 6),
+            TextFormField(
+              controller: _passCtrl,
+              obscureText: _obscure,
+              cursorColor: widget.accent,
+              style: TextStyle(fontSize: 13, color: AppColors.textPrimary),
+              validator: (v) {
+                if (v == null || v.isEmpty) return 'Password is required';
+                if (v.length < 6) return 'Minimum 6 characters';
+                return null;
+              },
+              decoration: _loginFieldDeco(
+                hint: '••••••••',
+                icon: Icons.lock_outline_rounded,
+                accent: widget.accent,
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscure
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    color: AppColors.textSecondary,
+                    size: 17,
+                  ),
+                  onPressed: () => setState(() => _obscure = !_obscure),
                 ),
               ),
             ),
+            SizedBox(height: 20),
+            _signInBtn(
+              accent: widget.accent,
+              isLoading: _isLoading,
+              label: 'Sign In as Student',
+              onTap: _isLoading ? null : _login,
+            ),
+            SizedBox(height: 24),
+            _divider('New student?'),
             SizedBox(height: 14),
-
-            // ── Password ──
-            _inputLabel('Password'),
-            SizedBox(height: 8),
-            _inputContainer(
-              child: TextFormField(
-                controller: _passCtrl,
-                obscureText: _obscure,
-                cursorColor: widget.accentColor,
-                style: TextStyle(fontSize: 13, color: AppColors.textPrimary),
-                validator: (v) {
-                  if (v == null || v.isEmpty) return 'Password is required';
-                  if (v.length < 6) return 'Minimum 6 characters';
-                  return null;
-                },
-                decoration:
-                    _inputDeco(
-                      hint: '••••••••',
-                      icon: Icons.lock_outline_rounded,
-                    ).copyWith(
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscure
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
-                          color: AppColors.textSecondary,
-                          size: 18,
-                        ),
-                        onPressed: () => setState(() => _obscure = !_obscure),
-                      ),
-                    ),
-              ),
-            ),
-            SizedBox(height: 24),
-
-            // ── Sign In Button ──
-            SizedBox(
-              width: double.infinity,
-              height: 44,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _login,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: widget.accentColor,
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor: widget.accentColor.withOpacity(0.5),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 0,
-                ),
-                child: _isLoading
-                    ? SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Sign In as Student',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                            ),
-                          ),
-                          SizedBox(width: 6),
-                          Icon(Icons.arrow_forward_rounded, size: 16),
-                        ],
-                      ),
-              ),
-            ),
-            SizedBox(height: 24),
-
-            // ── Divider ──
-            Row(
-              children: [
-                Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 12),
-                  child: Text(
-                    'New student?',
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-                Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
-              ],
-            ),
-            SizedBox(height: 18),
-
-            // ── Register card ──
-            GestureDetector(
+            _bottomCard(
+              accent: widget.accent,
+              icon: Icons.add_business_rounded,
+              title: 'Create or Join Organization',
+              subtitle: 'Set up your school on SchoolSync',
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => StudentRegisterPage()),
-              ),
-              child: Container(
-                padding: EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      widget.accentColor.withOpacity(0.07),
-                      widget.accentColor.withOpacity(0.02),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: widget.accentColor.withOpacity(0.2),
-                    width: 1.5,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: widget.accentColor.withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(
-                        Icons.person_add_rounded,
-                        color: widget.accentColor,
-                        size: 20,
-                      ),
-                    ),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Create Student Account',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          SizedBox(height: 2),
-                          Text(
-                            'Register and join your classroom',
-                            style: TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 11,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      size: 13,
-                      color: widget.accentColor,
-                    ),
-                  ],
-                ),
+                MaterialPageRoute(builder: (_) => LandingPage()),
               ),
             ),
           ],
@@ -1679,69 +1107,4 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
       ),
     );
   }
-
-  Widget _inputLabel(String label) => Text(
-    label,
-    style: TextStyle(
-      color: AppColors.textPrimary,
-      fontWeight: FontWeight.w600,
-      fontSize: 12,
-    ),
-  );
-
-  Widget _inputContainer({required Widget child}) => Container(
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.05),
-          blurRadius: 8,
-          offset: Offset(0, 2),
-        ),
-      ],
-      border: Border.all(color: Colors.grey.withOpacity(0.12)),
-    ),
-    child: child,
-  );
-
-  InputDecoration _inputDeco({required String hint, required IconData icon}) =>
-      InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(
-          color: AppColors.textSecondary.withOpacity(0.5),
-          fontSize: 13,
-        ),
-        prefixIcon: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 12),
-          child: Icon(icon, color: widget.accentColor, size: 18),
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: widget.accentColor.withOpacity(0.4),
-            width: 1.5,
-          ),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.red[300]!, width: 1.5),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.red[300]!, width: 1.5),
-        ),
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        errorStyle: TextStyle(color: Colors.red[400], fontSize: 11),
-      );
 }

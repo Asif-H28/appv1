@@ -8,7 +8,6 @@ import '../../../main_app/pages/login_page.dart';
 class StudentRegisterSheet extends StatefulWidget {
   final String orgName;
   final String orgId;
-
   const StudentRegisterSheet({required this.orgName, required this.orgId});
 
   @override
@@ -16,24 +15,91 @@ class StudentRegisterSheet extends StatefulWidget {
 }
 
 class _StudentRegisterSheetState extends State<StudentRegisterSheet> {
-  static const Color _accent = Colors.orange;
+  static const Color _accent = Colors.teal;
 
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _obscurePassword = true;
+  final _nameCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
+  final _passCtrl = TextEditingController();
+  bool _obscure = true;
   bool _isLoading = false;
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
-    _phoneController.dispose();
-    _passwordController.dispose();
+    _nameCtrl.dispose();
+    _emailCtrl.dispose();
+    _phoneCtrl.dispose();
+    _passCtrl.dispose();
     super.dispose();
   }
+
+  // ─── Helpers ───────────────────────────────────────────
+
+  Widget _label(String text) => Text(
+    text,
+    style: TextStyle(
+      fontSize: 10.5,
+      fontWeight: FontWeight.w700,
+      color: AppColors.textSecondary,
+      letterSpacing: 0.5,
+    ),
+  );
+
+  InputDecoration _deco({
+    required String hint,
+    required IconData icon,
+    Widget? suffixIcon,
+  }) => InputDecoration(
+    hintText: hint,
+    hintStyle: TextStyle(
+      color: AppColors.textSecondary.withOpacity(0.5),
+      fontSize: 13,
+    ),
+    prefixIcon: Icon(icon, color: _accent, size: 16),
+    suffixIcon: suffixIcon,
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(3),
+      borderSide: BorderSide(color: Colors.grey[200]!),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(3),
+      borderSide: BorderSide(color: Colors.grey[200]!),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(3),
+      borderSide: BorderSide(color: _accent.withOpacity(0.5), width: 1.5),
+    ),
+    errorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(3),
+      borderSide: BorderSide(color: Colors.red[300]!, width: 1.5),
+    ),
+    focusedErrorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(3),
+      borderSide: BorderSide(color: Colors.red[300]!, width: 1.5),
+    ),
+    filled: true,
+    fillColor: Colors.white,
+    isDense: true,
+    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+    errorStyle: TextStyle(color: Colors.red[400], fontSize: 11),
+  );
+
+  void _showSnack(String msg, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          msg,
+          style: TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+        ),
+        backgroundColor: color,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+      ),
+    );
+  }
+
+  // ─── Register logic ────────────────────────────────────
 
   Future<void> _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
@@ -41,145 +107,82 @@ class _StudentRegisterSheetState extends State<StudentRegisterSheet> {
     setState(() => _isLoading = true);
 
     try {
-      // ── Step 1: Register student ──
-      final registerResponse = await http.post(
+      final regRes = await http.post(
         Uri.parse('https://appv1backend.onrender.com/api/student/register'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'name': _nameController.text.trim(),
-          'email': _emailController.text.trim(),
-          'phone': _phoneController.text.trim(),
-          'password': _passwordController.text,
+          'name': _nameCtrl.text.trim(),
+          'email': _emailCtrl.text.trim(),
+          'phone': _phoneCtrl.text.trim(),
+          'password': _passCtrl.text,
+          'orgId': widget.orgId, // ✅ now included in register body
         }),
       );
-
-      debugPrint('STUDENT REGISTER STATUS: ${registerResponse.statusCode}');
-      debugPrint('STUDENT REGISTER BODY: ${registerResponse.body}');
-
       if (!mounted) return;
 
-      Map<String, dynamic> registerBody = {};
+      Map<String, dynamic> regBody = {};
       try {
-        registerBody =
-            jsonDecode(registerResponse.body) as Map<String, dynamic>;
+        regBody = jsonDecode(regRes.body) as Map<String, dynamic>;
       } catch (_) {
         setState(() => _isLoading = false);
-        _showError('Unexpected server response.');
+        _showSnack('Unexpected server response.', Colors.red[600]!);
         return;
       }
 
-      if (registerResponse.statusCode != 200 &&
-          registerResponse.statusCode != 201) {
+      if (regRes.statusCode != 200 && regRes.statusCode != 201) {
         setState(() => _isLoading = false);
-        _showError(
-          registerBody['message']?.toString() ??
+        _showSnack(
+          regBody['message']?.toString() ??
               'Registration failed. Please try again.',
+          Colors.red[600]!,
         );
         return;
       }
 
-      // ── Extract studentId ──
+      // Extract student data
       final studentData =
-          registerBody['student'] as Map<String, dynamic>? ??
-          registerBody['data'] as Map<String, dynamic>? ??
-          registerBody;
+          regBody['student'] as Map<String, dynamic>? ??
+          regBody['data'] as Map<String, dynamic>? ??
+          regBody;
       final studentId = studentData['studentId']?.toString() ?? '';
-
-      debugPrint('Extracted studentId: $studentId');
-
-      // ── Step 2: Send join request ──
-      if (studentId.isNotEmpty && widget.orgId.isNotEmpty) {
-        try {
-          final joinResponse = await http.post(
-            Uri.parse(
-              'https://appv1backend.onrender.com/api/student/join-request',
-            ),
-            headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({'studentId': studentId, 'orgId': widget.orgId}),
-          );
-          debugPrint('JOIN STATUS: ${joinResponse.statusCode}');
-          debugPrint('JOIN BODY: ${joinResponse.body}');
-        } catch (e) {
-          debugPrint('Join request error (non-fatal): $e');
-          // Non-fatal — student can join a class later from dashboard
-        }
-      }
 
       if (!mounted) return;
       setState(() => _isLoading = false);
 
-      // ── Save basic info to prefs ──
+      // Save to prefs
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('studentId', studentId);
       await prefs.setString(
         'studentName',
-        studentData['name']?.toString() ?? _nameController.text.trim(),
+        studentData['name']?.toString() ?? _nameCtrl.text.trim(),
       );
       await prefs.setString(
         'studentEmail',
-        studentData['email']?.toString() ?? _emailController.text.trim(),
+        studentData['email']?.toString() ?? _emailCtrl.text.trim(),
       );
       await prefs.setString('userRole', 'student');
 
       if (!mounted) return;
-      Navigator.pop(context); // close sheet
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
-              SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  '✅ Account created! Sign in as Student.',
-                  style: TextStyle(fontWeight: FontWeight.w600),
-                ),
-              ),
-            ],
-          ),
-          backgroundColor: Colors.orange[700],
-          duration: Duration(seconds: 4),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      );
-
+      Navigator.pop(context);
+      _showSnack('Account created! Sign in as Student.', Colors.teal[600]!);
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (_) => LoginPage()),
         (route) => false,
       );
     } catch (e) {
-      debugPrint('STUDENT REGISTER ERROR: $e');
       if (!mounted) return;
       setState(() => _isLoading = false);
-      _showError(
+      _showSnack(
         e.toString().contains('SocketException')
             ? 'No internet connection.'
             : 'Something went wrong. Please try again.',
+        Colors.red[600]!,
       );
     }
   }
 
-  void _showError(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(Icons.error_outline, color: Colors.white, size: 18),
-            SizedBox(width: 8),
-            Expanded(child: Text(msg)),
-          ],
-        ),
-        backgroundColor: Colors.red[600],
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
-  }
+  // ─── Build ─────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -188,9 +191,9 @@ class _StudentRegisterSheetState extends State<StudentRegisterSheet> {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.background,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      padding: EdgeInsets.fromLTRB(24, 12, 24, 24 + bottomInset),
+      padding: EdgeInsets.fromLTRB(16, 10, 16, 20 + bottomInset),
       child: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -201,7 +204,7 @@ class _StudentRegisterSheetState extends State<StudentRegisterSheet> {
               // ── Drag handle ──
               Center(
                 child: Container(
-                  width: 40,
+                  width: 36,
                   height: 4,
                   decoration: BoxDecoration(
                     color: Colors.grey[300],
@@ -209,36 +212,21 @@ class _StudentRegisterSheetState extends State<StudentRegisterSheet> {
                   ),
                 ),
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 16),
 
-              // ── Header ──
+              // ── Sheet header ──
               Row(
                 children: [
                   Container(
-                    width: 48,
-                    height: 48,
+                    width: 40,
+                    height: 40,
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [_accent, _accent.withOpacity(0.7)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: [
-                        BoxShadow(
-                          color: _accent.withOpacity(0.3),
-                          blurRadius: 10,
-                          offset: Offset(0, 4),
-                        ),
-                      ],
+                      color: _accent.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(3),
                     ),
-                    child: Icon(
-                      Icons.person_rounded,
-                      color: Colors.white,
-                      size: 24,
-                    ),
+                    child: Icon(Icons.person_rounded, color: _accent, size: 20),
                   ),
-                  SizedBox(width: 14),
+                  SizedBox(width: 10),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -246,17 +234,16 @@ class _StudentRegisterSheetState extends State<StudentRegisterSheet> {
                         Text(
                           'Student Registration',
                           style: TextStyle(
-                            fontSize: 17,
+                            fontSize: 15,
                             fontWeight: FontWeight.bold,
                             color: AppColors.textPrimary,
                           ),
                         ),
-                        SizedBox(height: 2),
                         Text(
                           'Joining ${widget.orgName}',
                           style: TextStyle(
                             color: _accent,
-                            fontSize: 12,
+                            fontSize: 11.5,
                             fontWeight: FontWeight.w600,
                           ),
                           maxLines: 1,
@@ -268,15 +255,15 @@ class _StudentRegisterSheetState extends State<StudentRegisterSheet> {
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
                     child: Container(
-                      padding: EdgeInsets.all(8),
+                      padding: EdgeInsets.all(7),
                       decoration: BoxDecoration(
                         color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(3),
                       ),
                       child: Icon(
                         Icons.close_rounded,
                         color: AppColors.textSecondary,
-                        size: 18,
+                        size: 15,
                       ),
                     ),
                   ),
@@ -284,190 +271,183 @@ class _StudentRegisterSheetState extends State<StudentRegisterSheet> {
               ),
               SizedBox(height: 10),
 
-              // ── Org chip ──
+              // ── Org ID chip ──
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: _accent.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(20),
+                  color: _accent.withOpacity(0.07),
+                  borderRadius: BorderRadius.circular(3),
                   border: Border.all(color: _accent.withOpacity(0.2)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.domain_rounded, color: _accent, size: 13),
-                    SizedBox(width: 6),
+                    Icon(Icons.domain_rounded, color: _accent, size: 12),
+                    SizedBox(width: 5),
                     Text(
                       'Org ID: ${widget.orgId}',
                       style: TextStyle(
                         color: _accent,
-                        fontSize: 11.5,
+                        fontSize: 11,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
               ),
-              SizedBox(height: 24),
+              SizedBox(height: 16),
 
               // ── Full Name ──
-              _sheetLabel('Full Name'),
-              SizedBox(height: 8),
-              _sheetInputBox(
-                child: TextFormField(
-                  controller: _nameController,
-                  cursorColor: _accent,
-                  style: TextStyle(fontSize: 15),
-                  textCapitalization: TextCapitalization.words,
-                  validator: (v) {
-                    if (v == null || v.trim().isEmpty)
-                      return 'Name is required';
-                    if (v.trim().length < 2) return 'Enter a valid name';
-                    return null;
-                  },
-                  decoration: _sheetDeco(
-                    hint: 'e.g. Arjun Sharma',
-                    icon: Icons.person_outline_rounded,
-                    accent: _accent,
-                  ),
+              _label('FULL NAME'),
+              SizedBox(height: 6),
+              TextFormField(
+                controller: _nameCtrl,
+                cursorColor: _accent,
+                style: TextStyle(fontSize: 13, color: AppColors.textPrimary),
+                textCapitalization: TextCapitalization.words,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return 'Name is required';
+                  if (v.trim().length < 2) return 'Enter a valid name';
+                  return null;
+                },
+                decoration: _deco(
+                  hint: 'e.g. Arjun Sharma',
+                  icon: Icons.person_outline_rounded,
                 ),
               ),
-              SizedBox(height: 16),
+              SizedBox(height: 12),
 
               // ── Email ──
-              _sheetLabel('Email Address'),
-              SizedBox(height: 8),
-              _sheetInputBox(
-                child: TextFormField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  cursorColor: _accent,
-                  style: TextStyle(fontSize: 15),
-                  validator: (v) {
-                    if (v == null || v.isEmpty) return 'Email is required';
-                    if (!v.contains('@')) return 'Enter a valid email';
-                    return null;
-                  },
-                  decoration: _sheetDeco(
-                    hint: 'student@email.com',
-                    icon: Icons.email_outlined,
-                    accent: _accent,
-                  ),
+              _label('EMAIL ADDRESS'),
+              SizedBox(height: 6),
+              TextFormField(
+                controller: _emailCtrl,
+                keyboardType: TextInputType.emailAddress,
+                cursorColor: _accent,
+                style: TextStyle(fontSize: 13, color: AppColors.textPrimary),
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Email is required';
+                  if (!v.contains('@')) return 'Enter a valid email';
+                  return null;
+                },
+                decoration: _deco(
+                  hint: 'student@email.com',
+                  icon: Icons.email_outlined,
                 ),
               ),
-              SizedBox(height: 16),
+              SizedBox(height: 12),
 
               // ── Phone ──
-              _sheetLabel('Phone Number'),
-              SizedBox(height: 8),
-              _sheetInputBox(
-                child: TextFormField(
-                  controller: _phoneController,
-                  keyboardType: TextInputType.phone,
-                  cursorColor: _accent,
-                  style: TextStyle(fontSize: 15),
-                  validator: (v) {
-                    if (v == null || v.isEmpty) return 'Phone is required';
-                    if (v.length < 10) return 'Enter a valid phone number';
-                    return null;
-                  },
-                  decoration: _sheetDeco(
-                    hint: '9876543210',
-                    icon: Icons.phone_outlined,
-                    accent: _accent,
-                  ),
+              _label('PHONE NUMBER'),
+              SizedBox(height: 6),
+              TextFormField(
+                controller: _phoneCtrl,
+                keyboardType: TextInputType.phone,
+                cursorColor: _accent,
+                style: TextStyle(fontSize: 13, color: AppColors.textPrimary),
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Phone is required';
+                  if (v.length < 10) return 'Enter a valid phone number';
+                  return null;
+                },
+                decoration: _deco(
+                  hint: '9876543210',
+                  icon: Icons.phone_outlined,
                 ),
               ),
-              SizedBox(height: 16),
+              SizedBox(height: 12),
 
               // ── Password ──
-              _sheetLabel('Create Password'),
-              SizedBox(height: 8),
-              _sheetInputBox(
-                child: TextFormField(
-                  controller: _passwordController,
-                  obscureText: _obscurePassword,
-                  cursorColor: _accent,
-                  style: TextStyle(fontSize: 15),
-                  validator: (v) {
-                    if (v == null || v.isEmpty) return 'Password is required';
-                    if (v.length < 6) return 'Minimum 6 characters';
-                    return null;
-                  },
-                  decoration:
-                      _sheetDeco(
-                        hint: '••••••••',
-                        icon: Icons.lock_outline_rounded,
-                        accent: _accent,
-                      ).copyWith(
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscurePassword
-                                ? Icons.visibility_off_outlined
-                                : Icons.visibility_outlined,
-                            color: AppColors.textSecondary,
-                            size: 20,
-                          ),
-                          onPressed: () => setState(
-                            () => _obscurePassword = !_obscurePassword,
-                          ),
-                        ),
-                      ),
+              _label('CREATE PASSWORD'),
+              SizedBox(height: 6),
+              TextFormField(
+                controller: _passCtrl,
+                obscureText: _obscure,
+                cursorColor: _accent,
+                style: TextStyle(fontSize: 13, color: AppColors.textPrimary),
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Password is required';
+                  if (v.length < 6) return 'Minimum 6 characters';
+                  return null;
+                },
+                decoration: _deco(
+                  hint: '••••••••',
+                  icon: Icons.lock_outline_rounded,
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscure
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                      color: AppColors.textSecondary,
+                      size: 17,
+                    ),
+                    onPressed: () => setState(() => _obscure = !_obscure),
+                  ),
                 ),
               ),
-              SizedBox(height: 28),
+              SizedBox(height: 20),
 
-              // ── Register Button ──
-              SizedBox(
-                width: double.infinity,
-                height: 54,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _handleRegister,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _accent,
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor: _accent.withOpacity(0.4),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    elevation: 0,
+              // ── Submit button ──
+              Theme(
+                data: ThemeData(
+                  colorScheme: ColorScheme.light(
+                    primary: _accent,
+                    onPrimary: Colors.white,
                   ),
-                  child: AnimatedSwitcher(
-                    duration: Duration(milliseconds: 200),
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 46,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _handleRegister,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _accent,
+                      foregroundColor: Colors.white,
+                      disabledBackgroundColor: _accent.withOpacity(0.45),
+                      surfaceTintColor: Colors.transparent,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    ),
                     child: _isLoading
                         ? Row(
-                            key: ValueKey('loading'),
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               SizedBox(
-                                width: 20,
-                                height: 20,
+                                width: 16,
+                                height: 16,
                                 child: CircularProgressIndicator(
                                   color: Colors.white,
-                                  strokeWidth: 2.5,
+                                  strokeWidth: 2,
                                 ),
                               ),
-                              SizedBox(width: 12),
+                              SizedBox(width: 8),
                               Text(
                                 'Creating Account...',
                                 style: TextStyle(
-                                  fontSize: 15,
                                   fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                  color: Colors.white,
                                 ),
                               ),
                             ],
                           )
                         : Row(
-                            key: ValueKey('idle'),
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.person_add_rounded, size: 20),
-                              SizedBox(width: 8),
+                              Icon(
+                                Icons.person_add_rounded,
+                                size: 15,
+                                color: Colors.white,
+                              ),
+                              SizedBox(width: 6),
                               Text(
                                 'Create Student Account',
                                 style: TextStyle(
-                                  fontSize: 15,
                                   fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                  color: Colors.white,
                                 ),
                               ),
                             ],
@@ -475,7 +455,7 @@ class _StudentRegisterSheetState extends State<StudentRegisterSheet> {
                   ),
                 ),
               ),
-              SizedBox(height: 12),
+              SizedBox(height: 10),
 
               // ── Note ──
               Center(
@@ -484,7 +464,7 @@ class _StudentRegisterSheetState extends State<StudentRegisterSheet> {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: AppColors.textSecondary,
-                    fontSize: 11.5,
+                    fontSize: 11,
                     height: 1.5,
                   ),
                 ),
@@ -495,69 +475,4 @@ class _StudentRegisterSheetState extends State<StudentRegisterSheet> {
       ),
     );
   }
-
-  Widget _sheetLabel(String text) => Text(
-    text,
-    style: TextStyle(
-      color: AppColors.textPrimary,
-      fontWeight: FontWeight.w600,
-      fontSize: 13.5,
-    ),
-  );
-
-  Widget _sheetInputBox({required Widget child}) => Container(
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(14),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.05),
-          blurRadius: 10,
-          offset: Offset(0, 2),
-        ),
-      ],
-      border: Border.all(color: Colors.grey.withOpacity(0.12)),
-    ),
-    child: child,
-  );
-
-  InputDecoration _sheetDeco({
-    required String hint,
-    required IconData icon,
-    required Color accent,
-  }) => InputDecoration(
-    hintText: hint,
-    hintStyle: TextStyle(
-      color: AppColors.textSecondary.withOpacity(0.5),
-      fontSize: 14,
-    ),
-    prefixIcon: Padding(
-      padding: EdgeInsets.symmetric(horizontal: 14),
-      child: Icon(icon, color: accent, size: 20),
-    ),
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: BorderSide.none,
-    ),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: BorderSide.none,
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: BorderSide(color: accent.withOpacity(0.4), width: 1.5),
-    ),
-    errorBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: BorderSide(color: Colors.red[300]!, width: 1.5),
-    ),
-    focusedErrorBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: BorderSide(color: Colors.red[300]!, width: 1.5),
-    ),
-    filled: true,
-    fillColor: Colors.white,
-    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-    errorStyle: TextStyle(color: Colors.red[400], fontSize: 12),
-  );
 }

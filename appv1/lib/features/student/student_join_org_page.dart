@@ -1,8 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
+
+const Color _accent = Colors.teal;
 
 class StudentJoinOrgPage extends StatefulWidget {
   @override
@@ -10,20 +13,17 @@ class StudentJoinOrgPage extends StatefulWidget {
 }
 
 class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
-  static const Color _accent = Colors.orange;
+  int _step = 1;
 
-  // ── Step control ──
-  int _step = 0; // 0=orgs 1=classes 2=confirm 3=done
-
-  // ── Data ──
-  List<Map<String, dynamic>> _orgs = [];
   List<Map<String, dynamic>> _classes = [];
-  Map<String, dynamic>? _selectedOrg;
   Map<String, dynamic>? _selectedClass;
 
   bool _isLoading = false;
   bool _isSubmitting = false;
+
   String _studentId = '';
+  String _orgId = '';
+  String _orgName = '';
 
   @override
   void initState() {
@@ -33,57 +33,76 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
 
   Future<void> _init() async {
     final prefs = await SharedPreferences.getInstance();
+
     _studentId = prefs.getString('studentId') ?? '';
-    await _fetchOrgs();
+
+    // ── Read orgId from tempOrg JSON or flat key ──
+    final tempOrgRaw = prefs.getString('tempOrg');
+    if (tempOrgRaw != null && tempOrgRaw.isNotEmpty) {
+      try {
+        final tempOrg = jsonDecode(tempOrgRaw) as Map<String, dynamic>;
+        _orgId = tempOrg['orgId']?.toString() ?? '';
+      } catch (_) {}
+    }
+    if (_orgId.isEmpty) _orgId = prefs.getString('tempOrgId') ?? '';
+
+    // ── Check if orgName already cached ──
+    _orgName = prefs.getString('tempOrgName') ?? '';
+
+    if (mounted) setState(() {});
+
+    // ── Fetch org name from API if not cached ──
+    if (_orgName.isEmpty && _orgId.isNotEmpty) {
+      await _fetchOrgName(prefs);
+    }
+
+    await _fetchClasses();
   }
 
-  Future<void> _fetchOrgs() async {
-    setState(() => _isLoading = true);
+  // ── NEW: fetch org details to get orgName ──────────────
+  Future<void> _fetchOrgName(SharedPreferences prefs) async {
     try {
-      final response = await http.get(
-        Uri.parse('https://appv1backend.onrender.com/api/student/orgs'),
+      final res = await http.get(
+        Uri.parse('https://appv1backend.onrender.com/api/org/$_orgId'),
         headers: {'Content-Type': 'application/json'},
       );
       if (!mounted) return;
-      if (response.statusCode == 200) {
-        final body = jsonDecode(response.body);
-        List<dynamic> raw = [];
-        if (body is List)
-          raw = body;
-        else if (body['orgs'] != null)
-          raw = body['orgs'] as List;
-        else if (body['data'] != null)
-          raw = body['data'] as List;
-        else if (body['organizations'] != null)
-          raw = body['organizations'] as List;
-
-        setState(() {
-          _orgs = raw.map((e) => e as Map<String, dynamic>).toList();
-          _isLoading = false;
-        });
-      } else {
-        setState(() => _isLoading = false);
-        _snack('Failed to load organizations.', Colors.red[600]!);
+      if (res.statusCode == 200) {
+        final body = jsonDecode(res.body) as Map<String, dynamic>;
+        final org = body['org'] as Map<String, dynamic>?;
+        final name = org?['orgName']?.toString() ?? '';
+        if (name.isNotEmpty) {
+          _orgName = name;
+          // ── Cache it so next time we don't need to fetch ──
+          await prefs.setString('tempOrgName', name);
+          if (mounted) setState(() {});
+        }
       }
     } catch (_) {
-      if (!mounted) return;
-      setState(() => _isLoading = false);
-      _snack('No internet connection.', Colors.red[600]!);
+      // silently fail — header will show 'Loading...'
     }
   }
 
-  Future<void> _fetchClasses(String orgId) async {
+  // ─── Helpers ───────────────────────────────────────────
+
+  String _className(Map<String, dynamic>? cls) =>
+      cls?['className']?.toString() ?? 'Class';
+
+  // ─── API ───────────────────────────────────────────────
+
+  Future<void> _fetchClasses() async {
+    if (_orgId.isEmpty) return;
     setState(() => _isLoading = true);
     try {
-      final response = await http.get(
+      final res = await http.get(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/student/orgs/$orgId/classes',
+          'https://appv1backend.onrender.com/api/student/orgs/$_orgId/classes',
         ),
         headers: {'Content-Type': 'application/json'},
       );
       if (!mounted) return;
-      if (response.statusCode == 200) {
-        final body = jsonDecode(response.body);
+      if (res.statusCode == 200) {
+        final body = jsonDecode(res.body);
         List<dynamic> raw = [];
         if (body is List)
           raw = body;
@@ -91,11 +110,9 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
           raw = body['classes'] as List;
         else if (body['data'] != null)
           raw = body['data'] as List;
-
         setState(() {
           _classes = raw.map((e) => e as Map<String, dynamic>).toList();
           _isLoading = false;
-          _step = 1;
         });
       } else {
         setState(() => _isLoading = false);
@@ -116,18 +133,17 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
           _selectedClass!['classId']?.toString() ??
           _selectedClass!['_id']?.toString() ??
           '';
-      final response = await http.post(
+      final res = await http.post(
         Uri.parse('https://appv1backend.onrender.com/api/student/join-request'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'studentId': _studentId, 'classId': classId}),
       );
       if (!mounted) return;
       setState(() => _isSubmitting = false);
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
+      if (res.statusCode == 200 || res.statusCode == 201) {
         setState(() => _step = 3);
       } else {
-        final body = jsonDecode(response.body) as Map<String, dynamic>;
+        final body = jsonDecode(res.body) as Map<String, dynamic>;
         _snack(
           body['message']?.toString() ?? 'Failed to send request.',
           Colors.red[600]!,
@@ -149,256 +165,277 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
         ),
         backgroundColor: color,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
       ),
     );
   }
+
+  // ─── Build ─────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: Column(
-        children: [
-          // ── Header ──
-          Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [_accent, _accent.withOpacity(0.7)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+      body: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.light,
+          systemNavigationBarColor: AppColors.background,
+          systemNavigationBarIconBrightness: Brightness.dark,
+        ),
+        child: Column(
+          children: [
+            // ── Gradient header ──
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [_accent, _accent.withOpacity(0.75)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
               ),
-              borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
-            ),
-            child: SafeArea(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(20, 14, 20, 22),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // ── Back (only on step 1+) ──
-                    if (_step > 0 && _step < 3)
-                      GestureDetector(
-                        onTap: () => setState(() {
-                          _step--;
-                          if (_step == 0) _selectedOrg = null;
-                          if (_step == 1) _selectedClass = null;
-                        }),
-                        child: Container(
-                          padding: EdgeInsets.all(7),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(9),
-                          ),
-                          child: Icon(
-                            Icons.arrow_back_ios_new,
-                            color: Colors.white,
-                            size: 15,
-                          ),
-                        ),
-                      ),
-                    if (_step > 0 && _step < 3) SizedBox(height: 12),
-
-                    // ── Step indicator ──
-                    if (_step < 3)
+              child: SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(14, 12, 16, 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Row(
                         children: [
-                          _stepDot(0),
-                          _stepLine(),
-                          _stepDot(1),
-                          _stepLine(),
-                          _stepDot(2),
+                          if (_step == 2) ...[
+                            GestureDetector(
+                              onTap: () => setState(() {
+                                _step = 1;
+                                _selectedClass = null;
+                              }),
+                              child: Container(
+                                width: 34,
+                                height: 34,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.15),
+                                  borderRadius: BorderRadius.circular(3),
+                                ),
+                                child: Icon(
+                                  Icons.arrow_back_ios_new_rounded,
+                                  color: Colors.white,
+                                  size: 15,
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 10),
+                          ],
+                          Container(
+                            padding: EdgeInsets.all(7),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(3),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.3),
+                              ),
+                            ),
+                            child: Icon(
+                              Icons.group_add_rounded,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Join a Class',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                // ✅ Shows API org name or "Loading..."
+                                Text(
+                                  _orgName.isNotEmpty ? _orgName : 'Loading...',
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.75),
+                                    fontSize: 10,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
-                    if (_step < 3) SizedBox(height: 12),
+                      SizedBox(height: 14),
 
-                    Text(
-                      _step == 0
-                          ? 'Select Organization'
-                          : _step == 1
-                          ? 'Select Class'
-                          : _step == 2
-                          ? 'Confirm Request'
-                          : 'Request Sent!',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                      if (_step < 3) ...[
+                        Row(children: [_stepDot(1), _stepLine(), _stepDot(2)]),
+                        SizedBox(height: 12),
+                      ],
+
+                      Text(
+                        _step == 1
+                            ? 'Select Class 📚'
+                            : _step == 2
+                            ? 'Confirm Request ✅'
+                            : 'Request Sent! 🎉',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
+                      SizedBox(height: 3),
+                      Text(
+                        _step == 1
+                            ? 'Choose your classroom in ${_orgName.isNotEmpty ? _orgName : '...'}'
+                            : _step == 2
+                            ? 'Review and send your join request'
+                            : 'Waiting for teacher approval',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.8),
+                          fontSize: 12,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      SizedBox(height: 14),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // ── Body ──
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppColors.background,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: _isLoading
+                    ? Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            CircularProgressIndicator(
+                              color: _accent,
+                              strokeWidth: 2.5,
+                            ),
+                            SizedBox(height: 14),
+                            Text(
+                              'Loading classes...',
+                              style: TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : _step == 1
+                    ? _buildClassList()
+                    : _step == 2
+                    ? _buildConfirm()
+                    : _buildDone(),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─── Step 1: Class list ────────────────────────────────
+
+  Widget _buildClassList() {
+    if (_classes.isEmpty) {
+      return SingleChildScrollView(
+        padding: EdgeInsets.fromLTRB(14, 20, 14, 40),
+        child: Column(
+          children: [
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(vertical: 28, horizontal: 20),
+              decoration: BoxDecoration(
+                color: _accent.withOpacity(0.04),
+                borderRadius: BorderRadius.circular(3),
+                border: Border.all(color: _accent.withOpacity(0.15)),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    width: 62,
+                    height: 62,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: _accent.withOpacity(0.1),
                     ),
-                    SizedBox(height: 3),
+                    child: Icon(Icons.class_outlined, color: _accent, size: 28),
+                  ),
+                  SizedBox(height: 14),
+                  Text(
+                    'No Classes Available',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  SizedBox(height: 6),
+                  Text(
+                    'This organization has no classes yet.\nContact your teacher or admin.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 14),
+            GestureDetector(
+              onTap: _fetchClasses,
+              child: Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(3),
+                  border: Border.all(color: Colors.grey[200]!),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.refresh_rounded, color: _accent, size: 16),
+                    SizedBox(width: 6),
                     Text(
-                      _step == 0
-                          ? 'Choose your school / institution'
-                          : _step == 1
-                          ? 'Choose your classroom in ${_selectedOrg?['name'] ?? ''}'
-                          : _step == 2
-                          ? 'Review and send your join request'
-                          : 'Waiting for teacher approval',
+                      'Refresh',
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.8),
-                        fontSize: 11,
+                        color: _accent,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-          ),
-
-          // ── Body ──
-          Expanded(
-            child: _isLoading
-                ? Center(
-                    child: CircularProgressIndicator(
-                      color: _accent,
-                      strokeWidth: 2.5,
-                    ),
-                  )
-                : _step == 0
-                ? _buildOrgList()
-                : _step == 1
-                ? _buildClassList()
-                : _step == 2
-                ? _buildConfirm()
-                : _buildDone(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── Step 0: Org list ──
-  Widget _buildOrgList() {
-    if (_orgs.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.business_outlined, size: 48, color: Colors.grey[400]),
-            SizedBox(height: 12),
-            Text(
-              'No organizations found',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            SizedBox(height: 16),
-            _outlineBtn('Refresh', _fetchOrgs),
           ],
         ),
       );
     }
-    return ListView.separated(
-      padding: EdgeInsets.fromLTRB(16, 16, 16, 40),
-      itemCount: _orgs.length,
-      separatorBuilder: (_, __) => SizedBox(height: 10),
-      itemBuilder: (_, i) {
-        final org = _orgs[i];
-        final orgId = org['orgId']?.toString() ?? org['_id']?.toString() ?? '';
-        return _orgCard(org, () {
-          setState(() => _selectedOrg = org);
-          _fetchClasses(orgId);
-        });
-      },
-    );
-  }
 
-  Widget _orgCard(Map<String, dynamic> org, VoidCallback onTap) {
-    final name = org['name']?.toString() ?? 'Organization';
-    final type = org['orgType']?.toString() ?? '';
-    final city = org['city']?.toString() ?? '';
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: _accent.withOpacity(0.07),
-              blurRadius: 8,
-              offset: Offset(0, 2),
-            ),
-          ],
-          border: Border.all(color: _accent.withOpacity(0.12)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: _accent.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(Icons.business_rounded, color: _accent, size: 22),
-            ),
-            SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  if (type.isNotEmpty || city.isNotEmpty)
-                    Text(
-                      [type, city].where((s) => s.isNotEmpty).join(' • '),
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 11,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            Icon(Icons.arrow_forward_ios_rounded, size: 13, color: _accent),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ── Step 1: Class list ──
-  Widget _buildClassList() {
-    if (_classes.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.class_outlined, size: 48, color: Colors.grey[400]),
-            SizedBox(height: 12),
-            Text(
-              'No classes available',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            SizedBox(height: 6),
-            Text(
-              'This organization has no classes yet.',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
-            ),
-          ],
-        ),
-      );
-    }
     return ListView.separated(
-      padding: EdgeInsets.fromLTRB(16, 16, 16, 40),
+      padding: EdgeInsets.fromLTRB(14, 14, 14, 40),
       itemCount: _classes.length,
-      separatorBuilder: (_, __) => SizedBox(height: 10),
+      separatorBuilder: (_, __) => SizedBox(height: 8),
       itemBuilder: (_, i) {
         final cls = _classes[i];
         return _classCard(cls, () {
@@ -412,188 +449,238 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
   }
 
   Widget _classCard(Map<String, dynamic> cls, VoidCallback onTap) {
-    final name = cls['className']?.toString() ?? 'Class';
+    final name = _className(cls);
     final teacher = cls['teacherName']?.toString() ?? '';
-    final studentCount =
+    final count =
         cls['studentCount']?.toString() ??
         (cls['students'] as List?)?.length.toString() ??
         '0';
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: _accent.withOpacity(0.07),
-              blurRadius: 8,
-              offset: Offset(0, 2),
-            ),
-          ],
-          border: Border.all(color: _accent.withOpacity(0.12)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: _accent.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(Icons.class_rounded, color: _accent, size: 22),
-            ),
-            SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                      color: AppColors.textPrimary,
-                    ),
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(3),
+        border: Border.all(color: _accent.withOpacity(0.15)),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(3),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(3),
+          onTap: onTap,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: _accent.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(3),
+                    border: Border.all(color: _accent.withOpacity(0.2)),
                   ),
-                  Row(
+                  child: Icon(Icons.class_rounded, color: _accent, size: 20),
+                ),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (teacher.isNotEmpty) ...[
-                        Icon(
-                          Icons.person_outline,
-                          size: 11,
-                          color: AppColors.textSecondary,
-                        ),
-                        SizedBox(width: 3),
-                        Text(
-                          teacher,
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 11,
-                          ),
-                        ),
-                        SizedBox(width: 8),
-                      ],
-                      Icon(
-                        Icons.people_outline,
-                        size: 11,
-                        color: AppColors.textSecondary,
-                      ),
-                      SizedBox(width: 3),
                       Text(
-                        '$studentCount students',
+                        name,
                         style: TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                          color: AppColors.textPrimary,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Row(
+                        children: [
+                          if (teacher.isNotEmpty) ...[
+                            Icon(
+                              Icons.person_outline,
+                              size: 11,
+                              color: AppColors.textSecondary,
+                            ),
+                            SizedBox(width: 2),
+                            Text(
+                              teacher,
+                              style: TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 11,
+                              ),
+                            ),
+                            SizedBox(width: 8),
+                          ],
+                          Icon(
+                            Icons.people_outline,
+                            size: 11,
+                            color: AppColors.textSecondary,
+                          ),
+                          SizedBox(width: 2),
+                          Text(
+                            '$count students',
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: _accent.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(3),
+                    border: Border.all(color: _accent.withOpacity(0.25)),
+                  ),
+                  child: Text(
+                    'Join',
+                    style: TextStyle(
+                      color: _accent,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11.5,
+                    ),
+                  ),
+                ),
+              ],
             ),
-            Icon(Icons.arrow_forward_ios_rounded, size: 13, color: _accent),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  // ── Step 2: Confirm ──
+  // ─── Step 2: Confirm ───────────────────────────────────
+
   Widget _buildConfirm() {
-    final orgName = _selectedOrg?['name']?.toString() ?? 'Organization';
-    final className = _selectedClass?['className']?.toString() ?? 'Class';
-    return Padding(
-      padding: EdgeInsets.fromLTRB(20, 28, 20, 20),
+    final className = _className(_selectedClass);
+
+    return SingleChildScrollView(
+      padding: EdgeInsets.fromLTRB(14, 16, 14, 40),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Summary card ──
           Container(
-            padding: EdgeInsets.all(16),
+            width: double.infinity,
+            padding: EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: _accent.withOpacity(0.08),
-                  blurRadius: 10,
-                  offset: Offset(0, 3),
-                ),
-              ],
+              borderRadius: BorderRadius.circular(3),
               border: Border.all(color: _accent.withOpacity(0.15)),
             ),
             child: Column(
               children: [
-                _confirmRow(Icons.business_rounded, 'Organization', orgName),
-                Divider(height: 20, color: Colors.grey[200]),
-                _confirmRow(Icons.class_rounded, 'Classroom', className),
+                _confirmRow(
+                  Icons.business_rounded,
+                  'ORGANIZATION',
+                  // ✅ real API org name here
+                  _orgName.isNotEmpty ? _orgName : 'Loading...',
+                ),
+                Divider(height: 16, color: Colors.grey[100]),
+                _confirmRow(Icons.class_rounded, 'CLASSROOM', className),
               ],
             ),
           ),
-          SizedBox(height: 20),
+          SizedBox(height: 12),
 
-          // ── Info banner ──
           Container(
             padding: EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: _accent.withOpacity(0.06),
-              borderRadius: BorderRadius.circular(12),
+              color: _accent.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(3),
               border: Border.all(color: _accent.withOpacity(0.2)),
             ),
             child: Row(
               children: [
-                Icon(Icons.info_outline_rounded, color: _accent, size: 16),
+                Icon(Icons.info_outline_rounded, color: _accent, size: 15),
                 SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     'Your request will be reviewed by the teacher. You\'ll be notified once approved.',
-                    style: TextStyle(color: _accent, fontSize: 11, height: 1.4),
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 11,
+                      height: 1.4,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          SizedBox(height: 28),
+          SizedBox(height: 20),
 
-          SizedBox(
-            width: double.infinity,
-            height: 44,
-            child: ElevatedButton(
-              onPressed: _isSubmitting ? null : _sendJoinRequest,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _accent,
-                foregroundColor: Colors.white,
-                disabledBackgroundColor: _accent.withOpacity(0.5),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 0,
+          Theme(
+            data: ThemeData(
+              colorScheme: ColorScheme.light(
+                primary: _accent,
+                onPrimary: Colors.white,
               ),
-              child: _isSubmitting
-                  ? SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.send_rounded, size: 15),
-                        SizedBox(width: 8),
-                        Text(
-                          'Send Join Request',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
+            ),
+            child: SizedBox(
+              width: double.infinity,
+              height: 46,
+              child: ElevatedButton(
+                onPressed: _isSubmitting ? null : _sendJoinRequest,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _accent,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: _accent.withOpacity(0.45),
+                  surfaceTintColor: Colors.transparent,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+                child: _isSubmitting
+                    ? Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
+                          SizedBox(width: 8),
+                          Text(
+                            'Sending...',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.send_rounded,
+                            size: 15,
+                            color: Colors.white,
+                          ),
+                          SizedBox(width: 6),
+                          Text(
+                            'Send Join Request',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
             ),
           ),
         ],
@@ -608,7 +695,7 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
         height: 36,
         decoration: BoxDecoration(
           color: _accent.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(9),
+          borderRadius: BorderRadius.circular(3),
         ),
         child: Icon(icon, color: _accent, size: 18),
       ),
@@ -619,7 +706,12 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
           children: [
             Text(
               label,
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 10),
+              style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.5,
+              ),
             ),
             Text(
               value,
@@ -635,16 +727,17 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
     ],
   );
 
-  // ── Step 3: Done ──
+  // ─── Step 3: Done ──────────────────────────────────────
+
   Widget _buildDone() => Center(
     child: Padding(
-      padding: EdgeInsets.all(28),
+      padding: EdgeInsets.all(24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 80,
-            height: 80,
+            width: 70,
+            height: 70,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: Colors.green.withOpacity(0.1),
@@ -652,10 +745,10 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
             child: Icon(
               Icons.check_circle_rounded,
               color: Colors.green[600],
-              size: 42,
+              size: 38,
             ),
           ),
-          SizedBox(height: 20),
+          SizedBox(height: 16),
           Text(
             'Request Sent!',
             style: TextStyle(
@@ -664,7 +757,7 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
               color: AppColors.textPrimary,
             ),
           ),
-          SizedBox(height: 8),
+          SizedBox(height: 6),
           Text(
             'Your join request has been sent to the teacher.\nYou\'ll be notified once it\'s approved.',
             textAlign: TextAlign.center,
@@ -674,17 +767,18 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
               height: 1.5,
             ),
           ),
-          SizedBox(height: 28),
+          SizedBox(height: 20),
           Container(
-            padding: EdgeInsets.all(14),
+            width: double.infinity,
+            padding: EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: _accent.withOpacity(0.06),
-              borderRadius: BorderRadius.circular(12),
+              color: _accent.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(3),
               border: Border.all(color: _accent.withOpacity(0.2)),
             ),
             child: Row(
               children: [
-                Icon(Icons.pending_actions_rounded, color: _accent, size: 20),
+                Icon(Icons.pending_actions_rounded, color: _accent, size: 16),
                 SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -704,19 +798,20 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
     ),
   );
 
-  // ── Helpers ──
+  // ─── Step indicator ────────────────────────────────────
+
   Widget _stepDot(int step) => Container(
-    width: 24,
-    height: 24,
+    width: 26,
+    height: 26,
     decoration: BoxDecoration(
       shape: BoxShape.circle,
-      color: _step >= step ? Colors.white : Colors.white.withOpacity(0.3),
+      color: _step >= step ? Colors.white : Colors.white.withOpacity(0.25),
     ),
     child: Center(
       child: _step > step
           ? Icon(Icons.check_rounded, color: _accent, size: 14)
           : Text(
-              '${step + 1}',
+              step == 1 ? '1' : '2',
               style: TextStyle(
                 color: _step == step ? _accent : Colors.white,
                 fontWeight: FontWeight.bold,
@@ -728,19 +823,5 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
 
   Widget _stepLine() => Expanded(
     child: Container(height: 2, color: Colors.white.withOpacity(0.3)),
-  );
-
-  Widget _outlineBtn(String label, VoidCallback onTap) => OutlinedButton(
-    onPressed: onTap,
-    style: OutlinedButton.styleFrom(
-      foregroundColor: _accent,
-      side: BorderSide(color: _accent),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-    ),
-    child: Text(
-      label,
-      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-    ),
   );
 }
