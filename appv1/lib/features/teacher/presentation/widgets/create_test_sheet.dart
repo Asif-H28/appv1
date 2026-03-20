@@ -30,15 +30,13 @@ class CreateTestSheet extends StatefulWidget {
 class _CreateTestSheetState extends State<CreateTestSheet> {
   static const Color _accent = Colors.teal;
   final _formKey = GlobalKey<FormState>();
-  final _testNameCtrl = TextEditingController(); // ← renamed
+  final _testNameCtrl = TextEditingController();
   bool _isLoading = false;
-
   final List<Map<String, TextEditingController>> _subjectCtrls = [];
 
   @override
   void initState() {
     super.initState();
-    // ── Auto-fill subjects from classroom ──
     if (widget.classSubjects.isNotEmpty) {
       for (final sub in widget.classSubjects) {
         final name =
@@ -50,7 +48,7 @@ class _CreateTestSheetState extends State<CreateTestSheet> {
         });
       }
     } else {
-      _addSubjectRow(); // fallback: one blank row
+      _addSubjectRow();
     }
   }
 
@@ -87,13 +85,15 @@ class _CreateTestSheetState extends State<CreateTestSheet> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
 
-    final subjects = _subjectCtrls.map((row) {
-      return {
-        'subjectName': row['name']!.text.trim(),
-        'maximumScore': int.tryParse(row['max']!.text.trim()) ?? 100,
-        'minimumScore': int.tryParse(row['min']!.text.trim()) ?? 35,
-      };
-    }).toList();
+    final subjects = _subjectCtrls
+        .map(
+          (row) => {
+            'subjectName': row['name']!.text.trim(),
+            'maximumScore': int.tryParse(row['max']!.text.trim()) ?? 100,
+            'minimumScore': int.tryParse(row['min']!.text.trim()) ?? 35,
+          },
+        )
+        .toList();
 
     final prefs = await SharedPreferences.getInstance();
     final teacherId = widget.teacherId.isNotEmpty
@@ -115,17 +115,11 @@ class _CreateTestSheetState extends State<CreateTestSheet> {
           'classId': widget.classId,
           'teacherName': teacherName,
           'teacherId': teacherId,
-          'testModule': _testNameCtrl.text
-              .trim(), // field name stays testModule for API
+          'testModule': _testNameCtrl.text.trim(),
           'subjects': subjects,
         }),
       );
-
-      debugPrint('CREATE TEST STATUS: ${response.statusCode}');
-      debugPrint('CREATE TEST BODY: ${response.body}');
-
       if (!mounted) return;
-
       if (response.statusCode == 200 || response.statusCode == 201) {
         final body = jsonDecode(response.body) as Map<String, dynamic>;
         final test =
@@ -143,7 +137,7 @@ class _CreateTestSheetState extends State<CreateTestSheet> {
           Colors.red[600]!,
         );
       }
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
       setState(() => _isLoading = false);
       _snack('No internet connection.', Colors.red[600]!);
@@ -167,7 +161,7 @@ class _CreateTestSheetState extends State<CreateTestSheet> {
         ),
         backgroundColor: color,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
       ),
     );
   }
@@ -177,10 +171,10 @@ class _CreateTestSheetState extends State<CreateTestSheet> {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.background,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
       ),
-      padding: EdgeInsets.fromLTRB(20, 12, 20, 24 + bottomInset),
+      padding: EdgeInsets.fromLTRB(16, 12, 16, 24 + bottomInset),
       child: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -188,40 +182,31 @@ class _CreateTestSheetState extends State<CreateTestSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Drag handle
+              // ── Handle ──
               Center(
                 child: Container(
-                  width: 40,
-                  height: 4,
+                  width: 36,
+                  height: 3,
                   decoration: BoxDecoration(
                     color: Colors.grey[300],
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
               ),
-              SizedBox(height: 18),
+              SizedBox(height: 16),
 
-              // Header
+              // ── Header ──
               Row(
                 children: [
                   Container(
-                    width: 44,
-                    height: 44,
+                    padding: EdgeInsets.all(7),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [_accent, _accent.withOpacity(0.7)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(13),
+                      color: _accent.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(3),
                     ),
-                    child: Icon(
-                      Icons.quiz_rounded,
-                      color: Colors.white,
-                      size: 22,
-                    ),
+                    child: Icon(Icons.quiz_rounded, color: _accent, size: 16),
                   ),
-                  SizedBox(width: 12),
+                  SizedBox(width: 10),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -230,7 +215,7 @@ class _CreateTestSheetState extends State<CreateTestSheet> {
                           'Create Test',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                            fontSize: 14,
                             color: AppColors.textPrimary,
                           ),
                         ),
@@ -238,7 +223,7 @@ class _CreateTestSheetState extends State<CreateTestSheet> {
                           widget.className,
                           style: TextStyle(
                             color: _accent,
-                            fontSize: 12,
+                            fontSize: 11,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -248,66 +233,56 @@ class _CreateTestSheetState extends State<CreateTestSheet> {
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
                     child: Container(
-                      padding: EdgeInsets.all(7),
+                      padding: EdgeInsets.all(5),
                       decoration: BoxDecoration(
                         color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(9),
+                        borderRadius: BorderRadius.circular(3),
                       ),
                       child: Icon(
                         Icons.close_rounded,
-                        color: AppColors.textSecondary,
-                        size: 17,
+                        color: Colors.grey[500],
+                        size: 14,
                       ),
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 18),
 
               // ── Test Name ──
-              _label('Test Name'), // ← renamed label
-              SizedBox(height: 6),
-              _inputBox(
-                child: TextFormField(
-                  controller: _testNameCtrl,
-                  cursorColor: _accent,
-                  style: TextStyle(fontSize: 14),
-                  validator: (v) => v == null || v.trim().isEmpty
-                      ? 'Test name is required'
-                      : null,
-                  decoration: _deco(
-                    hint: 'e.g. Unit Test 1',
-                    icon: Icons.bookmark_outline_rounded,
-                  ),
-                ),
+              _label('Test Name *'),
+              SizedBox(height: 5),
+              _inputField(
+                controller: _testNameCtrl,
+                hint: 'e.g. Unit Test 1',
+                icon: Icons.bookmark_outline_rounded,
+                validator: (v) => v == null || v.trim().isEmpty
+                    ? 'Test name is required'
+                    : null,
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 16),
 
-              // ── Subjects ──
+              // ── Subjects header ──
               Row(
                 children: [
-                  Text(
-                    'Subjects',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13.5,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
+                  _label('Subjects'),
                   if (widget.classSubjects.isNotEmpty) ...[
                     SizedBox(width: 6),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                      padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: Colors.green.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(3),
+                        border: Border.all(
+                          color: Colors.green.withOpacity(0.25),
+                        ),
                       ),
                       child: Text(
                         'Auto-filled',
                         style: TextStyle(
                           color: Colors.green[700],
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
@@ -316,25 +291,23 @@ class _CreateTestSheetState extends State<CreateTestSheet> {
                   GestureDetector(
                     onTap: _addSubjectRow,
                     child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
-                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 9, vertical: 5),
                       decoration: BoxDecoration(
-                        color: _accent.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
+                        color: _accent.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(3),
+                        border: Border.all(color: _accent.withOpacity(0.2)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.add_rounded, color: _accent, size: 14),
-                          SizedBox(width: 4),
+                          Icon(Icons.add_rounded, color: _accent, size: 13),
+                          SizedBox(width: 3),
                           Text(
                             'Add Subject',
                             style: TextStyle(
                               color: _accent,
                               fontSize: 11,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
@@ -343,62 +316,77 @@ class _CreateTestSheetState extends State<CreateTestSheet> {
                   ),
                 ],
               ),
-              SizedBox(height: 10),
+              SizedBox(height: 8),
 
               ...List.generate(_subjectCtrls.length, (i) => _subjectRow(i)),
-              SizedBox(height: 24),
+              SizedBox(height: 20),
 
               // ── Submit ──
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _accent,
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor: _accent.withOpacity(0.4),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    elevation: 0,
+              Theme(
+                data: ThemeData(
+                  colorScheme: ColorScheme.light(
+                    primary: _accent,
+                    onPrimary: Colors.white,
                   ),
-                  child: _isLoading
-                      ? Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 46,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _submit,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _accent,
+                      foregroundColor: Colors.white,
+                      disabledBackgroundColor: _accent.withOpacity(0.4),
+                      surfaceTintColor: Colors.transparent,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    ),
+                    child: _isLoading
+                        ? Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                              SizedBox(width: 8),
+                              Text(
+                                'Creating...',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.check_rounded,
+                                size: 16,
                                 color: Colors.white,
-                                strokeWidth: 2,
                               ),
-                            ),
-                            SizedBox(width: 10),
-                            Text(
-                              'Creating...',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
+                              SizedBox(width: 7),
+                              Text(
+                                'Create Test',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                  color: Colors.white,
+                                ),
                               ),
-                            ),
-                          ],
-                        )
-                      : Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.check_rounded, size: 18),
-                            SizedBox(width: 8),
-                            Text(
-                              'Create Test',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
+                            ],
+                          ),
+                  ),
                 ),
               ),
             ],
@@ -411,118 +399,138 @@ class _CreateTestSheetState extends State<CreateTestSheet> {
   Widget _subjectRow(int index) {
     final row = _subjectCtrls[index];
     return Container(
-      margin: EdgeInsets.only(bottom: 10),
-      padding: EdgeInsets.all(12),
+      margin: EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.teal.withOpacity(0.15)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 6,
-            offset: Offset(0, 2),
-          ),
-        ],
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(3),
+        border: Border.all(color: Colors.grey[200]!),
       ),
       child: Column(
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: TextFormField(
-                  controller: row['name'],
-                  cursorColor: _accent,
-                  style: TextStyle(fontSize: 13),
-                  validator: (v) =>
-                      v == null || v.trim().isEmpty ? 'Required' : null,
-                  decoration: InputDecoration(
-                    hintText: 'Subject name',
-                    hintStyle: TextStyle(
-                      color: AppColors.textSecondary.withOpacity(0.5),
+          // ── Subject name row ──
+          Container(
+            padding: EdgeInsets.fromLTRB(10, 0, 6, 0),
+            decoration: BoxDecoration(
+              color: _accent.withOpacity(0.03),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(3)),
+              border: Border(bottom: BorderSide(color: Colors.grey[200]!)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.subject_rounded, color: _accent, size: 14),
+                SizedBox(width: 8),
+                Expanded(
+                  child: TextFormField(
+                    controller: row['name'],
+                    cursorColor: _accent,
+                    style: TextStyle(
                       fontSize: 13,
+                      color: AppColors.textPrimary,
                     ),
-                    border: InputBorder.none,
-                    isDense: true,
-                    contentPadding: EdgeInsets.zero,
-                    prefixIcon: Icon(
-                      Icons.subject_rounded,
-                      color: _accent,
-                      size: 16,
+                    validator: (v) =>
+                        v == null || v.trim().isEmpty ? 'Required' : null,
+                    decoration: InputDecoration(
+                      hintText: 'Subject name',
+                      hintStyle: TextStyle(
+                        color: Colors.grey[400],
+                        fontSize: 13,
+                      ),
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      isDense: true,
+                      contentPadding: EdgeInsets.symmetric(vertical: 11),
+                      errorStyle: TextStyle(fontSize: 10),
                     ),
                   ),
                 ),
-              ),
-              if (_subjectCtrls.length > 1)
-                GestureDetector(
-                  onTap: () => _removeSubjectRow(index),
-                  child: Icon(
-                    Icons.remove_circle_outline,
-                    color: Colors.red[300],
-                    size: 18,
+                if (_subjectCtrls.length > 1)
+                  GestureDetector(
+                    onTap: () => _removeSubjectRow(index),
+                    child: Container(
+                      margin: EdgeInsets.only(left: 4),
+                      padding: EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.07),
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                      child: Icon(
+                        Icons.close_rounded,
+                        color: Colors.red[400],
+                        size: 12,
+                      ),
+                    ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
-          SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: _scoreField(
-                  row['max']!,
-                  'Max Score',
-                  Icons.arrow_upward_rounded,
+
+          // ── Max / Min row ──
+          Padding(
+            padding: EdgeInsets.fromLTRB(10, 8, 10, 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _scoreField(
+                    row['max']!,
+                    'Max Score',
+                    Icons.arrow_upward_rounded,
+                    _accent,
+                  ),
                 ),
-              ),
-              SizedBox(width: 10),
-              Expanded(
-                child: _scoreField(
-                  row['min']!,
-                  'Min Score',
-                  Icons.arrow_downward_rounded,
+                SizedBox(width: 8),
+                Expanded(
+                  child: _scoreField(
+                    row['min']!,
+                    'Min Score',
+                    Icons.arrow_downward_rounded,
+                    Colors.orange[700]!,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _scoreField(TextEditingController ctrl, String hint, IconData icon) {
+  Widget _scoreField(
+    TextEditingController ctrl,
+    String hint,
+    IconData icon,
+    Color color,
+  ) {
     return TextFormField(
       controller: ctrl,
       keyboardType: TextInputType.number,
       cursorColor: _accent,
-      style: TextStyle(fontSize: 13),
+      style: TextStyle(fontSize: 12.5, color: AppColors.textPrimary),
       validator: (v) {
         if (v == null || v.isEmpty) return 'Required';
-        if (int.tryParse(v) == null) return 'Number only';
+        if (int.tryParse(v) == null) return 'Numbers only';
         return null;
       },
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(
-          color: AppColors.textSecondary.withOpacity(0.5),
-          fontSize: 12,
-        ),
-        prefixIcon: Icon(icon, color: _accent.withOpacity(0.6), size: 14),
+        hintStyle: TextStyle(color: Colors.grey[400], fontSize: 12),
+        prefixIcon: Icon(icon, color: color, size: 13),
         filled: true,
-        fillColor: Colors.grey[50],
+        fillColor: Colors.white,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(3),
           borderSide: BorderSide(color: Colors.grey[200]!),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(3),
           borderSide: BorderSide(color: Colors.grey[200]!),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: _accent.withOpacity(0.4)),
+          borderRadius: BorderRadius.circular(3),
+          borderSide: BorderSide(color: _accent.withOpacity(0.4), width: 1.5),
         ),
         isDense: true,
-        contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+        contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 9),
         errorStyle: TextStyle(fontSize: 10),
       ),
     );
@@ -531,46 +539,39 @@ class _CreateTestSheetState extends State<CreateTestSheet> {
   Widget _label(String text) => Text(
     text,
     style: TextStyle(
-      fontWeight: FontWeight.w600,
-      fontSize: 13.5,
-      color: AppColors.textPrimary,
+      fontSize: 11,
+      fontWeight: FontWeight.w700,
+      color: AppColors.textSecondary,
+      letterSpacing: 0.3,
     ),
   );
 
-  Widget _inputBox({required Widget child}) => Container(
+  Widget _inputField({
+    required TextEditingController controller,
+    required String hint,
+    required IconData icon,
+    String? Function(String?)? validator,
+  }) => Container(
     decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.04),
-          blurRadius: 6,
-          offset: Offset(0, 2),
-        ),
-      ],
-      border: Border.all(color: Colors.grey.withOpacity(0.12)),
+      color: Colors.grey[50],
+      borderRadius: BorderRadius.circular(3),
+      border: Border.all(color: Colors.grey[200]!),
     ),
-    child: child,
-  );
-
-  InputDecoration _deco({required String hint, required IconData icon}) =>
-      InputDecoration(
+    child: TextFormField(
+      controller: controller,
+      cursorColor: _accent,
+      style: TextStyle(fontSize: 13, color: AppColors.textPrimary),
+      validator: validator,
+      decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(
-          color: AppColors.textSecondary.withOpacity(0.5),
-          fontSize: 14,
-        ),
-        prefixIcon: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 12),
-          child: Icon(icon, color: _accent, size: 18),
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        errorStyle: TextStyle(color: Colors.red[400], fontSize: 11),
-      );
+        hintStyle: TextStyle(color: Colors.grey[400], fontSize: 13),
+        prefixIcon: Icon(icon, color: _accent, size: 16),
+        border: InputBorder.none,
+        enabledBorder: InputBorder.none,
+        focusedBorder: InputBorder.none,
+        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+        errorStyle: TextStyle(color: Colors.red[400], fontSize: 10),
+      ),
+    ),
+  );
 }

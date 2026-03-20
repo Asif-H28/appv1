@@ -155,7 +155,7 @@ class _ClassroomNotesTabState extends State<ClassroomNotesTab> {
                 color: Colors.red.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(3),
               ),
-              child: Icon(icon, color: Colors.red[600], size: 16),
+              child: Icon(icon, color: Colors.red[600], size: 15),
             ),
             SizedBox(width: 10),
             Text(
@@ -179,40 +179,30 @@ class _ClassroomNotesTabState extends State<ClassroomNotesTab> {
         actions: [
           Row(
             children: [
-              // ── Cancel ──
               Expanded(
                 child: SizedBox(
                   height: 36,
-                  child: Theme(
-                    data: ThemeData(
-                      colorScheme: ColorScheme.light(
-                        primary: Colors.grey[600]!,
-                        onPrimary: Colors.grey[600]!,
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.textSecondary,
+                      side: BorderSide(color: Colors.grey[300]!),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(3),
                       ),
                     ),
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.textSecondary,
-                        side: BorderSide(color: Colors.grey[300]!),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                      ),
-                      child: Text(
-                        'Cancel',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textSecondary,
-                        ),
+                    child: Text(
+                      'Cancel',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ),
                 ),
               ),
               SizedBox(width: 8),
-              // ── Confirm (Theme-isolated so M3 cannot override text color) ──
               Expanded(
                 child: SizedBox(
                   height: 36,
@@ -309,76 +299,106 @@ class _ClassroomNotesTabState extends State<ClassroomNotesTab> {
           padding: EdgeInsets.fromLTRB(14, 14, 14, 0),
           child: Row(
             children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: _openCreateSheet,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 11),
-                    decoration: BoxDecoration(
-                      color: _accent,
-                      borderRadius: BorderRadius.circular(3),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.add_rounded, color: Colors.white, size: 16),
-                        SizedBox(width: 6),
-                        Text(
-                          'Add Note',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: 8),
-              _actionIconBtn(
-                Icons.refresh_rounded,
-                _accent,
-                _fetchNotes,
-                tooltip: 'Refresh',
-              ),
-              SizedBox(width: 6),
-              _actionIconBtn(
-                Icons.delete_sweep_rounded,
-                Colors.red[600]!,
-                _confirmDeleteAll,
-                tooltip: 'Delete all',
-              ),
-            ],
-          ),
-        ),
-        SizedBox(height: 10),
-
-        // ── Notes count chip ──
-        if (!_isLoading && !_hasError && _notes.isNotEmpty)
-          Padding(
-            padding: EdgeInsets.only(left: 14, bottom: 8),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Container(
+              // Count chip
+              Container(
                 padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: _accent.withOpacity(0.08),
                   borderRadius: BorderRadius.circular(3),
                   border: Border.all(color: _accent.withOpacity(0.2)),
                 ),
-                child: Text(
-                  '${_notes.length} note${_notes.length == 1 ? '' : 's'}',
-                  style: TextStyle(
-                    color: _accent,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.description_rounded, color: _accent, size: 12),
+                    SizedBox(width: 5),
+                    Text(
+                      '${_notes.length} Note${_notes.length == 1 ? '' : 's'}',
+                      style: TextStyle(
+                        color: _accent,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Spacer(),
+              // Delete all
+              SizedBox(
+                width: 34,
+                height: 34,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(3),
+                    border: Border.all(color: Colors.red.withOpacity(0.25)),
+                  ),
+                  child: IconButton(
+                    icon: Icon(
+                      Icons.delete_sweep_rounded,
+                      color: Colors.red[400],
+                      size: 16,
+                    ),
+                    onPressed: _confirmDeleteAll,
+                    tooltip: 'Delete all',
+                    padding: EdgeInsets.zero,
+                    constraints: BoxConstraints(),
                   ),
                 ),
               ),
-            ),
+              SizedBox(width: 6),
+              // Refresh
+              SizedBox(
+                width: 34,
+                height: 34,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(3),
+                    border: Border.all(color: Colors.grey[200]!),
+                  ),
+                  child: IconButton(
+                    icon: Icon(Icons.refresh_rounded, color: _accent, size: 16),
+                    onPressed: _fetchNotes,
+                    tooltip: 'Refresh',
+                    padding: EdgeInsets.zero,
+                    constraints: BoxConstraints(),
+                  ),
+                ),
+              ),
+              SizedBox(width: 8),
+              // Add note button
+              GestureDetector(
+                onTap: _openCreateSheet,
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                  decoration: BoxDecoration(
+                    color: _accent,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.add_rounded, color: Colors.white, size: 15),
+                      SizedBox(width: 5),
+                      Text(
+                        'Add Note',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
+        ),
+
+        SizedBox(height: 10),
 
         // ── Body ──
         Expanded(
@@ -423,23 +443,75 @@ class _ClassroomNotesTabState extends State<ClassroomNotesTab> {
     );
   }
 
-  Widget _actionIconBtn(
-    IconData icon,
-    Color color,
-    VoidCallback onTap, {
-    String? tooltip,
-  }) => Container(
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(3),
-      border: Border.all(color: Colors.grey[200]!),
-    ),
-    child: IconButton(
-      icon: Icon(icon, color: color, size: 18),
-      onPressed: onTap,
-      tooltip: tooltip,
-      constraints: BoxConstraints(minWidth: 38, minHeight: 38),
-      padding: EdgeInsets.all(8),
+  Widget _buildEmpty() => Center(
+    child: Padding(
+      padding: EdgeInsets.all(24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(3),
+              color: _accent.withOpacity(0.08),
+            ),
+            child: Icon(Icons.description_outlined, color: _accent, size: 28),
+          ),
+          SizedBox(height: 14),
+          Text(
+            'No Notes Yet',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          SizedBox(height: 4),
+          Text(
+            'Tap "Add Note" to share notes\nwith students.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 12,
+              height: 1.5,
+            ),
+          ),
+          SizedBox(height: 18),
+          Theme(
+            data: ThemeData(
+              colorScheme: ColorScheme.light(
+                primary: _accent,
+                onPrimary: Colors.white,
+              ),
+            ),
+            child: SizedBox(
+              height: 38,
+              child: ElevatedButton.icon(
+                onPressed: _openCreateSheet,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _accent,
+                  foregroundColor: Colors.white,
+                  surfaceTintColor: Colors.transparent,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+                icon: Icon(Icons.add_rounded, size: 15, color: Colors.white),
+                label: Text(
+                  'Add Note',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     ),
   );
 
@@ -492,41 +564,6 @@ class _ClassroomNotesTabState extends State<ClassroomNotesTab> {
                 ),
               ),
             ),
-          ),
-        ],
-      ),
-    ),
-  );
-
-  Widget _buildEmpty() => Center(
-    child: Padding(
-      padding: EdgeInsets.all(24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(3),
-              color: _accent.withOpacity(0.08),
-            ),
-            child: Icon(Icons.description_outlined, color: _accent, size: 28),
-          ),
-          SizedBox(height: 14),
-          Text(
-            'No Notes Yet',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 13,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          SizedBox(height: 4),
-          Text(
-            'Tap "Add Note" to share notes with students.',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
           ),
         ],
       ),

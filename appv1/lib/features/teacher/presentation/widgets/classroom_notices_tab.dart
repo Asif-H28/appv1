@@ -56,7 +56,6 @@ class _ClassroomNoticesTabState extends State<ClassroomNoticesTab> {
           raw = body['notices'] as List;
         else if (body['data'] != null)
           raw = body['data'] as List;
-
         setState(() {
           _notices = raw.map((e) => e as Map<String, dynamic>).toList();
           _isLoading = false;
@@ -85,12 +84,12 @@ class _ClassroomNoticesTabState extends State<ClassroomNoticesTab> {
       if (!mounted) return;
       if (response.statusCode == 200) {
         setState(() => _notices.removeAt(index));
-        _showSnackBar('Notice deleted.', Colors.green[600]!);
+        _snack('Notice deleted.', Colors.green[600]!);
       } else {
-        _showSnackBar('Failed to delete notice.', Colors.red[600]!);
+        _snack('Failed to delete notice.', Colors.red[600]!);
       }
     } catch (_) {
-      _showSnackBar('No internet connection.', Colors.red[600]!);
+      _snack('No internet connection.', Colors.red[600]!);
     }
   }
 
@@ -103,17 +102,20 @@ class _ClassroomNoticesTabState extends State<ClassroomNoticesTab> {
         headers: {'Content-Type': 'application/json'},
       );
       _fetchNotices();
-      _showSnackBar('Expired notices cleared.', Colors.teal);
+      _snack('Expired notices cleared.', Colors.teal);
     } catch (_) {}
   }
 
-  void _showSnackBar(String msg, Color color) {
+  void _snack(String msg, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(msg, style: TextStyle(fontWeight: FontWeight.w500)),
+        content: Text(
+          msg,
+          style: TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+        ),
         backgroundColor: color,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
       ),
     );
   }
@@ -122,50 +124,109 @@ class _ClassroomNoticesTabState extends State<ClassroomNoticesTab> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+        titlePadding: EdgeInsets.fromLTRB(16, 16, 16, 0),
+        contentPadding: EdgeInsets.fromLTRB(16, 10, 16, 0),
+        actionsPadding: EdgeInsets.fromLTRB(16, 8, 16, 14),
         title: Row(
           children: [
-            CircleAvatar(
-              backgroundColor: Colors.red.withOpacity(0.1),
-              child: Icon(Icons.delete_rounded, color: Colors.red[600]),
+            Container(
+              padding: EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(3),
+              ),
+              child: Icon(
+                Icons.delete_rounded,
+                color: Colors.red[600],
+                size: 15,
+              ),
             ),
-            SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Delete Notice',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            SizedBox(width: 10),
+            Text(
+              'Delete Notice',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+                color: AppColors.textPrimary,
               ),
             ),
           ],
         ),
         content: Text(
           'Delete "$title"? This cannot be undone.',
-          style: TextStyle(color: AppColors.textSecondary, height: 1.5),
+          style: TextStyle(
+            color: AppColors.textSecondary,
+            fontSize: 12,
+            height: 1.5,
+          ),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              'Cancel',
-              style: TextStyle(color: AppColors.textSecondary),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              _deleteNotice(noticeId, index);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red[600],
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+          Row(
+            children: [
+              Expanded(
+                child: SizedBox(
+                  height: 36,
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.textSecondary,
+                      side: BorderSide(color: Colors.grey[300]!),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    ),
+                    child: Text(
+                      'Cancel',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            ),
-            child: Text(
-              'Delete',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+              SizedBox(width: 8),
+              Expanded(
+                child: SizedBox(
+                  height: 36,
+                  child: Theme(
+                    data: ThemeData(
+                      colorScheme: ColorScheme.light(
+                        primary: Colors.red[600]!,
+                        onPrimary: Colors.white,
+                      ),
+                    ),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        _deleteNotice(noticeId, index);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red[600],
+                        foregroundColor: Colors.white,
+                        surfaceTintColor: Colors.transparent,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+                      child: Text(
+                        'Delete',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -200,68 +261,117 @@ class _ClassroomNoticesTabState extends State<ClassroomNoticesTab> {
       children: [
         // ── Action bar ──
         Padding(
-          padding: EdgeInsets.fromLTRB(16, 16, 16, 0),
+          padding: EdgeInsets.fromLTRB(14, 14, 14, 0),
           child: Row(
             children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: _openCreateSheet,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 13),
-                    decoration: BoxDecoration(
-                      color: _accent,
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: [
-                        BoxShadow(
-                          color: _accent.withOpacity(0.3),
-                          blurRadius: 8,
-                          offset: Offset(0, 3),
-                        ),
-                      ],
+              // Count chip
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: _accent.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(3),
+                  border: Border.all(color: _accent.withOpacity(0.2)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.campaign_rounded, color: _accent, size: 12),
+                    SizedBox(width: 5),
+                    Text(
+                      '${_notices.length} Notice${_notices.length == 1 ? '' : 's'}',
+                      style: TextStyle(
+                        color: _accent,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.add_rounded, color: Colors.white, size: 18),
-                        SizedBox(width: 8),
-                        Text(
-                          'New Notice',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
+                  ],
+                ),
+              ),
+              Spacer(),
+              // Purge expired
+              SizedBox(
+                width: 34,
+                height: 34,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(3),
+                    border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                  ),
+                  child: IconButton(
+                    icon: Icon(
+                      Icons.auto_delete_rounded,
+                      color: Colors.orange[700],
+                      size: 16,
                     ),
+                    onPressed: _purgeExpired,
+                    tooltip: 'Clear expired',
+                    padding: EdgeInsets.zero,
+                    constraints: BoxConstraints(),
                   ),
                 ),
               ),
-              SizedBox(width: 10),
-              _iconBtn(
-                Icons.refresh_rounded,
-                _accent,
-                _fetchNotices,
-                tooltip: 'Refresh',
+              SizedBox(width: 6),
+              // Refresh
+              SizedBox(
+                width: 34,
+                height: 34,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(3),
+                    border: Border.all(color: Colors.grey[200]!),
+                  ),
+                  child: IconButton(
+                    icon: Icon(Icons.refresh_rounded, color: _accent, size: 16),
+                    onPressed: _fetchNotices,
+                    tooltip: 'Refresh',
+                    padding: EdgeInsets.zero,
+                    constraints: BoxConstraints(),
+                  ),
+                ),
               ),
               SizedBox(width: 8),
-              _iconBtn(
-                Icons.auto_delete_rounded,
-                Colors.orange[700]!,
-                _purgeExpired,
-                tooltip: 'Clear expired',
+              // New notice button
+              GestureDetector(
+                onTap: _openCreateSheet,
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                  decoration: BoxDecoration(
+                    color: _accent,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.add_rounded, color: Colors.white, size: 15),
+                      SizedBox(width: 5),
+                      Text(
+                        'New Notice',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
         ),
-        SizedBox(height: 12),
 
+        SizedBox(height: 10),
+
+        // ── Body ──
         Expanded(
           child: _isLoading
               ? Center(
                   child: CircularProgressIndicator(
                     color: _accent,
-                    strokeWidth: 3,
+                    strokeWidth: 2.5,
                   ),
                 )
               : _hasError
@@ -272,9 +382,9 @@ class _ClassroomNoticesTabState extends State<ClassroomNoticesTab> {
                   color: _accent,
                   onRefresh: _fetchNotices,
                   child: ListView.separated(
-                    padding: EdgeInsets.fromLTRB(16, 4, 16, 40),
+                    padding: EdgeInsets.fromLTRB(14, 4, 14, 40),
                     itemCount: _notices.length,
-                    separatorBuilder: (_, __) => SizedBox(height: 12),
+                    separatorBuilder: (_, __) => SizedBox(height: 8),
                     itemBuilder: (context, index) {
                       final notice = _notices[index];
                       final noticeId =
@@ -298,92 +408,126 @@ class _ClassroomNoticesTabState extends State<ClassroomNoticesTab> {
     );
   }
 
-  Widget _iconBtn(
-    IconData icon,
-    Color color,
-    VoidCallback onTap, {
-    String? tooltip,
-  }) => Container(
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.05),
-          blurRadius: 6,
-          offset: Offset(0, 2),
-        ),
-      ],
-    ),
-    child: IconButton(
-      icon: Icon(icon, color: color, size: 20),
-      onPressed: onTap,
-      tooltip: tooltip,
-    ),
-  );
-
-  Widget _buildError() => Center(
+  Widget _buildEmpty() => Center(
     child: Padding(
-      padding: EdgeInsets.all(32),
+      padding: EdgeInsets.all(28),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.cloud_off_rounded, size: 56, color: Colors.grey[400]),
-          SizedBox(height: 12),
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(3),
+              color: _accent.withOpacity(0.08),
+            ),
+            child: Icon(Icons.campaign_outlined, color: _accent, size: 28),
+          ),
+          SizedBox(height: 14),
           Text(
-            'Could not load notices',
+            'No Notices Yet',
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: 15,
+              fontSize: 13,
               color: AppColors.textPrimary,
             ),
           ),
-          SizedBox(height: 16),
-          ElevatedButton.icon(
-            onPressed: _fetchNotices,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _accent,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+          SizedBox(height: 5),
+          Text(
+            'Tap "New Notice" to create one.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 12,
+              height: 1.5,
+            ),
+          ),
+          SizedBox(height: 18),
+          Theme(
+            data: ThemeData(
+              colorScheme: ColorScheme.light(
+                primary: _accent,
+                onPrimary: Colors.white,
               ),
             ),
-            icon: Icon(Icons.refresh),
-            label: Text('Retry', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: SizedBox(
+              height: 38,
+              child: ElevatedButton.icon(
+                onPressed: _openCreateSheet,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _accent,
+                  foregroundColor: Colors.white,
+                  surfaceTintColor: Colors.transparent,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+                icon: Icon(Icons.add_rounded, size: 15, color: Colors.white),
+                label: Text(
+                  'New Notice',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),
     ),
   );
 
-  Widget _buildEmpty() => Center(
+  Widget _buildError() => Center(
     child: Padding(
-      padding: EdgeInsets.all(32),
+      padding: EdgeInsets.all(24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: _accent.withOpacity(0.1),
-            ),
-            child: Icon(Icons.campaign_outlined, color: _accent, size: 36),
-          ),
-          SizedBox(height: 16),
+          Icon(Icons.cloud_off_rounded, size: 44, color: Colors.grey[400]),
+          SizedBox(height: 12),
           Text(
-            'No Notices Yet',
+            'Could not load notices',
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: 16,
+              fontSize: 13,
               color: AppColors.textPrimary,
             ),
           ),
-          SizedBox(height: 6),
-          Text(
-            'Tap "New Notice" to create one.',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+          SizedBox(height: 16),
+          Theme(
+            data: ThemeData(
+              colorScheme: ColorScheme.light(
+                primary: _accent,
+                onPrimary: Colors.white,
+              ),
+            ),
+            child: SizedBox(
+              height: 36,
+              child: ElevatedButton.icon(
+                onPressed: _fetchNotices,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _accent,
+                  foregroundColor: Colors.white,
+                  surfaceTintColor: Colors.transparent,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+                icon: Icon(Icons.refresh, size: 14, color: Colors.white),
+                label: Text(
+                  'Retry',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),

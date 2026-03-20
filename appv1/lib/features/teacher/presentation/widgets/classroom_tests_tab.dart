@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import '../../../../core/constants/app_colors.dart';
 import 'create_test_sheet.dart';
 import 'edit_test_sheet.dart';
-import '../pages/test_results_page.dart'; // ← NEW
+import '../pages/test_results_page.dart';
 
 class ClassroomTestsTab extends StatefulWidget {
   final String classId;
@@ -72,7 +72,7 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
           _hasError = true;
         });
       }
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
       setState(() {
         _isLoading = false;
@@ -94,12 +94,12 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
           _deletingMap.remove(testId);
           _tests.removeWhere((t) => t['testId']?.toString() == testId);
         });
-        _snack('Test deleted.', Colors.red[600]!);
+        _snack('Test deleted.', Colors.green[600]!);
       } else {
         setState(() => _deletingMap.remove(testId));
         _snack('Failed to delete test.', Colors.red[600]!);
       }
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
       setState(() => _deletingMap.remove(testId));
       _snack('No internet connection.', Colors.red[600]!);
@@ -110,59 +110,109 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+        titlePadding: EdgeInsets.fromLTRB(16, 16, 16, 0),
+        contentPadding: EdgeInsets.fromLTRB(16, 10, 16, 0),
+        actionsPadding: EdgeInsets.fromLTRB(16, 8, 16, 14),
         title: Row(
           children: [
-            CircleAvatar(
-              backgroundColor: Colors.red.withOpacity(0.1),
+            Container(
+              padding: EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(3),
+              ),
               child: Icon(
                 Icons.delete_rounded,
                 color: Colors.red[600],
-                size: 20,
+                size: 15,
               ),
             ),
-            SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Delete Test',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+            SizedBox(width: 10),
+            Text(
+              'Delete Test',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+                color: AppColors.textPrimary,
               ),
             ),
           ],
         ),
         content: Text(
-          'Delete "$testName"?\nThis cannot be undone.',
+          'Delete "$testName"? This cannot be undone.',
           style: TextStyle(
             color: AppColors.textSecondary,
+            fontSize: 12,
             height: 1.5,
-            fontSize: 13,
           ),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              'Cancel',
-              style: TextStyle(color: AppColors.textSecondary),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              _deleteTest(testId);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red[600],
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+          Row(
+            children: [
+              Expanded(
+                child: SizedBox(
+                  height: 36,
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.textSecondary,
+                      side: BorderSide(color: Colors.grey[300]!),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    ),
+                    child: Text(
+                      'Cancel',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ),
               ),
-              elevation: 0,
-            ),
-            child: Text(
-              'Delete',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+              SizedBox(width: 8),
+              Expanded(
+                child: SizedBox(
+                  height: 36,
+                  child: Theme(
+                    data: ThemeData(
+                      colorScheme: ColorScheme.light(
+                        primary: Colors.red[600]!,
+                        onPrimary: Colors.white,
+                      ),
+                    ),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        _deleteTest(testId);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red[600],
+                        foregroundColor: Colors.white,
+                        surfaceTintColor: Colors.transparent,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+                      child: Text(
+                        'Delete',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -208,7 +258,6 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
     );
   }
 
-  // ── Navigate to Results Page ──
   void _openResultsPage(Map<String, dynamic> test) {
     Navigator.push(
       context,
@@ -232,7 +281,7 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
         ),
         backgroundColor: color,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
       ),
     );
   }
@@ -247,52 +296,71 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
 
     return Column(
       children: [
+        // ── Action bar ──
         Padding(
-          padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
+          padding: EdgeInsets.fromLTRB(14, 14, 14, 0),
           child: Row(
             children: [
+              // Count chip
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: _accent.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
+                  color: _accent.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(3),
+                  border: Border.all(color: _accent.withOpacity(0.2)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.quiz_rounded, color: _accent, size: 13),
+                    Icon(Icons.quiz_rounded, color: _accent, size: 12),
                     SizedBox(width: 5),
                     Text(
                       '${_tests.length} Test${_tests.length == 1 ? '' : 's'}',
                       style: TextStyle(
                         color: _accent,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
               ),
               Spacer(),
+              // Refresh
+              // Refresh
+              SizedBox(
+                width: 38,
+                height: 38,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(3),
+                    border: Border.all(color: Colors.grey[200]!),
+                  ),
+                  child: IconButton(
+                    icon: Icon(Icons.refresh_rounded, color: _accent, size: 16),
+                    onPressed: _fetchTests,
+                    tooltip: 'Refresh',
+                    padding: EdgeInsets.zero,
+                    constraints: BoxConstraints(),
+                  ),
+                ),
+              ),
+
+              SizedBox(width: 8),
+              // Create button
               GestureDetector(
                 onTap: _openCreateSheet,
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 9),
                   decoration: BoxDecoration(
                     color: _accent,
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: [
-                      BoxShadow(
-                        color: _accent.withOpacity(0.3),
-                        blurRadius: 8,
-                        offset: Offset(0, 3),
-                      ),
-                    ],
+                    borderRadius: BorderRadius.circular(3),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.add_rounded, color: Colors.white, size: 16),
+                      Icon(Icons.add_rounded, color: Colors.white, size: 15),
                       SizedBox(width: 5),
                       Text(
                         'Create Test',
@@ -309,6 +377,10 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
             ],
           ),
         ),
+
+        SizedBox(height: 10),
+
+        // ── Body ──
         _tests.isEmpty
             ? _buildEmpty()
             : Expanded(
@@ -316,9 +388,9 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
                   color: _accent,
                   onRefresh: _fetchTests,
                   child: ListView.separated(
-                    padding: EdgeInsets.fromLTRB(16, 4, 16, 40),
+                    padding: EdgeInsets.fromLTRB(14, 4, 14, 40),
                     itemCount: _tests.length,
-                    separatorBuilder: (_, __) => SizedBox(height: 10),
+                    separatorBuilder: (_, __) => SizedBox(height: 8),
                     itemBuilder: (_, i) => _testCard(_tests[i]),
                   ),
                 ),
@@ -345,41 +417,31 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          ),
-        ],
-        border: Border.all(color: _accent.withOpacity(0.1)),
+        borderRadius: BorderRadius.circular(3),
+        border: Border.all(color: Colors.grey[200]!),
       ),
-      child: Padding(
-        padding: EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Card header ──
+          Container(
+            padding: EdgeInsets.fromLTRB(10, 9, 6, 9),
+            decoration: BoxDecoration(
+              color: const Color.fromARGB(255, 255, 255, 255).withOpacity(0.04),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(3)),
+            ),
+            child: Row(
               children: [
                 Container(
-                  width: 40,
-                  height: 40,
+                  width: 32,
+                  height: 32,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [_accent, _accent.withOpacity(0.7)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(11),
+                    color: _accent.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(3),
                   ),
-                  child: Icon(
-                    Icons.quiz_rounded,
-                    color: Colors.white,
-                    size: 20,
-                  ),
+                  child: Icon(Icons.quiz_rounded, color: _accent, size: 16),
                 ),
-                SizedBox(width: 12),
+                SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -388,16 +450,18 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
                         testName,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                          fontSize: 13,
                           color: AppColors.textPrimary,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       if (dateStr.isNotEmpty)
                         Row(
                           children: [
                             Icon(
                               Icons.calendar_today_rounded,
-                              size: 10,
+                              size: 9,
                               color: AppColors.textSecondary,
                             ),
                             SizedBox(width: 3),
@@ -405,7 +469,7 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
                               dateStr,
                               style: TextStyle(
                                 color: AppColors.textSecondary,
-                                fontSize: 10.5,
+                                fontSize: 10,
                               ),
                             ),
                           ],
@@ -414,12 +478,15 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
                   ),
                 ),
                 if (isDeleting)
-                  SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      color: Colors.red[400],
-                      strokeWidth: 2,
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8),
+                    child: SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        color: Colors.red[400],
+                        strokeWidth: 2,
+                      ),
                     ),
                   )
                 else
@@ -441,34 +508,49 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
                   ),
               ],
             ),
+          ),
 
-            if (subjects.isNotEmpty) ...[
-              SizedBox(height: 12),
-              Divider(color: Colors.grey[100], height: 1),
-              SizedBox(height: 10),
-              Text(
-                'Subjects (${subjects.length})',
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                ),
+          // ── Subjects ──
+          if (subjects.isNotEmpty) ...[
+            Padding(
+              padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.book_outlined,
+                    size: 10,
+                    color: AppColors.textSecondary,
+                  ),
+                  SizedBox(width: 4),
+                  Text(
+                    'Subjects (${subjects.length})',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ],
               ),
-              SizedBox(height: 8),
-              Wrap(
-                spacing: 6,
-                runSpacing: 6,
+            ),
+            SizedBox(height: 7),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              child: Wrap(
+                spacing: 5,
+                runSpacing: 5,
                 children: subjects.map((s) {
                   final sub = s as Map<String, dynamic>;
                   final name = sub['subjectName']?.toString() ?? '';
                   final max = sub['maximumScore']?.toString() ?? '0';
                   final min = sub['minimumScore']?.toString() ?? '0';
                   return Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                     decoration: BoxDecoration(
-                      color: _accent.withOpacity(0.07),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: _accent.withOpacity(0.2)),
+                      color: _accent.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(3),
+                      border: Border.all(color: _accent.withOpacity(0.18)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -479,71 +561,99 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
                           style: TextStyle(
                             color: _accent,
                             fontWeight: FontWeight.bold,
-                            fontSize: 11.5,
+                            fontSize: 11,
                           ),
                         ),
-                        Text(
-                          'Max: $max  Min: $min',
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 10,
-                          ),
+                        SizedBox(height: 1),
+                        Row(
+                          children: [
+                            _scoreBadge('Max', max, _accent),
+                            SizedBox(width: 4),
+                            _scoreBadge('Min', min, Colors.orange[700]!),
+                          ],
                         ),
                       ],
                     ),
                   );
                 }).toList(),
               ),
-            ],
-
-            SizedBox(height: 12),
-            Divider(color: Colors.grey[100], height: 1),
-            SizedBox(height: 10),
-
-            // ── Enter Marks Button ──
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () => _openResultsPage(test),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _accent.withOpacity(0.08),
-                  foregroundColor: _accent,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    side: BorderSide(color: _accent.withOpacity(0.3)),
-                  ),
-                  padding: EdgeInsets.symmetric(vertical: 10),
-                ),
-                icon: Icon(Icons.edit_note_rounded, size: 18),
-                label: Text(
-                  'Enter / View Marks',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                ),
-              ),
-            ),
-
-            SizedBox(height: 8),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(
-                testId,
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 10,
-                  fontFamily: 'monospace',
-                ),
-              ),
             ),
           ],
-        ),
+
+          // ── Footer: Enter Marks button ──
+          Padding(
+            padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+            child: Row(
+              children: [
+                // Test ID badge
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(3),
+                    border: Border.all(color: Colors.grey[200]!),
+                  ),
+                  child: Text(
+                    testId.length > 12
+                        ? '# ${testId.substring(0, 12)}…'
+                        : '# $testId',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 9.5,
+                      fontFamily: 'monospace',
+                    ),
+                  ),
+                ),
+                Spacer(),
+                // Enter marks button
+                GestureDetector(
+                  onTap: () => _openResultsPage(test),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: _accent,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.edit_note_rounded,
+                          color: Colors.white,
+                          size: 14,
+                        ),
+                        SizedBox(width: 5),
+                        Text(
+                          'Enter / View Marks',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 11.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
+
+  Widget _scoreBadge(String label, String value, Color color) => Container(
+    padding: EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+    decoration: BoxDecoration(
+      color: color.withOpacity(0.08),
+      borderRadius: BorderRadius.circular(3),
+    ),
+    child: Text(
+      '$label: $value',
+      style: TextStyle(color: color, fontSize: 9, fontWeight: FontWeight.w700),
+    ),
+  );
 
   Widget _iconBtn(IconData icon, Color color, VoidCallback onTap) =>
       GestureDetector(
@@ -551,11 +661,11 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
         child: Container(
           padding: EdgeInsets.all(6),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.08),
-            borderRadius: BorderRadius.circular(8),
+            color: color.withOpacity(0.07),
+            borderRadius: BorderRadius.circular(3),
             border: Border.all(color: color.withOpacity(0.2)),
           ),
-          child: Icon(icon, color: color, size: 15),
+          child: Icon(icon, color: color, size: 14),
         ),
       );
 
@@ -567,24 +677,24 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 72,
-              height: 72,
+              width: 64,
+              height: 64,
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
+                borderRadius: BorderRadius.circular(3),
                 color: _accent.withOpacity(0.08),
               ),
-              child: Icon(Icons.quiz_outlined, color: _accent, size: 34),
+              child: Icon(Icons.quiz_outlined, color: _accent, size: 28),
             ),
             SizedBox(height: 14),
             Text(
               'No Tests Yet',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 15,
+                fontSize: 13,
                 color: AppColors.textPrimary,
               ),
             ),
-            SizedBox(height: 6),
+            SizedBox(height: 5),
             Text(
               'Create a test to evaluate\nstudents in this classroom.',
               textAlign: TextAlign.center,
@@ -595,20 +705,36 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
               ),
             ),
             SizedBox(height: 18),
-            ElevatedButton.icon(
-              onPressed: _openCreateSheet,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _accent,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+            Theme(
+              data: ThemeData(
+                colorScheme: ColorScheme.light(
+                  primary: _accent,
+                  onPrimary: Colors.white,
                 ),
-                elevation: 0,
               ),
-              icon: Icon(Icons.add_rounded, size: 16),
-              label: Text(
-                'Create Test',
-                style: TextStyle(fontWeight: FontWeight.bold),
+              child: SizedBox(
+                height: 38,
+                child: ElevatedButton.icon(
+                  onPressed: _openCreateSheet,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _accent,
+                    foregroundColor: Colors.white,
+                    surfaceTintColor: Colors.transparent,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  ),
+                  icon: Icon(Icons.add_rounded, size: 15, color: Colors.white),
+                  label: Text(
+                    'Create Test',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
               ),
             ),
           ],
@@ -623,31 +749,47 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.cloud_off_rounded, size: 46, color: Colors.grey[400]),
+          Icon(Icons.cloud_off_rounded, size: 44, color: Colors.grey[400]),
           SizedBox(height: 12),
           Text(
             'Could not load tests',
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: 14,
+              fontSize: 13,
               color: AppColors.textPrimary,
             ),
           ),
           SizedBox(height: 16),
-          ElevatedButton.icon(
-            onPressed: _fetchTests,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _accent,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+          Theme(
+            data: ThemeData(
+              colorScheme: ColorScheme.light(
+                primary: _accent,
+                onPrimary: Colors.white,
               ),
-              elevation: 0,
             ),
-            icon: Icon(Icons.refresh, size: 15),
-            label: Text(
-              'Retry',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            child: SizedBox(
+              height: 36,
+              child: ElevatedButton.icon(
+                onPressed: _fetchTests,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _accent,
+                  foregroundColor: Colors.white,
+                  surfaceTintColor: Colors.transparent,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+                icon: Icon(Icons.refresh, size: 14, color: Colors.white),
+                label: Text(
+                  'Retry',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
             ),
           ),
         ],

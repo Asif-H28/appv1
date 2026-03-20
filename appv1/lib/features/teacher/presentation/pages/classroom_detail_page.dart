@@ -135,7 +135,7 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
         ),
         backgroundColor: color,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
       ),
     );
   }
@@ -209,7 +209,7 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
                                       ),
                                     ),
                                     isDense: true,
-                                    filled: false, // ← no white fill
+                                    filled: false,
                                     contentPadding: EdgeInsets.symmetric(
                                       vertical: 4,
                                     ),
@@ -271,49 +271,57 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
           ),
 
           // ── Body ──
+          // SafeArea(top: false) here fixes content going behind
+          // the gesture navigation bar for ALL tabs at once
           Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppColors.background,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-              ),
-              clipBehavior: Clip.antiAlias,
-              child: _isLoading
-                  ? Center(
-                      child: CircularProgressIndicator(
-                        color: _accent,
-                        strokeWidth: 2.5,
+            child: SafeArea(
+              top: false,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: AppColors.background,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: _isLoading
+                    ? Center(
+                        child: CircularProgressIndicator(
+                          color: _accent,
+                          strokeWidth: 2.5,
+                        ),
+                      )
+                    : _hasError
+                    ? _buildError()
+                    : TabBarView(
+                        controller: _tabController,
+                        children: [
+                          SubjectLessonsTab(
+                            classId: widget.classId,
+                            subjects: typedSubjects,
+                            onRefresh: _fetchClassroom,
+                          ),
+                          ClassroomStudentsTab(
+                            classId: widget.classId,
+                            students: students
+                                .map((s) => s.toString())
+                                .toList(),
+                            onRefresh: _fetchClassroom,
+                          ),
+                          ClassroomNoticesTab(classId: widget.classId),
+                          ClassroomNotesTab(classId: widget.classId),
+                          ClassroomRequestsTab(classId: widget.classId),
+                          ClassroomTestsTab(
+                            classId: widget.classId,
+                            teacherId:
+                                _classroom['teacherId']?.toString() ?? '',
+                            teacherName:
+                                _classroom['teacherName']?.toString() ?? '',
+                            orgId: _classroom['orgId']?.toString() ?? '',
+                            className: className,
+                            classSubjects: typedSubjects,
+                          ),
+                        ],
                       ),
-                    )
-                  : _hasError
-                  ? _buildError()
-                  : TabBarView(
-                      controller: _tabController,
-                      children: [
-                        SubjectLessonsTab(
-                          classId: widget.classId,
-                          subjects: typedSubjects,
-                          onRefresh: _fetchClassroom,
-                        ),
-                        ClassroomStudentsTab(
-                          classId: widget.classId,
-                          students: students.map((s) => s.toString()).toList(),
-                          onRefresh: _fetchClassroom,
-                        ),
-                        ClassroomNoticesTab(classId: widget.classId),
-                        ClassroomNotesTab(classId: widget.classId),
-                        ClassroomRequestsTab(classId: widget.classId),
-                        ClassroomTestsTab(
-                          classId: widget.classId,
-                          teacherId: _classroom['teacherId']?.toString() ?? '',
-                          teacherName:
-                              _classroom['teacherName']?.toString() ?? '',
-                          orgId: _classroom['orgId']?.toString() ?? '',
-                          className: className,
-                          classSubjects: typedSubjects,
-                        ),
-                      ],
-                    ),
+              ),
             ),
           ),
         ],
@@ -321,7 +329,7 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
     );
   }
 
-  // ── Clean pill-style scrollable tab bar ──
+  // ── Scrollable pill tab bar ──
   Widget _buildTabBar() {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -425,22 +433,35 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
             style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
           ),
           SizedBox(height: 18),
-          SizedBox(
-            height: 40,
-            child: ElevatedButton.icon(
-              onPressed: _fetchClassroom,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _accent,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                elevation: 0,
+          Theme(
+            data: ThemeData(
+              colorScheme: ColorScheme.light(
+                primary: _accent,
+                onPrimary: Colors.white,
               ),
-              icon: Icon(Icons.refresh, size: 15),
-              label: Text(
-                'Retry',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            ),
+            child: SizedBox(
+              height: 40,
+              child: ElevatedButton.icon(
+                onPressed: _fetchClassroom,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _accent,
+                  foregroundColor: Colors.white,
+                  surfaceTintColor: Colors.transparent,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+                icon: Icon(Icons.refresh, size: 15, color: Colors.white),
+                label: Text(
+                  'Retry',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ),
           ),
