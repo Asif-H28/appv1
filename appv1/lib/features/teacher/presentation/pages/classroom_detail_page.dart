@@ -115,18 +115,18 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
       });
       if (response.statusCode == 200) {
         setState(() => _classroom['className'] = newName);
-        _showSnackBar('Classroom name updated!', Colors.green[600]!);
+        _snack('Classroom name updated!', Colors.green[600]!);
       } else {
-        _showSnackBar('Failed to update name.', Colors.red[600]!);
+        _snack('Failed to update name.', Colors.red[600]!);
       }
     } catch (_) {
       if (!mounted) return;
       setState(() => _isSavingName = false);
-      _showSnackBar('No internet connection.', Colors.red[600]!);
+      _snack('No internet connection.', Colors.red[600]!);
     }
   }
 
-  void _showSnackBar(String msg, Color color) {
+  void _snack(String msg, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -144,22 +144,10 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
   Widget build(BuildContext context) {
     final className = _classroom['className']?.toString() ?? widget.className;
     final subjects = _classroom['subjects'] as List? ?? [];
-    final students = _classroom['students'] as List? ?? [];
-
-    // ── Typed subjects list reused for both SubjectLessonsTab & ClassroomTestsTab ──
     final typedSubjects = subjects
         .map((s) => s as Map<String, dynamic>)
         .toList();
-
-    int totalLessons = 0;
-    int completedLessons = 0;
-    for (final sub in subjects) {
-      final lessons = (sub as Map)['lessons'] as List? ?? [];
-      totalLessons += lessons.length;
-      completedLessons += lessons
-          .where((l) => (l as Map)['completed'] == true)
-          .length;
-    }
+    final students = _classroom['students'] as List? ?? [];
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -169,7 +157,7 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [_accent, _accent.withOpacity(0.7)],
+                colors: [_accent, _accent.withOpacity(0.75)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -179,6 +167,7 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
               child: Padding(
                 padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // ── Top bar ──
                     Row(
@@ -212,11 +201,23 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
                                   cursorColor: Colors.white,
                                   decoration: InputDecoration(
                                     border: InputBorder.none,
+                                    enabledBorder: InputBorder.none,
+                                    focusedBorder: UnderlineInputBorder(
+                                      borderSide: BorderSide(
+                                        color: Colors.white.withOpacity(0.5),
+                                        width: 1,
+                                      ),
+                                    ),
                                     isDense: true,
+                                    filled: false, // ← no white fill
+                                    contentPadding: EdgeInsets.symmetric(
+                                      vertical: 4,
+                                    ),
                                     hintText: 'Class name...',
                                     hintStyle: TextStyle(
-                                      color: Colors.white.withOpacity(0.5),
+                                      color: Colors.white.withOpacity(0.45),
                                       fontSize: 15,
+                                      fontWeight: FontWeight.normal,
                                     ),
                                   ),
                                 )
@@ -242,50 +243,25 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
                               ),
                             )
                           else ...[
-                            _headerIconBtn(Icons.check_rounded, _saveClassName),
-                            _headerIconBtn(
+                            _iconBtn(Icons.check_rounded, _saveClassName),
+                            _iconBtn(
                               Icons.close_rounded,
                               () => setState(() => _isEditingName = false),
                             ),
                           ],
                         ] else ...[
-                          _headerIconBtn(
+                          _iconBtn(
                             Icons.edit_outlined,
                             () => setState(() => _isEditingName = true),
                           ),
                           if (!_isLoading)
-                            _headerIconBtn(Icons.refresh, _fetchClassroom),
+                            _iconBtn(Icons.refresh, _fetchClassroom),
                         ],
                       ],
                     ),
-                    SizedBox(height: 12),
+                    SizedBox(height: 14),
 
-                    // ── Stats ──
-                    if (!_isLoading && !_hasError)
-                      Row(
-                        children: [
-                          _headerStat(
-                            Icons.menu_book_rounded,
-                            '${subjects.length}',
-                            'Subjects',
-                          ),
-                          SizedBox(width: 8),
-                          _headerStat(
-                            Icons.people_rounded,
-                            '${students.length}',
-                            'Students',
-                          ),
-                          SizedBox(width: 8),
-                          _headerStat(
-                            Icons.task_alt_rounded,
-                            '$completedLessons/$totalLessons',
-                            'Done',
-                          ),
-                        ],
-                      ),
-                    SizedBox(height: 12),
-
-                    // ── Smart Tab Bar ──
+                    // ── Tab bar ──
                     _buildTabBar(),
                     SizedBox(height: 10),
                   ],
@@ -294,7 +270,7 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
             ),
           ),
 
-          // ── Tab Content ──
+          // ── Body ──
           Expanded(
             child: Container(
               decoration: BoxDecoration(
@@ -327,7 +303,6 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
                         ClassroomNoticesTab(classId: widget.classId),
                         ClassroomNotesTab(classId: widget.classId),
                         ClassroomRequestsTab(classId: widget.classId),
-                        // ── Tests tab with classSubjects auto-fill ──
                         ClassroomTestsTab(
                           classId: widget.classId,
                           teacherId: _classroom['teacherId']?.toString() ?? '',
@@ -335,7 +310,7 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
                               _classroom['teacherName']?.toString() ?? '',
                           orgId: _classroom['orgId']?.toString() ?? '',
                           className: className,
-                          classSubjects: typedSubjects, // ← NEW
+                          classSubjects: typedSubjects,
                         ),
                       ],
                     ),
@@ -346,51 +321,68 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
     );
   }
 
+  // ── Clean pill-style scrollable tab bar ──
   Widget _buildTabBar() {
-    return Container(
-      height: 38,
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.white.withOpacity(0.2)),
-      ),
-      child: TabBar(
-        controller: _tabController,
-        indicator: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        indicatorSize: TabBarIndicatorSize.tab,
-        labelColor: _accent,
-        unselectedLabelColor: Colors.white.withOpacity(0.85),
-        padding: EdgeInsets.all(3),
-        dividerColor: Colors.transparent,
-        labelPadding: EdgeInsets.zero,
-        tabs: List.generate(_tabs.length, (i) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics: BouncingScrollPhysics(),
+      child: Row(
+        children: List.generate(_tabs.length, (i) {
           final isActive = _currentTab == i;
           final icon = _tabs[i]['icon'] as IconData;
           final label = _tabs[i]['label'] as String;
 
-          return AnimatedContainer(
-            duration: Duration(milliseconds: 200),
-            child: Center(
-              child: isActive
-                  ? Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(icon, size: 12),
-                        SizedBox(width: 4),
-                        Text(
-                          label,
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                          ),
+          return GestureDetector(
+            onTap: () {
+              _tabController.animateTo(i);
+              setState(() => _currentTab = i);
+            },
+            child: AnimatedContainer(
+              duration: Duration(milliseconds: 200),
+              margin: EdgeInsets.only(right: 8),
+              padding: EdgeInsets.symmetric(
+                horizontal: isActive ? 14 : 10,
+                vertical: 7,
+              ),
+              decoration: BoxDecoration(
+                color: isActive ? Colors.white : Colors.white.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: isActive
+                      ? Colors.transparent
+                      : Colors.white.withOpacity(0.25),
+                ),
+                boxShadow: isActive
+                    ? [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.08),
+                          blurRadius: 6,
+                          offset: Offset(0, 2),
                         ),
-                      ],
-                    )
-                  : Icon(icon, size: 15),
+                      ]
+                    : [],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    icon,
+                    size: 13,
+                    color: isActive ? _accent : Colors.white.withOpacity(0.9),
+                  ),
+                  if (isActive) ...[
+                    SizedBox(width: 5),
+                    Text(
+                      label,
+                      style: TextStyle(
+                        color: _accent,
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ),
           );
         }),
@@ -398,7 +390,7 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
     );
   }
 
-  Widget _headerIconBtn(IconData icon, VoidCallback onTap) => GestureDetector(
+  Widget _iconBtn(IconData icon, VoidCallback onTap) => GestureDetector(
     onTap: onTap,
     child: Container(
       margin: EdgeInsets.only(left: 4),
@@ -408,35 +400,6 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
         borderRadius: BorderRadius.circular(8),
       ),
       child: Icon(icon, color: Colors.white, size: 16),
-    ),
-  );
-
-  Widget _headerStat(IconData icon, String value, String label) => Expanded(
-    child: Container(
-      padding: EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.white.withOpacity(0.2)),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: Colors.white, size: 15),
-          SizedBox(height: 3),
-          Text(
-            value,
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 13,
-            ),
-          ),
-          Text(
-            label,
-            style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 9),
-          ),
-        ],
-      ),
     ),
   );
 
