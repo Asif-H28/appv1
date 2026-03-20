@@ -13,19 +13,20 @@ class CreateClassroomPage extends StatefulWidget {
 }
 
 class _CreateClassroomPageState extends State<CreateClassroomPage> {
+  static const Color _accent = Colors.teal;
+
   final _formKey = GlobalKey<FormState>();
   final _classNameController = TextEditingController();
   bool _isCreating = false;
   String _orgId = '';
 
-  // Subjects list with their lesson controllers
   final List<Map<String, dynamic>> _subjects = [];
 
   @override
   void initState() {
     super.initState();
     _loadOrgId();
-    _addSubject(); // start with one subject
+    _addSubject();
   }
 
   Future<void> _loadOrgId() async {
@@ -51,19 +52,18 @@ class _CreateClassroomPageState extends State<CreateClassroomPage> {
     setState(() => _subjects.removeAt(index));
   }
 
-  void _addLesson(int subjectIndex) {
+  void _addLesson(int si) {
     setState(() {
-      (_subjects[subjectIndex]['lessons'] as List<TextEditingController>).add(
+      (_subjects[si]['lessons'] as List<TextEditingController>).add(
         TextEditingController(),
       );
     });
   }
 
-  void _removeLesson(int subjectIndex, int lessonIndex) {
-    final lessons =
-        _subjects[subjectIndex]['lessons'] as List<TextEditingController>;
-    lessons[lessonIndex].dispose();
-    setState(() => lessons.removeAt(lessonIndex));
+  void _removeLesson(int si, int li) {
+    final lessons = _subjects[si]['lessons'] as List<TextEditingController>;
+    lessons[li].dispose();
+    setState(() => lessons.removeAt(li));
   }
 
   Future<void> _createClassroom() async {
@@ -100,50 +100,37 @@ class _CreateClassroomPageState extends State<CreateClassroomPage> {
       setState(() => _isCreating = false);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
-                SizedBox(width: 8),
-                Text(
-                  'Classroom created successfully! 🎉',
-                  style: TextStyle(fontWeight: FontWeight.w600),
-                ),
-              ],
-            ),
-            backgroundColor: Colors.green[600],
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        );
+        _snack('Classroom created successfully!', Colors.green[600]!);
         Navigator.pop(context);
       } else {
         final body = jsonDecode(response.body);
-        _showError(
+        _snack(
           body['message']?.toString() ?? 'Failed to create classroom.',
+          Colors.red[600]!,
         );
       }
     } catch (e) {
       if (!mounted) return;
       setState(() => _isCreating = false);
-      _showError(
+      _snack(
         e.toString().contains('SocketException')
             ? 'No internet connection.'
             : 'Something went wrong.',
+        Colors.red[600]!,
       );
     }
   }
 
-  void _showError(String msg) {
+  void _snack(String msg, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(msg),
-        backgroundColor: Colors.red[600],
+        content: Text(
+          msg,
+          style: TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+        ),
+        backgroundColor: color,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
       ),
     );
   }
@@ -160,17 +147,21 @@ class _CreateClassroomPageState extends State<CreateClassroomPage> {
     super.dispose();
   }
 
+  // ─────────────────────────────────────────────
+  // BUILD
+  // ─────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Column(
         children: [
-          // ── Header ──
+          // ── Gradient header ──
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.teal, Colors.teal.withOpacity(0.7)],
+                colors: [_accent, _accent.withOpacity(0.75)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -178,44 +169,110 @@ class _CreateClassroomPageState extends State<CreateClassroomPage> {
             child: SafeArea(
               bottom: false,
               child: Padding(
-                padding: EdgeInsets.fromLTRB(20, 16, 20, 24),
+                padding: EdgeInsets.fromLTRB(14, 12, 16, 14),
                 child: Row(
                   children: [
+                    // Back button
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
                       child: Container(
-                        padding: EdgeInsets.all(8),
+                        width: 34,
+                        height: 34,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(10),
+                          color: Colors.white.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(3),
                         ),
                         child: Icon(
-                          Icons.arrow_back_ios_new,
+                          Icons.arrow_back_ios_new_rounded,
                           color: Colors.white,
-                          size: 18,
+                          size: 15,
                         ),
                       ),
                     ),
-                    SizedBox(width: 14),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Create Classroom',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
+                    SizedBox(width: 12),
+
+                    // Title
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Create Classroom',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                        Text(
-                          'Set up a new classroom',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.8),
-                            fontSize: 12,
+                          Text(
+                            'Set up a new classroom',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.8),
+                              fontSize: 11,
+                            ),
                           ),
+                        ],
+                      ),
+                    ),
+
+                    // Create button in header
+                    GestureDetector(
+                      onTap: _isCreating ? null : _createClassroom,
+                      child: AnimatedContainer(
+                        duration: Duration(milliseconds: 150),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
                         ),
-                      ],
+                        decoration: BoxDecoration(
+                          color: _isCreating
+                              ? Colors.white.withOpacity(0.5)
+                              : Colors.white,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                        child: _isCreating
+                            ? Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  SizedBox(
+                                    width: 12,
+                                    height: 12,
+                                    child: CircularProgressIndicator(
+                                      color: _accent,
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                  SizedBox(width: 6),
+                                  Text(
+                                    'Creating...',
+                                    style: TextStyle(
+                                      color: _accent,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.check_rounded,
+                                    color: _accent,
+                                    size: 14,
+                                  ),
+                                  SizedBox(width: 5),
+                                  Text(
+                                    'Create',
+                                    style: TextStyle(
+                                      color: _accent,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                      ),
                     ),
                   ],
                 ),
@@ -223,62 +280,71 @@ class _CreateClassroomPageState extends State<CreateClassroomPage> {
             ),
           ),
 
+          // ── Body ──
           Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppColors.background,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-              ),
+            child: SafeArea(
+              top: false,
               child: Form(
                 key: _formKey,
                 child: ListView(
-                  padding: EdgeInsets.fromLTRB(20, 24, 20, 100),
+                  padding: EdgeInsets.fromLTRB(14, 14, 14, 40),
                   children: [
-                    // ── Class Name ──
-                    _sectionLabel('Classroom Name'),
-                    SizedBox(height: 8),
-                    _inputCard(
-                      child: TextFormField(
-                        controller: _classNameController,
-                        cursorColor: Colors.teal,
-                        style: TextStyle(fontSize: 15),
-                        textCapitalization: TextCapitalization.words,
-                        validator: (v) => v == null || v.isEmpty
-                            ? 'Classroom name is required'
-                            : null,
-                        decoration: _inputDeco(
-                          'e.g. Class 10-A',
-                          Icons.class_rounded,
-                        ),
-                      ),
+                    // ── Classroom name ──
+                    _label('CLASSROOM NAME'),
+                    SizedBox(height: 6),
+                    _inputField(
+                      controller: _classNameController,
+                      hint: 'e.g. Class 10-A',
+                      icon: Icons.class_rounded,
+                      capitalization: TextCapitalization.words,
+                      validator: (v) => (v == null || v.isEmpty)
+                          ? 'Classroom name is required'
+                          : null,
                     ),
-                    SizedBox(height: 24),
+                    SizedBox(height: 16),
 
-                    // ── Subjects ──
+                    // ── Subjects header ──
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _sectionLabel('Subjects & Lessons'),
-                        TextButton.icon(
-                          onPressed: _addSubject,
-                          icon: Icon(
-                            Icons.add_circle_rounded,
-                            color: Colors.teal,
-                            size: 18,
-                          ),
-                          label: Text(
-                            'Add Subject',
-                            style: TextStyle(
-                              color: Colors.teal,
-                              fontWeight: FontWeight.bold,
+                        _label('SUBJECTS & LESSONS'),
+                        Spacer(),
+                        GestureDetector(
+                          onTap: _addSubject,
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _accent,
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.add_rounded,
+                                  color: Colors.white,
+                                  size: 13,
+                                ),
+                                SizedBox(width: 4),
+                                Text(
+                                  'Add Subject',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          style: TextButton.styleFrom(padding: EdgeInsets.zero),
                         ),
                       ],
                     ),
-                    SizedBox(height: 10),
+                    SizedBox(height: 8),
 
+                    // ── Subject cards ──
                     ..._subjects.asMap().entries.map((entry) {
                       final si = entry.key;
                       final sub = entry.value;
@@ -293,30 +359,12 @@ class _CreateClassroomPageState extends State<CreateClassroomPage> {
           ),
         ],
       ),
-
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _isCreating ? null : _createClassroom,
-        backgroundColor: Colors.teal,
-        foregroundColor: Colors.white,
-        disabledElevation: 0,
-        elevation: 4,
-        icon: _isCreating
-            ? SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 2.5,
-                ),
-              )
-            : Icon(Icons.check_rounded),
-        label: Text(
-          _isCreating ? 'Creating...' : 'Create Classroom',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-      ),
     );
   }
+
+  // ─────────────────────────────────────────────
+  // SUBJECT CARD
+  // ─────────────────────────────────────────────
 
   Widget _buildSubjectCard(
     int si,
@@ -324,144 +372,160 @@ class _CreateClassroomPageState extends State<CreateClassroomPage> {
     List<TextEditingController> lessons,
   ) {
     return Container(
-      margin: EdgeInsets.only(bottom: 14),
+      margin: EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          ),
-        ],
-        border: Border.all(color: Colors.teal.withOpacity(0.15)),
+        borderRadius: BorderRadius.circular(3),
+        border: Border.all(color: _accent.withOpacity(0.15)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Subject header
+          // ── Subject header row ──
           Padding(
-            padding: EdgeInsets.fromLTRB(16, 12, 8, 8),
+            padding: EdgeInsets.fromLTRB(12, 10, 8, 8),
             child: Row(
               children: [
                 Container(
                   padding: EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: Colors.teal.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    color: _accent.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(3),
                   ),
                   child: Icon(
                     Icons.menu_book_rounded,
-                    color: Colors.teal,
-                    size: 16,
+                    color: _accent,
+                    size: 14,
                   ),
                 ),
-                SizedBox(width: 10),
+                SizedBox(width: 8),
                 Text(
                   'Subject ${si + 1}',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 13,
+                    fontSize: 12,
                     color: AppColors.textSecondary,
                   ),
                 ),
                 Spacer(),
                 if (_subjects.length > 1)
-                  IconButton(
-                    icon: Icon(
-                      Icons.remove_circle_rounded,
-                      color: Colors.red[400],
-                      size: 20,
+                  GestureDetector(
+                    onTap: () => _removeSubject(si),
+                    child: Container(
+                      padding: EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.07),
+                        borderRadius: BorderRadius.circular(3),
+                        border: Border.all(color: Colors.red.withOpacity(0.2)),
+                      ),
+                      child: Icon(
+                        Icons.delete_outline_rounded,
+                        color: Colors.red[400],
+                        size: 13,
+                      ),
                     ),
-                    onPressed: () => _removeSubject(si),
-                    padding: EdgeInsets.zero,
-                    constraints: BoxConstraints(),
                   ),
               ],
             ),
           ),
 
-          // Subject name field
+          // ── Subject name input ──
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
+            padding: EdgeInsets.symmetric(horizontal: 12),
             child: TextFormField(
               controller: sub['nameController'] as TextEditingController,
-              cursorColor: Colors.teal,
+              cursorColor: _accent,
               textCapitalization: TextCapitalization.words,
+              style: TextStyle(fontSize: 13),
               validator: (v) =>
-                  v == null || v.isEmpty ? 'Subject name required' : null,
-              decoration: _inputDeco(
+                  (v == null || v.isEmpty) ? 'Subject name required' : null,
+              decoration: _fieldDeco(
                 'Subject name (e.g. Mathematics)',
                 Icons.subject_rounded,
               ),
             ),
           ),
-          SizedBox(height: 12),
 
-          // Lessons
+          SizedBox(height: 10),
+
+          // ── Lessons header ──
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
+            padding: EdgeInsets.symmetric(horizontal: 12),
             child: Row(
               children: [
                 Text(
                   'Lessons',
                   style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
                     color: AppColors.textSecondary,
+                    letterSpacing: 0.3,
                   ),
                 ),
                 Spacer(),
                 GestureDetector(
                   onTap: () => _addLesson(si),
-                  child: Row(
-                    children: [
-                      Icon(Icons.add_rounded, color: Colors.teal, size: 16),
-                      Text(
-                        'Add',
-                        style: TextStyle(
-                          color: Colors.teal,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: _accent.withOpacity(0.07),
+                      borderRadius: BorderRadius.circular(3),
+                      border: Border.all(color: _accent.withOpacity(0.2)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.add_rounded, color: _accent, size: 11),
+                        SizedBox(width: 3),
+                        Text(
+                          'Add',
+                          style: TextStyle(
+                            color: _accent,
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ],
             ),
           ),
+
           SizedBox(height: 6),
 
+          // ── Lesson rows ──
           ...lessons.asMap().entries.map((le) {
             final li = le.key;
             final ctrl = le.value;
             return Padding(
-              padding: EdgeInsets.fromLTRB(16, 4, 8, 4),
+              padding: EdgeInsets.fromLTRB(12, 3, 8, 3),
               child: Row(
                 children: [
                   Container(
-                    width: 6,
-                    height: 6,
+                    width: 5,
+                    height: 5,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.teal.withOpacity(0.5),
+                      color: _accent.withOpacity(0.45),
                     ),
                   ),
                   SizedBox(width: 10),
                   Expanded(
-                    child: TextFormField(
+                    child: TextField(
                       controller: ctrl,
-                      cursorColor: Colors.teal,
-                      style: TextStyle(fontSize: 13),
+                      cursorColor: _accent,
+                      style: TextStyle(fontSize: 12.5),
                       decoration: InputDecoration(
                         hintText: 'Lesson ${li + 1} name',
                         hintStyle: TextStyle(
                           color: AppColors.textSecondary.withOpacity(0.5),
-                          fontSize: 13,
+                          fontSize: 12.5,
                         ),
                         border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
                         isDense: true,
                         contentPadding: EdgeInsets.symmetric(vertical: 6),
                       ),
@@ -471,10 +535,10 @@ class _CreateClassroomPageState extends State<CreateClassroomPage> {
                     GestureDetector(
                       onTap: () => _removeLesson(si, li),
                       child: Padding(
-                        padding: EdgeInsets.all(8),
+                        padding: EdgeInsets.all(6),
                         child: Icon(
                           Icons.close_rounded,
-                          size: 16,
+                          size: 13,
                           color: Colors.grey[400],
                         ),
                       ),
@@ -483,66 +547,92 @@ class _CreateClassroomPageState extends State<CreateClassroomPage> {
               ),
             );
           }).toList(),
-          SizedBox(height: 12),
+
+          SizedBox(height: 10),
+
+          // ── Lesson count badge ──
+          Padding(
+            padding: EdgeInsets.fromLTRB(12, 0, 12, 10),
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+              decoration: BoxDecoration(
+                color: _accent.withOpacity(0.06),
+                borderRadius: BorderRadius.circular(3),
+              ),
+              child: Text(
+                '${lessons.length} lesson${lessons.length == 1 ? '' : 's'}',
+                style: TextStyle(
+                  color: _accent,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _sectionLabel(String label) => Text(
-    label,
+  // ─────────────────────────────────────────────
+  // HELPERS
+  // ─────────────────────────────────────────────
+
+  Widget _label(String text) => Text(
+    text,
     style: TextStyle(
-      fontSize: 13,
+      fontSize: 10.5,
       fontWeight: FontWeight.w700,
       color: AppColors.textSecondary,
-      letterSpacing: 0.5,
+      letterSpacing: 0.6,
     ),
   );
 
-  Widget _inputCard({required Widget child}) => Container(
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(14),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.05),
-          blurRadius: 8,
-          offset: Offset(0, 2),
-        ),
-      ],
-    ),
-    child: child,
+  Widget _inputField({
+    required TextEditingController controller,
+    required String hint,
+    required IconData icon,
+    TextCapitalization capitalization = TextCapitalization.none,
+    String? Function(String?)? validator,
+  }) => TextFormField(
+    controller: controller,
+    cursorColor: _accent,
+    style: TextStyle(fontSize: 13),
+    textCapitalization: capitalization,
+    validator: validator,
+    decoration: _fieldDeco(hint, icon),
   );
 
-  InputDecoration _inputDeco(String hint, IconData icon) => InputDecoration(
+  InputDecoration _fieldDeco(String hint, IconData icon) => InputDecoration(
     hintText: hint,
     hintStyle: TextStyle(
       color: AppColors.textSecondary.withOpacity(0.5),
-      fontSize: 14,
+      fontSize: 13,
     ),
-    prefixIcon: Icon(icon, color: Colors.teal, size: 18),
+    prefixIcon: Icon(icon, color: _accent, size: 16),
     border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: BorderSide.none,
+      borderRadius: BorderRadius.circular(3),
+      borderSide: BorderSide(color: Colors.grey[200]!),
     ),
     enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: BorderSide.none,
+      borderRadius: BorderRadius.circular(3),
+      borderSide: BorderSide(color: Colors.grey[200]!),
     ),
     focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
-      borderSide: BorderSide(color: Colors.teal.withOpacity(0.4), width: 1.5),
+      borderRadius: BorderRadius.circular(3),
+      borderSide: BorderSide(color: _accent.withOpacity(0.5), width: 1.5),
     ),
     errorBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(3),
       borderSide: BorderSide(color: Colors.red[300]!, width: 1.5),
     ),
     focusedErrorBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(3),
       borderSide: BorderSide(color: Colors.red[300]!, width: 1.5),
     ),
     filled: true,
     fillColor: Colors.white,
-    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    isDense: true,
+    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
   );
 }
