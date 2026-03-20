@@ -82,22 +82,16 @@ class _ClassroomStudentsTabState extends State<ClassroomStudentsTab> {
         ),
         headers: {'Content-Type': 'application/json'},
       );
-
-      debugPrint('STUDENTS STATUS: ${response.statusCode}');
-      debugPrint('STUDENTS BODY: ${response.body}');
-
       if (!mounted) return;
-
       if (response.statusCode == 200) {
         final body = jsonDecode(response.body);
         List<dynamic> raw = [];
-        if (body is List) {
+        if (body is List)
           raw = body;
-        } else if (body['requests'] is List) {
+        else if (body['requests'] is List)
           raw = body['requests'] as List;
-        } else if (body['data'] is List) {
+        else if (body['data'] is List)
           raw = body['data'] as List;
-        }
 
         final approved = raw
             .map((e) => e as Map<String, dynamic>)
@@ -105,12 +99,10 @@ class _ClassroomStudentsTabState extends State<ClassroomStudentsTab> {
             .toList();
 
         if (!mounted) return;
-
         setState(() {
           _allApproved = approved;
           _isLoading = false;
         });
-
         _onSearch();
       } else {
         setState(() {
@@ -119,7 +111,6 @@ class _ClassroomStudentsTabState extends State<ClassroomStudentsTab> {
         });
       }
     } catch (e) {
-      debugPrint('FETCH STUDENTS ERROR: $e');
       if (!mounted) return;
       setState(() {
         _isLoading = false;
@@ -128,46 +119,34 @@ class _ClassroomStudentsTabState extends State<ClassroomStudentsTab> {
     }
   }
 
-  // ── UPDATED: single API call handles everything ──
   Future<void> _removeStudent(Map<String, dynamic> student) async {
     final studentId = student['studentId']?.toString() ?? '';
     final name =
         student['studentName']?.toString() ??
         student['name']?.toString() ??
         'Student';
-
     if (studentId.isEmpty) return;
-
     setState(() => _removingMap[studentId] = true);
-
     try {
-      // ── Single call: removes from classroom + rejects request + resets student ──
       final response = await http.delete(
         Uri.parse(
           'https://appv1backend.onrender.com/api/join/class/${widget.classId}/student/$studentId',
         ),
         headers: {'Content-Type': 'application/json'},
       );
-
-      debugPrint('REMOVE STATUS: ${response.statusCode}');
-      debugPrint('REMOVE BODY: ${response.body}');
-
       if (!mounted) return;
-
       if (response.statusCode == 200 ||
           response.statusCode == 204 ||
           response.statusCode == 404) {
-        // ── Success: remove from local state ──
         setState(() {
           _removingMap.remove(studentId);
           _allApproved.removeWhere(
             (s) => s['studentId']?.toString() == studentId,
           );
         });
-        _onSearch(); // rebuild _filtered
+        _onSearch();
         _snack('$name removed from classroom.', Colors.orange[700]!);
       } else {
-        // ── API error ──
         final body = _tryDecode(response.body);
         setState(() => _removingMap.remove(studentId));
         _snack(
@@ -176,7 +155,6 @@ class _ClassroomStudentsTabState extends State<ClassroomStudentsTab> {
         );
       }
     } catch (e) {
-      debugPrint('REMOVE ERROR: $e');
       if (!mounted) return;
       setState(() => _removingMap.remove(studentId));
       _snack(
@@ -188,7 +166,6 @@ class _ClassroomStudentsTabState extends State<ClassroomStudentsTab> {
     }
   }
 
-  // ── Safe JSON decode helper ──
   Map<String, dynamic> _tryDecode(String body) {
     try {
       return jsonDecode(body) as Map<String, dynamic>;
@@ -202,27 +179,31 @@ class _ClassroomStudentsTabState extends State<ClassroomStudentsTab> {
         student['studentName']?.toString() ??
         student['name']?.toString() ??
         'this student';
-
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        titlePadding: EdgeInsets.fromLTRB(20, 20, 20, 0),
+        contentPadding: EdgeInsets.fromLTRB(20, 10, 20, 0),
+        actionsPadding: EdgeInsets.fromLTRB(12, 0, 12, 12),
         title: Row(
           children: [
-            CircleAvatar(
-              backgroundColor: Colors.red.withOpacity(0.1),
+            Container(
+              padding: EdgeInsets.all(7),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(3),
+              ),
               child: Icon(
                 Icons.person_remove_rounded,
                 color: Colors.red[600],
-                size: 20,
+                size: 16,
               ),
             ),
-            SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Remove Student',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-              ),
+            SizedBox(width: 10),
+            Text(
+              'Remove Student',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
             ),
           ],
         ),
@@ -231,7 +212,7 @@ class _ClassroomStudentsTabState extends State<ClassroomStudentsTab> {
           style: TextStyle(
             color: AppColors.textSecondary,
             height: 1.5,
-            fontSize: 13,
+            fontSize: 12.5,
           ),
         ),
         actions: [
@@ -239,7 +220,7 @@ class _ClassroomStudentsTabState extends State<ClassroomStudentsTab> {
             onPressed: () => Navigator.pop(ctx),
             child: Text(
               'Cancel',
-              style: TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
             ),
           ),
           ElevatedButton(
@@ -251,13 +232,14 @@ class _ClassroomStudentsTabState extends State<ClassroomStudentsTab> {
               backgroundColor: Colors.red[600],
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(3),
               ),
               elevation: 0,
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             ),
             child: Text(
               'Remove',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
             ),
           ),
         ],
@@ -274,7 +256,7 @@ class _ClassroomStudentsTabState extends State<ClassroomStudentsTab> {
         ),
         backgroundColor: color,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
       ),
     );
   }
@@ -290,98 +272,128 @@ class _ClassroomStudentsTabState extends State<ClassroomStudentsTab> {
 
     return Column(
       children: [
-        // ── Search bar ──
-        Padding(
-          padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
-          child: Container(
-            height: 46,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.06),
-                  blurRadius: 8,
-                  offset: Offset(0, 2),
-                ),
-              ],
-              border: Border.all(color: _accent.withOpacity(0.2)),
-            ),
-            child: TextField(
-              controller: _searchCtrl,
-              cursorColor: _accent,
-              style: TextStyle(fontSize: 13, color: AppColors.textPrimary),
-              decoration: InputDecoration(
-                hintText: 'Search by name or email...',
-                hintStyle: TextStyle(
-                  color: AppColors.textSecondary.withOpacity(0.5),
-                  fontSize: 13,
-                ),
-                prefixIcon: Icon(
-                  Icons.search_rounded,
-                  color: _accent,
-                  size: 20,
-                ),
-                suffixIcon: _searchCtrl.text.isNotEmpty
-                    ? GestureDetector(
-                        onTap: _searchCtrl.clear,
-                        child: Icon(
-                          Icons.close_rounded,
-                          color: Colors.grey[400],
-                          size: 18,
-                        ),
-                      )
-                    : null,
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 4,
-                  vertical: 13,
-                ),
-              ),
-            ),
-          ),
-        ),
-
-        // ── Count chip ──
-        Padding(
-          padding: EdgeInsets.fromLTRB(16, 0, 16, 6),
-          child: Row(
+        // ── Search + count header ──
+        Container(
+          color: Colors.white,
+          padding: EdgeInsets.fromLTRB(12, 12, 12, 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Search bar — no focus border, no blue outline
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: _accent.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
+                  color: Colors.grey[50],
+                  borderRadius: BorderRadius.circular(3),
+                  border: Border.all(color: Colors.grey[200]!),
                 ),
                 child: Row(
-                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.people_rounded, color: _accent, size: 12),
-                    SizedBox(width: 5),
-                    Text(
-                      '${_allApproved.length} Student${_allApproved.length == 1 ? '' : 's'}',
-                      style: TextStyle(
-                        color: _accent,
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      child: Icon(
+                        Icons.search_rounded,
+                        color: Colors.grey[400],
+                        size: 17,
                       ),
                     ),
+                    Expanded(
+                      child: TextField(
+                        controller: _searchCtrl,
+                        cursorColor: _accent,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textPrimary,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Search students...',
+                          hintStyle: TextStyle(
+                            color: Colors.grey[400],
+                            fontSize: 13,
+                          ),
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          isDense: true,
+                          contentPadding: EdgeInsets.symmetric(vertical: 10),
+                        ),
+                      ),
+                    ),
+                    if (_searchCtrl.text.isNotEmpty)
+                      GestureDetector(
+                        onTap: () => _searchCtrl.clear(),
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          child: Icon(
+                            Icons.close_rounded,
+                            color: Colors.grey[400],
+                            size: 15,
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
-              if (_searchCtrl.text.trim().isNotEmpty) ...[
-                SizedBox(width: 8),
-                Text(
-                  '${_filtered.length} match${_filtered.length == 1 ? '' : 'es'}',
-                  style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 11,
+              SizedBox(height: 8),
+
+              // Count + refresh row
+              Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: _accent.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(3),
+                      border: Border.all(color: _accent.withOpacity(0.2)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.people_rounded, color: _accent, size: 11),
+                        SizedBox(width: 4),
+                        Text(
+                          '${_allApproved.length} Student${_allApproved.length == 1 ? '' : 's'}',
+                          style: TextStyle(
+                            color: _accent,
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                  if (_searchCtrl.text.trim().isNotEmpty) ...[
+                    SizedBox(width: 6),
+                    Text(
+                      '${_filtered.length} result${_filtered.length == 1 ? '' : 's'}',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 10.5,
+                      ),
+                    ),
+                  ],
+                  Spacer(),
+                  GestureDetector(
+                    onTap: _fetchApprovedStudents,
+                    child: Container(
+                      padding: EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                      child: Icon(
+                        Icons.refresh_rounded,
+                        color: Colors.grey[500],
+                        size: 14,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
+
+        Divider(height: 1, color: Colors.grey[100]),
 
         // ── List / Empty states ──
         _allApproved.isEmpty
@@ -393,12 +405,11 @@ class _ClassroomStudentsTabState extends State<ClassroomStudentsTab> {
                   color: _accent,
                   onRefresh: _fetchApprovedStudents,
                   child: ListView.separated(
-                    padding: EdgeInsets.fromLTRB(16, 4, 16, 40),
+                    padding: EdgeInsets.fromLTRB(12, 8, 12, 40),
                     itemCount: _filtered.length,
                     separatorBuilder: (_, __) =>
-                        Divider(color: Colors.grey[100], height: 1, indent: 72),
-                    itemBuilder: (_, index) =>
-                        _studentTile(_filtered[index], index),
+                        Divider(color: Colors.grey[100], height: 1),
+                    itemBuilder: (_, i) => _studentTile(_filtered[i], i),
                   ),
                 ),
               ),
@@ -422,149 +433,116 @@ class _ClassroomStudentsTabState extends State<ClassroomStudentsTab> {
 
     return Container(
       color: Colors.white,
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 4, vertical: 10),
-        child: Row(
-          children: [
-            // ── Gradient avatar ──
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: gradient,
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: gradient[0].withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: Offset(0, 3),
-                  ),
-                ],
+      padding: EdgeInsets.symmetric(horizontal: 4, vertical: 9),
+      child: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: gradient,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              child: Center(
-                child: Text(
-                  initial,
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Text(
+                initial,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
                   style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                    color: AppColors.textPrimary,
                   ),
                 ),
-              ),
+                SizedBox(height: 2),
+                Text(
+                  email.isNotEmpty ? email : studentId,
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 11,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
-            SizedBox(width: 14),
-
-            // ── Name + email ──
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
-                      color: AppColors.textPrimary,
+          ),
+          isRemoving
+              ? SizedBox(
+                  width: 28,
+                  height: 28,
+                  child: CircularProgressIndicator(
+                    color: Colors.red[400],
+                    strokeWidth: 2,
+                  ),
+                )
+              : GestureDetector(
+                  onTap: () => _confirmRemove(student),
+                  child: Container(
+                    padding: EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.07),
+                      borderRadius: BorderRadius.circular(3),
+                      border: Border.all(color: Colors.red.withOpacity(0.2)),
+                    ),
+                    child: Icon(
+                      Icons.person_remove_rounded,
+                      color: Colors.red[400],
+                      size: 14,
                     ),
                   ),
-                  SizedBox(height: 3),
-                  Text(
-                    email.isNotEmpty ? email : studentId,
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 11.5,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-
-            // ── Remove / loading ──
-            isRemoving
-                ? SizedBox(
-                    width: 36,
-                    height: 36,
-                    child: Padding(
-                      padding: EdgeInsets.all(6),
-                      child: CircularProgressIndicator(
-                        color: Colors.red[400],
-                        strokeWidth: 2,
-                      ),
-                    ),
-                  )
-                : GestureDetector(
-                    onTap: () => _confirmRemove(student),
-                    child: Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.red.withOpacity(0.08),
-                        border: Border.all(
-                          color: Colors.red.withOpacity(0.2),
-                          width: 1,
-                        ),
-                      ),
-                      child: Icon(
-                        Icons.person_remove_rounded,
-                        color: Colors.red[400],
-                        size: 16,
-                      ),
-                    ),
-                  ),
-          ],
-        ),
+                ),
+        ],
       ),
     );
   }
 
   Widget _buildEmpty() => Expanded(
     child: Center(
-      child: Padding(
-        padding: EdgeInsets.all(28),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: _accent.withOpacity(0.08),
-              ),
-              child: Icon(
-                Icons.people_outline_rounded,
-                color: _accent,
-                size: 34,
-              ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: _accent.withOpacity(0.07),
             ),
-            SizedBox(height: 14),
-            Text(
-              'No Approved Students',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
-                color: AppColors.textPrimary,
-              ),
+            child: Icon(Icons.people_outline_rounded, color: _accent, size: 26),
+          ),
+          SizedBox(height: 12),
+          Text(
+            'No Approved Students',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+              color: AppColors.textPrimary,
             ),
-            SizedBox(height: 6),
-            Text(
-              'Students approved from the\nRequests tab will appear here.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 12,
-                height: 1.5,
-              ),
-            ),
-          ],
-        ),
+          ),
+          SizedBox(height: 4),
+          Text(
+            'Approved requests will appear here.',
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 11.5),
+          ),
+        ],
       ),
     ),
   );
@@ -574,20 +552,20 @@ class _ClassroomStudentsTabState extends State<ClassroomStudentsTab> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.search_off_rounded, size: 46, color: Colors.grey[400]),
-          SizedBox(height: 12),
+          Icon(Icons.search_off_rounded, size: 40, color: Colors.grey[400]),
+          SizedBox(height: 10),
           Text(
             'No students found',
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: 14,
+              fontSize: 13,
               color: AppColors.textPrimary,
             ),
           ),
           SizedBox(height: 4),
           Text(
             'Try a different name or email',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 11.5),
           ),
         ],
       ),
@@ -600,31 +578,31 @@ class _ClassroomStudentsTabState extends State<ClassroomStudentsTab> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.cloud_off_rounded, size: 46, color: Colors.grey[400]),
+          Icon(Icons.cloud_off_rounded, size: 42, color: Colors.grey[400]),
           SizedBox(height: 12),
           Text(
             'Could not load students',
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: 14,
+              fontSize: 13,
               color: AppColors.textPrimary,
             ),
           ),
-          SizedBox(height: 16),
+          SizedBox(height: 14),
           ElevatedButton.icon(
             onPressed: _fetchApprovedStudents,
             style: ElevatedButton.styleFrom(
               backgroundColor: _accent,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(3),
               ),
               elevation: 0,
             ),
-            icon: Icon(Icons.refresh, size: 15),
+            icon: Icon(Icons.refresh, size: 14),
             label: Text(
               'Retry',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
             ),
           ),
         ],

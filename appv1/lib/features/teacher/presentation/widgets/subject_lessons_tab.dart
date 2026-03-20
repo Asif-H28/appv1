@@ -54,56 +54,52 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
         builder: (ctx, setSheetState) => Container(
           decoration: BoxDecoration(
             color: AppColors.background,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           padding: EdgeInsets.only(
             bottom: MediaQuery.of(ctx).viewInsets.bottom,
           ),
           child: SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(20, 16, 20, 32),
+            padding: EdgeInsets.fromLTRB(16, 12, 16, 28),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _sheetHandle(),
-                SizedBox(height: 20),
-
-                // ── Header ──
+                SizedBox(height: 14),
                 Row(
                   children: [
                     Container(
-                      padding: EdgeInsets.all(8),
+                      padding: EdgeInsets.all(7),
                       decoration: BoxDecoration(
                         color: _accent.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(3),
                       ),
                       child: Icon(
                         Icons.menu_book_rounded,
                         color: _accent,
-                        size: 20,
+                        size: 16,
                       ),
                     ),
-                    SizedBox(width: 12),
+                    SizedBox(width: 10),
                     Text(
                       'Add Subject',
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 15,
                         fontWeight: FontWeight.bold,
                         color: AppColors.textPrimary,
                       ),
                     ),
                   ],
                 ),
-                SizedBox(height: 20),
-
+                SizedBox(height: 14),
                 _sheetLabel('Subject Name'),
-                SizedBox(height: 8),
+                SizedBox(height: 6),
                 _sheetInput(
                   nameCtrl,
                   'e.g. Mathematics',
                   Icons.menu_book_rounded,
                 ),
-                SizedBox(height: 20),
-
+                SizedBox(height: 14),
                 Row(
                   children: [
                     _sheetLabel('Lessons'),
@@ -114,24 +110,24 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
                       ),
                       child: Container(
                         padding: EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 5,
+                          horizontal: 8,
+                          vertical: 4,
                         ),
                         decoration: BoxDecoration(
                           color: _accent.withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(3),
                           border: Border.all(color: _accent.withOpacity(0.2)),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.add_rounded, color: _accent, size: 14),
-                            SizedBox(width: 4),
+                            Icon(Icons.add_rounded, color: _accent, size: 12),
+                            SizedBox(width: 3),
                             Text(
                               'Add Lesson',
                               style: TextStyle(
                                 color: _accent,
-                                fontSize: 12,
+                                fontSize: 11,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -141,17 +137,16 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
                     ),
                   ],
                 ),
-                SizedBox(height: 10),
-
+                SizedBox(height: 8),
                 ...lessonsCtrl.asMap().entries.map(
                   (e) => Padding(
-                    padding: EdgeInsets.only(bottom: 8),
+                    padding: EdgeInsets.only(bottom: 6),
                     child: Row(
                       children: [
                         Container(
-                          width: 6,
-                          height: 6,
-                          margin: EdgeInsets.only(right: 10),
+                          width: 5,
+                          height: 5,
+                          margin: EdgeInsets.only(right: 8),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: _accent.withOpacity(0.5),
@@ -170,10 +165,10 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
                               () => lessonsCtrl.removeAt(e.key),
                             ),
                             child: Padding(
-                              padding: EdgeInsets.all(8),
+                              padding: EdgeInsets.all(6),
                               child: Icon(
                                 Icons.close_rounded,
-                                size: 16,
+                                size: 14,
                                 color: Colors.grey[400],
                               ),
                             ),
@@ -182,11 +177,10 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
                     ),
                   ),
                 ),
-                SizedBox(height: 24),
-
+                SizedBox(height: 18),
                 SizedBox(
                   width: double.infinity,
-                  height: 52,
+                  height: 46,
                   child: ElevatedButton(
                     onPressed: () async {
                       if (nameCtrl.text.trim().isEmpty) return;
@@ -215,7 +209,7 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
                       backgroundColor: _accent,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(3),
                       ),
                       elevation: 0,
                     ),
@@ -223,7 +217,7 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
                       'Add Subject',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 15,
+                        fontSize: 13,
                       ),
                     ),
                   ),
@@ -245,29 +239,28 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
       builder: (ctx) => Container(
         decoration: BoxDecoration(
           color: AppColors.background,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
         padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
         child: Padding(
-          padding: EdgeInsets.fromLTRB(20, 16, 20, 32),
+          padding: EdgeInsets.fromLTRB(16, 12, 16, 28),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _sheetHandle(),
-              SizedBox(height: 20),
-
+              SizedBox(height: 14),
               Row(
                 children: [
                   Container(
-                    padding: EdgeInsets.all(8),
+                    padding: EdgeInsets.all(7),
                     decoration: BoxDecoration(
                       color: _accent.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(3),
                     ),
-                    child: Icon(Icons.book_outlined, color: _accent, size: 20),
+                    child: Icon(Icons.book_outlined, color: _accent, size: 16),
                   ),
-                  SizedBox(width: 12),
+                  SizedBox(width: 10),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -275,7 +268,7 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
                         Text(
                           'Add Lesson',
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: 15,
                             fontWeight: FontWeight.bold,
                             color: AppColors.textPrimary,
                           ),
@@ -283,7 +276,7 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
                         Text(
                           'to "$subjectName"',
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 11,
                             color: AppColors.textSecondary,
                           ),
                         ),
@@ -292,16 +285,14 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
                   ),
                 ],
               ),
-              SizedBox(height: 20),
-
+              SizedBox(height: 14),
               _sheetLabel('Lesson Name'),
-              SizedBox(height: 8),
+              SizedBox(height: 6),
               _sheetInput(ctrl, 'e.g. Algebra', Icons.book_outlined),
-              SizedBox(height: 24),
-
+              SizedBox(height: 18),
               SizedBox(
                 width: double.infinity,
-                height: 52,
+                height: 46,
                 child: ElevatedButton(
                   onPressed: () async {
                     if (ctrl.text.trim().isEmpty) return;
@@ -322,13 +313,13 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
                     backgroundColor: _accent,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(3),
                     ),
                     elevation: 0,
                   ),
                   child: Text(
                     'Add Lesson',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                   ),
                 ),
               ),
@@ -339,12 +330,12 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
     );
   }
 
-  // ── Shared helpers ──
+  // ── Helpers ──
 
   Widget _sheetHandle() => Center(
     child: Container(
-      width: 40,
-      height: 4,
+      width: 36,
+      height: 3,
       decoration: BoxDecoration(
         color: Colors.grey[300],
         borderRadius: BorderRadius.circular(2),
@@ -355,92 +346,81 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
   Widget _sheetLabel(String text) => Text(
     text,
     style: TextStyle(
-      fontSize: 12,
+      fontSize: 11,
       fontWeight: FontWeight.w700,
       color: AppColors.textSecondary,
-      letterSpacing: 0.4,
+      letterSpacing: 0.3,
     ),
   );
 
   Widget _sheetInput(TextEditingController ctrl, String hint, IconData icon) =>
-      Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 6,
-              offset: Offset(0, 2),
-            ),
-          ],
-        ),
-        child: TextField(
-          controller: ctrl,
-          cursorColor: _accent,
-          style: TextStyle(fontSize: 14),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: TextStyle(
-              color: AppColors.textSecondary.withOpacity(0.5),
-              fontSize: 14,
-            ),
-            prefixIcon: Icon(icon, color: _accent, size: 20),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(
-                color: _accent.withOpacity(0.4),
-                width: 1.5,
-              ),
-            ),
-            filled: true,
-            fillColor: Colors.white,
-            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      TextField(
+        controller: ctrl,
+        cursorColor: _accent,
+        style: TextStyle(fontSize: 13),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: TextStyle(
+            color: AppColors.textSecondary.withOpacity(0.5),
+            fontSize: 13,
           ),
+          prefixIcon: Icon(icon, color: _accent, size: 16),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(3),
+            borderSide: BorderSide(color: Colors.grey[200]!),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(3),
+            borderSide: BorderSide(color: Colors.grey[200]!),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(3),
+            borderSide: BorderSide(color: _accent.withOpacity(0.5), width: 1.5),
+          ),
+          filled: true,
+          fillColor: Colors.white,
+          isDense: true,
+          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         ),
       );
 
+  // ── Main build ──
+
   @override
   Widget build(BuildContext context) {
-    if (widget.subjects.isEmpty) {
-      return _buildEmpty();
-    }
+    if (widget.subjects.isEmpty) return _buildEmpty();
 
     return ListView(
-      padding: EdgeInsets.fromLTRB(16, 16, 16, 100),
+      padding: EdgeInsets.fromLTRB(12, 12, 12, 80),
       children: [
         // ── Add Subject button ──
         GestureDetector(
           onTap: _showAddSubjectSheet,
           child: Container(
-            padding: EdgeInsets.symmetric(vertical: 14),
+            padding: EdgeInsets.symmetric(vertical: 10),
             decoration: BoxDecoration(
-              border: Border.all(color: _accent.withOpacity(0.4), width: 1.5),
-              borderRadius: BorderRadius.circular(14),
-              color: _accent.withOpacity(0.04),
+              border: Border.all(color: _accent.withOpacity(0.35)),
+              borderRadius: BorderRadius.circular(3),
+              color: _accent.withOpacity(0.03),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.add_rounded, color: _accent, size: 18),
-                SizedBox(width: 8),
+                Icon(Icons.add_rounded, color: _accent, size: 15),
+                SizedBox(width: 6),
                 Text(
                   'Add New Subject',
                   style: TextStyle(
                     color: _accent,
                     fontWeight: FontWeight.bold,
-                    fontSize: 14,
+                    fontSize: 12,
                   ),
                 ),
               ],
             ),
           ),
         ),
-        SizedBox(height: 16),
+        SizedBox(height: 10),
 
         // ── Subject cards ──
         ...widget.subjects.asMap().entries.map((entry) {
@@ -455,18 +435,18 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
           final progress = total > 0 ? completed / total : 0.0;
 
           return Container(
-            margin: EdgeInsets.only(bottom: 14),
+            margin: EdgeInsets.only(bottom: 8),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(3),
               boxShadow: [
                 BoxShadow(
-                  color: _accent.withOpacity(0.08),
-                  blurRadius: 8,
-                  offset: Offset(0, 2),
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 4,
+                  offset: Offset(0, 1),
                 ),
               ],
-              border: Border.all(color: _accent.withOpacity(0.15)),
+              border: Border.all(color: _accent.withOpacity(0.12)),
             ),
             child: Theme(
               data: Theme.of(
@@ -474,17 +454,18 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
               ).copyWith(dividerColor: Colors.transparent),
               child: ExpansionTile(
                 initiallyExpanded: si == 0,
-                tilePadding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                tilePadding: EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+                minTileHeight: 52,
                 leading: Container(
-                  width: 42,
-                  height: 42,
+                  width: 32,
+                  height: 32,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [_accent, _accent.withOpacity(0.7)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(3),
                   ),
                   child: Center(
                     child: Text(
@@ -492,7 +473,7 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: 13,
                       ),
                     ),
                   ),
@@ -501,155 +482,144 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
                   subName,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 14,
+                    fontSize: 13,
                     color: AppColors.textPrimary,
                   ),
                 ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                subtitle: Row(
                   children: [
-                    SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Text(
-                          '$completed/$total lessons done',
-                          style: TextStyle(
-                            color: _accent,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                          ),
+                    // Mini progress bar
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(2),
+                        child: LinearProgressIndicator(
+                          value: progress,
+                          minHeight: 3,
+                          backgroundColor: _accent.withOpacity(0.1),
+                          valueColor: AlwaysStoppedAnimation<Color>(_accent),
                         ),
-                        SizedBox(width: 6),
-                        Text(
-                          '(${(progress * 100).toStringAsFixed(0)}%)',
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 10.5,
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 6),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: LinearProgressIndicator(
-                        value: progress,
-                        minHeight: 4,
-                        backgroundColor: _accent.withOpacity(0.1),
-                        valueColor: AlwaysStoppedAnimation<Color>(_accent),
                       ),
                     ),
-                    SizedBox(height: 4),
+                    SizedBox(width: 6),
+                    Text(
+                      '$completed/$total',
+                      style: TextStyle(
+                        color: _accent,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ],
                 ),
                 children: [
                   Divider(
                     height: 1,
                     color: _accent.withOpacity(0.08),
-                    indent: 16,
-                    endIndent: 16,
+                    indent: 12,
+                    endIndent: 12,
                   ),
 
-                  // ── Lessons list ──
+                  // ── Lessons ──
                   ...lessons.asMap().entries.map((le) {
                     final lesson = le.value as Map;
                     final lessonName = lesson['name']?.toString() ?? 'Lesson';
                     final isDone = lesson['completed'] == true;
 
-                    return ListTile(
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 2,
-                      ),
-                      leading: GestureDetector(
-                        onTap: () => _toggleLesson(subName, lessonName, isDone),
-                        child: AnimatedContainer(
-                          duration: Duration(milliseconds: 200),
-                          width: 24,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: isDone ? _accent : Colors.transparent,
-                            border: Border.all(
-                              color: isDone ? _accent : Colors.grey[350]!,
-                              width: 2,
-                            ),
-                          ),
-                          child: isDone
-                              ? Icon(
-                                  Icons.check_rounded,
-                                  color: Colors.white,
-                                  size: 14,
-                                )
-                              : null,
+                    return InkWell(
+                      onTap: () => _toggleLesson(subName, lessonName, isDone),
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
                         ),
-                      ),
-                      title: Text(
-                        lessonName,
-                        style: TextStyle(
-                          fontSize: 13.5,
-                          color: isDone
-                              ? AppColors.textSecondary
-                              : AppColors.textPrimary,
-                          decoration: isDone
-                              ? TextDecoration.lineThrough
-                              : null,
-                          fontWeight: isDone
-                              ? FontWeight.w400
-                              : FontWeight.w500,
-                        ),
-                      ),
-                      trailing: isDone
-                          ? Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 3,
-                              ),
+                        child: Row(
+                          children: [
+                            // Checkbox circle
+                            AnimatedContainer(
+                              duration: Duration(milliseconds: 200),
+                              width: 18,
+                              height: 18,
                               decoration: BoxDecoration(
-                                color: _accent.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
+                                shape: BoxShape.circle,
+                                color: isDone ? _accent : Colors.transparent,
                                 border: Border.all(
-                                  color: _accent.withOpacity(0.2),
+                                  color: isDone ? _accent : Colors.grey[350]!,
+                                  width: 1.5,
                                 ),
                               ),
+                              child: isDone
+                                  ? Icon(
+                                      Icons.check_rounded,
+                                      color: Colors.white,
+                                      size: 11,
+                                    )
+                                  : null,
+                            ),
+                            SizedBox(width: 10),
+                            Expanded(
                               child: Text(
-                                '✓ Done',
+                                lessonName,
                                 style: TextStyle(
-                                  color: _accent,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12.5,
+                                  color: isDone
+                                      ? AppColors.textSecondary
+                                      : AppColors.textPrimary,
+                                  decoration: isDone
+                                      ? TextDecoration.lineThrough
+                                      : null,
+                                  fontWeight: isDone
+                                      ? FontWeight.w400
+                                      : FontWeight.w500,
                                 ),
                               ),
-                            )
-                          : null,
+                            ),
+                            if (isDone)
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: _accent.withOpacity(0.08),
+                                  borderRadius: BorderRadius.circular(3),
+                                ),
+                                child: Text(
+                                  'Done',
+                                  style: TextStyle(
+                                    color: _accent,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
                     );
                   }).toList(),
 
-                  // ── Add lesson ──
+                  // ── Add Lesson ──
                   Padding(
-                    padding: EdgeInsets.fromLTRB(16, 8, 16, 14),
+                    padding: EdgeInsets.fromLTRB(12, 6, 12, 10),
                     child: GestureDetector(
                       onTap: () => _showAddLessonSheet(subName),
                       child: Container(
-                        padding: EdgeInsets.symmetric(vertical: 10),
+                        padding: EdgeInsets.symmetric(vertical: 7),
                         decoration: BoxDecoration(
-                          border: Border.all(
-                            color: _accent.withOpacity(0.3),
-                            style: BorderStyle.solid,
-                          ),
-                          borderRadius: BorderRadius.circular(10),
-                          color: _accent.withOpacity(0.04),
+                          border: Border.all(color: _accent.withOpacity(0.25)),
+                          borderRadius: BorderRadius.circular(3),
+                          color: _accent.withOpacity(0.03),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.add_rounded, color: _accent, size: 16),
-                            SizedBox(width: 6),
+                            Icon(Icons.add_rounded, color: _accent, size: 13),
+                            SizedBox(width: 5),
                             Text(
                               'Add Lesson',
                               style: TextStyle(
                                 color: _accent,
-                                fontSize: 12,
+                                fontSize: 11,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -669,48 +639,49 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
 
   Widget _buildEmpty() => Center(
     child: Padding(
-      padding: EdgeInsets.all(32),
+      padding: EdgeInsets.all(28),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 80,
-            height: 80,
+            width: 60,
+            height: 60,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: _accent.withOpacity(0.1),
+              color: _accent.withOpacity(0.08),
             ),
-            child: Icon(Icons.menu_book_outlined, color: _accent, size: 36),
+            child: Icon(Icons.menu_book_outlined, color: _accent, size: 28),
           ),
-          SizedBox(height: 16),
+          SizedBox(height: 12),
           Text(
             'No Subjects Yet',
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: 16,
+              fontSize: 14,
               color: AppColors.textPrimary,
             ),
           ),
-          SizedBox(height: 6),
+          SizedBox(height: 5),
           Text(
             'Add subjects and lessons for this classroom.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
           ),
-          SizedBox(height: 20),
+          SizedBox(height: 16),
           ElevatedButton.icon(
             onPressed: _showAddSubjectSheet,
             style: ElevatedButton.styleFrom(
               backgroundColor: _accent,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(3),
               ),
+              elevation: 0,
             ),
-            icon: Icon(Icons.add_rounded),
+            icon: Icon(Icons.add_rounded, size: 15),
             label: Text(
               'Add Subject',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
             ),
           ),
         ],

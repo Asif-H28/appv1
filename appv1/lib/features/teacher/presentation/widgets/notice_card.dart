@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import 'pdf_viewer_page.dart';
 
-class NoticeCard extends StatelessWidget {
+class NoticeCard extends StatefulWidget {
   final Map<String, dynamic> notice;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
@@ -12,7 +13,13 @@ class NoticeCard extends StatelessWidget {
     required this.onDelete,
   });
 
+  @override
+  State<NoticeCard> createState() => _NoticeCardState();
+}
+
+class _NoticeCardState extends State<NoticeCard> {
   static const Color _accent = Colors.teal;
+  bool _expanded = false;
 
   bool _isExpired(String? expiresAt) {
     if (expiresAt == null) return false;
@@ -27,7 +34,7 @@ class NoticeCard extends StatelessWidget {
     if (dateStr == null) return '';
     try {
       final dt = DateTime.parse(dateStr).toLocal();
-      const months = [
+      const m = [
         'Jan',
         'Feb',
         'Mar',
@@ -41,7 +48,7 @@ class NoticeCard extends StatelessWidget {
         'Nov',
         'Dec',
       ];
-      return '${dt.day} ${months[dt.month - 1]} ${dt.year}';
+      return '${dt.day} ${m[dt.month - 1]} ${dt.year}';
     } catch (_) {
       return dateStr;
     }
@@ -59,158 +66,231 @@ class NoticeCard extends StatelessWidget {
     }
   }
 
+  void _openPdf(String url, String fileName) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PdfViewerPage(url: url, fileName: fileName),
+      ),
+    );
+  }
+
+  void _showImageViewer(BuildContext context, List images, int startIndex) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black87,
+      builder: (_) =>
+          _ImageViewerDialog(images: images, startIndex: startIndex),
+    );
+  }
+
+  bool _isPdf(dynamic a) {
+    final url = (a as Map)['url']?.toString().toLowerCase() ?? '';
+    final type = a['resourceType']?.toString().toLowerCase() ?? '';
+    final fmt = a['format']?.toString().toLowerCase() ?? '';
+    final name =
+        (a['publicId']?.toString().toLowerCase() ??
+        a['originalFilename']?.toString().toLowerCase() ??
+        '');
+    return url.contains('.pdf') ||
+        url.contains('/raw/upload/') ||
+        type == 'raw' ||
+        type == 'pdf' ||
+        fmt == 'pdf' ||
+        name.endsWith('.pdf');
+  }
+
+  bool _isImage(dynamic a) {
+    if (_isPdf(a)) return false;
+    final url = (a as Map)['url']?.toString().toLowerCase() ?? '';
+    final type = a['resourceType']?.toString().toLowerCase() ?? '';
+    final fmt = a['format']?.toString().toLowerCase() ?? '';
+    return type == 'image' ||
+        fmt == 'jpg' ||
+        fmt == 'jpeg' ||
+        fmt == 'png' ||
+        fmt == 'webp' ||
+        fmt == 'gif' ||
+        url.contains('.jpg') ||
+        url.contains('.jpeg') ||
+        url.contains('.png') ||
+        url.contains('.webp') ||
+        url.contains('.gif');
+  }
+
   @override
   Widget build(BuildContext context) {
-    final title = notice['title']?.toString() ?? 'Notice';
-    final description = notice['description']?.toString() ?? '';
-    final createdBy = notice['createdBy']?.toString() ?? '';
-    final expiresAt = notice['expiresAt']?.toString();
-    final createdAt = notice['createdAt']?.toString();
-    final attachments = notice['attachments'] as List? ?? [];
+    final title = widget.notice['title']?.toString() ?? 'Notice';
+    final description = widget.notice['description']?.toString() ?? '';
+    final createdBy = widget.notice['createdBy']?.toString() ?? '';
+    final expiresAt = widget.notice['expiresAt']?.toString();
+    final createdAt = widget.notice['createdAt']?.toString();
+    final attachments = widget.notice['attachments'] as List? ?? [];
     final expired = _isExpired(expiresAt);
 
-    // Separate images and PDFs
-    final images = attachments.where((a) {
-      final url = (a as Map)['url']?.toString() ?? '';
-      return url.contains('.jpg') ||
-          url.contains('.jpeg') ||
-          url.contains('.png') ||
-          url.contains('.webp') ||
-          (a)['resourceType']?.toString() == 'image';
-    }).toList();
-    final pdfs = attachments.where((a) {
-      final url = (a as Map)['url']?.toString() ?? '';
-      return url.contains('.pdf') ||
-          (a)['resourceType']?.toString() == 'pdf' ||
-          (a)['resourceType']?.toString() == 'raw';
-    }).toList();
+    final images = attachments.where(_isImage).toList();
+    final pdfs = attachments.where(_isPdf).toList();
+
+    final hasAttachments = images.isNotEmpty || pdfs.isNotEmpty;
+    final descIsLong = description.length > 120;
 
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(3),
         boxShadow: [
           BoxShadow(
-            color: _accent.withOpacity(0.08),
-            blurRadius: 10,
-            offset: Offset(0, 3),
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 5,
+            offset: Offset(0, 2),
           ),
         ],
         border: Border.all(
           color: expired
-              ? Colors.orange.withOpacity(0.3)
+              ? Colors.orange.withOpacity(0.35)
               : _accent.withOpacity(0.15),
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Card header ──
-          Container(
-            padding: EdgeInsets.fromLTRB(14, 12, 8, 12),
-            decoration: BoxDecoration(
-              color: expired
-                  ? Colors.orange.withOpacity(0.06)
-                  : _accent.withOpacity(0.05),
-              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-            ),
+          // ── Header ──
+          Padding(
+            padding: EdgeInsets.fromLTRB(12, 10, 6, 10),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  width: 38,
-                  height: 38,
+                  width: 32,
+                  height: 32,
                   decoration: BoxDecoration(
                     color: expired
-                        ? Colors.orange.withOpacity(0.15)
-                        : _accent.withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(10),
+                        ? Colors.orange.withOpacity(0.1)
+                        : _accent.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(3),
                   ),
                   child: Icon(
                     expired ? Icons.timer_off_rounded : Icons.campaign_rounded,
-                    color: expired ? Colors.orange : _accent,
-                    size: 20,
+                    color: expired ? Colors.orange[700] : _accent,
+                    size: 16,
                   ),
                 ),
                 SizedBox(width: 10),
+
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                          color: AppColors.textPrimary,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      if (createdBy.isNotEmpty)
-                        Text(
-                          'By $createdBy  •  ${_timeAgo(createdAt)}',
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 11,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              title,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                color: AppColors.textPrimary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                        ),
+                          if (expired)
+                            Container(
+                              margin: EdgeInsets.only(left: 6),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.orange.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(3),
+                                border: Border.all(
+                                  color: Colors.orange.withOpacity(0.3),
+                                ),
+                              ),
+                              child: Text(
+                                'Expired',
+                                style: TextStyle(
+                                  color: Colors.orange[700],
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      SizedBox(height: 3),
+                      Row(
+                        children: [
+                          if (createdBy.isNotEmpty) ...[
+                            Icon(
+                              Icons.person_outline_rounded,
+                              size: 10,
+                              color: AppColors.textSecondary,
+                            ),
+                            SizedBox(width: 3),
+                            Flexible(
+                              child: Text(
+                                createdBy,
+                                style: TextStyle(
+                                  color: AppColors.textSecondary,
+                                  fontSize: 10.5,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            _dot(),
+                          ],
+                          Text(
+                            _timeAgo(createdAt),
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 10.5,
+                            ),
+                          ),
+                          if (expiresAt != null) ...[
+                            _dot(),
+                            Icon(
+                              Icons.schedule_rounded,
+                              size: 10,
+                              color: expired
+                                  ? Colors.orange[600]
+                                  : AppColors.textSecondary,
+                            ),
+                            SizedBox(width: 2),
+                            Text(
+                              _formatDate(expiresAt),
+                              style: TextStyle(
+                                color: expired
+                                    ? Colors.orange[600]
+                                    : AppColors.textSecondary,
+                                fontSize: 10.5,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
                     ],
                   ),
                 ),
-                if (expired)
-                  Container(
-                    margin: EdgeInsets.only(right: 4),
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.orange.withOpacity(0.3)),
+
+                SizedBox(width: 6),
+
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _actionBtn(
+                      Icons.edit_outlined,
+                      _accent,
+                      () => widget.onEdit(),
                     ),
-                    child: Text(
-                      'Expired',
-                      style: TextStyle(
-                        color: Colors.orange,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                PopupMenuButton<String>(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  icon: Icon(Icons.more_vert, color: Colors.grey[400]),
-                  onSelected: (val) {
-                    if (val == 'edit') onEdit();
-                    if (val == 'delete') onDelete();
-                  },
-                  itemBuilder: (_) => [
-                    PopupMenuItem(
-                      value: 'edit',
-                      child: Row(
-                        children: [
-                          Icon(Icons.edit_rounded, color: _accent, size: 16),
-                          SizedBox(width: 8),
-                          Text('Edit Notice'),
-                        ],
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: 'delete',
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.delete_rounded,
-                            color: Colors.red[600],
-                            size: 16,
-                          ),
-                          SizedBox(width: 8),
-                          Text(
-                            'Delete',
-                            style: TextStyle(color: Colors.red[600]),
-                          ),
-                        ],
-                      ),
+                    SizedBox(width: 4),
+                    _actionBtn(
+                      Icons.delete_outline_rounded,
+                      Colors.red[400]!,
+                      () => widget.onDelete(),
                     ),
                   ],
                 ),
@@ -218,150 +298,410 @@ class NoticeCard extends StatelessWidget {
             ),
           ),
 
+          // ── Divider ──
+          if (description.isNotEmpty || hasAttachments)
+            Divider(height: 1, color: Colors.grey[100]),
+
           // ── Description ──
           if (description.isNotEmpty)
             Padding(
-              padding: EdgeInsets.fromLTRB(14, 12, 14, 0),
-              child: Text(
-                description,
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 13,
-                  height: 1.5,
-                ),
-              ),
-            ),
-
-          // ── Image previews ──
-          if (images.isNotEmpty) ...[
-            SizedBox(height: 10),
-            SizedBox(
-              height: 100,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                padding: EdgeInsets.symmetric(horizontal: 14),
-                itemCount: images.length,
-                separatorBuilder: (_, __) => SizedBox(width: 8),
-                itemBuilder: (context, i) {
-                  final url = (images[i] as Map)['url']?.toString() ?? '';
-                  return ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image.network(
-                      url,
-                      width: 100,
-                      height: 100,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        width: 100,
-                        height: 100,
-                        color: Colors.grey[200],
-                        child: Icon(
-                          Icons.broken_image_rounded,
-                          color: Colors.grey[400],
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-
-          // ── PDF attachments ──
-          if (pdfs.isNotEmpty) ...[
-            SizedBox(height: 10),
-            ...pdfs.map((pdf) {
-              final fileName =
-                  (pdf as Map)['publicId']?.toString().split('/').last ??
-                  'Document';
-              return Padding(
-                padding: EdgeInsets.fromLTRB(14, 0, 14, 6),
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.04),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.red.withOpacity(0.15)),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.picture_as_pdf_rounded,
-                        color: Colors.red[600],
-                        size: 20,
-                      ),
-                      SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          fileName,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: AppColors.textPrimary,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }).toList(),
-          ],
-
-          // ── Footer: expiry + attachment count ──
-          Padding(
-            padding: EdgeInsets.fromLTRB(14, 10, 14, 12),
-            child: Row(
-              children: [
-                if (expiresAt != null) ...[
-                  Icon(
-                    Icons.schedule_rounded,
-                    size: 12,
-                    color: AppColors.textSecondary,
-                  ),
-                  SizedBox(width: 4),
+              padding: EdgeInsets.fromLTRB(12, 10, 12, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Text(
-                    'Expires ${_formatDate(expiresAt)}',
+                    description,
                     style: TextStyle(
-                      color: expired ? Colors.orange : AppColors.textSecondary,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
+                      color: AppColors.textSecondary,
+                      fontSize: 12.5,
+                      height: 1.55,
                     ),
+                    maxLines: _expanded ? null : (descIsLong ? 3 : null),
+                    overflow: _expanded
+                        ? TextOverflow.visible
+                        : (descIsLong ? TextOverflow.ellipsis : null),
                   ),
-                ],
-                Spacer(),
-                if (attachments.isNotEmpty)
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: _accent.withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.attach_file_rounded,
-                          size: 12,
-                          color: _accent,
-                        ),
-                        SizedBox(width: 4),
-                        Text(
-                          '${attachments.length} file(s)',
+                  if (descIsLong)
+                    GestureDetector(
+                      onTap: () => setState(() => _expanded = !_expanded),
+                      child: Padding(
+                        padding: EdgeInsets.only(top: 4),
+                        child: Text(
+                          _expanded ? 'Show less' : 'Read more',
                           style: TextStyle(
                             color: _accent,
-                            fontSize: 11,
+                            fontSize: 11.5,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-              ],
+                ],
+              ),
+            ),
+
+          // ── Image grid ──
+          if (images.isNotEmpty) ...[
+            SizedBox(height: 10),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              child: images.length == 1
+                  ? _singleImage(context, images, 0)
+                  : GridView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: images.length == 2 ? 2 : 3,
+                        crossAxisSpacing: 5,
+                        mainAxisSpacing: 5,
+                        childAspectRatio: 1,
+                      ),
+                      itemCount: images.length > 6 ? 6 : images.length,
+                      itemBuilder: (ctx, i) {
+                        final isLast = i == 5 && images.length > 6;
+                        final url = (images[i] as Map)['url']?.toString() ?? '';
+                        return GestureDetector(
+                          onTap: () => _showImageViewer(context, images, i),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(3),
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                Image.network(
+                                  url,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => Container(
+                                    color: Colors.grey[100],
+                                    child: Icon(
+                                      Icons.broken_image_rounded,
+                                      color: Colors.grey[400],
+                                      size: 20,
+                                    ),
+                                  ),
+                                ),
+                                if (isLast)
+                                  Container(
+                                    color: Colors.black.withOpacity(0.55),
+                                    child: Center(
+                                      child: Text(
+                                        '+${images.length - 5}',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
+
+          // ── PDF attachments (teal theme) ──
+          if (pdfs.isNotEmpty) ...[
+            SizedBox(height: 8),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              child: Column(
+                children: pdfs.map((pdf) {
+                  final pdfMap = pdf as Map;
+                  final rawId =
+                      pdfMap['publicId']?.toString() ??
+                      pdfMap['originalFilename']?.toString() ??
+                      '';
+                  final fileName = rawId.isNotEmpty
+                      ? rawId.split('/').last
+                      : 'Document.pdf';
+                  final url = pdfMap['url']?.toString() ?? '';
+
+                  return GestureDetector(
+                    onTap: () => _openPdf(url, fileName),
+                    child: Container(
+                      margin: EdgeInsets.only(bottom: 5),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 9,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _accent.withOpacity(0.04), // ← teal bg
+                        borderRadius: BorderRadius.circular(3),
+                        border: Border.all(
+                          color: _accent.withOpacity(0.2),
+                        ), // ← teal border
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(5),
+                            decoration: BoxDecoration(
+                              color: _accent.withOpacity(0.1), // ← teal icon bg
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                            child: Icon(
+                              Icons.picture_as_pdf_rounded,
+                              color: _accent,
+                              size: 14,
+                            ), // ← teal icon
+                          ),
+                          SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  fileName.isNotEmpty
+                                      ? fileName
+                                      : 'Document.pdf',
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    color: AppColors.textPrimary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  'Tap to view PDF',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 7,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: _accent.withOpacity(
+                                0.08,
+                              ), // ← teal view btn
+                              borderRadius: BorderRadius.circular(3),
+                              border: Border.all(
+                                color: _accent.withOpacity(0.25),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.visibility_outlined,
+                                  size: 11,
+                                  color: _accent,
+                                ), // ← teal
+                                SizedBox(width: 3),
+                                Text(
+                                  'View',
+                                  style: TextStyle(
+                                    color: _accent, // ← teal
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ],
+
+          SizedBox(height: 10),
+        ],
+      ),
+    );
+  }
+
+  Widget _singleImage(BuildContext context, List images, int index) {
+    final url = (images[index] as Map)['url']?.toString() ?? '';
+    return GestureDetector(
+      onTap: () => _showImageViewer(context, images, index),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(3),
+        child: Image.network(
+          url,
+          height: 160,
+          width: double.infinity,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => Container(
+            height: 100,
+            color: Colors.grey[100],
+            child: Icon(
+              Icons.broken_image_rounded,
+              color: Colors.grey[400],
+              size: 24,
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _dot() => Container(
+    margin: EdgeInsets.symmetric(horizontal: 5),
+    width: 3,
+    height: 3,
+    decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.grey[400]),
+  );
+
+  Widget _actionBtn(IconData icon, Color color, VoidCallback onTap) =>
+      GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: EdgeInsets.all(5),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.07),
+            borderRadius: BorderRadius.circular(3),
+            border: Border.all(color: color.withOpacity(0.2)),
+          ),
+          child: Icon(icon, color: color, size: 13),
+        ),
+      );
+}
+
+// ─────────────────────────────────────────────
+// Full-screen image viewer
+// ─────────────────────────────────────────────
+class _ImageViewerDialog extends StatefulWidget {
+  final List images;
+  final int startIndex;
+
+  const _ImageViewerDialog({required this.images, required this.startIndex});
+
+  @override
+  State<_ImageViewerDialog> createState() => _ImageViewerDialogState();
+}
+
+class _ImageViewerDialogState extends State<_ImageViewerDialog> {
+  late PageController _pageCtrl;
+  late int _current;
+
+  @override
+  void initState() {
+    super.initState();
+    _current = widget.startIndex;
+    _pageCtrl = PageController(initialPage: widget.startIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog.fullscreen(
+      backgroundColor: Colors.black,
+      child: Stack(
+        children: [
+          PageView.builder(
+            controller: _pageCtrl,
+            itemCount: widget.images.length,
+            onPageChanged: (i) => setState(() => _current = i),
+            itemBuilder: (_, i) {
+              final url = (widget.images[i] as Map)['url']?.toString() ?? '';
+              return InteractiveViewer(
+                child: Center(
+                  child: Image.network(
+                    url,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => Icon(
+                      Icons.broken_image_rounded,
+                      color: Colors.white38,
+                      size: 48,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+
+          // Top bar
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: SafeArea(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                child: Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        padding: EdgeInsets.all(7),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                        child: Icon(
+                          Icons.close_rounded,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                      ),
+                    ),
+                    Spacer(),
+                    if (widget.images.length > 1)
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                        child: Text(
+                          '${_current + 1} / ${widget.images.length}',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // Dot indicators
+          if (widget.images.length > 1)
+            Positioned(
+              bottom: 24,
+              left: 0,
+              right: 0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(widget.images.length, (i) {
+                  return AnimatedContainer(
+                    duration: Duration(milliseconds: 200),
+                    margin: EdgeInsets.symmetric(horizontal: 3),
+                    width: _current == i ? 18 : 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: _current == i ? Colors.white : Colors.white38,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  );
+                }),
+              ),
+            ),
         ],
       ),
     );
