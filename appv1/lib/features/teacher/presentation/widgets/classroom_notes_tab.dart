@@ -60,7 +60,6 @@ class _ClassroomNotesTabState extends State<ClassroomNotesTab> {
           raw = body['notes'] as List;
         else if (body['data'] != null)
           raw = body['data'] as List;
-
         setState(() {
           _notes = raw.map((e) => e as Map<String, dynamic>).toList();
           _isLoading = false;
@@ -89,12 +88,12 @@ class _ClassroomNotesTabState extends State<ClassroomNotesTab> {
       if (!mounted) return;
       if (response.statusCode == 200) {
         setState(() => _notes.removeAt(index));
-        _showSnackBar('Note deleted.', Colors.green[600]!);
+        _snack('Note deleted.', Colors.green[600]!);
       } else {
-        _showSnackBar('Failed to delete.', Colors.red[600]!);
+        _snack('Failed to delete.', Colors.red[600]!);
       }
     } catch (_) {
-      _showSnackBar('No internet connection.', Colors.red[600]!);
+      _snack('No internet connection.', Colors.red[600]!);
     }
   }
 
@@ -109,16 +108,16 @@ class _ClassroomNotesTabState extends State<ClassroomNotesTab> {
       if (!mounted) return;
       if (response.statusCode == 200) {
         setState(() => _notes.clear());
-        _showSnackBar('All notes deleted.', Colors.green[600]!);
+        _snack('All notes deleted.', Colors.green[600]!);
       } else {
-        _showSnackBar('Failed to delete all notes.', Colors.red[600]!);
+        _snack('Failed to delete all notes.', Colors.red[600]!);
       }
     } catch (_) {
-      _showSnackBar('No internet connection.', Colors.red[600]!);
+      _snack('No internet connection.', Colors.red[600]!);
     }
   }
 
-  void _showSnackBar(String msg, Color color) {
+  void _snack(String msg, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -127,138 +126,154 @@ class _ClassroomNotesTabState extends State<ClassroomNotesTab> {
         ),
         backgroundColor: color,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+      ),
+    );
+  }
+
+  void _showConfirmDialog({
+    required IconData icon,
+    required String title,
+    required String message,
+    required String confirmLabel,
+    required VoidCallback onConfirm,
+  }) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+        titlePadding: EdgeInsets.fromLTRB(16, 16, 16, 0),
+        contentPadding: EdgeInsets.fromLTRB(16, 10, 16, 0),
+        actionsPadding: EdgeInsets.fromLTRB(16, 8, 16, 14),
+        title: Row(
+          children: [
+            Container(
+              padding: EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(3),
+              ),
+              child: Icon(icon, color: Colors.red[600], size: 16),
+            ),
+            SizedBox(width: 10),
+            Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          message,
+          style: TextStyle(
+            color: AppColors.textSecondary,
+            fontSize: 12,
+            height: 1.5,
+          ),
+        ),
+        actions: [
+          Row(
+            children: [
+              // ── Cancel ──
+              Expanded(
+                child: SizedBox(
+                  height: 36,
+                  child: Theme(
+                    data: ThemeData(
+                      colorScheme: ColorScheme.light(
+                        primary: Colors.grey[600]!,
+                        onPrimary: Colors.grey[600]!,
+                      ),
+                    ),
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.textSecondary,
+                        side: BorderSide(color: Colors.grey[300]!),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 8),
+              // ── Confirm (Theme-isolated so M3 cannot override text color) ──
+              Expanded(
+                child: SizedBox(
+                  height: 36,
+                  child: Theme(
+                    data: ThemeData(
+                      colorScheme: ColorScheme.light(
+                        primary: Colors.red[600]!,
+                        onPrimary: Colors.white,
+                      ),
+                    ),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        onConfirm();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red[600],
+                        foregroundColor: Colors.white,
+                        surfaceTintColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+                      child: Text(
+                        confirmLabel,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 
   void _confirmDelete(String notesId, String title, int index) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: Row(
-          children: [
-            CircleAvatar(
-              radius: 18,
-              backgroundColor: Colors.red.withOpacity(0.1),
-              child: Icon(
-                Icons.delete_rounded,
-                color: Colors.red[600],
-                size: 18,
-              ),
-            ),
-            SizedBox(width: 10),
-            Text(
-              'Delete Note',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-            ),
-          ],
-        ),
-        content: Text(
-          'Delete "$title"? This cannot be undone.',
-          style: TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 12,
-            height: 1.5,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              'Cancel',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
-            ),
-          ),
-          SizedBox(
-            height: 34,
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.pop(ctx);
-                _deleteNote(notesId, index);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red[600],
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(9),
-                ),
-                elevation: 0,
-              ),
-              child: Text(
-                'Delete',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-              ),
-            ),
-          ),
-        ],
-      ),
+    _showConfirmDialog(
+      icon: Icons.delete_rounded,
+      title: 'Delete Note',
+      message: 'Delete "$title"? This cannot be undone.',
+      confirmLabel: 'Delete',
+      onConfirm: () => _deleteNote(notesId, index),
     );
   }
 
   void _confirmDeleteAll() {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: Row(
-          children: [
-            CircleAvatar(
-              radius: 18,
-              backgroundColor: Colors.red.withOpacity(0.1),
-              child: Icon(
-                Icons.delete_sweep_rounded,
-                color: Colors.red[600],
-                size: 18,
-              ),
-            ),
-            SizedBox(width: 10),
-            Text(
-              'Delete All Notes',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-            ),
-          ],
-        ),
-        content: Text(
-          'Are you sure you want to delete ALL notes for this classroom?',
-          style: TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 12,
-            height: 1.5,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              'Cancel',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
-            ),
-          ),
-          SizedBox(
-            height: 34,
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.pop(ctx);
-                _deleteAllNotes();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red[600],
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(9),
-                ),
-                elevation: 0,
-              ),
-              child: Text(
-                'Delete All',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-              ),
-            ),
-          ),
-        ],
-      ),
+    _showConfirmDialog(
+      icon: Icons.delete_sweep_rounded,
+      title: 'Delete All Notes',
+      message: 'Are you sure you want to delete ALL notes for this classroom?',
+      confirmLabel: 'Delete All',
+      onConfirm: _deleteAllNotes,
     );
   }
 
@@ -301,14 +316,7 @@ class _ClassroomNotesTabState extends State<ClassroomNotesTab> {
                     padding: EdgeInsets.symmetric(vertical: 11),
                     decoration: BoxDecoration(
                       color: _accent,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: _accent.withOpacity(0.3),
-                          blurRadius: 8,
-                          offset: Offset(0, 3),
-                        ),
-                      ],
+                      borderRadius: BorderRadius.circular(3),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -357,7 +365,7 @@ class _ClassroomNotesTabState extends State<ClassroomNotesTab> {
                 padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: _accent.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(3),
                   border: Border.all(color: _accent.withOpacity(0.2)),
                 ),
                 child: Text(
@@ -391,7 +399,7 @@ class _ClassroomNotesTabState extends State<ClassroomNotesTab> {
                   child: ListView.separated(
                     padding: EdgeInsets.fromLTRB(14, 4, 14, 40),
                     itemCount: _notes.length,
-                    separatorBuilder: (_, __) => SizedBox(height: 10),
+                    separatorBuilder: (_, __) => SizedBox(height: 8),
                     itemBuilder: (context, index) {
                       final note = _notes[index];
                       final notesId =
@@ -423,14 +431,8 @@ class _ClassroomNotesTabState extends State<ClassroomNotesTab> {
   }) => Container(
     decoration: BoxDecoration(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(10),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.05),
-          blurRadius: 5,
-          offset: Offset(0, 2),
-        ),
-      ],
+      borderRadius: BorderRadius.circular(3),
+      border: Border.all(color: Colors.grey[200]!),
     ),
     child: IconButton(
       icon: Icon(icon, color: color, size: 18),
@@ -447,33 +449,47 @@ class _ClassroomNotesTabState extends State<ClassroomNotesTab> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.cloud_off_rounded, size: 48, color: Colors.grey[400]),
+          Icon(Icons.cloud_off_rounded, size: 44, color: Colors.grey[400]),
           SizedBox(height: 12),
           Text(
             'Could not load notes',
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: 14,
+              fontSize: 13,
               color: AppColors.textPrimary,
             ),
           ),
           SizedBox(height: 16),
-          SizedBox(
-            height: 38,
-            child: ElevatedButton.icon(
-              onPressed: _fetchNotes,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _accent,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                elevation: 0,
+          Theme(
+            data: ThemeData(
+              colorScheme: ColorScheme.light(
+                primary: _accent,
+                onPrimary: Colors.white,
               ),
-              icon: Icon(Icons.refresh, size: 14),
-              label: Text(
-                'Retry',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+            ),
+            child: SizedBox(
+              height: 36,
+              child: ElevatedButton.icon(
+                onPressed: _fetchNotes,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _accent,
+                  foregroundColor: Colors.white,
+                  surfaceTintColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+                icon: Icon(Icons.refresh, size: 14, color: Colors.white),
+                label: Text(
+                  'Retry',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ),
           ),
@@ -489,20 +505,20 @@ class _ClassroomNotesTabState extends State<ClassroomNotesTab> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 70,
-            height: 70,
+            width: 64,
+            height: 64,
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: _accent.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(3),
+              color: _accent.withOpacity(0.08),
             ),
-            child: Icon(Icons.description_outlined, color: _accent, size: 30),
+            child: Icon(Icons.description_outlined, color: _accent, size: 28),
           ),
           SizedBox(height: 14),
           Text(
             'No Notes Yet',
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: 14,
+              fontSize: 13,
               color: AppColors.textPrimary,
             ),
           ),
