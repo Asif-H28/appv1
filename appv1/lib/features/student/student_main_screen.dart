@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/constants/app_colors.dart';
+import 'student_home_page.dart';
+import 'student_class_page.dart';
+import 'student_profile_page.dart';
 
 const Color _accent = Colors.teal;
 
@@ -53,7 +56,12 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
               children: [
                 _navItem(0, Icons.home_rounded, Icons.home_outlined, 'Home'),
                 _navItem(1, Icons.class_rounded, Icons.class_outlined, 'Class'),
-                _navItem(2, Icons.person_rounded, Icons.person_outline_rounded, 'Profile'),
+                _navItem(
+                  2,
+                  Icons.person_rounded,
+                  Icons.person_outline_rounded,
+                  'Profile',
+                ),
               ],
             ),
           ),
@@ -71,49 +79,23 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(isActive ? active : inactive,
-                color: isActive ? _accent : AppColors.textSecondary,
-                size: 22),
+            Icon(
+              isActive ? active : inactive,
+              color: isActive ? _accent : AppColors.textSecondary,
+              size: 22,
+            ),
             SizedBox(height: 3),
-            Text(label,
-                style: TextStyle(
-                  color: isActive ? _accent : AppColors.textSecondary,
-                  fontSize: 10.5,
-                  fontWeight:
-                      isActive ? FontWeight.bold : FontWeight.w500,
-                )),
+            Text(
+              label,
+              style: TextStyle(
+                color: isActive ? _accent : AppColors.textSecondary,
+                fontSize: 10.5,
+                fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+              ),
+            ),
           ],
         ),
       ),
-    );
-  }
-}
-
-// ── Placeholder pages (replace with real pages later) ──
-
-class StudentHomePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text('Home', style: TextStyle(color: AppColors.textPrimary)),
-    );
-  }
-}
-
-class StudentClassPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text('Class', style: TextStyle(color: AppColors.textPrimary)),
-    );
-  }
-}
-
-class StudentProfilePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text('Profile', style: TextStyle(color: AppColors.textPrimary)),
     );
   }
 }

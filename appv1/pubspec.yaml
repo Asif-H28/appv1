@@ -41,6 +41,9 @@ dependencies:
   http_parser: ^4.0.2
   url_launcher: ^6.2.5
   webview_flutter: ^4.4.2
+  path_provider: ^2.1.2
+  open_file: ^3.3.2
+  permission_handler: ^11.3.1
 
 
 
