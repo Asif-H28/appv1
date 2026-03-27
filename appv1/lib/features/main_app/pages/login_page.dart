@@ -910,6 +910,11 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
       await prefs.setString('studentEmail', student['email']?.toString() ?? '');
       await prefs.setString('authToken', body['token']?.toString() ?? '');
       await prefs.setString('classId', student['classId']?.toString() ?? '');
+      await prefs.setString(
+        'joinStatus',
+        student['joinStatus']?.toString() ?? 'none',
+      );
+      await prefs.setString('studentName', student['name']?.toString() ?? '');
 
       // ── Save tempOrg ──
       final tempOrg = student['tempOrg'] as Map<String, dynamic>?;
