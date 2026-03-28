@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:appv1/features/teacher/presentation/pages/classroom_timetable_tab.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../../../../core/constants/app_colors.dart';
@@ -23,9 +24,11 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final Color _accent = Colors.teal;
+
   bool _isLoading = true;
   bool _hasError = false;
   Map<String, dynamic> _classroom = {};
+
   bool _isEditingName = false;
   final _nameController = TextEditingController();
   bool _isSavingName = false;
@@ -38,16 +41,16 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
     {'icon': Icons.description_rounded, 'label': 'Notes'},
     {'icon': Icons.person_add_rounded, 'label': 'Requests'},
     {'icon': Icons.quiz_rounded, 'label': 'Tests'},
+    {'icon': Icons.calendar_month_rounded, 'label': 'Timetable'},
   ];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 6, vsync: this);
+    _tabController = TabController(length: 7, vsync: this);
     _tabController.addListener(() {
-      if (!_tabController.indexIsChanging) {
+      if (!_tabController.indexIsChanging)
         setState(() => _currentTab = _tabController.index);
-      }
     });
     _fetchClassroom();
   }
@@ -65,15 +68,15 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
       _hasError = false;
     });
     try {
-      final response = await http.get(
+      final res = await http.get(
         Uri.parse(
           'https://appv1backend.onrender.com/api/classroom/${widget.classId}',
         ),
         headers: {'Content-Type': 'application/json'},
       );
       if (!mounted) return;
-      if (response.statusCode == 200) {
-        final body = jsonDecode(response.body) as Map<String, dynamic>;
+      if (res.statusCode == 200) {
+        final body = jsonDecode(res.body) as Map<String, dynamic>;
         final data = body['classroom'] ?? body['data'] ?? body;
         setState(() {
           _classroom = data as Map<String, dynamic>;
@@ -101,7 +104,7 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
     if (newName.isEmpty) return;
     setState(() => _isSavingName = true);
     try {
-      final response = await http.put(
+      final res = await http.put(
         Uri.parse(
           'https://appv1backend.onrender.com/api/classroom/${widget.classId}',
         ),
@@ -113,7 +116,7 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
         _isSavingName = false;
         _isEditingName = false;
       });
-      if (response.statusCode == 200) {
+      if (res.statusCode == 200) {
         setState(() => _classroom['className'] = newName);
         _snack('Classroom name updated!', Colors.green[600]!);
       } else {
@@ -153,7 +156,7 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
       backgroundColor: AppColors.background,
       body: Column(
         children: [
-          // ── Gradient Header ──
+          // ── Gradient header ──────────────────────────
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -169,7 +172,6 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // ── Top bar ──
                     Row(
                       children: [
                         GestureDetector(
@@ -260,8 +262,6 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
                       ],
                     ),
                     SizedBox(height: 14),
-
-                    // ── Tab bar ──
                     _buildTabBar(),
                     SizedBox(height: 10),
                   ],
@@ -270,9 +270,7 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
             ),
           ),
 
-          // ── Body ──
-          // SafeArea(top: false) here fixes content going behind
-          // the gesture navigation bar for ALL tabs at once
+          // ── Body ─────────────────────────────────────
           Expanded(
             child: SafeArea(
               top: false,
@@ -294,11 +292,13 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
                     : TabBarView(
                         controller: _tabController,
                         children: [
+                          // 0 Subjects
                           SubjectLessonsTab(
                             classId: widget.classId,
                             subjects: typedSubjects,
                             onRefresh: _fetchClassroom,
                           ),
+                          // 1 Students
                           ClassroomStudentsTab(
                             classId: widget.classId,
                             students: students
@@ -306,9 +306,13 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
                                 .toList(),
                             onRefresh: _fetchClassroom,
                           ),
+                          // 2 Notices
                           ClassroomNoticesTab(classId: widget.classId),
+                          // 3 Notes
                           ClassroomNotesTab(classId: widget.classId),
+                          // 4 Requests
                           ClassroomRequestsTab(classId: widget.classId),
+                          // 5 Tests
                           ClassroomTestsTab(
                             classId: widget.classId,
                             teacherId:
@@ -316,6 +320,17 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
                             teacherName:
                                 _classroom['teacherName']?.toString() ?? '',
                             orgId: _classroom['orgId']?.toString() ?? '',
+                            className: className,
+                            classSubjects: typedSubjects,
+                          ),
+                          // 6 Timetable
+                          ClassroomTimetableTab(
+                            classId: widget.classId,
+                            orgId: _classroom['orgId']?.toString() ?? '',
+                            teacherId:
+                                _classroom['teacherId']?.toString() ?? '',
+                            teacherName:
+                                _classroom['teacherName']?.toString() ?? '',
                             className: className,
                             classSubjects: typedSubjects,
                           ),
@@ -329,7 +344,6 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
     );
   }
 
-  // ── Scrollable pill tab bar ──
   Widget _buildTabBar() {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -339,7 +353,6 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
           final isActive = _currentTab == i;
           final icon = _tabs[i]['icon'] as IconData;
           final label = _tabs[i]['label'] as String;
-
           return GestureDetector(
             onTap: () {
               _tabController.animateTo(i);
@@ -433,34 +446,26 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
             style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
           ),
           SizedBox(height: 18),
-          Theme(
-            data: ThemeData(
-              colorScheme: ColorScheme.light(
-                primary: _accent,
-                onPrimary: Colors.white,
-              ),
-            ),
-            child: SizedBox(
-              height: 40,
-              child: ElevatedButton.icon(
-                onPressed: _fetchClassroom,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _accent,
-                  foregroundColor: Colors.white,
-                  surfaceTintColor: Colors.transparent,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(3),
-                  ),
+          SizedBox(
+            height: 40,
+            child: ElevatedButton.icon(
+              onPressed: _fetchClassroom,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _accent,
+                foregroundColor: Colors.white,
+                surfaceTintColor: Colors.transparent,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(3),
                 ),
-                icon: Icon(Icons.refresh, size: 15, color: Colors.white),
-                label: Text(
-                  'Retry',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                    color: Colors.white,
-                  ),
+              ),
+              icon: Icon(Icons.refresh, size: 15, color: Colors.white),
+              label: Text(
+                'Retry',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  color: Colors.white,
                 ),
               ),
             ),
