@@ -1,3 +1,5 @@
+import 'package:appv1/features/main_app/pages/notification_router.dart';
+import 'package:appv1/features/main_app/pages/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,6 +16,10 @@ import 'features/teacher/presentation/pages/teacher_pending_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Init Firebase + local notification channel
+  await NotificationService.initFirebase();
+
   runApp(MyApp());
 }
 
@@ -23,6 +29,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'School Admin',
       theme: appTheme(),
+      navigatorKey: navigatorKey, // ← for notification routing
       home: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
@@ -38,7 +45,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// ─── Decides which screen to show on app launch ───────────
+// ─── Decides which screen to show on app launch ──────────
 
 class _StartupRouter extends StatefulWidget {
   @override
@@ -63,34 +70,51 @@ class __StartupRouterState extends State<_StartupRouter> {
     Widget screen;
 
     if (!isLoggedIn || userRole.isEmpty) {
-      // Not logged in — clear any stale data
       await prefs.clear();
       screen = LoginPage();
     } else if (userRole == 'admin') {
-      // ── Admin ──────────────────────────────────────────
+      // ── Admin ─────────────────────────────────────────
       screen = MainAppScreen(initialTab: 0);
     } else if (userRole == 'teacher') {
-      // ── Teacher ────────────────────────────────────────
+      // ── Teacher ───────────────────────────────────────
       final isVerified = prefs.getBool('teacherVerified') ?? false;
       final teacherName = prefs.getString('teacherName') ?? 'Teacher';
+      final teacherId = prefs.getString('teacherId') ?? '';
       final orgId = prefs.getString('orgId') ?? '';
 
       if (isVerified) {
+        // Save FCM token for teacher
+        if (teacherId.isNotEmpty) {
+          await NotificationService.saveTokenAfterLogin(
+            userId: teacherId,
+            role: 'teacher',
+          );
+        }
         screen = TeacherMainScreen();
       } else {
         screen = TeacherPendingScreen(teacherName: teacherName, orgId: orgId);
       }
     } else if (userRole == 'student') {
-      // ── Student ────────────────────────────────────────
+      // ── Student ───────────────────────────────────────
       final joinStatus = prefs.getString('joinStatus') ?? 'none';
       final classId = prefs.getString('classId') ?? '';
+      final studentId = prefs.getString('studentId') ?? '';
       final studentName = prefs.getString('studentName') ?? 'Student';
 
       switch (joinStatus) {
         case 'approved':
-          screen = classId.isNotEmpty
-              ? StudentMainScreen()
-              : StudentJoinOrgPage();
+          if (classId.isNotEmpty) {
+            // Save FCM token for student
+            if (studentId.isNotEmpty) {
+              await NotificationService.saveTokenAfterLogin(
+                userId: studentId,
+                role: 'student',
+              );
+            }
+            screen = StudentMainScreen();
+          } else {
+            screen = StudentJoinOrgPage();
+          }
           break;
         case 'pending':
           screen = StudentPendingScreen(studentName: studentName);
@@ -110,6 +134,14 @@ class __StartupRouterState extends State<_StartupRouter> {
     setState(() {
       _startScreen = screen;
       _isChecking = false;
+    });
+
+    // Init notification listeners after screen is set
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && (userRole == 'student' || userRole == 'teacher')) {
+        NotificationService.requestPermission();
+        NotificationService.initListeners(context);
+      }
     });
   }
 

@@ -44,6 +44,9 @@ dependencies:
   path_provider: ^2.1.2
   open_file: ^3.3.2
   permission_handler: ^11.3.1
+  firebase_core: ^4.6.0
+  firebase_messaging: ^16.1.2
+  flutter_local_notifications: ^19.2.1   # ← safe for sdk ^3.11.1
 
 
 

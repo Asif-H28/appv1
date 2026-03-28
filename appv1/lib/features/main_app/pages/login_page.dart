@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:appv1/features/main_app/pages/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
@@ -461,6 +462,7 @@ class __AdminLoginTabState extends State<_AdminLoginTab> {
       );
       if (!mounted) return;
       final body = jsonDecode(res.body) as Map<String, dynamic>;
+
       if (res.statusCode == 200 && body['success'] == true) {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool('isLoggedIn', true);
@@ -474,6 +476,7 @@ class __AdminLoginTabState extends State<_AdminLoginTab> {
           'adminEmail',
           org['adminEmail']?.toString() ?? '',
         );
+
         if (!mounted) return;
         setState(() => _isLoading = false);
         _showSnack(context, 'Welcome back, Admin!', Colors.green[600]!);
@@ -676,10 +679,22 @@ class __TeacherLoginTabState extends State<_TeacherLoginTab> {
       await prefs.setString('orgId', profile['orgId']?.toString() ?? '');
       await prefs.setBool('teacherVerified', isVerified);
 
+      // ── Save FCM token for teacher ─────────────────
+      if (teacherId.isNotEmpty) {
+        await NotificationService.requestPermission();
+        await NotificationService.saveTokenAfterLogin(
+          userId: teacherId,
+          role: 'teacher',
+        );
+      }
+
       if (!mounted) return;
       setState(() => _isLoading = false);
 
       if (isVerified) {
+        // Init notification listeners
+        NotificationService.initListeners(context);
+
         _showSnack(
           context,
           'Welcome, ${profile['name'] ?? 'Teacher'}! 👋',
@@ -808,7 +823,7 @@ class __TeacherLoginTabState extends State<_TeacherLoginTab> {
 }
 
 // ─────────────────────────────────────────────────────────
-// STUDENT LOGIN TAB  ← all debug logs are here
+// STUDENT LOGIN TAB
 // ─────────────────────────────────────────────────────────
 
 class _StudentLoginTab extends StatefulWidget {
@@ -848,7 +863,7 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
       if (!mounted) return;
       setState(() => _isLoading = false);
 
-      // ── LOG 1: Raw HTTP response ──────────────────────
+      // ── LOG 1: Raw HTTP response ───────────────────
       debugPrint('');
       debugPrint('╔══════════════════════════════════════════╗');
       debugPrint('║       STUDENT LOGIN RAW RESPONSE         ║');
@@ -861,7 +876,7 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
       try {
         body = jsonDecode(res.body) as Map<String, dynamic>;
       } catch (_) {
-        debugPrint('❌ JSON decode failed for body: ${res.body}');
+        debugPrint('❌ JSON decode failed: ${res.body}');
         _showSnack(context, 'Unexpected server response.', Colors.red[600]!);
         return;
       }
@@ -883,22 +898,19 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
           body['data'] as Map<String, dynamic>? ??
           {};
 
-      // ── LOG 2: Parsed student object ──────────────────
+      // ── LOG 2: Parsed student object ───────────────
       debugPrint('');
       debugPrint('╔══════════════════════════════════════════╗');
       debugPrint('║         PARSED STUDENT OBJECT            ║');
       debugPrint('╠══════════════════════════════════════════╣');
-      debugPrint('║ studentId   : ${student['studentId']}');
-      debugPrint('║ name        : ${student['name']}');
-      debugPrint('║ email       : ${student['email']}');
-      debugPrint('║ joinStatus  : ${student['joinStatus']}');
-      debugPrint('║ classId     : ${student['classId']}');
-      debugPrint('║ orgId       : ${student['orgId']}');
-      debugPrint('║ tempOrgId   : ${student['tempOrgId']}');
-      debugPrint('║ tempOrg     : ${student['tempOrg']}');
+      debugPrint('║ studentId  : ${student['studentId']}');
+      debugPrint('║ name       : ${student['name']}');
+      debugPrint('║ joinStatus : ${student['joinStatus']}');
+      debugPrint('║ classId    : ${student['classId']}');
+      debugPrint('║ orgId      : ${student['orgId']}');
       debugPrint('╚══════════════════════════════════════════╝');
 
-      // ── Save to prefs ──
+      // ── Save to prefs ──────────────────────────────
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('isLoggedIn', true);
       await prefs.setString('userRole', 'student');
@@ -914,19 +926,14 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
         'joinStatus',
         student['joinStatus']?.toString() ?? 'none',
       );
-      await prefs.setString('studentName', student['name']?.toString() ?? '');
 
-      // ── Save tempOrg ──
+      // ── Save tempOrg ───────────────────────────────
       final tempOrg = student['tempOrg'] as Map<String, dynamic>?;
-
-      // ── LOG 3: tempOrg saving ─────────────────────────
       debugPrint('');
       debugPrint('╔══════════════════════════════════════════╗');
       debugPrint('║           SAVING TEMP ORG                ║');
       debugPrint('╠══════════════════════════════════════════╣');
-      debugPrint('║ tempOrg is null?  : ${tempOrg == null}');
-      debugPrint('║ tempOrg value     : $tempOrg');
-
+      debugPrint('║ tempOrg is null? : ${tempOrg == null}');
       if (tempOrg != null) {
         await prefs.setString('tempOrg', jsonEncode(tempOrg));
         await prefs.setString('tempOrgId', tempOrg['orgId']?.toString() ?? '');
@@ -934,28 +941,16 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
           'tempOrgName',
           tempOrg['orgName']?.toString() ?? '',
         );
-        debugPrint('║ ✅ Saved tempOrgId   : ${tempOrg['orgId']}');
-        debugPrint('║ ✅ Saved tempOrgName : ${tempOrg['orgName']}');
+        debugPrint('║ ✅ tempOrgId   : ${tempOrg['orgId']}');
+        debugPrint('║ ✅ tempOrgName : ${tempOrg['orgName']}');
       } else {
         final flatOrgId = student['tempOrgId']?.toString() ?? '';
-        debugPrint('║ ⚠️  tempOrg null, flatOrgId : $flatOrgId');
         if (flatOrgId.isNotEmpty) {
           await prefs.setString('tempOrgId', flatOrgId);
-          debugPrint('║ ✅ Saved flat tempOrgId : $flatOrgId');
+          debugPrint('║ ✅ flat tempOrgId : $flatOrgId');
         } else {
-          debugPrint('║ ❌ No org data found to save!');
+          debugPrint('║ ❌ No org data found!');
         }
-      }
-      debugPrint('╚══════════════════════════════════════════╝');
-
-      // ── LOG 4: All saved prefs ────────────────────────
-      debugPrint('');
-      debugPrint('╔══════════════════════════════════════════╗');
-      debugPrint('║         ALL SAVED PREFS AFTER LOGIN      ║');
-      debugPrint('╠══════════════════════════════════════════╣');
-      final allKeys = prefs.getKeys();
-      for (final k in allKeys) {
-        debugPrint('║  $k = ${prefs.get(k)}');
       }
       debugPrint('╚══════════════════════════════════════════╝');
 
@@ -963,9 +958,19 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
 
       final joinStatus = student['joinStatus']?.toString() ?? 'none';
       final classId = student['classId']?.toString() ?? '';
+      final studentId = student['studentId']?.toString() ?? '';
       final studentName = student['name']?.toString() ?? 'Student';
 
-      // ── LOG 5: Routing decision ───────────────────────
+      // ── Save FCM token for student ─────────────────
+      if (studentId.isNotEmpty && joinStatus == 'approved') {
+        await NotificationService.requestPermission();
+        await NotificationService.saveTokenAfterLogin(
+          userId: studentId,
+          role: 'student',
+        );
+      }
+
+      // ── LOG 3: Routing decision ────────────────────
       debugPrint('');
       debugPrint('╔══════════════════════════════════════════╗');
       debugPrint('║           ROUTING DECISION               ║');
@@ -979,6 +984,8 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
         case 'approved':
           if (classId.isNotEmpty) {
             debugPrint('➡️  Routing to: StudentMainScreen');
+            // Init notification listeners
+            NotificationService.initListeners(context);
             _showSnack(
               context,
               'Welcome back, $studentName! 👋',
@@ -988,9 +995,7 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
               MaterialPageRoute(builder: (_) => StudentMainScreen()),
             );
           } else {
-            debugPrint(
-              '➡️  Routing to: StudentJoinOrgPage (approved but no classId)',
-            );
+            debugPrint('➡️  Routing to: StudentJoinOrgPage');
             Navigator.of(context, rootNavigator: true).pushReplacement(
               MaterialPageRoute(builder: (_) => StudentJoinOrgPage()),
             );
@@ -1016,9 +1021,7 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
           break;
 
         default:
-          debugPrint(
-            '➡️  Routing to: StudentJoinOrgPage (joinStatus=$joinStatus)',
-          );
+          debugPrint('➡️  Routing to: StudentJoinOrgPage (default)');
           Navigator.of(context, rootNavigator: true).pushReplacement(
             MaterialPageRoute(builder: (_) => StudentJoinOrgPage()),
           );
@@ -1027,7 +1030,7 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
       if (!mounted) return;
       setState(() => _isLoading = false);
       debugPrint('❌ STUDENT LOGIN EXCEPTION: $e');
-      debugPrint('❌ STACK TRACE: $stack');
+      debugPrint('❌ STACK: $stack');
       _showSnack(context, 'No internet connection.', Colors.red[600]!);
     }
   }
