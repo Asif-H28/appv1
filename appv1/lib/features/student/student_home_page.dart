@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:appv1/features/student/notification/student_notification_screen.dart';
 import 'package:appv1/features/student/student_period_card.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -33,6 +34,38 @@ class _StudentHomePageState extends State<StudentHomePage> {
   void initState() {
     super.initState();
     _loadPrefs();
+  }
+
+  int _notifCount = 0;
+
+  Future<void> _fetchNotificationCount() async {
+    final prefs = await SharedPreferences.getInstance();
+    final studentId = prefs.getString('studentId') ?? '';
+    final classId = prefs.getString('classId') ?? '';
+    int count = 0;
+
+    try {
+      if (studentId.isNotEmpty) {
+        final r1 = await http.get(
+          Uri.parse(
+            'https://appv1backend.onrender.com/api/notification/student/$studentId',
+          ),
+        );
+        final b1 = jsonDecode(r1.body);
+        count += (b1['count'] as int? ?? 0);
+      }
+      if (classId.isNotEmpty) {
+        final r2 = await http.get(
+          Uri.parse(
+            'https://appv1backend.onrender.com/api/notification/class/$classId',
+          ),
+        );
+        final b2 = jsonDecode(r2.body);
+        count += (b2['count'] as int? ?? 0);
+      }
+    } catch (_) {}
+
+    if (mounted) setState(() => _notifCount = count);
   }
 
   Future<void> _loadPrefs() async {
@@ -235,26 +268,62 @@ class _StudentHomePageState extends State<StudentHomePage> {
             ],
           ),
         ),
-        Container(
-          width: 42,
-          height: 42,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: LinearGradient(
-              colors: [_accent, _accent.withOpacity(0.7)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          child: Center(
-            child: Text(
-              _studentName.isNotEmpty ? _studentName[0].toUpperCase() : 'S',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 17,
+        // In your StudentMainScreen header — replace avatar with:
+        GestureDetector(
+          onTap: () async {
+            // Clear badge count before navigating
+            setState(() => _notifCount = 0);
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const StudentNotificationScreen(),
               ),
-            ),
+            );
+            // Reload count after returning (optional)
+            _fetchNotificationCount();
+          },
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(3),
+                ),
+                child: const Icon(
+                  Icons.notifications_outlined,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+              if (_notifCount > 0)
+                Positioned(
+                  top: -4,
+                  right: -4,
+                  child: Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: const BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: Text(
+                      _notifCount > 99 ? '99+' : '$_notifCount',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
           ),
         ),
       ],

@@ -18,12 +18,18 @@ Future<void> firebaseBackgroundHandler(RemoteMessage message) async {
 final FlutterLocalNotificationsPlugin localNotif =
     FlutterLocalNotificationsPlugin();
 
+// ✅ ValueNotifier — increments when foreground message arrives
+// StudentMainScreen listens to this and re-fetches badge count
+final ValueNotifier<int> notifCountNotifier = ValueNotifier<int>(0);
+
 // ── Android notification channel ───────────────────────
 const AndroidNotificationChannel notifChannel = AndroidNotificationChannel(
-  'high_importance_channel',
-  'High Importance Notifications',
+  'schoolsync_v4_channel',
+  'SchoolSync Notifications',
+  description: 'Class & personal notifications',
   importance: Importance.max,
   playSound: true,
+  sound: RawResourceAndroidNotificationSound('schoolsync'),
 );
 
 class NotificationService {
@@ -33,28 +39,32 @@ class NotificationService {
   static Future<void> initFirebase() async {
     await Firebase.initializeApp();
 
-    // Register background handler
     FirebaseMessaging.onBackgroundMessage(firebaseBackgroundHandler);
 
-    // Create Android channel
+    // ✅ Create Android channel WITH sound BEFORE plugin init
     await localNotif
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
         >()
         ?.createNotificationChannel(notifChannel);
 
-    // Init local notifications
+    // ✅ Android 13+ — request POST_NOTIFICATIONS permission
+    await localNotif
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >()
+        ?.requestNotificationsPermission();
+
     await localNotif.initialize(
-      InitializationSettings(
+      const InitializationSettings(
         android: AndroidInitializationSettings('@mipmap/ic_launcher'),
         iOS: DarwinInitializationSettings(
           requestAlertPermission: false,
           requestBadgePermission: false,
-          requestSoundPermission: false,
+          requestSoundPermission: true,
         ),
       ),
       onDidReceiveNotificationResponse: (details) {
-        // Foreground tap — handled via navigatorKey
         _routeFromPayload(details.payload);
       },
     );
@@ -74,13 +84,12 @@ class NotificationService {
   // ── Save FCM token after login ─────────────────────
   static Future<void> saveTokenAfterLogin({
     required String userId,
-    required String role, // 'student' or 'teacher'
+    required String role,
   }) async {
     try {
       final token = await FirebaseMessaging.instance.getToken();
       if (token == null) return;
 
-      // Persist locally for token refresh
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('fcmToken', token);
       await prefs.setString('fcmUserId', userId);
@@ -133,10 +142,13 @@ class NotificationService {
   // ── Foreground notification listener ──────────────
   static void listenForeground() {
     FirebaseMessaging.onMessage.listen((message) {
-      debugPrint('[FCM:FG] ${message.notification?.title}');
+      debugPrint('[FCM:FG] title=${message.notification?.title}');
       final notif = message.notification;
       final android = message.notification?.android;
       if (notif == null) return;
+
+      // ✅ Signal all listeners (StudentMainScreen re-fetches badge)
+      notifCountNotifier.value += 1;
 
       localNotif.show(
         notif.hashCode,
@@ -144,17 +156,20 @@ class NotificationService {
         notif.body,
         NotificationDetails(
           android: AndroidNotificationDetails(
-            'high_importance_channel',
-            'High Importance Notifications',
+            notifChannel.id,
+            notifChannel.name,
+            channelDescription: notifChannel.description,
             icon: android?.smallIcon ?? '@mipmap/ic_launcher',
             importance: Importance.max,
             priority: Priority.high,
             playSound: true,
+            sound: const RawResourceAndroidNotificationSound('schoolsync'),
           ),
-          iOS: DarwinNotificationDetails(
+          iOS: const DarwinNotificationDetails(
             presentAlert: true,
             presentBadge: true,
             presentSound: true,
+            sound: 'schoolsync.aiff',
           ),
         ),
         payload: message.data['route'],
@@ -175,8 +190,7 @@ class NotificationService {
     final message = await FirebaseMessaging.instance.getInitialMessage();
     if (message != null) {
       debugPrint('[FCM] Terminated tap: ${message.data}');
-      // Slight delay for Navigator to be ready
-      await Future.delayed(Duration(milliseconds: 500));
+      await Future.delayed(const Duration(milliseconds: 500));
       _navigateFromData(context, message.data);
     }
   }
@@ -192,12 +206,10 @@ class NotificationService {
 
   static void _routeFromPayload(String? route, {BuildContext? context}) {
     if (route == null) return;
-    // Handled externally via navigatorKey
-    // See NotificationNavigator below
     NotificationRouter.handleRoute(route);
   }
 
-  // ── Subscribe to topic ─────────────────────────────
+  // ── Subscribe / Unsubscribe ────────────────────────
   static Future<void> subscribeToTopic(String topic) async {
     await FirebaseMessaging.instance.subscribeToTopic(topic);
     debugPrint('[FCM] Subscribed: $topic');
@@ -208,7 +220,7 @@ class NotificationService {
     debugPrint('[FCM] Unsubscribed: $topic');
   }
 
-  // ── Manual send (teacher custom broadcast) ────────
+  // ── Manual send methods ────────────────────────────
   static Future<bool> sendToClass({
     required String classId,
     required String orgId,
