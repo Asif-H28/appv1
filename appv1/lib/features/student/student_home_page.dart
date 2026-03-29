@@ -36,38 +36,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
     _loadPrefs();
   }
 
-  int _notifCount = 0;
-
-  Future<void> _fetchNotificationCount() async {
-    final prefs = await SharedPreferences.getInstance();
-    final studentId = prefs.getString('studentId') ?? '';
-    final classId = prefs.getString('classId') ?? '';
-    int count = 0;
-
-    try {
-      if (studentId.isNotEmpty) {
-        final r1 = await http.get(
-          Uri.parse(
-            'https://appv1backend.onrender.com/api/notification/student/$studentId',
-          ),
-        );
-        final b1 = jsonDecode(r1.body);
-        count += (b1['count'] as int? ?? 0);
-      }
-      if (classId.isNotEmpty) {
-        final r2 = await http.get(
-          Uri.parse(
-            'https://appv1backend.onrender.com/api/notification/class/$classId',
-          ),
-        );
-        final b2 = jsonDecode(r2.body);
-        count += (b2['count'] as int? ?? 0);
-      }
-    } catch (_) {}
-
-    if (mounted) setState(() => _notifCount = count);
-  }
-
   Future<void> _loadPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     if (!mounted) return;
@@ -85,7 +53,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
   }
 
   // ── Today API ──────────────────────────────────────
-
   Future<void> _fetchToday() async {
     setState(() {
       _schedLoading = true;
@@ -133,7 +100,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
   }
 
   // ── Helpers ────────────────────────────────────────
-
   String _todayKey() {
     const days = [
       '',
@@ -152,26 +118,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
       ? s['periodNumber'] as int
       : int.tryParse(s['periodNumber']?.toString() ?? '') ?? 0;
 
-  bool _isCurrentPeriod(Map<String, dynamic> slot) {
-    final now = TimeOfDay.now();
-    final start = _parseTime(slot['startTime']?.toString() ?? '');
-    final end = _parseTime(slot['endTime']?.toString() ?? '');
-    if (start == null || end == null) return false;
-    final nowM = now.hour * 60 + now.minute;
-    final startM = start.hour * 60 + start.minute;
-    final endM = end.hour * 60 + end.minute;
-    return nowM >= startM && nowM < endM;
-  }
-
-  TimeOfDay? _parseTime(String t) {
-    try {
-      final p = t.split(':');
-      return TimeOfDay(hour: int.parse(p[0]), minute: int.parse(p[1]));
-    } catch (_) {
-      return null;
-    }
-  }
-
   String _greeting() {
     final h = DateTime.now().hour;
     if (h < 12) return 'Good Morning';
@@ -188,154 +134,82 @@ class _StudentHomePageState extends State<StudentHomePage> {
   );
 
   // ── Build ──────────────────────────────────────────
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: RefreshIndicator(
-          color: _accent,
-          onRefresh: _fetchToday,
-          child: SingleChildScrollView(
-            physics: AlwaysScrollableScrollPhysics(),
-            padding: EdgeInsets.fromLTRB(16, 20, 16, 32),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeader(),
-                SizedBox(height: 18),
-                _buildBanner(),
-                SizedBox(height: 22),
-                _buildTodaySection(),
-                SizedBox(height: 22),
-                _buildQuickAccessSection(),
-              ],
-            ),
+      // ✅ SafeArea removed — StudentMainScreen header handles it
+      body: RefreshIndicator(
+        color: _accent,
+        onRefresh: _fetchToday,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(),
+              const SizedBox(height: 18),
+              _buildBanner(),
+              const SizedBox(height: 22),
+              _buildTodaySection(),
+              const SizedBox(height: 22),
+              _buildQuickAccessSection(),
+            ],
           ),
         ),
       ),
     );
   }
 
-  // ── Header ─────────────────────────────────────────
-
+  // ── Header — bell removed (lives in StudentMainScreen) ──
   Widget _buildHeader() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                _greeting(),
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              SizedBox(height: 2),
-              Text(
-                'Hi, $_studentName',
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 21,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              if (_orgName.isNotEmpty) ...[
-                SizedBox(height: 3),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.business_rounded,
-                      size: 11,
-                      color: AppColors.textSecondary,
-                    ),
-                    SizedBox(width: 3),
-                    Text(
-                      _orgName,
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 11,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ],
+        Text(
+          _greeting(),
+          style: TextStyle(
+            color: AppColors.textSecondary,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
           ),
         ),
-        // In your StudentMainScreen header — replace avatar with:
-        GestureDetector(
-          onTap: () async {
-            // Clear badge count before navigating
-            setState(() => _notifCount = 0);
-            await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => const StudentNotificationScreen(),
-              ),
-            );
-            // Reload count after returning (optional)
-            _fetchNotificationCount();
-          },
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(3),
-                ),
-                child: const Icon(
-                  Icons.notifications_outlined,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
-              if (_notifCount > 0)
-                Positioned(
-                  top: -4,
-                  right: -4,
-                  child: Container(
-                    padding: const EdgeInsets.all(3),
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                    ),
-                    constraints: const BoxConstraints(
-                      minWidth: 16,
-                      minHeight: 16,
-                    ),
-                    child: Text(
-                      _notifCount > 99 ? '99+' : '$_notifCount',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-            ],
+        const SizedBox(height: 2),
+        Text(
+          'Hi, $_studentName',
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 21,
+            fontWeight: FontWeight.bold,
           ),
         ),
+        if (_orgName.isNotEmpty) ...[
+          const SizedBox(height: 3),
+          Row(
+            children: [
+              Icon(
+                Icons.business_rounded,
+                size: 11,
+                color: AppColors.textSecondary,
+              ),
+              const SizedBox(width: 3),
+              Text(
+                _orgName,
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
+              ),
+            ],
+          ),
+        ],
       ],
     );
   }
 
   // ── Banner ─────────────────────────────────────────
-
   Widget _buildBanner() {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [_accent, _accent.withOpacity(0.75)],
@@ -350,7 +224,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'Stay on track',
                   style: TextStyle(
                     color: Colors.white,
@@ -358,7 +232,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                     fontSize: 14.5,
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
                   'Check your timetable and\nkeep up with class notices.',
                   style: TextStyle(
@@ -367,7 +241,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                     height: 1.5,
                   ),
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Row(
                   children: [
                     _bannerChip(
@@ -376,19 +250,19 @@ class _StudentHomePageState extends State<StudentHomePage> {
                           ? _todayLabel.substring(0, 3)
                           : 'Today',
                     ),
-                    SizedBox(width: 14),
+                    const SizedBox(width: 14),
                     _bannerChip(
                       Icons.schedule_rounded,
                       _schedLoading ? '...' : '${_todaySlots.length} periods',
                     ),
-                    SizedBox(width: 14),
+                    const SizedBox(width: 14),
                     _bannerChip(Icons.notifications_outlined, 'Notices'),
                   ],
                 ),
               ],
             ),
           ),
-          SizedBox(width: 12),
+          const SizedBox(width: 12),
           Container(
             width: 56,
             height: 56,
@@ -396,7 +270,11 @@ class _StudentHomePageState extends State<StudentHomePage> {
               color: Colors.white.withOpacity(0.15),
               borderRadius: BorderRadius.circular(3),
             ),
-            child: Icon(Icons.school_rounded, color: Colors.white, size: 30),
+            child: const Icon(
+              Icons.school_rounded,
+              color: Colors.white,
+              size: 30,
+            ),
           ),
         ],
       ),
@@ -406,7 +284,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
   Widget _bannerChip(IconData icon, String label) => Row(
     children: [
       Icon(icon, color: Colors.white.withOpacity(0.9), size: 12),
-      SizedBox(width: 3),
+      const SizedBox(width: 3),
       Text(
         label,
         style: TextStyle(
@@ -419,12 +297,10 @@ class _StudentHomePageState extends State<StudentHomePage> {
   );
 
   // ── Today's timetable section ──────────────────────
-
   Widget _buildTodaySection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Header row
         Row(
           children: [
             Expanded(
@@ -441,7 +317,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                   ),
                   if (!_schedLoading && _todaySlots.isNotEmpty)
                     Padding(
-                      padding: EdgeInsets.only(top: 1),
+                      padding: const EdgeInsets.only(top: 1),
                       child: Text(
                         '${_todaySlots.length} period${_todaySlots.length == 1 ? '' : 's'}',
                         style: TextStyle(
@@ -456,7 +332,10 @@ class _StudentHomePageState extends State<StudentHomePage> {
             GestureDetector(
               onTap: _goToTimetable,
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: _accent.withOpacity(0.07),
                   borderRadius: BorderRadius.circular(3),
@@ -473,7 +352,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(width: 3),
+                    const SizedBox(width: 3),
                     Icon(Icons.arrow_forward_rounded, size: 12, color: _accent),
                   ],
                 ),
@@ -481,9 +360,8 @@ class _StudentHomePageState extends State<StudentHomePage> {
             ),
           ],
         ),
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
 
-        // Content
         if (_schedLoading)
           _buildSkeleton()
         else if (_schedError)
@@ -495,7 +373,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
               .take(2)
               .map(
                 (s) => Padding(
-                  padding: EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.only(bottom: 8),
                   child: StudentPeriodCard(slot: s),
                 ),
               ),
@@ -508,7 +386,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
       children: List.generate(
         3,
         (_) => Container(
-          margin: EdgeInsets.only(bottom: 8),
+          margin: const EdgeInsets.only(bottom: 8),
           height: 64,
           decoration: BoxDecoration(
             color: Colors.grey[100],
@@ -519,13 +397,13 @@ class _StudentHomePageState extends State<StudentHomePage> {
               Container(
                 width: 3,
                 height: 38,
-                margin: EdgeInsets.only(left: 12),
+                margin: const EdgeInsets.only(left: 12),
                 decoration: BoxDecoration(
                   color: Colors.teal.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(3),
                 ),
               ),
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
               Container(
                 width: 28,
                 height: 28,
@@ -534,14 +412,14 @@ class _StudentHomePageState extends State<StudentHomePage> {
                   borderRadius: BorderRadius.circular(3),
                 ),
               ),
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(height: 11, width: 100, color: Colors.grey[200]),
-                    SizedBox(height: 7),
+                    const SizedBox(height: 7),
                     Container(height: 9, width: 64, color: Colors.grey[200]),
                   ],
                 ),
@@ -555,7 +433,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
 
   Widget _buildErrorCard() {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.red[50],
         borderRadius: BorderRadius.circular(3),
@@ -564,7 +442,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
       child: Row(
         children: [
           Icon(Icons.cloud_off_rounded, color: Colors.red[400], size: 17),
-          SizedBox(width: 10),
+          const SizedBox(width: 10),
           Expanded(
             child: Text(
               'Failed to load timetable',
@@ -574,7 +452,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
           GestureDetector(
             onTap: _fetchToday,
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
                 color: Colors.red[100],
                 borderRadius: BorderRadius.circular(3),
@@ -597,16 +475,16 @@ class _StudentHomePageState extends State<StudentHomePage> {
   Widget _buildNoClassCard() {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
         color: Colors.teal[50],
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(3),
         border: Border.all(color: Colors.teal.withOpacity(0.18)),
       ),
       child: Row(
         children: [
           Container(
-            padding: EdgeInsets.all(8),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: Colors.teal.withOpacity(0.12),
               borderRadius: BorderRadius.circular(3),
@@ -617,7 +495,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
               size: 18,
             ),
           ),
-          SizedBox(width: 12),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -630,7 +508,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                     color: Colors.teal[700],
                   ),
                 ),
-                SizedBox(height: 1),
+                const SizedBox(height: 1),
                 Text(
                   'Enjoy your free day',
                   style: TextStyle(color: Colors.teal[400], fontSize: 11),
@@ -644,7 +522,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
   }
 
   // ── Quick access section ───────────────────────────
-
   Widget _buildQuickAccessSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -657,14 +534,14 @@ class _StudentHomePageState extends State<StudentHomePage> {
             color: AppColors.textPrimary,
           ),
         ),
-        SizedBox(height: 12),
+        const SizedBox(height: 12),
         _buildNavCard(
           icon: Icons.calendar_month_rounded,
           title: 'Timetable',
           subtitle: 'View your full weekly schedule',
           onTap: _goToTimetable,
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         _buildNavCard(
           icon: Icons.class_rounded,
           title: 'Visit Classroom',
@@ -676,7 +553,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
             MaterialPageRoute(builder: (_) => StudentClassroomScreen()),
           ),
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         _buildNavCard(
           icon: Icons.fact_check_rounded,
           title: 'My Attendance',
@@ -686,7 +563,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
             MaterialPageRoute(builder: (_) => StudentAttendanceScreen()),
           ),
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         _buildNavCard(
           icon: Icons.campaign_rounded,
           title: 'Notice Board',
@@ -719,7 +596,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
           borderRadius: BorderRadius.circular(3),
           onTap: onTap,
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
             child: Row(
               children: [
                 Container(
@@ -731,7 +608,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                   ),
                   child: Icon(icon, color: _accent, size: 19),
                 ),
-                SizedBox(width: 12),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -744,7 +621,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                           color: AppColors.textPrimary,
                         ),
                       ),
-                      SizedBox(height: 2),
+                      const SizedBox(height: 2),
                       Text(
                         subtitle,
                         style: TextStyle(
