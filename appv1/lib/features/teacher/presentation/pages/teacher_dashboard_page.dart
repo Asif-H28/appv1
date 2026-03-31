@@ -412,17 +412,57 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage>
   // ── Header ─────────────────────────────────────────
   Widget _buildHeader() {
     return Container(
-      decoration: const BoxDecoration(color: _accent),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.teal, Color(0xFF00897B)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+          padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
           child: Row(
             children: [
-              // Left — class label
-              const Spacer(),
+              // Logo icon
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(3),
+                  border: Border.all(color: Colors.white.withOpacity(0.25)),
+                ),
+                child: const Icon(
+                  Icons.sync_alt,
+                  color: Colors.white,
+                  size: 16,
+                ),
+              ),
+              const SizedBox(width: 10),
 
-              // Right — searchable class dropdown trigger
+              // Title + subtitle
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'SchoolSync',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                    Text(
+                      'Teacher Portal',
+                      style: TextStyle(color: Colors.white70, fontSize: 10.5),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Class dropdown trigger
               GestureDetector(
                 onTap: () => _showClassDropdown(context),
                 child: Container(
@@ -443,9 +483,9 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage>
                         color: Colors.white,
                         size: 13,
                       ),
-                      const SizedBox(width: 7),
+                      const SizedBox(width: 6),
                       ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 130),
+                        constraints: const BoxConstraints(maxWidth: 100),
                         child: Text(
                           _selectedName.isNotEmpty
                               ? _selectedName
@@ -459,11 +499,11 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage>
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const SizedBox(width: 5),
+                      const SizedBox(width: 4),
                       const Icon(
                         Icons.keyboard_arrow_down_rounded,
                         color: Colors.white,
-                        size: 16,
+                        size: 15,
                       ),
                     ],
                   ),

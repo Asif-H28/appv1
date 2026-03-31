@@ -253,9 +253,9 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
 
   Widget _buildHeader() {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [_accent, _accent.withOpacity(0.72)],
+          colors: [Colors.teal, Color(0xFF00897B)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -263,59 +263,63 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: EdgeInsets.fromLTRB(18, 14, 18, 18),
+          padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
           child: Row(
             children: [
-              Expanded(
+              // Logo icon
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(3),
+                  border: Border.all(color: Colors.white.withOpacity(0.25)),
+                ),
+                child: const Icon(
+                  Icons.sync_alt,
+                  color: Colors.white,
+                  size: 16,
+                ),
+              ),
+              const SizedBox(width: 10),
+
+              // Title + subtitle
+              const Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _greeting(),
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.8),
-                        fontSize: 11.5,
-                      ),
-                    ),
-                    SizedBox(height: 2),
-                    Text(
-                      _name,
+                      'SchoolSync',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 19,
                         fontWeight: FontWeight.bold,
+                        fontSize: 15,
                       ),
                     ),
-                    SizedBox(height: 3),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.calendar_today_rounded,
-                          color: Colors.white.withOpacity(0.7),
-                          size: 11,
-                        ),
-                        SizedBox(width: 4),
-                        Text(
-                          _formatDate(DateTime.now()),
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.72),
-                            fontSize: 11,
-                          ),
-                        ),
-                      ],
+                    Text(
+                      'Teacher Portal',
+                      style: TextStyle(color: Colors.white70, fontSize: 10.5),
                     ),
                   ],
                 ),
               ),
-              Column(
-                children: [
-                  _headerBtn(
-                    Icons.calendar_month_rounded,
-                    onTap: _goToSchedule,
+
+              // Bell icon
+              GestureDetector(
+                onTap: null, // wire up notification tap here
+                child: Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(3),
+                    border: Border.all(color: Colors.white.withOpacity(0.3)),
                   ),
-                  SizedBox(height: 8),
-                  _headerBtn(Icons.notifications_outlined),
-                ],
+                  child: const Icon(
+                    Icons.notifications_outlined,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
               ),
             ],
           ),
@@ -324,23 +328,22 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     );
   }
 
+  // ── Keep this but it's no longer used in header ────
   Widget _headerBtn(IconData icon, {VoidCallback? onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 40,
-        height: 40,
+        width: 38,
+        height: 38,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.18),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.white.withOpacity(0.28)),
+          color: Colors.white.withOpacity(0.2),
+          borderRadius: BorderRadius.circular(3),
+          border: Border.all(color: Colors.white.withOpacity(0.3)),
         ),
         child: Icon(icon, color: Colors.white, size: 18),
       ),
     );
   }
-
-  // ── Today's schedule section ───────────────────────
 
   Widget _buildTodaySection() {
     return Column(

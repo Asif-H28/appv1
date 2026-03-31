@@ -126,13 +126,13 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
-        titlePadding: EdgeInsets.fromLTRB(16, 16, 16, 0),
-        contentPadding: EdgeInsets.fromLTRB(16, 10, 16, 0),
-        actionsPadding: EdgeInsets.fromLTRB(16, 8, 16, 14),
+        titlePadding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+        contentPadding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
         title: Row(
           children: [
             Container(
-              padding: EdgeInsets.all(6),
+              padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
                 color: Colors.red.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(3),
@@ -143,7 +143,7 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
                 size: 15,
               ),
             ),
-            SizedBox(width: 10),
+            const SizedBox(width: 10),
             Text(
               'Delete Classroom',
               style: TextStyle(
@@ -188,38 +188,30 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
                   ),
                 ),
               ),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               Expanded(
                 child: SizedBox(
                   height: 36,
-                  child: Theme(
-                    data: ThemeData(
-                      colorScheme: ColorScheme.light(
-                        primary: Colors.red[600]!,
-                        onPrimary: Colors.white,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      _deleteClassroom(classId, index);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red[600],
+                      foregroundColor: Colors.white,
+                      surfaceTintColor: Colors.transparent,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(3),
                       ),
                     ),
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(ctx);
-                        _deleteClassroom(classId, index);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red[600],
-                        foregroundColor: Colors.white,
-                        surfaceTintColor: Colors.transparent,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                      ),
-                      child: Text(
-                        'Delete',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
+                    child: const Text(
+                      'Delete',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
                   ),
@@ -237,7 +229,7 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
       SnackBar(
         content: Text(
           msg,
-          style: TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+          style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
         ),
         backgroundColor: color,
         behavior: SnackBarBehavior.floating,
@@ -252,11 +244,11 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
       backgroundColor: AppColors.background,
       body: Column(
         children: [
-          // ── Gradient header ──
+          // ── Header ──
           Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [_accent, _accent.withOpacity(0.75)],
+                colors: [Colors.teal, Color(0xFF00897B)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -264,73 +256,80 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
             child: SafeArea(
               bottom: false,
               child: Padding(
-                padding: EdgeInsets.fromLTRB(16, 14, 16, 16),
+                padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
                 child: Row(
                   children: [
+                    // Logo icon
+                    Container(
+                      padding: const EdgeInsets.all(7),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(3),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.25),
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.sync_alt,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+
+                    // Title + subtitle
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Classrooms',
+                          const Text(
+                            'SchoolSync',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 20,
                               fontWeight: FontWeight.bold,
+                              fontSize: 15,
                             ),
                           ),
-                          SizedBox(height: 3),
-                          Row(
-                            children: [
-                              Icon(
-                                _orgId.isNotEmpty
-                                    ? Icons.business_rounded
-                                    : Icons.person_rounded,
-                                color: Colors.white.withOpacity(0.8),
-                                size: 11,
-                              ),
-                              SizedBox(width: 4),
-                              Text(
-                                _isLoading
-                                    ? 'Loading...'
-                                    : _orgId.isNotEmpty
-                                    ? '${_classrooms.length} org classroom${_classrooms.length == 1 ? '' : 's'}'
-                                    : '${_classrooms.length} your classroom${_classrooms.length == 1 ? '' : 's'}',
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(0.85),
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
+                          Text(
+                            _isLoading
+                                ? 'Loading...'
+                                : _orgId.isNotEmpty
+                                ? '${_classrooms.length} org classroom${_classrooms.length == 1 ? '' : 's'}'
+                                : '${_classrooms.length} your classroom${_classrooms.length == 1 ? '' : 's'}',
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 10.5,
+                            ),
                           ),
                         ],
                       ),
                     ),
+
                     // Refresh button
-                    if (!_isLoading)
-                      SizedBox(
-                        width: 34,
-                        height: 34,
+                    if (!_isLoading) ...[
+                      GestureDetector(
+                        onTap: _fetchClassrooms,
                         child: Container(
+                          width: 38,
+                          height: 38,
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
+                            color: Colors.white.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(3),
-                          ),
-                          child: IconButton(
-                            icon: Icon(
-                              Icons.refresh_rounded,
-                              color: Colors.white,
-                              size: 16,
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.3),
                             ),
-                            onPressed: _fetchClassrooms,
-                            tooltip: 'Refresh',
-                            padding: EdgeInsets.zero,
-                            constraints: BoxConstraints(),
+                          ),
+                          child: const Icon(
+                            Icons.refresh_rounded,
+                            color: Colors.white,
+                            size: 18,
                           ),
                         ),
                       ),
-                    SizedBox(width: 8),
-                    // New classroom button
+                      const SizedBox(width: 8),
+                    ],
+
+                    // New Classroom button
                     GestureDetector(
                       onTap: () async {
                         await Navigator.push(
@@ -343,8 +342,8 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
                         _fetchClassrooms();
                       },
                       child: Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 12,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 11,
                           vertical: 8,
                         ),
                         decoration: BoxDecoration(
@@ -355,9 +354,9 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(Icons.add_rounded, color: _accent, size: 15),
-                            SizedBox(width: 5),
+                            const SizedBox(width: 5),
                             Text(
-                              'New Classroom',
+                              'New',
                               style: TextStyle(
                                 color: _accent,
                                 fontWeight: FontWeight.bold,
@@ -381,7 +380,9 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
               child: Container(
                 decoration: BoxDecoration(
                   color: AppColors.background,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(20),
+                  ),
                 ),
                 clipBehavior: Clip.antiAlias,
                 child: _isLoading
@@ -394,9 +395,10 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
                         color: _accent,
                         onRefresh: _fetchClassrooms,
                         child: ListView.separated(
-                          padding: EdgeInsets.fromLTRB(14, 14, 14, 40),
+                          padding: const EdgeInsets.fromLTRB(14, 14, 14, 40),
                           itemCount: _classrooms.length,
-                          separatorBuilder: (_, __) => SizedBox(height: 8),
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 8),
                           itemBuilder: (context, index) {
                             final cls = _classrooms[index];
                             final classId = cls['classId']?.toString() ?? '';
@@ -437,12 +439,12 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
 
   Widget _buildError() => Center(
     child: Padding(
-      padding: EdgeInsets.all(24),
+      padding: const EdgeInsets.all(24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(Icons.cloud_off_rounded, size: 44, color: Colors.grey[400]),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           Text(
             'Could not load classrooms',
             style: TextStyle(
@@ -451,40 +453,32 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
               color: AppColors.textPrimary,
             ),
           ),
-          SizedBox(height: 6),
+          const SizedBox(height: 6),
           Text(
             'Check your connection and try again.',
             style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
           ),
-          SizedBox(height: 18),
-          Theme(
-            data: ThemeData(
-              colorScheme: ColorScheme.light(
-                primary: _accent,
-                onPrimary: Colors.white,
-              ),
-            ),
-            child: SizedBox(
-              height: 36,
-              child: ElevatedButton.icon(
-                onPressed: _fetchClassrooms,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _accent,
-                  foregroundColor: Colors.white,
-                  surfaceTintColor: Colors.transparent,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(3),
-                  ),
+          const SizedBox(height: 18),
+          SizedBox(
+            height: 36,
+            child: ElevatedButton.icon(
+              onPressed: _fetchClassrooms,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _accent,
+                foregroundColor: Colors.white,
+                surfaceTintColor: Colors.transparent,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(3),
                 ),
-                icon: Icon(Icons.refresh, size: 14, color: Colors.white),
-                label: Text(
-                  'Retry',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                    color: Colors.white,
-                  ),
+              ),
+              icon: const Icon(Icons.refresh, size: 14, color: Colors.white),
+              label: const Text(
+                'Retry',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                  color: Colors.white,
                 ),
               ),
             ),
@@ -496,7 +490,7 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
 
   Widget _buildEmpty() => Center(
     child: Padding(
-      padding: EdgeInsets.all(28),
+      padding: const EdgeInsets.all(28),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -509,7 +503,7 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
             ),
             child: Icon(Icons.class_outlined, color: _accent, size: 28),
           ),
-          SizedBox(height: 14),
+          const SizedBox(height: 14),
           Text(
             'No Classrooms Yet',
             style: TextStyle(
@@ -518,7 +512,7 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
               color: AppColors.textPrimary,
             ),
           ),
-          SizedBox(height: 5),
+          const SizedBox(height: 5),
           Text(
             'No classrooms found for your organization.\nTap below to create the first one.',
             textAlign: TextAlign.center,
@@ -528,44 +522,39 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
               height: 1.5,
             ),
           ),
-          SizedBox(height: 18),
-          Theme(
-            data: ThemeData(
-              colorScheme: ColorScheme.light(
-                primary: _accent,
-                onPrimary: Colors.white,
-              ),
-            ),
-            child: SizedBox(
-              height: 38,
-              child: ElevatedButton.icon(
-                onPressed: () async {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          CreateClassroomPage(teacherId: _teacherId),
-                    ),
-                  );
-                  _fetchClassrooms();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _accent,
-                  foregroundColor: Colors.white,
-                  surfaceTintColor: Colors.transparent,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(3),
+          const SizedBox(height: 18),
+          SizedBox(
+            height: 38,
+            child: ElevatedButton.icon(
+              onPressed: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => CreateClassroomPage(teacherId: _teacherId),
                   ),
+                );
+                _fetchClassrooms();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _accent,
+                foregroundColor: Colors.white,
+                surfaceTintColor: Colors.transparent,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(3),
                 ),
-                icon: Icon(Icons.add_rounded, size: 15, color: Colors.white),
-                label: Text(
-                  'New Classroom',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                    color: Colors.white,
-                  ),
+              ),
+              icon: const Icon(
+                Icons.add_rounded,
+                size: 15,
+                color: Colors.white,
+              ),
+              label: const Text(
+                'New Classroom',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                  color: Colors.white,
                 ),
               ),
             ),
