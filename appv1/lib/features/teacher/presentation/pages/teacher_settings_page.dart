@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../main_app/pages/login_page.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class TeacherSettingsPage extends StatefulWidget {
   @override
@@ -234,18 +236,32 @@ class _TeacherSettingsPageState extends State<TeacherSettingsPage> {
     setState(() => _isLoggingOut = true);
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('isLoggedIn');
-      await prefs.remove('userRole');
-      await prefs.remove('authToken');
-      await prefs.remove('userEmail');
-      await prefs.remove('teacherId');
-      await prefs.remove('teacherName');
-      await prefs.remove('orgId');
-      await prefs.remove('userOrg');
+      final teacherId = prefs.getString('teacherId') ?? '';
+
+      // ✅ Step 1 — Clear FCM token on backend BEFORE clearing local session
+      if (teacherId.isNotEmpty) {
+        try {
+          await http.post(
+            Uri.parse(
+              'https://appv1backend.onrender.com/api/notification/fcm/teacher/clear',
+            ),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'teacherId': teacherId}),
+          );
+          debugPrint('[FCM] Teacher token cleared on logout');
+        } catch (e) {
+          debugPrint('[FCM] Teacher token clear failed: $e');
+          // ✅ Don't block logout even if this fails
+        }
+      }
+
+      // ✅ Step 2 — Clear local session
+      await prefs.clear();
 
       if (!mounted) return;
       setState(() => _isLoggingOut = false);
 
+      // ✅ Step 3 — Navigate to login
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (_) => LoginPage()),

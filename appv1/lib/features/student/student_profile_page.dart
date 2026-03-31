@@ -188,6 +188,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
   }
 
   // ── Logout ─────────────────────────────────────────
+  // ── Logout ─────────────────────────────────────────
   Future<void> _logout() async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -198,9 +199,30 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
     if (confirmed != true) return;
 
     final prefs = await SharedPreferences.getInstance();
+    final studentId = prefs.getString('studentId') ?? '';
+
+    // ✅ Step 1 — Clear FCM token on backend BEFORE clearing local session
+    if (studentId.isNotEmpty) {
+      try {
+        await http.post(
+          Uri.parse(
+            'https://appv1backend.onrender.com/api/notification/fcm/student/clear',
+          ),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({'studentId': studentId}),
+        );
+        debugPrint('[FCM] Token cleared on logout');
+      } catch (e) {
+        debugPrint('[FCM] Token clear failed: $e');
+        // ✅ Don't block logout even if this fails
+      }
+    }
+
+    // ✅ Step 2 — Clear local session
     await prefs.clear();
     if (!mounted) return;
 
+    // ✅ Step 3 — Navigate to login
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => LoginPage()),
       (route) => false,
