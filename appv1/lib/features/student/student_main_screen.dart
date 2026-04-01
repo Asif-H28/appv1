@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
 import 'student_home_page.dart';
-import 'student_class_page.dart';
+import 'student_results_page.dart';
 import 'student_profile_page.dart';
 
 const Color _accent = Colors.teal;
@@ -31,22 +31,16 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
     super.initState();
     _currentTab = widget.initialTab;
     _loadAndFetchCount();
-
-    // ✅ Listen to ValueNotifier — re-fetch count when popup arrives
     notifCountNotifier.addListener(_onNewNotification);
   }
 
   @override
   void dispose() {
-    // ✅ Always remove listener to avoid memory leaks
     notifCountNotifier.removeListener(_onNewNotification);
     super.dispose();
   }
 
-  // ✅ Called every time a foreground FCM message arrives
-  void _onNewNotification() {
-    _fetchNotificationCount();
-  }
+  void _onNewNotification() => _fetchNotificationCount();
 
   Future<void> _loadAndFetchCount() async {
     final prefs = await SharedPreferences.getInstance();
@@ -59,7 +53,6 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
     if (_studentId.isEmpty) return;
     int total = 0;
     try {
-      // ✅ Class unread count — from dedicated unread API
       if (_classId.isNotEmpty) {
         final r = await http.get(
           Uri.parse(
@@ -72,8 +65,6 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
           total += (b['unreadCount'] as int? ?? 0);
         }
       }
-
-      // ✅ Personal unread count — fetch list and count not-read-by-me
       if (_studentId.isNotEmpty) {
         final r = await http.get(
           Uri.parse(
@@ -94,7 +85,6 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
         }
       }
     } catch (_) {}
-
     if (mounted) setState(() => _notifCount = total);
   }
 
@@ -108,7 +98,7 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
 
   final List<Widget> _pages = [
     StudentHomePage(),
-    StudentClassPage(),
+    StudentResultsPage(),
     StudentProfilePage(),
   ];
 
@@ -184,8 +174,6 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
                   ],
                 ),
               ),
-
-              // ── Bell icon with live badge ──────────────
               GestureDetector(
                 onTap: _openNotifications,
                 child: Stack(
@@ -255,7 +243,12 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
           child: Row(
             children: [
               _navItem(0, Icons.home_rounded, Icons.home_outlined, 'Home'),
-              _navItem(1, Icons.class_rounded, Icons.class_outlined, 'Class'),
+              _navItem(
+                1,
+                Icons.bar_chart_rounded,
+                Icons.bar_chart_outlined,
+                'Results',
+              ),
               _navItem(
                 2,
                 Icons.person_rounded,

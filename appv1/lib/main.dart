@@ -17,6 +17,9 @@ import 'features/teacher/presentation/pages/teacher_pending_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // ✅ Keeps UI above the system navigation bar globally
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
   // Init Firebase + local notification channel
   await NotificationService.initFirebase();
 
@@ -29,12 +32,15 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'School Admin',
       theme: appTheme(),
-      navigatorKey: navigatorKey, // ← for notification routing
+      navigatorKey: navigatorKey,
       home: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle(
+        value: const SystemUiOverlayStyle(
+          // Status bar
           statusBarColor: Colors.transparent,
           statusBarIconBrightness: Brightness.dark,
-          systemNavigationBarColor: AppColors.background,
+          // Navigation bar
+          systemNavigationBarColor: Colors.white,
+          systemNavigationBarContrastEnforced: false,
           systemNavigationBarIconBrightness: Brightness.dark,
           systemNavigationBarDividerColor: Colors.transparent,
         ),
@@ -54,7 +60,7 @@ class _StartupRouter extends StatefulWidget {
 
 class __StartupRouterState extends State<_StartupRouter> {
   bool _isChecking = true;
-  Widget _startScreen = SizedBox();
+  Widget _startScreen = const SizedBox();
 
   @override
   void initState() {
@@ -83,7 +89,6 @@ class __StartupRouterState extends State<_StartupRouter> {
       final orgId = prefs.getString('orgId') ?? '';
 
       if (isVerified) {
-        // Save FCM token for teacher
         if (teacherId.isNotEmpty) {
           await NotificationService.saveTokenAfterLogin(
             userId: teacherId,
@@ -104,7 +109,6 @@ class __StartupRouterState extends State<_StartupRouter> {
       switch (joinStatus) {
         case 'approved':
           if (classId.isNotEmpty) {
-            // Save FCM token for student
             if (studentId.isNotEmpty) {
               await NotificationService.saveTokenAfterLogin(
                 userId: studentId,
@@ -155,15 +159,19 @@ class __StartupRouterState extends State<_StartupRouter> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Icon(Icons.sync_alt, color: Colors.white, size: 48),
+                child: const Icon(
+                  Icons.sync_alt,
+                  color: Colors.white,
+                  size: 48,
+                ),
               ),
-              SizedBox(height: 20),
-              Text(
+              const SizedBox(height: 20),
+              const Text(
                 'SchoolSync',
                 style: TextStyle(
                   color: Colors.white,
@@ -171,8 +179,11 @@ class __StartupRouterState extends State<_StartupRouter> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: 32),
-              CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+              const SizedBox(height: 32),
+              const CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 2.5,
+              ),
             ],
           ),
         ),
