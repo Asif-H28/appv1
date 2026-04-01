@@ -8,6 +8,7 @@ import 'classroom_detail_page.dart';
 import 'teacher_schedule_page.dart';
 import 'teacher_home_widgets.dart';
 import 'notice_page.dart';
+import 'student_leave_review_page.dart';
 
 const Color _accent = Colors.teal;
 
@@ -32,8 +33,11 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
   bool _classLoading = true;
   bool _classError = false;
   List<Map<String, dynamic>> _classrooms = [];
-  // Add this to your state variables at the top
   bool _showAllClassrooms = false;
+
+  // ── Student Leaves ─────────────────────────────────
+  int _pendingLeaveCount = 0;
+  bool _pendingLeaveLoading = false;
 
   @override
   void initState() {
@@ -41,7 +45,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     _loadData();
   }
 
-  // ── Load prefs ─────────────────────────────────────
+  // ── Load prefs + all data ──────────────────────────
 
   Future<void> _loadData() async {
     final prefs = await SharedPreferences.getInstance();
@@ -57,6 +61,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
         Future(() => setState(() => _schedLoading = false)),
       _fetchClassrooms(),
     ]);
+    await _fetchPendingLeaveCounts();
   }
 
   // ── Today's schedule ───────────────────────────────
@@ -116,7 +121,6 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     try {
       List<dynamic> raw = [];
 
-      // Prefer teacher-specific endpoint
       if (_teacherId.isNotEmpty) {
         final res = await http.get(
           Uri.parse(
@@ -133,7 +137,6 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
         }
       }
 
-      // Fallback to org
       if (raw.isEmpty && _orgId.isNotEmpty) {
         final res = await http.get(
           Uri.parse(
@@ -164,6 +167,36 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     }
   }
 
+  // ── Pending leave counts ───────────────────────────
+
+  Future<void> _fetchPendingLeaveCounts() async {
+    if (_classrooms.isEmpty) return;
+    setState(() => _pendingLeaveLoading = true);
+    int total = 0;
+    try {
+      for (final cls in _classrooms) {
+        final classId = cls['classId']?.toString() ?? '';
+        if (classId.isEmpty) continue;
+        final res = await http.get(
+          Uri.parse(
+            'https://appv1backend.onrender.com/api/leave/student/class/$classId/pending',
+          ),
+          headers: {'Content-Type': 'application/json'},
+        );
+        if (res.statusCode == 200) {
+          final body = jsonDecode(res.body) as Map;
+          total += (body['count'] as int? ?? 0);
+        }
+      }
+    } catch (_) {}
+    if (mounted) {
+      setState(() {
+        _pendingLeaveCount = total;
+        _pendingLeaveLoading = false;
+      });
+    }
+  }
+
   // ── Helpers ────────────────────────────────────────
 
   String _todayKey() {
@@ -185,26 +218,6 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     if (h < 12) return 'Good Morning';
     if (h < 17) return 'Good Afternoon';
     return 'Good Evening';
-  }
-
-  String _formatDate(DateTime d) {
-    const months = [
-      '',
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    const wdays = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    return '${wdays[d.weekday]}, ${d.day} ${months[d.month]} ${d.year}';
   }
 
   void _goToSchedule() => Navigator.push(
@@ -229,15 +242,17 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
               color: _accent,
               onRefresh: _loadData,
               child: SingleChildScrollView(
-                physics: AlwaysScrollableScrollPhysics(),
-                padding: EdgeInsets.fromLTRB(16, 20, 16, 32),
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildTodaySection(),
-                    SizedBox(height: 24),
+                    const SizedBox(height: 24),
                     _buildClassroomsSection(),
-                    SizedBox(height: 24),
+                    const SizedBox(height: 24),
+                    _buildStudentLeaveSection(),
+                    const SizedBox(height: 24),
                     _buildNoticeSection(),
                   ],
                 ),
@@ -266,7 +281,6 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
           padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
           child: Row(
             children: [
-              // Logo icon
               Container(
                 padding: const EdgeInsets.all(7),
                 decoration: BoxDecoration(
@@ -281,8 +295,6 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
                 ),
               ),
               const SizedBox(width: 10),
-
-              // Title + subtitle
               const Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -302,10 +314,8 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
                   ],
                 ),
               ),
-
-              // Bell icon
               GestureDetector(
-                onTap: null, // wire up notification tap here
+                onTap: null,
                 child: Container(
                   width: 38,
                   height: 38,
@@ -328,22 +338,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     );
   }
 
-  // ── Keep this but it's no longer used in header ────
-  Widget _headerBtn(IconData icon, {VoidCallback? onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 38,
-        height: 38,
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.2),
-          borderRadius: BorderRadius.circular(3),
-          border: Border.all(color: Colors.white.withOpacity(0.3)),
-        ),
-        child: Icon(icon, color: Colors.white, size: 18),
-      ),
-    );
-  }
+  // ── Today's Schedule section ───────────────────────
 
   Widget _buildTodaySection() {
     return Column(
@@ -357,8 +352,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
           actionLabel: 'View All',
           onAction: _goToSchedule,
         ),
-        SizedBox(height: 10),
-
+        const SizedBox(height: 10),
         if (_schedLoading)
           HomeScheduleSkeleton()
         else if (_schedError)
@@ -370,13 +364,12 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
               .take(3)
               .map(
                 (s) => Padding(
-                  padding: EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.only(bottom: 10),
                   child: HomeScheduleCard(slot: s),
                 ),
               ),
-
         if (!_schedLoading && !_schedError && _todaySlots.length > 3) ...[
-          SizedBox(height: 4),
+          const SizedBox(height: 4),
           HomeViewMoreBtn(
             label: '+${_todaySlots.length - 3} more periods',
             onTap: _goToSchedule,
@@ -403,8 +396,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
               ? null
               : '${_classrooms.length} classroom${_classrooms.length == 1 ? '' : 's'}',
         ),
-        SizedBox(height: 10),
-
+        const SizedBox(height: 10),
         if (_classLoading)
           HomeClassroomSkeleton()
         else if (_classError)
@@ -416,7 +408,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
             final classId = cls['classId']?.toString() ?? '';
             final className = cls['className']?.toString() ?? 'Class';
             return Padding(
-              padding: EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.only(bottom: 8),
               child: HomeClassroomCard(
                 classroom: cls,
                 onView: () => Navigator.push(
@@ -431,15 +423,13 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
               ),
             );
           }),
-
-          // Show/hide toggle button
           if (_classrooms.length > 2)
             GestureDetector(
               onTap: () =>
                   setState(() => _showAllClassrooms = !_showAllClassrooms),
               child: Container(
                 width: double.infinity,
-                padding: EdgeInsets.symmetric(vertical: 11),
+                padding: const EdgeInsets.symmetric(vertical: 11),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(3),
@@ -453,13 +443,13 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
                         _showAllClassrooms
                             ? 'Show Less'
                             : 'View All  (+$remaining more)',
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.teal,
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      SizedBox(width: 4),
+                      const SizedBox(width: 4),
                       Icon(
                         _showAllClassrooms
                             ? Icons.expand_less_rounded
@@ -475,7 +465,135 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
         ],
       ],
     );
-  } // ── Notice section ─────────────────────────────────
+  }
+
+  // ── Student Leave section ──────────────────────────
+
+  Widget _buildStudentLeaveSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        HomeSectionHeader(
+          title: 'Student Leave Requests',
+          subtitle: _pendingLeaveLoading
+              ? null
+              : _pendingLeaveCount > 0
+              ? '$_pendingLeaveCount pending'
+              : 'No pending requests',
+        ),
+        const SizedBox(height: 10),
+        GestureDetector(
+          onTap: () async {
+            if (_classrooms.isEmpty) return;
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => StudentLeaveReviewPage(
+                  classrooms: _classrooms,
+                  teacherId: _teacherId,
+                ),
+              ),
+            );
+            // Refresh pending count on return
+            _fetchPendingLeaveCounts();
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(3),
+              border: Border.all(color: Colors.grey[200]!),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: Colors.teal.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  child: const Icon(
+                    Icons.event_note_rounded,
+                    color: Colors.teal,
+                    size: 19,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Review Leave Requests',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Approve or reject student leave applications',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 11.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (_pendingLeaveLoading)
+                  const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      color: Colors.teal,
+                      strokeWidth: 2,
+                    ),
+                  )
+                else if (_pendingLeaveCount > 0)
+                  Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                    child: Text(
+                      '$_pendingLeaveCount pending',
+                      style: TextStyle(
+                        color: Colors.orange[700],
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                Container(
+                  width: 26,
+                  height: 26,
+                  decoration: BoxDecoration(
+                    color: Colors.teal.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 11,
+                    color: Colors.teal,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── Notice section ─────────────────────────────────
 
   Widget _buildNoticeSection() {
     final notices = [
@@ -508,10 +626,10 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
             MaterialPageRoute(builder: (_) => NoticePage()),
           ),
         ),
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
         ...notices.map(
           (n) => Padding(
-            padding: EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.only(bottom: 8),
             child: HomeNoticeCard(
               notice: n,
               onTap: () => Navigator.push(
