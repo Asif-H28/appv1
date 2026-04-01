@@ -5,6 +5,7 @@ import 'teacher_home_page.dart';
 import 'teacher_classroom_page.dart';
 import 'teacher_dashboard_page.dart';
 import 'teacher_settings_page.dart';
+import 'teacher_achievements_page.dart';
 
 const Color _accent = Colors.teal;
 
@@ -28,6 +29,7 @@ class _TeacherMainScreenState extends State<TeacherMainScreen> {
   final List<Widget> _pages = [
     TeacherHomePage(),
     TeacherClassroomPage(),
+    TeacherAchievementsPage(),
     TeacherDashboardPage(),
     TeacherSettingsPage(),
   ];
@@ -49,7 +51,6 @@ class _TeacherMainScreenState extends State<TeacherMainScreen> {
     );
   }
 
-  // ── Bottom Nav ─────────────────────────────────────
   Widget _buildBottomNav() {
     return Container(
       decoration: BoxDecoration(
@@ -71,12 +72,18 @@ class _TeacherMainScreenState extends State<TeacherMainScreen> {
               ),
               _navItem(
                 2,
+                Icons.emoji_events_rounded,
+                Icons.emoji_events_outlined,
+                'Achieve',
+              ),
+              _navItem(
+                3,
                 Icons.dashboard_rounded,
                 Icons.dashboard_outlined,
                 'Dashboard',
               ),
               _navItem(
-                3,
+                4,
                 Icons.settings_rounded,
                 Icons.settings_outlined,
                 'Settings',
@@ -107,7 +114,7 @@ class _TeacherMainScreenState extends State<TeacherMainScreen> {
               label,
               style: TextStyle(
                 color: isActive ? _accent : AppColors.textSecondary,
-                fontSize: 10.5,
+                fontSize: 10,
                 fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
               ),
             ),
