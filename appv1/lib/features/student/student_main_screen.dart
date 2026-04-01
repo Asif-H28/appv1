@@ -9,6 +9,7 @@ import '../../../../core/constants/app_colors.dart';
 import 'student_home_page.dart';
 import 'student_results_page.dart';
 import 'student_profile_page.dart';
+import 'student_achievements_page.dart';
 
 const Color _accent = Colors.teal;
 
@@ -99,6 +100,7 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
   final List<Widget> _pages = [
     StudentHomePage(),
     StudentResultsPage(),
+    const StudentAchievementsPage(),
     StudentProfilePage(),
   ];
 
@@ -251,6 +253,12 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
               ),
               _navItem(
                 2,
+                Icons.emoji_events_rounded,
+                Icons.emoji_events_outlined,
+                'Achievements',
+              ),
+              _navItem(
+                3,
                 Icons.person_rounded,
                 Icons.person_outline_rounded,
                 'Profile',
