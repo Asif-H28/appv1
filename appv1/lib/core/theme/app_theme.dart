@@ -14,7 +14,7 @@ ThemeData appTheme() {
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
-        padding: EdgeInsets.symmetric(vertical: 16, horizontal: 32),
+        // ✅ Removed hardcoded padding — each button controls its own size
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     ),

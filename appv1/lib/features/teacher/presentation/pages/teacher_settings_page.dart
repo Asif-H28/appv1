@@ -1,231 +1,132 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../main_app/pages/login_page.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'teacher_profile_section.dart';
+import 'teacher_leave_section.dart';
 
 class TeacherSettingsPage extends StatefulWidget {
   @override
   _TeacherSettingsPageState createState() => _TeacherSettingsPageState();
 }
 
-class _TeacherSettingsPageState extends State<TeacherSettingsPage> {
-  bool _notificationsEnabled = true;
+class _TeacherSettingsPageState extends State<TeacherSettingsPage>
+    with SingleTickerProviderStateMixin {
   bool _isLoggingOut = false;
-  final Color _accent = Colors.teal;
+  late TabController _tabController;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Column(
-        children: [
-          // ── Gradient Header ──
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [_accent, _accent.withOpacity(0.7)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-            child: SafeArea(
-              bottom: false,
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(24, 20, 24, 28),
-                child: Row(
-                  children: [
-                    Text(
-                      'Settings',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppColors.background,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
-              ),
-              child: SingleChildScrollView(
-                padding: EdgeInsets.fromLTRB(20, 24, 20, 40),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // ── Preferences ──
-                    _sectionLabel('Preferences'),
-                    SizedBox(height: 10),
-                    _settingsCard([
-                      _switchTile(
-                        icon: Icons.notifications_outlined,
-                        iconColor: Colors.orange,
-                        title: 'Notifications',
-                        subtitle: 'Receive push notifications',
-                        value: _notificationsEnabled,
-                        onChanged: (val) =>
-                            setState(() => _notificationsEnabled = val),
-                      ),
-                      _divider(),
-                      _arrowTile(
-                        icon: Icons.language_outlined,
-                        iconColor: Colors.blue,
-                        title: 'Language',
-                        subtitle: 'English',
-                        onTap: () => _comingSoon('Language settings'),
-                      ),
-                      _divider(),
-                      _arrowTile(
-                        icon: Icons.color_lens_outlined,
-                        iconColor: _accent,
-                        title: 'Theme',
-                        subtitle: 'Light',
-                        onTap: () => _comingSoon('Theme settings'),
-                      ),
-                    ]),
-                    SizedBox(height: 24),
-
-                    // ── About ──
-                    _sectionLabel('About'),
-                    SizedBox(height: 10),
-                    _settingsCard([
-                      _arrowTile(
-                        icon: Icons.info_outline,
-                        iconColor: Colors.teal,
-                        title: 'App Version',
-                        subtitle: '1.0.0',
-                        onTap: null,
-                      ),
-                      _divider(),
-                      _arrowTile(
-                        icon: Icons.privacy_tip_outlined,
-                        iconColor: Colors.purple,
-                        title: 'Privacy Policy',
-                        subtitle: 'View our privacy policy',
-                        onTap: () {},
-                      ),
-                      _divider(),
-                      _arrowTile(
-                        icon: Icons.description_outlined,
-                        iconColor: Colors.indigo,
-                        title: 'Terms of Service',
-                        subtitle: 'View terms and conditions',
-                        onTap: () {},
-                      ),
-                    ]),
-                    SizedBox(height: 24),
-
-                    // ── Account ──
-                    _sectionLabel('Account'),
-                    SizedBox(height: 10),
-                    _settingsCard([
-                      ListTile(
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 4,
-                        ),
-                        leading: CircleAvatar(
-                          backgroundColor: Colors.red.withOpacity(0.1),
-                          child: Icon(
-                            Icons.logout_rounded,
-                            color: Colors.red[600],
-                            size: 20,
-                          ),
-                        ),
-                        title: Text(
-                          'Logout',
-                          style: TextStyle(
-                            color: Colors.red[600],
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15,
-                          ),
-                        ),
-                        subtitle: Text(
-                          'Sign out of your account',
-                          style: TextStyle(
-                            color: Colors.red[300],
-                            fontSize: 12,
-                          ),
-                        ),
-                        trailing: _isLoggingOut
-                            ? SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  color: Colors.red[400],
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : Icon(Icons.chevron_right, color: Colors.red[300]),
-                        onTap: _isLoggingOut ? null : _confirmLogout,
-                      ),
-                    ]),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
   }
 
-  // ── Logout confirm dialog ──
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
   void _confirmLogout() {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+        titlePadding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+        contentPadding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
         title: Row(
           children: [
-            CircleAvatar(
-              backgroundColor: Colors.red.withOpacity(0.1),
-              child: Icon(Icons.logout_rounded, color: Colors.red[600]),
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(3),
+              ),
+              child: Icon(
+                Icons.logout_rounded,
+                color: Colors.red[600],
+                size: 15,
+              ),
             ),
-            SizedBox(width: 12),
-            Text('Logout', style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(width: 10),
+            Text(
+              'Logout',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+                color: AppColors.textPrimary,
+              ),
+            ),
           ],
         ),
         content: Text(
           'Are you sure you want to sign out of your account?',
-          style: TextStyle(color: AppColors.textSecondary, height: 1.4),
+          style: TextStyle(
+            color: AppColors.textSecondary,
+            fontSize: 12,
+            height: 1.5,
+          ),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              'Cancel',
-              style: TextStyle(
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w600,
+          Row(
+            children: [
+              Expanded(
+                child: SizedBox(
+                  height: 36,
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.textSecondary,
+                      side: BorderSide(color: Colors.grey[300]!),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    ),
+                    child: Text(
+                      'Cancel',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              _performLogout();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red[600],
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+              const SizedBox(width: 8),
+              Expanded(
+                child: SizedBox(
+                  height: 36,
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      _performLogout();
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.red[600],
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                      alignment: Alignment.center,
+                      child: const Text(
+                        'Logout',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            ),
-            child: Text(
-              'Yes, Logout',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+            ],
           ),
         ],
       ),
@@ -237,8 +138,6 @@ class _TeacherSettingsPageState extends State<TeacherSettingsPage> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final teacherId = prefs.getString('teacherId') ?? '';
-
-      // ✅ Step 1 — Clear FCM token on backend BEFORE clearing local session
       if (teacherId.isNotEmpty) {
         try {
           await http.post(
@@ -248,134 +147,171 @@ class _TeacherSettingsPageState extends State<TeacherSettingsPage> {
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode({'teacherId': teacherId}),
           );
-          debugPrint('[FCM] Teacher token cleared on logout');
-        } catch (e) {
-          debugPrint('[FCM] Teacher token clear failed: $e');
-          // ✅ Don't block logout even if this fails
-        }
+        } catch (_) {}
       }
-
-      // ✅ Step 2 — Clear local session
       await prefs.clear();
-
       if (!mounted) return;
       setState(() => _isLoggingOut = false);
-
-      // ✅ Step 3 — Navigate to login
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (_) => LoginPage()),
         (route) => false,
       );
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
       setState(() => _isLoggingOut = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Logout failed. Please try again.'),
+          content: const Text('Logout failed. Please try again.'),
           backgroundColor: Colors.red[600],
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
         ),
       );
     }
   }
 
-  void _comingSoon(String feature) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$feature coming soon!'),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: Column(
+        children: [
+          _buildHeader(),
+          Container(
+            color: Colors.white,
+            child: TabBar(
+              controller: _tabController,
+              labelColor: Colors.teal,
+              unselectedLabelColor: AppColors.textSecondary,
+              indicatorColor: Colors.teal,
+              indicatorWeight: 2,
+              labelStyle: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+              unselectedLabelStyle: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+              tabs: const [
+                Tab(text: 'Profile'),
+                Tab(text: 'Leave'),
+              ],
+            ),
+          ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
+                  child: const TeacherProfileSection(),
+                ),
+                const TeacherLeaveSection(),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _sectionLabel(String label) => Text(
-    label.toUpperCase(),
-    style: TextStyle(
-      color: AppColors.textSecondary,
-      fontSize: 11.5,
-      fontWeight: FontWeight.w700,
-      letterSpacing: 1.1,
-    ),
-  );
-
-  Widget _settingsCard(List<Widget> children) => Container(
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.05),
-          blurRadius: 8,
-          offset: Offset(0, 2),
+  Widget _buildHeader() {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.teal, Color(0xFF00897B)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-      ],
-    ),
-    child: Column(children: children),
-  );
-
-  Widget _switchTile({
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-    required String subtitle,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) => ListTile(
-    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-    leading: CircleAvatar(
-      backgroundColor: iconColor.withOpacity(0.1),
-      child: Icon(icon, color: iconColor, size: 20),
-    ),
-    title: Text(
-      title,
-      style: TextStyle(
-        fontWeight: FontWeight.w600,
-        fontSize: 15,
-        color: AppColors.textPrimary,
       ),
-    ),
-    subtitle: Text(
-      subtitle,
-      style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
-    ),
-    trailing: Switch(value: value, onChanged: onChanged, activeColor: _accent),
-  );
-
-  Widget _arrowTile({
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-    required String subtitle,
-    required VoidCallback? onTap,
-  }) => ListTile(
-    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-    leading: CircleAvatar(
-      backgroundColor: iconColor.withOpacity(0.1),
-      child: Icon(icon, color: iconColor, size: 20),
-    ),
-    title: Text(
-      title,
-      style: TextStyle(
-        fontWeight: FontWeight.w600,
-        fontSize: 15,
-        color: AppColors.textPrimary,
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(3),
+                  border: Border.all(color: Colors.white.withOpacity(0.25)),
+                ),
+                child: const Icon(
+                  Icons.sync_alt,
+                  color: Colors.white,
+                  size: 16,
+                ),
+              ),
+              const SizedBox(width: 10),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'SchoolSync',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                    Text(
+                      'Teacher Portal',
+                      style: TextStyle(color: Colors.white70, fontSize: 10.5),
+                    ),
+                  ],
+                ),
+              ),
+              if (_isLoggingOut)
+                const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2,
+                  ),
+                )
+              else
+                GestureDetector(
+                  onTap: _confirmLogout,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 11,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(3),
+                      border: Border.all(color: Colors.white.withOpacity(0.3)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(
+                          Icons.logout_rounded,
+                          color: Colors.white,
+                          size: 13,
+                        ),
+                        SizedBox(width: 5),
+                        Text(
+                          'Logout',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
-    ),
-    subtitle: Text(
-      subtitle,
-      style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
-    ),
-    trailing: onTap != null
-        ? Icon(Icons.chevron_right, color: AppColors.textSecondary)
-        : null,
-    onTap: onTap,
-  );
-
-  Widget _divider() =>
-      Divider(height: 1, indent: 68, endIndent: 16, color: Colors.grey[200]);
+    );
+  }
 }
