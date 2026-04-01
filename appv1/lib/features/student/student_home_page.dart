@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:appv1/features/student/notification/student_notification_screen.dart';
+import 'package:appv1/features/student/student_leave_screen.dart';
 import 'package:appv1/features/student/student_period_card.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -571,6 +572,16 @@ class _StudentHomePageState extends State<StudentHomePage> {
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => StudentNoticeScreen()),
+          ),
+        ),
+        const SizedBox(height: 8),
+        _buildNavCard(
+          icon: Icons.event_note_rounded,
+          title: 'Leave Requests',
+          subtitle: 'Apply for leave and track status',
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => StudentLeaveScreen()),
           ),
         ),
       ],
