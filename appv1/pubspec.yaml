@@ -47,7 +47,7 @@ dependencies:
   firebase_core: ^4.6.0
   firebase_messaging: ^16.1.2
   flutter_local_notifications: ^19.2.1   # ← safe for sdk ^3.11.1
-
+  image_cropper: ^7.1.0 
 
 
 dev_dependencies:

@@ -31,12 +31,11 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
   final _ctrl = TextEditingController();
   final _focus = FocusNode();
   bool _submitting = false;
-  int? _deletingIdx; // ✅ tracks which row is being deleted
+  int? _deletingIdx;
 
   @override
   void initState() {
     super.initState();
-    // ✅ Reverse so latest comment is at top
     _comments = List.from(widget.initialComments.reversed);
   }
 
@@ -73,7 +72,6 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
         final body = jsonDecode(res.body) as Map;
         final comment = Map<String, dynamic>.from(body['comment'] as Map);
         final count = body['commentCount'] as int? ?? _comments.length + 1;
-        // ✅ Insert at top since list is latest-first
         setState(() => _comments.insert(0, comment));
         widget.onChanged(List.from(_comments), count);
         if (mounted) Navigator.pop(context);
@@ -86,9 +84,7 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
   Future<void> _deleteComment(int index) async {
     final commentId = _comments[index]['commentId']?.toString() ?? '';
     if (commentId.isEmpty) return;
-
-    setState(() => _deletingIdx = index); // ✅ show spinner on this row
-
+    setState(() => _deletingIdx = index);
     try {
       await http.delete(
         Uri.parse(
@@ -139,14 +135,24 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final bottom = MediaQuery.of(context).viewInsets.bottom;
+    final mq = MediaQuery.of(context);
+    final keyboard = mq.viewInsets.bottom;
+    final navBar = mq.padding.bottom; // ✅ system nav buttons height
+    final screenH = mq.size.height;
 
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      padding: EdgeInsets.only(bottom: bottom),
+      // ✅ When keyboard open: pad keyboard height
+      //    When keyboard closed: pad system nav bar so input clears nav buttons
+      padding: EdgeInsets.only(bottom: keyboard > 0 ? keyboard : navBar),
+      // ✅ Minimum 55% height so 1 comment doesn't look tiny
+      constraints: BoxConstraints(
+        minHeight: screenH * 0.55,
+        maxHeight: screenH * 0.92,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -187,24 +193,21 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
           const SizedBox(height: 10),
           const Divider(height: 1, color: Color(0xFFF0F0F0)),
 
-          // ── Comments list ─────────────────────────
-          ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.42,
-            ),
+          // ── Comments list — Flexible fills minHeight ──
+          Flexible(
             child: _comments.isEmpty
-                ? Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 32),
+                ? Center(
                     child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
                           Icons.chat_bubble_outline,
                           color: Colors.grey[300],
-                          size: 32,
+                          size: 36,
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 10),
                         Text(
-                          'No comments yet',
+                          'No comments yet. Be the first!',
                           style: TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 13,
@@ -214,7 +217,6 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
                     ),
                   )
                 : ListView.separated(
-                    shrinkWrap: true,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 8,
@@ -235,7 +237,6 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Avatar
                               Container(
                                 width: 30,
                                 height: 30,
@@ -255,7 +256,6 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
                                 ),
                               ),
                               const SizedBox(width: 10),
-                              // Content
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -294,7 +294,6 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
                                   ],
                                 ),
                               ),
-                              // ✅ Spinner while deleting, icon when idle
                               if (isMe)
                                 Padding(
                                   padding: const EdgeInsets.only(
@@ -311,7 +310,6 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
                                           ),
                                         )
                                       : GestureDetector(
-                                          // Block taps while another delete runs
                                           onTap: _deletingIdx != null
                                               ? null
                                               : () => _deleteComment(i),
@@ -334,7 +332,7 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
 
           // ── Input ─────────────────────────────────
           Padding(
-            padding: const EdgeInsets.fromLTRB(12, 10, 12, 14),
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
             child: Row(
               children: [
                 Expanded(

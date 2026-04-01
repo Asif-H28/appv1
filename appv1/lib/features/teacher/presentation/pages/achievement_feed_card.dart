@@ -55,6 +55,14 @@ class _AchievementFeedCardState extends State<AchievementFeedCard> {
     }
   }
 
+  // ✅ Helper method — was missing from your file
+  Widget _brokenImage() => Container(
+    height: 180,
+    color: Colors.grey[100],
+    alignment: Alignment.center,
+    child: Icon(Icons.broken_image_outlined, color: Colors.grey[400], size: 32),
+  );
+
   @override
   Widget build(BuildContext context) {
     final post = widget.post;
@@ -172,29 +180,38 @@ class _AchievementFeedCardState extends State<AchievementFeedCard> {
             ),
           ),
 
-          // ── Images ──────────────────────────────
+          // ── Images — natural aspect ratio ────────
           if (images.isNotEmpty) ...[
-            SizedBox(
-              height: 200,
-              child: PageView.builder(
-                itemCount: images.length,
-                onPageChanged: (i) => setState(() => _imgIndex = i),
-                itemBuilder: (_, i) => Image.network(
-                  images[i],
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  errorBuilder: (_, __, ___) => Container(
-                    color: Colors.grey[100],
-                    alignment: Alignment.center,
-                    child: Icon(
-                      Icons.broken_image_outlined,
-                      color: Colors.grey[400],
-                      size: 32,
+            ClipRRect(
+              borderRadius: BorderRadius.circular(0),
+              child: images.length == 1
+                  ? ConstrainedBox(
+                      constraints: const BoxConstraints(maxHeight: 400),
+                      child: Image.network(
+                        images[0],
+                        width: double.infinity,
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => _brokenImage(),
+                      ),
+                    )
+                  : ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        minHeight: 180,
+                        maxHeight: 360,
+                      ),
+                      child: PageView.builder(
+                        itemCount: images.length,
+                        onPageChanged: (i) => setState(() => _imgIndex = i),
+                        itemBuilder: (_, i) => Image.network(
+                          images[i],
+                          width: double.infinity,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => _brokenImage(),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ),
             ),
+            // ✅ Dots indicator — was missing from your snippet
             if (images.length > 1)
               Padding(
                 padding: const EdgeInsets.only(top: 8),
