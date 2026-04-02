@@ -476,6 +476,14 @@ class __AdminLoginTabState extends State<_AdminLoginTab> {
           'adminEmail',
           org['adminEmail']?.toString() ?? '',
         );
+        await prefs.setInt(
+          'teacherCount',
+          (org['teachers'] as num?)?.toInt() ?? 0,
+        );
+        await prefs.setInt(
+          'nonTeachingCount',
+          (org['nonTeaching'] as num?)?.toInt() ?? 0,
+        );
 
         if (!mounted) return;
         setState(() => _isLoading = false);
