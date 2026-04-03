@@ -12,7 +12,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  String _orgId = '', _orgName = '', _adminEmail = '';
+  String _orgId = '';
   bool _loading = true, _error = false;
   int _totalClasses = 0,
       _totalStudents = 0,
@@ -29,8 +29,6 @@ class _HomePageState extends State<HomePage> {
   Future<void> _init() async {
     final prefs = await SharedPreferences.getInstance();
     _orgId = prefs.getString('orgId') ?? '';
-    _orgName = prefs.getString('userOrg') ?? '';
-    _adminEmail = prefs.getString('adminEmail') ?? '';
     await _fetchAll();
   }
 
@@ -77,8 +75,9 @@ class _HomePageState extends State<HomePage> {
         Uri.parse('https://appv1backend.onrender.com/api/$path'),
         headers: {'Content-Type': 'application/json'},
       );
-      if (res.statusCode == 200)
+      if (res.statusCode == 200) {
         return jsonDecode(res.body) as Map<String, dynamic>;
+      }
       debugPrint('[HomePage] HTTP ${res.statusCode} → $path');
       return null;
     } catch (e) {
@@ -90,7 +89,8 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
-      color: Colors.teal,
+      color: const Color(0xFF009688),
+      backgroundColor: Colors.white,
       displacement: 20,
       onRefresh: _fetchAll,
       child: _loading
@@ -107,39 +107,51 @@ class _HomePageState extends State<HomePage> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            padding: const EdgeInsets.all(18),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.teal.withOpacity(0.08),
+              color: const Color(0xFF009688).withOpacity(0.08),
               borderRadius: BorderRadius.circular(3),
+              border: Border.all(
+                color: const Color(0xFF009688).withOpacity(0.18),
+              ),
             ),
             child: Icon(
               Icons.wifi_off_rounded,
-              color: Colors.teal.withOpacity(0.5),
-              size: 40,
+              color: const Color(0xFF009688).withOpacity(0.5),
+              size: 44,
             ),
           ),
-          const SizedBox(height: 16),
-          Text(
+          const SizedBox(height: 18),
+          const Text(
             'Could not load dashboard',
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 15,
-              color: AppColors.textPrimary,
+              color: Color(0xFF2D3748),
             ),
           ),
           const SizedBox(height: 6),
-          Text(
+          const Text(
             'Pull down to retry',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+            style: TextStyle(color: Color(0xFF718096), fontSize: 12),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 24),
           GestureDetector(
             onTap: _fetchAll,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
               decoration: BoxDecoration(
-                color: Colors.teal,
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF00796B), Color(0xFF26A69A)],
+                ),
                 borderRadius: BorderRadius.circular(3),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF009688).withOpacity(0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: const Text(
                 'Retry',
@@ -147,6 +159,7 @@ class _HomePageState extends State<HomePage> {
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                   fontSize: 13,
+                  letterSpacing: 0.5,
                 ),
               ),
             ),
@@ -160,38 +173,33 @@ class _HomePageState extends State<HomePage> {
     return ListView(
       padding: EdgeInsets.zero,
       children: [
-        // ── Teal hero banner ──────────────────────
-        _buildHeroBanner(),
-
-        // ── White/bg content below ────────────────
         Container(
-          color: AppColors.background,
-          padding: const EdgeInsets.fromLTRB(16, 22, 16, 32),
+          color: Colors.transparent,
+          padding: const EdgeInsets.fromLTRB(16, 24, 16, 40),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _label('OVERVIEW'),
-              const SizedBox(height: 12),
+              _sectionLabel('OVERVIEW'),
+              const SizedBox(height: 8),
               _buildKpiGrid(),
-              const SizedBox(height: 22),
-              _label('QUICK ACTIONS'),
-              const SizedBox(height: 12),
+              const SizedBox(height: 26),
+              _sectionLabel('QUICK ACTIONS'),
+              const SizedBox(height: 8),
               _buildQuickActions(),
-              const SizedBox(height: 22),
               if (_achievements.isNotEmpty) ...[
+                const SizedBox(height: 26),
                 _buildRowHeader(
                   'Recent Achievements',
                   '${_achievements.length} posts',
                   Icons.emoji_events_rounded,
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 14),
                 SizedBox(
-                  height: 210,
+                  height: 232,
                   child: ListView.separated(
                     scrollDirection: Axis.horizontal,
-                    itemCount: _achievements.length > 5
-                        ? 5
-                        : _achievements.length,
+                    itemCount:
+                        _achievements.length > 5 ? 5 : _achievements.length,
                     separatorBuilder: (_, __) => const SizedBox(width: 12),
                     itemBuilder: (_, i) =>
                         AchievementHCard(post: _achievements[i]),
@@ -205,168 +213,28 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildHeroBanner() {
-    final initial = _orgName.isNotEmpty ? _orgName[0].toUpperCase() : 'A';
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 22),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF00796B), Color(0xFF009688), Color(0xFF26A69A)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(3),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.35),
-                    width: 1.5,
-                  ),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  initial,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _orgName.isNotEmpty ? _orgName : 'Your Organisation',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      _adminEmail,
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.75),
-                        fontSize: 11,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.18),
-                  borderRadius: BorderRadius.circular(3),
-                  border: Border.all(color: Colors.white.withOpacity(0.3)),
-                ),
-                child: const Text(
-                  'Admin',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 18),
-          Container(height: 1, color: Colors.white.withOpacity(0.15)),
-          const SizedBox(height: 16),
-          // Wrap prevents overflow on small screens
-          Wrap(
-            spacing: 10,
-            runSpacing: 8,
-            children: [
-              _heroPill(Icons.class_rounded, '$_totalClasses Classes'),
-              _heroPill(Icons.groups_rounded, '$_totalStudents Students'),
-              _heroPill(Icons.school_rounded, '$_totalTeachers Teachers'),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
 
-  Widget _heroPill(IconData icon, String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(3),
-        border: Border.all(color: Colors.white.withOpacity(0.25)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: Colors.white, size: 13),
-          const SizedBox(width: 5),
-          Text(
-            text,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildKpiGrid() {
+    final kpis = [
+      _KpiData('Classes', '$_totalClasses', Icons.class_rounded,
+          const Color(0xFF009688), const Color(0xFFE0F2F1)),
+      _KpiData('Students', '$_totalStudents', Icons.groups_rounded,
+          const Color(0xFF00897B), const Color(0xFFE0F2F1)),
+      _KpiData('Teachers', '$_totalTeachers', Icons.school_rounded,
+          const Color(0xFF00796B), const Color(0xFFE0F2F1)),
+      _KpiData('Achievements', '$_totalAchievements',
+          Icons.emoji_events_rounded, const Color(0xFF00695C),
+          const Color(0xFFE0F2F1)),
+    ];
     return GridView.count(
       crossAxisCount: 2,
       crossAxisSpacing: 12,
       mainAxisSpacing: 12,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      childAspectRatio: 1.45,
-      children: [
-        KpiCard(
-          label: 'Classes',
-          value: '$_totalClasses',
-          icon: Icons.class_rounded,
-          color: Colors.teal,
-        ),
-        KpiCard(
-          label: 'Students',
-          value: '$_totalStudents',
-          icon: Icons.groups_rounded,
-          color: Colors.teal,
-        ),
-        KpiCard(
-          label: 'Teachers',
-          value: '$_totalTeachers',
-          icon: Icons.school_rounded,
-          color: Colors.teal,
-        ),
-        KpiCard(
-          label: 'Achievements',
-          value: '$_totalAchievements',
-          icon: Icons.emoji_events_rounded,
-          color: Colors.teal,
-        ),
-      ],
+      childAspectRatio: 1.65,
+      children: kpis.map((d) => KpiCard(data: d)).toList(),
     );
   }
 
@@ -382,26 +250,41 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _label(String t) => Text(
-    t,
-    style: TextStyle(
-      color: AppColors.textSecondary,
-      fontSize: 10,
-      fontWeight: FontWeight.w700,
-      letterSpacing: 1.2,
-    ),
+
+
+  Widget _sectionLabel(String t) => Row(
+    children: [
+      Container(
+        width: 4,
+        height: 14,
+        decoration: BoxDecoration(
+          color: const Color(0xFF009688),
+          borderRadius: BorderRadius.circular(3),
+        ),
+      ),
+      const SizedBox(width: 8),
+      Text(
+        t,
+        style: const TextStyle(
+          color: Color(0xFF2D3748),
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 1.2,
+        ),
+      ),
+    ],
   );
 
   Widget _buildRowHeader(String title, String sub, IconData icon) {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(7),
+          padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.teal.withOpacity(0.10),
+            color: const Color(0xFF009688).withOpacity(0.10),
             borderRadius: BorderRadius.circular(3),
           ),
-          child: Icon(icon, color: Colors.teal, size: 15),
+          child: Icon(icon, color: const Color(0xFF009688), size: 16),
         ),
         const SizedBox(width: 10),
         Expanded(
@@ -410,17 +293,35 @@ class _HomePageState extends State<HomePage> {
             children: [
               Text(
                 title,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
                   fontSize: 13,
-                  color: AppColors.textPrimary,
+                  color: Color(0xFF2D3748),
                 ),
               ),
               Text(
                 sub,
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
+                style: const TextStyle(
+                  color: Color(0xFF718096),
+                  fontSize: 11,
+                ),
               ),
             ],
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(
+            color: const Color(0xFF009688).withOpacity(0.08),
+            borderRadius: BorderRadius.circular(3),
+          ),
+          child: const Text(
+            'View All',
+            style: TextStyle(
+              color: Color(0xFF009688),
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
       ],
@@ -428,6 +329,17 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
+// ─── Data model for KPI ─────────────────────────────────
+class _KpiData {
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color accent;
+  final Color bg;
+  const _KpiData(this.label, this.value, this.icon, this.accent, this.bg);
+}
+
+// ─── Quick Action data model ─────────────────────────────
 class _QA {
   final String label;
   final IconData icon;
