@@ -126,6 +126,45 @@ class NotificationService {
     }
   }
 
+  // ── Save Admin FCM token after admin login ─────────────
+  static Future<void> saveAdminTokenAfterLogin({
+    required String orgId,
+  }) async {
+    try {
+      final token = await FirebaseMessaging.instance.getToken();
+      if (token == null) return;
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('fcmToken', token);
+      await prefs.setString('fcmRole', 'admin');
+
+      final res = await http.post(
+        Uri.parse('$_baseUrl/api/notification/fcm/admin/save'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'orgId': orgId, 'fcmToken': token}),
+      );
+      debugPrint('[FCM] Admin token saved: ${res.statusCode}');
+    } catch (e) {
+      debugPrint('[FCM] Admin token save error: $e');
+    }
+  }
+
+  // ── Clear Admin FCM token on admin logout ──────────────
+  static Future<void> clearAdminToken({
+    required String orgId,
+  }) async {
+    try {
+      final res = await http.post(
+        Uri.parse('$_baseUrl/api/notification/fcm/admin/clear'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'orgId': orgId}),
+      );
+      debugPrint('[FCM] Admin token cleared: ${res.statusCode}');
+    } catch (e) {
+      debugPrint('[FCM] Admin token clear error: $e');
+    }
+  }
+
   // ── Listen for token refresh ───────────────────────
   static void listenTokenRefresh() {
     FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {

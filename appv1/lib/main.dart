@@ -80,6 +80,10 @@ class __StartupRouterState extends State<_StartupRouter> {
       screen = LoginPage();
     } else if (userRole == 'admin') {
       // ── Admin ─────────────────────────────────────────
+      final orgId = prefs.getString('orgId') ?? '';
+      if (orgId.isNotEmpty) {
+        await NotificationService.saveAdminTokenAfterLogin(orgId: orgId);
+      }
       screen = MainAppScreen(initialTab: 0);
     } else if (userRole == 'teacher') {
       // ── Teacher ───────────────────────────────────────
@@ -142,7 +146,7 @@ class __StartupRouterState extends State<_StartupRouter> {
 
     // Init notification listeners after screen is set
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && (userRole == 'student' || userRole == 'teacher')) {
+      if (mounted && (userRole == 'student' || userRole == 'teacher' || userRole == 'admin')) {
         NotificationService.requestPermission();
         NotificationService.initListeners(context);
       }

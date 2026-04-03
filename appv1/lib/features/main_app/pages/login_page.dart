@@ -487,6 +487,17 @@ class __AdminLoginTabState extends State<_AdminLoginTab> {
 
         if (!mounted) return;
         setState(() => _isLoading = false);
+
+        // ── Save FCM token for admin ────────────────────
+        final orgId = org['orgId']?.toString() ?? '';
+        if (orgId.isNotEmpty) {
+          await NotificationService.requestPermission();
+          await NotificationService.saveAdminTokenAfterLogin(orgId: orgId);
+        }
+
+        // ── Init notification listeners ─────────────────
+        NotificationService.initListeners(context);
+
         _showSnack(context, 'Welcome back, Admin!', Colors.green[600]!);
         Navigator.pushReplacement(
           context,

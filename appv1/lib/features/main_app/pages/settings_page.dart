@@ -1,4 +1,5 @@
 import 'package:appv1/features/main_app/pages/login_page.dart';
+import 'package:appv1/features/main_app/pages/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/app_colors.dart';
@@ -276,6 +277,12 @@ class _SettingsPageState extends State<SettingsPage> {
 
     try {
       final prefs = await SharedPreferences.getInstance();
+
+      // ── Clear Admin FCM token before wiping prefs ──────────
+      final orgId = prefs.getString('orgId') ?? '';
+      if (orgId.isNotEmpty) {
+        await NotificationService.clearAdminToken(orgId: orgId);
+      }
 
       // Clear all auth-related keys, preserve non-auth data if needed
       await prefs.remove('isLoggedIn');
