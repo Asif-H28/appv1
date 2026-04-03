@@ -161,9 +161,13 @@ class _QuickBtnState extends State<QuickBtn> {
             const SizedBox(height: 7),
             Text(
               label,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: AppColors.textPrimary,
-                fontSize: 10.5,
+                fontSize: 9.5,
+                height: 1.15,
                 fontWeight: FontWeight.w600,
               ),
             ),

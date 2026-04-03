@@ -4,6 +4,10 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
 import 'home_widgets.dart';
+import 'classrooms_page.dart';
+import 'leave_request_page.dart';
+import 'notice_page.dart';
+import 'school_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -240,12 +244,21 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildQuickActions() {
     final items = [
-      _QA('Classes', Icons.class_rounded),
-      _QA('Achievements', Icons.emoji_events_rounded),
-      _QA('Notifs', Icons.notifications_rounded),
-      _QA('Settings', Icons.settings_rounded),
+      _QA('Classrooms', Icons.class_rounded, () {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const ClassroomsPage()));
+      }),
+      _QA('Leave Request', Icons.event_busy_rounded, () {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const LeaveRequestPage()));
+      }),
+      _QA('Notice', Icons.campaign_rounded, () {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const NoticePage()));
+      }),
+      _QA('School', Icons.business_rounded, () {
+        Navigator.push(context, MaterialPageRoute(builder: (_) => const SchoolPage()));
+      }),
     ];
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: items.map((q) => Expanded(child: QuickBtn(item: q))).toList(),
     );
   }
@@ -343,6 +356,6 @@ class _KpiData {
 class _QA {
   final String label;
   final IconData icon;
-  VoidCallback? get onTap => null;
-  const _QA(this.label, this.icon);
+  final VoidCallback onTap;
+  const _QA(this.label, this.icon, this.onTap);
 }
