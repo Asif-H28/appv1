@@ -1,6 +1,7 @@
 import 'package:appv1/features/main_app/pages/fee_config_page.dart';
 import 'package:appv1/features/main_app/pages/roles_page.dart';
 import 'package:appv1/features/main_app/pages/school_setup_page.dart';
+import 'package:appv1/features/main_app/pages/view_school_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -53,6 +54,13 @@ class _SchoolPageState extends State<SchoolPage> {
       Navigator.of(
         context,
       ).push(MaterialPageRoute(builder: (_) => const RolesPage()));
+      return;
+    }
+
+    if (module.tag == 'view_school') {
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => const ViewSchoolPage()));
       return;
     }
 
