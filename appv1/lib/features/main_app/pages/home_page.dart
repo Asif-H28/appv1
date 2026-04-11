@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:appv1/features/main_app/pages/home_widgets2.dart';
+import 'package:appv1/features/main_app/pages/school_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -6,7 +8,6 @@ import 'home_widgets.dart';
 import 'classrooms_page.dart';
 import 'leave_request_page.dart';
 import 'notice_page.dart';
-import 'school_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -22,11 +23,19 @@ class _HomePageState extends State<HomePage> {
       _totalTeachers = 0,
       _totalAchievements = 0;
   List<Map<String, dynamic>> _classrooms = [], _achievements = [];
+  final PageController _kpiCtrl = PageController(viewportFraction: 0.78);
+  int _kpiPage = 0;
 
   @override
   void initState() {
     super.initState();
     _init();
+  }
+
+  @override
+  void dispose() {
+    _kpiCtrl.dispose();
+    super.dispose();
   }
 
   Future<void> _init() async {
@@ -78,9 +87,8 @@ class _HomePageState extends State<HomePage> {
         Uri.parse('https://appv1backend.onrender.com/api/$path'),
         headers: {'Content-Type': 'application/json'},
       );
-      if (res.statusCode == 200) {
+      if (res.statusCode == 200)
         return jsonDecode(res.body) as Map<String, dynamic>;
-      }
       debugPrint('[HomePage] HTTP ${res.statusCode} → $path');
       return null;
     } catch (e) {
@@ -148,13 +156,6 @@ class _HomePageState extends State<HomePage> {
                   colors: [Color(0xFF00796B), Color(0xFF26A69A)],
                 ),
                 borderRadius: BorderRadius.circular(3),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF009688).withOpacity(0.3),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
               ),
               child: const Text(
                 'Retry',
@@ -162,7 +163,6 @@ class _HomePageState extends State<HomePage> {
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                   fontSize: 13,
-                  letterSpacing: 0.5,
                 ),
               ),
             ),
@@ -173,36 +173,123 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildBody() {
+    final kpiCards = [
+      KpiCarouselCard(
+        label: 'Classrooms',
+        value: '$_totalClasses',
+        subtitle: 'Active this semester',
+        gradientColors: const [Color(0xFF00897B), Color(0xFF4DB6AC)],
+        clayColor: const Color(0xFFB2DFDB),
+        illustration: const ClassroomIllustration(),
+      ),
+      KpiCarouselCard(
+        label: 'Students',
+        value: '$_totalStudents',
+        subtitle: 'Enrolled & active',
+        gradientColors: const [Color(0xFF00695C), Color(0xFF009688)],
+        clayColor: const Color(0xFFA5D6D0),
+        illustration: const StudentsIllustration(),
+      ),
+      KpiCarouselCard(
+        label: 'Teachers',
+        value: '$_totalTeachers',
+        subtitle: 'Faculty members',
+        gradientColors: const [Color(0xFF004D40), Color(0xFF00796B)],
+        clayColor: const Color(0xFF80CBC4),
+        illustration: const TeacherIllustration(),
+      ),
+      KpiCarouselCard(
+        label: 'Achievements',
+        value: '$_totalAchievements',
+        subtitle: 'Posts published',
+        gradientColors: const [Color(0xFF26A69A), Color(0xFF80DEEA)],
+        clayColor: const Color(0xFFB2EBF2),
+        illustration: const AchievementIllustration(),
+      ),
+    ];
+
     return ListView(
       padding: EdgeInsets.zero,
       children: [
         Container(
           color: Colors.transparent,
-          padding: const EdgeInsets.fromLTRB(16, 24, 16, 40),
+          padding: const EdgeInsets.fromLTRB(0, 24, 0, 40),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _sectionLabel('OVERVIEW'),
-              const SizedBox(height: 8),
-              _buildKpiGrid(),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: _sectionLabel('OVERVIEW'),
+              ),
+              const SizedBox(height: 14),
+
+              // Clay carousel
+              SizedBox(
+                height: 158,
+                child: PageView.builder(
+                  controller: _kpiCtrl,
+                  itemCount: kpiCards.length,
+                  onPageChanged: (i) => setState(() => _kpiPage = i),
+                  itemBuilder: (_, i) => AnimatedScale(
+                    scale: _kpiPage == i ? 1.0 : 0.93,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeOutCubic,
+                    child: kpiCards[i],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Dot indicators
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(kpiCards.length, (i) {
+                  final active = _kpiPage == i;
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                    width: active ? 20 : 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(3),
+                      color: active
+                          ? const Color(0xFF009688)
+                          : const Color(0xFF009688).withOpacity(0.25),
+                    ),
+                  );
+                }),
+              ),
               const SizedBox(height: 26),
-              _sectionLabel('QUICK ACTIONS'),
-              const SizedBox(height: 8),
-              _buildQuickActions(),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: _sectionLabel('QUICK ACTIONS'),
+              ),
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: _buildQuickActions(),
+              ),
+
               if (_achievements.isNotEmpty) ...[
                 const SizedBox(height: 26),
-                _buildRowHeader(
-                  'Recent Achievements',
-                  '${_achievements.length} posts',
-                  Icons.emoji_events_rounded,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: _buildRowHeader(
+                    'Recent Achievements',
+                    '${_achievements.length} posts',
+                    Icons.emoji_events_rounded,
+                  ),
                 ),
                 const SizedBox(height: 14),
                 SizedBox(
                   height: 232,
                   child: ListView.separated(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     scrollDirection: Axis.horizontal,
-                    itemCount:
-                        _achievements.length > 5 ? 5 : _achievements.length,
+                    itemCount: _achievements.length > 5
+                        ? 5
+                        : _achievements.length,
                     separatorBuilder: (_, __) => const SizedBox(width: 12),
                     itemBuilder: (_, i) =>
                         AchievementHCard(post: _achievements[i]),
@@ -216,53 +303,46 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-
-
-  Widget _buildKpiGrid() {
-    final kpis = [
-      _KpiData('Classes', '$_totalClasses', Icons.class_rounded,
-          const Color(0xFF009688), const Color(0xFFE0F2F1)),
-      _KpiData('Students', '$_totalStudents', Icons.groups_rounded,
-          const Color(0xFF00897B), const Color(0xFFE0F2F1)),
-      _KpiData('Teachers', '$_totalTeachers', Icons.school_rounded,
-          const Color(0xFF00796B), const Color(0xFFE0F2F1)),
-      _KpiData('Achievements', '$_totalAchievements',
-          Icons.emoji_events_rounded, const Color(0xFF00695C),
-          const Color(0xFFE0F2F1)),
-    ];
-    return GridView.count(
-      crossAxisCount: 2,
-      crossAxisSpacing: 12,
-      mainAxisSpacing: 12,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      childAspectRatio: 1.65,
-      children: kpis.map((d) => KpiCard(data: d)).toList(),
-    );
-  }
-
   Widget _buildQuickActions() {
     final items = [
-      _QA('Classrooms', Icons.class_rounded, () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => const ClassroomsPage()));
-      }),
-      _QA('Leave Request', Icons.event_busy_rounded, () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => const LeaveRequestPage()));
-      }),
-      _QA('Notice', Icons.campaign_rounded, () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => const NoticePage()));
-      }),
-      _QA('School', Icons.business_rounded, () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => const SchoolPage()));
-      }),
+      _QA(
+        'Classrooms',
+        Icons.class_rounded,
+        () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const ClassroomsPage()),
+        ),
+      ),
+      _QA(
+        'Leaves',
+        Icons.event_busy_rounded,
+        () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const LeaveRequestPage()),
+        ),
+      ),
+      _QA(
+        'Notice',
+        Icons.campaign_rounded,
+        () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const NoticePage()),
+        ),
+      ),
+      _QA(
+        'School',
+        Icons.business_rounded,
+        () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const SchoolPage()),
+        ),
+      ),
     ];
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: items.map((q) => Expanded(child: QuickBtn(item: q))).toList(),
     );
   }
-
-
 
   Widget _sectionLabel(String t) => Row(
     children: [
@@ -313,10 +393,7 @@ class _HomePageState extends State<HomePage> {
               ),
               Text(
                 sub,
-                style: const TextStyle(
-                  color: Color(0xFF718096),
-                  fontSize: 11,
-                ),
+                style: const TextStyle(color: Color(0xFF718096), fontSize: 11),
               ),
             ],
           ),
@@ -341,17 +418,6 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-// ─── Data model for KPI ─────────────────────────────────
-class _KpiData {
-  final String label;
-  final String value;
-  final IconData icon;
-  final Color accent;
-  final Color bg;
-  const _KpiData(this.label, this.value, this.icon, this.accent, this.bg);
-}
-
-// ─── Quick Action data model ─────────────────────────────
 class _QA {
   final String label;
   final IconData icon;

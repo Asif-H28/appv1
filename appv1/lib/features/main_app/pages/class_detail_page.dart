@@ -65,7 +65,9 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
     }
 
     try {
-      final url = Uri.parse('https://appv1backend.onrender.com/api/test/class/$classId');
+      final url = Uri.parse(
+        'https://appv1backend.onrender.com/api/test/class/$classId',
+      );
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
@@ -104,7 +106,7 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
 
   Future<void> _fetchResults() async {
     if (_selectedTest == null) return;
-    
+
     setState(() {
       _isLoadingResults = true;
       _testResults = [];
@@ -112,14 +114,19 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
 
     final testId = _selectedTest!['testId'];
     try {
-      final url = Uri.parse('https://appv1backend.onrender.com/api/result/test/$testId');
+      final url = Uri.parse(
+        'https://appv1backend.onrender.com/api/result/test/$testId',
+      );
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true && mounted) {
           final results = data['results'] as List<dynamic>? ?? [];
-          results.sort((a, b) => (b['percentage'] as num).compareTo(a['percentage'] as num));
+          results.sort(
+            (a, b) =>
+                (b['percentage'] as num).compareTo(a['percentage'] as num),
+          );
           setState(() {
             _testResults = results;
             _isLoadingResults = false;
@@ -158,7 +165,8 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
 
     try {
       final url = Uri.parse(
-          'https://appv1backend.onrender.com/api/attendance/class/$classId/week?year=$_selectedYear&month=$_selectedMonth&week=$_selectedWeek');
+        'https://appv1backend.onrender.com/api/attendance/class/$classId/week?year=$_selectedYear&month=$_selectedMonth&week=$_selectedWeek',
+      );
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
@@ -265,10 +273,7 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
             const SizedBox(height: 2),
             Text(
               dateText,
-              style: const TextStyle(
-                fontSize: 9,
-                color: Color(0xFF718096),
-              ),
+              style: const TextStyle(fontSize: 9, color: Color(0xFF718096)),
             ),
           ],
         ],
@@ -283,10 +288,7 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
     }
     return Text(
       value.toInt().toString(),
-      style: const TextStyle(
-        fontSize: 10,
-        color: Color(0xFF718096),
-      ),
+      style: const TextStyle(fontSize: 10, color: Color(0xFF718096)),
       textAlign: TextAlign.right,
     );
   }
@@ -294,7 +296,8 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
   @override
   Widget build(BuildContext context) {
     final className = widget.classData['className'] ?? 'Unknown Class';
-    final studentCount = (widget.classData['studentIds'] as List<dynamic>? ?? []).length;
+    final studentCount =
+        (widget.classData['studentIds'] as List<dynamic>? ?? []).length;
 
     int totalLessons = 0;
     int completedLessons = 0;
@@ -328,7 +331,7 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
         elevation: 0,
       ),
       endDrawer: Drawer(
-        width: MediaQuery.of(context).size.width * 0.8,
+        width: MediaQuery.of(context).size.width * 1.0,
         backgroundColor: const Color(0xFFF0F7F6),
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.only(
@@ -345,7 +348,12 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
       body: Builder(
         builder: (context) {
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.fromLTRB(
+              16,
+              16,
+              16,
+              16 + MediaQuery.of(context).padding.bottom + 16,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -363,7 +371,9 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(3),
-                    border: Border.all(color: const Color(0xFF009688).withOpacity(0.2)),
+                    border: Border.all(
+                      color: const Color(0xFF009688).withOpacity(0.2),
+                    ),
                     boxShadow: [
                       BoxShadow(
                         color: const Color(0xFF009688).withOpacity(0.05),
@@ -383,7 +393,9 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
                             CircularProgressIndicator(
                               value: totalLessons == 0 ? 0.0 : progress,
                               strokeWidth: 8,
-                              backgroundColor: const Color(0xFF009688).withOpacity(0.1),
+                              backgroundColor: const Color(
+                                0xFF009688,
+                              ).withOpacity(0.1),
                               color: const Color(0xFF009688),
                             ),
                             Center(
@@ -427,6 +439,12 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
                               const SizedBox(height: 12),
                               GestureDetector(
                                 onTap: () {
+                                  setState(() {
+                                    _drawerType = DrawerType
+                                        .subjectDetails; // ← force reset
+                                    _selectedStudentResult =
+                                        null; // ← clear any previous result
+                                  });
                                   Scaffold.of(context).openEndDrawer();
                                 },
                                 child: const Row(
@@ -448,10 +466,10 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
                                   ],
                                 ),
                               ),
-                            ]
+                            ],
                           ],
                         ),
-                      )
+                      ),
                     ],
                   ),
                 ),
@@ -463,7 +481,9 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(3),
-                    border: Border.all(color: const Color(0xFF009688).withOpacity(0.2)),
+                    border: Border.all(
+                      color: const Color(0xFF009688).withOpacity(0.2),
+                    ),
                     boxShadow: [
                       BoxShadow(
                         color: const Color(0xFF009688).withOpacity(0.05),
@@ -530,7 +550,7 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
                         ],
                       ),
                       const SizedBox(height: 24),
-                      
+
                       // Chart or Loading/Error
                       if (_isLoadingChart)
                         const SizedBox(
@@ -569,10 +589,11 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
                               gridData: FlGridData(
                                 show: true,
                                 drawVerticalLine: true,
-                                getDrawingHorizontalLine: (value) => const FlLine(
-                                  color: Color(0xFFE2E8F0),
-                                  strokeWidth: 1,
-                                ),
+                                getDrawingHorizontalLine: (value) =>
+                                    const FlLine(
+                                      color: Color(0xFFE2E8F0),
+                                      strokeWidth: 1,
+                                    ),
                                 getDrawingVerticalLine: (value) => const FlLine(
                                   color: Color(0xFFE2E8F0),
                                   strokeWidth: 1,
@@ -605,14 +626,22 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
                               borderData: FlBorderData(
                                 show: true,
                                 border: const Border(
-                                  bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1.5),
-                                  left: BorderSide(color: Color(0xFFE2E8F0), width: 1.5),
+                                  bottom: BorderSide(
+                                    color: Color(0xFFE2E8F0),
+                                    width: 1.5,
+                                  ),
+                                  left: BorderSide(
+                                    color: Color(0xFFE2E8F0),
+                                    width: 1.5,
+                                  ),
                                   right: BorderSide.none,
                                   top: BorderSide.none,
                                 ),
                               ),
                               minX: 0,
-                              maxX: (_dailyData.length - 1).toDouble() > 0 ? (_dailyData.length - 1).toDouble() : 6,
+                              maxX: (_dailyData.length - 1).toDouble() > 0
+                                  ? (_dailyData.length - 1).toDouble()
+                                  : 6,
                               minY: 0,
                               maxY: _maxY,
                               lineBarsData: [
@@ -624,18 +653,21 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
                                   isStrokeCapRound: true,
                                   dotData: FlDotData(
                                     show: true,
-                                    getDotPainter: (spot, percent, barData, index) {
-                                      return FlDotCirclePainter(
-                                        radius: 4,
-                                        color: const Color(0xFF009688),
-                                        strokeWidth: 2,
-                                        strokeColor: Colors.white,
-                                      );
-                                    },
+                                    getDotPainter:
+                                        (spot, percent, barData, index) {
+                                          return FlDotCirclePainter(
+                                            radius: 4,
+                                            color: const Color(0xFF009688),
+                                            strokeWidth: 2,
+                                            strokeColor: Colors.white,
+                                          );
+                                        },
                                   ),
                                   belowBarData: BarAreaData(
                                     show: true,
-                                    color: const Color(0xFF009688).withOpacity(0.1),
+                                    color: const Color(
+                                      0xFF009688,
+                                    ).withOpacity(0.1),
                                   ),
                                 ),
                               ],
@@ -693,28 +725,35 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
                   decoration: BoxDecoration(
                     color: const Color(0xFFF0F7F6),
                     borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: const Color(0xFF009688).withOpacity(0.3)),
+                    border: Border.all(
+                      color: const Color(0xFF009688).withOpacity(0.3),
+                    ),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<Map<String, dynamic>>(
                       value: _selectedTest,
                       isExpanded: true,
-                      icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF009688)),
+                      icon: const Icon(
+                        Icons.arrow_drop_down,
+                        color: Color(0xFF009688),
+                      ),
                       style: const TextStyle(
-                        fontSize: 14, 
-                        fontWeight: FontWeight.w600, 
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
                         color: Color(0xFF2D3748),
                       ),
-                      items: _tests.map<DropdownMenuItem<Map<String, dynamic>>>((dynamic test) {
-                        return DropdownMenuItem<Map<String, dynamic>>(
-                          value: test as Map<String, dynamic>,
-                          child: Text(
-                            test['testModule'] ?? 'Unknown Test',
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                        );
-                      }).toList(),
+                      items: _tests.map<DropdownMenuItem<Map<String, dynamic>>>(
+                        (dynamic test) {
+                          return DropdownMenuItem<Map<String, dynamic>>(
+                            value: test as Map<String, dynamic>,
+                            child: Text(
+                              test['testModule'] ?? 'Unknown Test',
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                          );
+                        },
+                      ).toList(),
                       onChanged: (Map<String, dynamic>? newValue) {
                         setState(() {
                           _selectedTest = newValue;
@@ -728,13 +767,18 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
           ),
           if (_isLoadingTests) ...[
             const SizedBox(height: 16),
-            const Center(child: CircularProgressIndicator(color: Color(0xFF009688))),
+            const Center(
+              child: CircularProgressIndicator(color: Color(0xFF009688)),
+            ),
           ] else if (_testError.isNotEmpty) ...[
             const SizedBox(height: 16),
             Text(_testError, style: const TextStyle(color: Colors.red)),
           ] else if (_tests.isEmpty) ...[
             const SizedBox(height: 16),
-            const Text('No tests assigned to this class.', style: TextStyle(color: Colors.black54)),
+            const Text(
+              'No tests assigned to this class.',
+              style: TextStyle(color: Colors.black54),
+            ),
           ],
 
           if (!_isLoadingTests && _tests.isNotEmpty) ...[
@@ -743,9 +787,19 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
             TextField(
               decoration: InputDecoration(
                 hintText: 'Search student...',
-                hintStyle: const TextStyle(fontSize: 14, color: Color(0xFFA0AEC0)),
-                prefixIcon: const Icon(Icons.search, color: Color(0xFF718096), size: 20),
-                contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                hintStyle: const TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFFA0AEC0),
+                ),
+                prefixIcon: const Icon(
+                  Icons.search,
+                  color: Color(0xFF718096),
+                  size: 20,
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 0,
+                  horizontal: 16,
+                ),
                 filled: true,
                 fillColor: const Color(0xFFF7FAFC),
                 border: OutlineInputBorder(
@@ -766,11 +820,13 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
               },
             ),
           ],
-          
+
           const SizedBox(height: 24),
           // Results Table
           if (_isLoadingResults)
-            const Center(child: CircularProgressIndicator(color: Color(0xFF009688)))
+            const Center(
+              child: CircularProgressIndicator(color: Color(0xFF009688)),
+            )
           else if (_testResults.isEmpty && !_isLoadingTests)
             const Center(
               child: Text(
@@ -840,16 +896,31 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
           ),
         ),
         // Table Rows
-        ... displayedResults.map((result) {
+        ...displayedResults.map((result) {
           final globalRank = _testResults.indexOf(result);
           final studentName = result['studentName'] ?? 'Unknown';
           final scored = result['totalScoredMarks']?.toString() ?? '0';
           final total = result['totalMaximumMarks']?.toString() ?? '0';
 
           Widget? badge;
-          if (globalRank == 0) badge = const Icon(Icons.emoji_events, color: Colors.amber, size: 16);
-          else if (globalRank == 1) badge = const Icon(Icons.emoji_events, color: Color(0xFFC0C0C0), size: 16);
-          else if (globalRank == 2) badge = const Icon(Icons.emoji_events, color: Color(0xFFCD7F32), size: 16);
+          if (globalRank == 0)
+            badge = const Icon(
+              Icons.emoji_events,
+              color: Colors.amber,
+              size: 16,
+            );
+          else if (globalRank == 1)
+            badge = const Icon(
+              Icons.emoji_events,
+              color: Color(0xFFC0C0C0),
+              size: 16,
+            );
+          else if (globalRank == 2)
+            badge = const Icon(
+              Icons.emoji_events,
+              color: Color(0xFFCD7F32),
+              size: 16,
+            );
 
           return InkWell(
             onTap: () {
@@ -870,10 +941,7 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
                     flex: 2,
                     child: Row(
                       children: [
-                        if (badge != null) ...[
-                          badge,
-                          const SizedBox(width: 8),
-                        ],
+                        if (badge != null) ...[badge, const SizedBox(width: 8)],
                         Expanded(
                           child: Text(
                             studentName,
@@ -909,7 +977,11 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
     );
   }
 
-  Widget _buildStatCard({required IconData icon, required String title, required String value}) {
+  Widget _buildStatCard({
+    required IconData icon,
+    required String title,
+    required String value,
+  }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       decoration: BoxDecoration(
@@ -982,8 +1054,16 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
         child: DropdownButton<T>(
           value: value,
           isExpanded: true,
-          icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF009688), size: 16),
-          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF2D3748)),
+          icon: const Icon(
+            Icons.arrow_drop_down,
+            color: Color(0xFF009688),
+            size: 16,
+          ),
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF2D3748),
+          ),
           onChanged: onChanged,
           items: items.map((e) {
             return DropdownMenuItem(
@@ -1006,15 +1086,32 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
       children: [
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 16, 8, 16),
           color: const Color(0xFF009688),
-          child: const Text(
-            'Subject Details',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+          child: Row(
+            children: [
+              const Expanded(
+                child: Text(
+                  'Subject Details',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(
+                  Icons.close_rounded,
+                  color: Colors.white,
+                  size: 22,
+                ),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                tooltip: 'Close',
+              ),
+            ],
           ),
         ),
         Expanded(
@@ -1031,7 +1128,9 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
                     final sName = s['name'] ?? 'Unknown Subject';
                     final sLessons = s['lessons'] as List<dynamic>? ?? [];
                     final sTotal = sLessons.length;
-                    final sCompleted = sLessons.where((l) => l['completed'] == true).length;
+                    final sCompleted = sLessons
+                        .where((l) => l['completed'] == true)
+                        .length;
                     final sProgress = sTotal == 0 ? 0.0 : sCompleted / sTotal;
 
                     return Container(
@@ -1074,7 +1173,9 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
                             child: LinearProgressIndicator(
                               value: sProgress,
                               minHeight: 6,
-                              backgroundColor: const Color(0xFF009688).withOpacity(0.1),
+                              backgroundColor: const Color(
+                                0xFF009688,
+                              ).withOpacity(0.1),
                               color: const Color(0xFF009688),
                             ),
                           ),
@@ -1083,7 +1184,7 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
                     );
                   }).toList(),
                 ),
-        )
+        ),
       ],
     );
   }
@@ -1097,7 +1198,8 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
     final studentName = result['studentName'] ?? 'Unknown';
     final percentage = result['percentage']?.toString() ?? '0';
     final grade = result['grade'] ?? '-';
-    final overallStatus = result['overallStatus']?.toString().toUpperCase() ?? 'N/A';
+    final overallStatus =
+        result['overallStatus']?.toString().toUpperCase() ?? 'N/A';
     final isPass = result['overallStatus'] == 'pass';
     final subjects = result['subjectResults'] as List<dynamic>? ?? [];
 
@@ -1122,7 +1224,7 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
               InkWell(
                 onTap: () => Navigator.of(context).pop(),
                 child: const Icon(Icons.close, color: Colors.white),
-              )
+              ),
             ],
           ),
         ),
@@ -1150,24 +1252,55 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Percentage', style: TextStyle(fontSize: 12, color: Color(0xFF718096))),
+                      const Text(
+                        'Percentage',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF718096),
+                        ),
+                      ),
                       const SizedBox(height: 4),
-                      Text('$percentage%', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF2D3748))),
+                      Text(
+                        '$percentage%',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF2D3748),
+                        ),
+                      ),
                     ],
                   ),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      const Text('Grade & Status', style: TextStyle(fontSize: 12, color: Color(0xFF718096))),
+                      const Text(
+                        'Grade & Status',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF718096),
+                        ),
+                      ),
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          Text('Grade $grade', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF2D3748))),
+                          Text(
+                            'Grade $grade',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF2D3748),
+                            ),
+                          ),
                           const SizedBox(width: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
-                              color: isPass ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+                              color: isPass
+                                  ? Colors.green.withOpacity(0.1)
+                                  : Colors.red.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(3),
                             ),
                             child: Text(
@@ -1192,7 +1325,10 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
         Expanded(
           child: subjects.isEmpty
               ? const Center(
-                  child: Text('No subject results found.', style: TextStyle(color: Colors.black54)),
+                  child: Text(
+                    'No subject results found.',
+                    style: TextStyle(color: Colors.black54),
+                  ),
                 )
               : ListView.builder(
                   padding: const EdgeInsets.all(16),
@@ -1202,7 +1338,8 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
                     final sName = sub['subjectName'] ?? 'Subject';
                     final sMarks = sub['scoredMarks']?.toString() ?? '0';
                     final sTotal = sub['maximumScore']?.toString() ?? '0';
-                    final sStatus = sub['status']?.toString().toUpperCase() ?? '';
+                    final sStatus =
+                        sub['status']?.toString().toUpperCase() ?? '';
                     final sPass = sub['status'] == 'pass';
 
                     return Container(
@@ -1211,7 +1348,9 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(3),
-                        border: Border.all(color: const Color(0xFF009688).withOpacity(0.2)),
+                        border: Border.all(
+                          color: const Color(0xFF009688).withOpacity(0.2),
+                        ),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
