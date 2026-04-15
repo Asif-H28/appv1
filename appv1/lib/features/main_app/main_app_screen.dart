@@ -5,17 +5,13 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/app_colors.dart';
 import 'pages/home_page.dart';
-import 'pages/profile_page.dart';
-import 'pages/organization_page.dart';
 import 'pages/settings_page.dart';
-// TODO: replace with your actual admin notification screen import
-// import 'pages/admin_notification_screen.dart';
+import 'pages/admin_achievements_page.dart';
 
 const Color _accent = Colors.teal;
 
 class MainAppScreen extends StatefulWidget {
   final int? initialTab;
-
   const MainAppScreen({Key? key, this.initialTab}) : super(key: key);
 
   @override
@@ -28,9 +24,8 @@ class _MainAppScreenState extends State<MainAppScreen> {
   String _orgId = '';
 
   final List<Widget> _pages = [
-    HomePage(),
-    ProfilePage(),
-    OrganizationPage(),
+    const HomePage(),
+    const AdminAchievementsPage(),
     SettingsPage(),
   ];
 
@@ -71,11 +66,6 @@ class _MainAppScreenState extends State<MainAppScreen> {
 
   void _openNotifications() {
     setState(() => _notifCount = 0);
-    // TODO: uncomment when admin notification screen is ready
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(builder: (_) => const AdminNotificationScreen()),
-    // );
   }
 
   @override
@@ -117,7 +107,6 @@ class _MainAppScreenState extends State<MainAppScreen> {
           padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
           child: Row(
             children: [
-              // ── Logo icon (same as student/teacher screens) ──
               Container(
                 padding: const EdgeInsets.all(7),
                 decoration: BoxDecoration(
@@ -126,14 +115,12 @@ class _MainAppScreenState extends State<MainAppScreen> {
                   border: Border.all(color: Colors.white.withOpacity(0.25)),
                 ),
                 child: const Icon(
-                  Icons.sync_alt, // ← restored original logo
+                  Icons.sync_alt,
                   color: Colors.white,
                   size: 16,
                 ),
               ),
               const SizedBox(width: 10),
-
-              // ── Title ──
               const Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -153,8 +140,6 @@ class _MainAppScreenState extends State<MainAppScreen> {
                   ],
                 ),
               ),
-
-              // ── Bell icon ──
               GestureDetector(
                 onTap: _openNotifications,
                 child: Stack(
@@ -226,18 +211,12 @@ class _MainAppScreenState extends State<MainAppScreen> {
               _navItem(0, Icons.home_rounded, Icons.home_outlined, 'Home'),
               _navItem(
                 1,
-                Icons.person_rounded,
-                Icons.person_outline_rounded,
-                'Profile',
+                Icons.emoji_events_rounded,
+                Icons.emoji_events_outlined,
+                'Achievements',
               ),
               _navItem(
                 2,
-                Icons.business_rounded,
-                Icons.business_outlined,
-                'Organization',
-              ),
-              _navItem(
-                3,
                 Icons.settings_rounded,
                 Icons.settings_outlined,
                 'Settings',
@@ -251,7 +230,6 @@ class _MainAppScreenState extends State<MainAppScreen> {
 
   Widget _navItem(int index, IconData active, IconData inactive, String label) {
     final isActive = _currentIndex == index;
-
     return Expanded(
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,

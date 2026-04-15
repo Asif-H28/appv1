@@ -564,7 +564,12 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
       ),
       padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
       child: SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(16, 12, 16, 28),
+        padding: EdgeInsets.fromLTRB(
+          16,
+          12,
+          16,
+          MediaQuery.of(ctx).padding.bottom + 28,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

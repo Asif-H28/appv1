@@ -22,7 +22,7 @@ class _HomePageState extends State<HomePage> {
       _totalStudents = 0,
       _totalTeachers = 0,
       _totalAchievements = 0;
-  List<Map<String, dynamic>> _classrooms = [], _achievements = [];
+  List<Map<String, dynamic>> _classrooms = [];
   final PageController _kpiCtrl = PageController(viewportFraction: 0.78);
   int _kpiPage = 0;
 
@@ -72,7 +72,6 @@ class _HomePageState extends State<HomePage> {
     if (!mounted) return;
     setState(() {
       _classrooms = classList;
-      _achievements = achList;
       _totalClasses = classList.length;
       _totalStudents = studentTotal;
       _totalTeachers = countRes?['totalTeachers'] as int? ?? 0;
@@ -223,7 +222,7 @@ class _HomePageState extends State<HomePage> {
               ),
               const SizedBox(height: 14),
 
-              // Clay carousel
+              // KPI carousel
               SizedBox(
                 height: 158,
                 child: PageView.builder(
@@ -270,32 +269,6 @@ class _HomePageState extends State<HomePage> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: _buildQuickActions(),
               ),
-
-              if (_achievements.isNotEmpty) ...[
-                const SizedBox(height: 26),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: _buildRowHeader(
-                    'Recent Achievements',
-                    '${_achievements.length} posts',
-                    Icons.emoji_events_rounded,
-                  ),
-                ),
-                const SizedBox(height: 14),
-                SizedBox(
-                  height: 232,
-                  child: ListView.separated(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _achievements.length > 5
-                        ? 5
-                        : _achievements.length,
-                    separatorBuilder: (_, __) => const SizedBox(width: 12),
-                    itemBuilder: (_, i) =>
-                        AchievementHCard(post: _achievements[i]),
-                  ),
-                ),
-              ],
             ],
           ),
         ),
@@ -366,56 +339,6 @@ class _HomePageState extends State<HomePage> {
       ),
     ],
   );
-
-  Widget _buildRowHeader(String title, String sub, IconData icon) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: const Color(0xFF009688).withOpacity(0.10),
-            borderRadius: BorderRadius.circular(3),
-          ),
-          child: Icon(icon, color: const Color(0xFF009688), size: 16),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13,
-                  color: Color(0xFF2D3748),
-                ),
-              ),
-              Text(
-                sub,
-                style: const TextStyle(color: Color(0xFF718096), fontSize: 11),
-              ),
-            ],
-          ),
-        ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-          decoration: BoxDecoration(
-            color: const Color(0xFF009688).withOpacity(0.08),
-            borderRadius: BorderRadius.circular(3),
-          ),
-          child: const Text(
-            'View All',
-            style: TextStyle(
-              color: Color(0xFF009688),
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 }
 
 class _QA {

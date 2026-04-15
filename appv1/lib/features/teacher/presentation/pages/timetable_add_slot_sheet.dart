@@ -483,7 +483,13 @@ class _TimetableAddSlotSheetState extends State<TimetableAddSlotSheet> {
 
           // Body
           SingleChildScrollView(
-            padding: EdgeInsets.fromLTRB(16, 16, 16, 24),
+            // After
+            padding: EdgeInsets.fromLTRB(
+              16,
+              16,
+              16,
+              24 + MediaQuery.of(context).padding.bottom,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

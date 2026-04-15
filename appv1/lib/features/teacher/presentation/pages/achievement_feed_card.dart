@@ -1,3 +1,4 @@
+// achievement_feed_card.dart
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 
@@ -55,7 +56,6 @@ class _AchievementFeedCardState extends State<AchievementFeedCard> {
     }
   }
 
-  // ✅ Helper method — was missing from your file
   Widget _brokenImage() => Container(
     height: 180,
     color: Colors.grey[100],
@@ -70,12 +70,26 @@ class _AchievementFeedCardState extends State<AchievementFeedCard> {
     final tagged = (post['taggedStudents'] as List? ?? [])
         .cast<Map<String, dynamic>>();
     final likes = (post['likes'] as List? ?? []);
+    final likeCount = post['likeCount'] as int? ?? 0;
+    final commentCount = post['commentCount'] as int? ?? 0;
+
+    // ✅ FIX 1 — clamp _imgIndex to prevent RangeError after list rebuild
+    if (_imgIndex >= images.length) _imgIndex = 0;
+
+    // ✅ FIX 2 — isOwner driven by callbacks, not teacherId comparison
+    // This safely handles admin posts where teacherId is null
+    final isOwner = widget.onEdit != null || widget.onDelete != null;
+
+    // Like check — safe for admin (userId may differ from teacherId)
     final isLiked = likes.any(
       (l) => l['userId']?.toString() == widget.teacherId,
     );
-    final likeCount = post['likeCount'] as int? ?? 0;
-    final commentCount = post['commentCount'] as int? ?? 0;
-    final isOwner = post['teacherId']?.toString() == widget.teacherId;
+
+    // ── Author display: admin posts show "Admin" with org icon ──
+    final authorName = post['teacherName']?.toString() ?? '';
+    final subLine = post['className']?.toString() ?? '';
+    final timeStr = _timeAgo(post['createdAt']?.toString() ?? '');
+    final isAdminPost = authorName.isEmpty && subLine.isEmpty;
 
     return Container(
       decoration: BoxDecoration(
@@ -92,11 +106,12 @@ class _AchievementFeedCardState extends State<AchievementFeedCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Author row ──────────────────────────
+          // ── Author row ──────────────────────────────
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
             child: Row(
               children: [
+                // Avatar — shows 'A' for admin post, initial otherwise
                 Container(
                   width: 36,
                   height: 36,
@@ -106,7 +121,11 @@ class _AchievementFeedCardState extends State<AchievementFeedCard> {
                   ),
                   alignment: Alignment.center,
                   child: Text(
-                    (post['teacherName']?.toString() ?? 'T')[0].toUpperCase(),
+                    isAdminPost
+                        ? 'A'
+                        : authorName.isNotEmpty
+                        ? authorName[0].toUpperCase()
+                        : 'T',
                     style: const TextStyle(
                       color: Colors.teal,
                       fontWeight: FontWeight.bold,
@@ -120,7 +139,7 @@ class _AchievementFeedCardState extends State<AchievementFeedCard> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        post['teacherName']?.toString() ?? '',
+                        isAdminPost ? 'Admin' : authorName,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
@@ -128,8 +147,7 @@ class _AchievementFeedCardState extends State<AchievementFeedCard> {
                         ),
                       ),
                       Text(
-                        '${post['className'] ?? ''} · '
-                        '${_timeAgo(post['createdAt']?.toString() ?? '')}',
+                        isAdminPost ? timeStr : '$subLine · $timeStr',
                         style: TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 11,
@@ -138,6 +156,7 @@ class _AchievementFeedCardState extends State<AchievementFeedCard> {
                     ],
                   ),
                 ),
+                // ── Edit / Delete buttons (shown when isOwner) ──
                 if (isOwner)
                   Row(
                     children: [
@@ -180,7 +199,7 @@ class _AchievementFeedCardState extends State<AchievementFeedCard> {
             ),
           ),
 
-          // ── Images — natural aspect ratio ────────
+          // ── Images ──────────────────────────────────
           if (images.isNotEmpty) ...[
             ClipRRect(
               borderRadius: BorderRadius.circular(0),
@@ -211,7 +230,7 @@ class _AchievementFeedCardState extends State<AchievementFeedCard> {
                       ),
                     ),
             ),
-            // ✅ Dots indicator — was missing from your snippet
+            // Dot indicators
             if (images.length > 1)
               Padding(
                 padding: const EdgeInsets.only(top: 8),
@@ -234,7 +253,7 @@ class _AchievementFeedCardState extends State<AchievementFeedCard> {
               ),
           ],
 
-          // ── Tagged + Caption ─────────────────────
+          // ── Tagged students + Caption ────────────────
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
             child: Column(
@@ -286,7 +305,7 @@ class _AchievementFeedCardState extends State<AchievementFeedCard> {
             child: Divider(height: 1, color: Color(0xFFF0F0F0)),
           ),
 
-          // ── Like + Comment ───────────────────────
+          // ── Like + Comment ───────────────────────────
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
             child: Row(
@@ -321,6 +340,7 @@ class _AchievementFeedCardState extends State<AchievementFeedCard> {
   }
 }
 
+// ── Action chip ───────────────────────────────────────
 class _ActionChip extends StatelessWidget {
   final IconData icon;
   final String label;

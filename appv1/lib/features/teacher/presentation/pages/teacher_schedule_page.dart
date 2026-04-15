@@ -431,7 +431,7 @@ class _TeacherSchedulePageState extends State<TeacherSchedulePage>
     if (slots.isEmpty) return _buildEmptyDay(day);
 
     return ListView.separated(
-      padding: EdgeInsets.fromLTRB(16, 16, 16, 40),
+      padding: EdgeInsets.fromLTRB(16, 16, 16, 100),
       itemCount: slots.length,
       separatorBuilder: (_, __) => Padding(
         padding: EdgeInsets.only(left: 24),

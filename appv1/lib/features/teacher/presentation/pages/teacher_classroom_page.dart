@@ -375,57 +375,58 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
 
           // ── Body ──
           Expanded(
-            child: SafeArea(
-              top: false,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppColors.background,
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(20),
-                  ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.background,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(20),
                 ),
-                clipBehavior: Clip.antiAlias,
-                child: _isLoading
-                    ? _buildLoading()
-                    : _hasError
-                    ? _buildError()
-                    : _classrooms.isEmpty
-                    ? _buildEmpty()
-                    : RefreshIndicator(
-                        color: _accent,
-                        onRefresh: _fetchClassrooms,
-                        child: ListView.separated(
-                          padding: const EdgeInsets.fromLTRB(14, 14, 14, 40),
-                          itemCount: _classrooms.length,
-                          separatorBuilder: (_, __) =>
-                              const SizedBox(height: 8),
-                          itemBuilder: (context, index) {
-                            final cls = _classrooms[index];
-                            final classId = cls['classId']?.toString() ?? '';
-                            final className =
-                                cls['className']?.toString() ?? 'Class';
-                            return ClassroomCard(
-                              classroom: cls,
-                              index: index,
-                              onTap: () async {
-                                await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => ClassroomDetailPage(
-                                      classId: classId,
-                                      className: className,
-                                    ),
-                                  ),
-                                );
-                                _fetchClassrooms();
-                              },
-                              onDelete: () =>
-                                  _confirmDelete(classId, className, index),
-                            );
-                          },
-                        ),
-                      ),
               ),
+              clipBehavior: Clip.antiAlias,
+              child: _isLoading
+                  ? _buildLoading()
+                  : _hasError
+                  ? _buildError()
+                  : _classrooms.isEmpty
+                  ? _buildEmpty()
+                  : RefreshIndicator(
+                      color: _accent,
+                      onRefresh: _fetchClassrooms,
+                      child: ListView.separated(
+                        padding: EdgeInsets.fromLTRB(
+                          14,
+                          14,
+                          14,
+                          40 + MediaQuery.of(context).padding.bottom,
+                        ),
+                        itemCount: _classrooms.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 8),
+                        itemBuilder: (context, index) {
+                          final cls = _classrooms[index];
+                          final classId = cls['classId']?.toString() ?? '';
+                          final className =
+                              cls['className']?.toString() ?? 'Class';
+                          return ClassroomCard(
+                            classroom: cls,
+                            index: index,
+                            onTap: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => ClassroomDetailPage(
+                                    classId: classId,
+                                    className: className,
+                                  ),
+                                ),
+                              );
+                              _fetchClassrooms();
+                            },
+                            onDelete: () =>
+                                _confirmDelete(classId, className, index),
+                          );
+                        },
+                      ),
+                    ),
             ),
           ),
         ],

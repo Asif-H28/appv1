@@ -352,27 +352,32 @@ class _StudentLeaveReviewPageState extends State<StudentLeaveReviewPage>
         children: [
           _buildHeader(),
           // Filter chips
+          // After
           Container(
             color: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            child: Row(
-              children: [
-                _filterChip('All', 0, _allLeaves.length),
-                const SizedBox(width: 6),
-                _filterChip('Pending', 1, pending),
-                const SizedBox(width: 6),
-                _filterChip(
-                  'Approved',
-                  2,
-                  _allLeaves.where((l) => l['status'] == 'approved').length,
-                ),
-                const SizedBox(width: 6),
-                _filterChip(
-                  'Rejected',
-                  3,
-                  _allLeaves.where((l) => l['status'] == 'rejected').length,
-                ),
-              ],
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              child: Row(
+                children: [
+                  _filterChip('All', 0, _allLeaves.length),
+                  const SizedBox(width: 6),
+                  _filterChip('Pending', 1, pending),
+                  const SizedBox(width: 6),
+                  _filterChip(
+                    'Approved',
+                    2,
+                    _allLeaves.where((l) => l['status'] == 'approved').length,
+                  ),
+                  const SizedBox(width: 6),
+                  _filterChip(
+                    'Rejected',
+                    3,
+                    _allLeaves.where((l) => l['status'] == 'rejected').length,
+                  ),
+                ],
+              ),
             ),
           ),
           Container(height: 1, color: Colors.grey[100]),
@@ -391,7 +396,7 @@ class _StudentLeaveReviewPageState extends State<StudentLeaveReviewPage>
                     onRefresh: _fetchLeaves,
                     child: ListView.separated(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
                       itemCount: _filteredLeaves.length,
                       separatorBuilder: (_, __) => const SizedBox(height: 8),
                       itemBuilder: (_, i) =>

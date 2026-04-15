@@ -174,7 +174,13 @@ class _CreateTestSheetState extends State<CreateTestSheet> {
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
       ),
-      padding: EdgeInsets.fromLTRB(16, 12, 16, 24 + bottomInset),
+      // After
+      padding: EdgeInsets.fromLTRB(
+        16,
+        12,
+        16,
+        24 + bottomInset + MediaQuery.of(context).padding.bottom,
+      ),
       child: SingleChildScrollView(
         child: Form(
           key: _formKey,
