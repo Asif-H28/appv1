@@ -3,8 +3,16 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 
 // ═══════════════════════════════════════════════════════
-// QuickBtn — clean professional, centered, small vector
+// QuickBtn — 2-column card style matching design screenshot
 // ═══════════════════════════════════════════════════════
+
+// Maps each label to which character index gets the orange highlight
+const Map<String, int> _highlightIndex = {
+  'Classrooms': 1,  // C[L]assrooms
+  'Leaves': 1,      // L[E]aves
+  'Notice': 2,      // No[T]ice
+  'School': 3,      // Sch[O]ol
+};
 
 class QuickBtn extends StatefulWidget {
   final dynamic item;
@@ -16,12 +24,37 @@ class QuickBtn extends StatefulWidget {
 class _QuickBtnState extends State<QuickBtn> {
   bool _pressed = false;
 
+  static const _teal = Color(0xFF00796B);
+  static const _orange = Color(0xFFE07B39);
+
   static final Map<String, CustomPainter> _painters = {
     'Classrooms': _QAClassroomPainter(),
-    'Leave Request': _QALeavePainter(),
+    'Leaves': _QALeavePainter(),
     'Notice': _QANoticePainter(),
     'School': _QASchoolPainter(),
   };
+
+  // Builds the uppercase label with one letter highlighted in orange
+  Widget _styledLabel(String label) {
+    final upper = label.toUpperCase();
+    final hiIdx = _highlightIndex[label] ?? 0;
+    final spans = <TextSpan>[];
+    for (int i = 0; i < upper.length; i++) {
+      spans.add(TextSpan(
+        text: upper[i],
+        style: TextStyle(
+          color: i == hiIdx ? _orange : _teal,
+          fontWeight: FontWeight.w800,
+          fontSize: 11,
+          letterSpacing: 1.1,
+        ),
+      ));
+    }
+    return RichText(
+      textAlign: TextAlign.center,
+      text: TextSpan(children: spans),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,62 +67,45 @@ class _QuickBtnState extends State<QuickBtn> {
       onTapUp: (_) => setState(() => _pressed = false),
       onTapCancel: () => setState(() => _pressed = false),
       onTap: onTap,
-      child: AnimatedContainer(
+      child: AnimatedScale(
+        scale: _pressed ? 0.96 : 1.0,
         duration: const Duration(milliseconds: 120),
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4),
-        transform: _pressed
-            ? (Matrix4.identity()..scale(0.96))
-            : Matrix4.identity(),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(3),
-          border: Border.all(
-            color: const Color(0xFF009688).withOpacity(0.18),
-            width: 1,
+        curve: Curves.easeOut,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(3),
+            border: Border.all(color: const Color(0xFFE5E7EB), width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF009688).withOpacity(0.08),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
-            ),
-            BoxShadow(
-              color: Colors.black.withOpacity(0.03),
-              blurRadius: 4,
-              offset: const Offset(0, 1),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: const Color(0xFF009688).withOpacity(0.08),
-                borderRadius: BorderRadius.circular(3),
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Icon container
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE6F2F1),
+                  borderRadius: BorderRadius.circular(3),
+                ),
+                alignment: Alignment.center,
+                child: CustomPaint(painter: painter, size: const Size(22, 22)),
               ),
-              alignment: Alignment.center,
-              child: CustomPaint(painter: painter, size: const Size(20, 20)),
-            ),
-            const SizedBox(height: 7),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Color(0xFF2D3748),
-                fontSize: 9.5,
-                height: 1.25,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
+              const SizedBox(height: 8),
+              // Uppercase teal label with orange accent letter
+              _styledLabel(label),
+            ],
+          ),
         ),
       ),
     );

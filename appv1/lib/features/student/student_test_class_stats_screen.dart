@@ -252,7 +252,12 @@ class _StudentTestClassStatsScreenState
         : 0.0;
 
     return SingleChildScrollView(
-      padding: EdgeInsets.fromLTRB(14, 16, 14, 40),
+      padding: EdgeInsets.fromLTRB(
+        14,
+        16,
+        14,
+        40 + MediaQuery.of(context).padding.bottom,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

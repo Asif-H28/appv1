@@ -54,29 +54,46 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
     _focus.unfocus();
 
     try {
-      final res = await http.post(
-        Uri.parse(
+      final url =
           'https://appv1backend.onrender.com/api/achievement'
-          '/${widget.achievementId}/comment',
-        ),
+          '/${widget.achievementId}/comment';
+      final payload = {
+        'userId': widget.userId,
+        'userName': widget.userName,
+        'userRole': widget.userRole,
+        'text': text,
+      };
+
+      debugPrint('── [AddComment] POST $url');
+      debugPrint('── [AddComment] Payload: ${jsonEncode(payload)}');
+
+      final res = await http.post(
+        Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'userId': widget.userId,
-          'userName': widget.userName,
-          'userRole': widget.userRole,
-          'text': text,
-        }),
+        body: jsonEncode(payload),
       );
+
+      debugPrint('── [AddComment] Status: ${res.statusCode}');
+      debugPrint('── [AddComment] Response body: ${res.body}');
+
       if (!mounted) return;
       if (res.statusCode == 200 || res.statusCode == 201) {
         final body = jsonDecode(res.body) as Map;
         final comment = Map<String, dynamic>.from(body['comment'] as Map);
         final count = body['commentCount'] as int? ?? _comments.length + 1;
-        setState(() => _comments.insert(0, comment));
+        debugPrint('── [AddComment] ✅ Comment added: $comment');
+        setState(() {
+          _comments.insert(0, comment);
+          _submitting = false;
+        });
         widget.onChanged(List.from(_comments), count);
-        if (mounted) Navigator.pop(context);
+      } else {
+        debugPrint('── [AddComment] ❌ Failed with status ${res.statusCode}: ${res.body}');
+        if (mounted) setState(() => _submitting = false);
       }
-    } catch (_) {
+    } catch (e, st) {
+      debugPrint('── [AddComment] 🔥 Exception: $e');
+      debugPrint('── [AddComment] StackTrace: $st');
       if (mounted) setState(() => _submitting = false);
     }
   }

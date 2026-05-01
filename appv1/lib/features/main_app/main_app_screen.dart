@@ -1,12 +1,12 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/app_colors.dart';
 import 'pages/home_page.dart';
 import 'pages/settings_page.dart';
 import 'pages/admin_achievements_page.dart';
+import 'pages/admin_leave_notifications_page.dart';
+import 'pages/notification_service.dart';
 
 const Color _accent = Colors.teal;
 
@@ -38,7 +38,18 @@ class _MainAppScreenState extends State<MainAppScreen> {
       }
     });
     _loadAndFetchCount();
+    // ✅ Listen for incoming FCM leave-request notifications (same pattern as student)
+    adminNotifCountNotifier.addListener(_onAdminNotification);
   }
+
+  @override
+  void dispose() {
+    adminNotifCountNotifier.removeListener(_onAdminNotification);
+    super.dispose();
+  }
+
+  // Called automatically whenever a teacher-leave-request FCM arrives
+  void _onAdminNotification() => _fetchNotificationCount();
 
   Future<void> _loadAndFetchCount() async {
     final prefs = await SharedPreferences.getInstance();
@@ -49,23 +60,30 @@ class _MainAppScreenState extends State<MainAppScreen> {
   Future<void> _fetchNotificationCount() async {
     if (_orgId.isEmpty) return;
     try {
-      final r = await http.get(
-        Uri.parse(
-          'https://appv1backend.onrender.com/api/notification/org/$_orgId/unread',
-        ),
-        headers: {'Content-Type': 'application/json'},
-      );
-      if (r.statusCode == 200) {
-        final b = jsonDecode(r.body);
-        if (mounted) {
-          setState(() => _notifCount = b['unreadCount'] as int? ?? 0);
-        }
-      }
+      final list =
+          await NotificationService.getTeacherLeaveNotifications(_orgId);
+      if (!mounted) return;
+      // Count notifications not yet read by this org
+      final unread = list.where((n) {
+        final readBy = (n['readBy'] as List? ?? []);
+        return !readBy.any((r) => r.toString() == _orgId);
+      }).length;
+      setState(() => _notifCount = unread);
     } catch (_) {}
   }
 
   void _openNotifications() {
+    // Clear badge immediately for optimistic UX
     setState(() => _notifCount = 0);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const AdminLeaveNotificationsPage(),
+      ),
+    ).then((_) {
+      // Re-fetch after returning in case there are newer unread ones
+      _fetchNotificationCount();
+    });
   }
 
   @override

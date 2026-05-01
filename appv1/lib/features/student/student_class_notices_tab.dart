@@ -93,7 +93,12 @@ class _StudentClassNoticesTabState extends State<StudentClassNoticesTab>
       color: _accent,
       onRefresh: _fetchNotices,
       child: ListView.separated(
-        padding: EdgeInsets.fromLTRB(14, 16, 14, 40),
+        padding: EdgeInsets.fromLTRB(
+          14,
+          16,
+          14,
+          40 + MediaQuery.of(context).padding.bottom,
+        ),
         itemCount: _notices.length,
         separatorBuilder: (_, __) => SizedBox(height: 10),
         itemBuilder: (_, i) => StudentNoticeCard(

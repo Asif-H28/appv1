@@ -272,15 +272,19 @@ class _NoticePageState extends State<NoticePage> {
             child: const Icon(Icons.school_rounded, color: _teal, size: 18),
           ),
           const SizedBox(width: 10),
-          Text(
-            _orgName,
-            style: const TextStyle(
-              fontWeight: FontWeight.w700,
-              fontSize: 15,
-              color: Color(0xFF1A1A2E),
+          Flexible(
+            child: Text(
+              _orgName,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              style: const TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 15,
+                color: Color(0xFF1A1A2E),
+              ),
             ),
           ),
-          const Spacer(),
+          const SizedBox(width: 10),
           // ── NEW: Create Notice button ──
           GestureDetector(
             onTap: () => _openForm(),

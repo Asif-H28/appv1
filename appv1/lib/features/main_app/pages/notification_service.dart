@@ -22,6 +22,10 @@ final FlutterLocalNotificationsPlugin localNotif =
 // StudentMainScreen listens to this and re-fetches badge count
 final ValueNotifier<int> notifCountNotifier = ValueNotifier<int>(0);
 
+// ✅ Admin-specific notifier — fires when a teacher-leave-request FCM arrives
+// MainAppScreen listens to this and re-fetches admin leave badge count
+final ValueNotifier<int> adminNotifCountNotifier = ValueNotifier<int>(0);
+
 // ── Android notification channel ───────────────────────
 const AndroidNotificationChannel notifChannel = AndroidNotificationChannel(
   'schoolsync_v4_channel',
@@ -186,8 +190,15 @@ class NotificationService {
       final android = message.notification?.android;
       if (notif == null) return;
 
-      // ✅ Signal all listeners (StudentMainScreen re-fetches badge)
+      // ✅ Signal students (StudentMainScreen re-fetches badge)
       notifCountNotifier.value += 1;
+
+      // ✅ Signal admin when it's a teacher-leave-request notification
+      final route = message.data['route']?.toString() ?? '';
+      if (route == 'teacher-leave-requests') {
+        adminNotifCountNotifier.value += 1;
+        debugPrint('[FCM:FG] Admin leave notifier incremented');
+      }
 
       localNotif.show(
         notif.hashCode,
@@ -398,5 +409,80 @@ class NotificationService {
     listenBackgroundTap(context);
     listenTokenRefresh();
     await checkInitialMessage(context);
+  }
+
+  // ── Teacher leave request notifications (admin) ───
+  static Future<List<Map<String, dynamic>>> getTeacherLeaveNotifications(
+    String orgId,
+  ) async {
+    final url = '$_baseUrl/api/notification/org/$orgId/teacher-leave-requests';
+    debugPrint('── [LeaveNotif:API] GET $url');
+    try {
+      final res = await http.get(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+      );
+      debugPrint('── [LeaveNotif:API] Status: ${res.statusCode}');
+      debugPrint('── [LeaveNotif:API] Body: ${res.body}');
+
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body) as Map<String, dynamic>;
+        debugPrint('── [LeaveNotif:API] Top-level keys: ${data.keys.toList()}');
+
+        final rawList = data['notifications'];
+        debugPrint('── [LeaveNotif:API] notifications value: $rawList');
+        debugPrint('── [LeaveNotif:API] notifications type: ${rawList.runtimeType}');
+
+        if (rawList == null) {
+          debugPrint('── [LeaveNotif:API] ❌ "notifications" key is null');
+          return [];
+        }
+
+        final list = rawList as List;
+        debugPrint('── [LeaveNotif:API] ✅ List length: ${list.length}');
+        for (int i = 0; i < list.length; i++) {
+          debugPrint('── [LeaveNotif:API] item[$i] type: ${list[i].runtimeType}');
+          debugPrint('── [LeaveNotif:API] item[$i]: ${list[i]}');
+        }
+        return list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+      }
+
+      debugPrint('── [LeaveNotif:API] ❌ Non-200 response');
+      return [];
+    } catch (e, st) {
+      debugPrint('── [LeaveNotif:API] ❌ Exception: $e');
+      debugPrint('── [LeaveNotif:API] Stack: $st');
+      return [];
+    }
+  }
+
+  /// Mark a single notification as read by this orgId (acts as userId).
+  static Future<void> markLeaveNotificationRead({
+    required String notificationId,
+    required String orgId,
+  }) async {
+    try {
+      await http.put(
+        Uri.parse('$_baseUrl/api/notification/$notificationId/read'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'userId': orgId}),
+      );
+    } catch (_) {}
+  }
+
+  /// Bulk mark ALL teacher leave notifications for an org as read (single call).
+  static Future<void> markAllLeaveNotificationsRead({
+    required String orgId,
+  }) async {
+    try {
+      final res = await http.put(
+        Uri.parse('$_baseUrl/api/notification/org/teacher-leave-requests/mark-all-read'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'orgId': orgId}),
+      );
+      debugPrint('[LeaveNotif] markAllRead: ${res.statusCode} ${res.body}');
+    } catch (e) {
+      debugPrint('[LeaveNotif] markAllRead error: $e');
+    }
   }
 }

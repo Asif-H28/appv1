@@ -165,7 +165,12 @@ class _StudentClassroomNotesTabState extends State<StudentClassroomNotesTab> {
                   color: _accent,
                   onRefresh: _fetchNotes,
                   child: ListView.separated(
-                    padding: EdgeInsets.fromLTRB(14, 12, 14, 40),
+                    padding: EdgeInsets.fromLTRB(
+                      14,
+                      12,
+                      14,
+                      40 + MediaQuery.of(context).padding.bottom,
+                    ),
                     itemCount: filtered.length,
                     separatorBuilder: (_, __) => SizedBox(height: 10),
                     itemBuilder: (_, i) => NoteCard(note: filtered[i]),

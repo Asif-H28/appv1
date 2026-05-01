@@ -96,18 +96,23 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
     final post = _posts[index];
     final achId = post['achievementId'].toString();
     final likes = List<dynamic>.from(post['likes'] as List? ?? []);
-    final liked = likes.any((l) => l['userId']?.toString() == _adminId);
+
+    // Ensure userId/userName are never empty — backend rejects empty strings
+    final likeUserId = _adminId.isNotEmpty ? _adminId : 'Admin';
+    final likeUserName = _adminName.isNotEmpty ? _adminName : 'Admin';
+
+    final liked = likes.any((l) => l['userId']?.toString() == likeUserId);
 
     setState(() {
       if (liked) {
         _posts[index]['likes'] = likes
-            .where((l) => l['userId']?.toString() != _adminId)
+            .where((l) => l['userId']?.toString() != likeUserId)
             .toList();
         _posts[index]['likeCount'] = (post['likeCount'] as int? ?? 1) - 1;
       } else {
         likes.add({
-          'userId': _adminId,
-          'userName': _adminName,
+          'userId': likeUserId,
+          'userName': likeUserName,
           'userRole': 'admin',
         });
         _posts[index]['likes'] = likes;
@@ -122,8 +127,8 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
         ),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'userId': _adminId,
-          'userName': _adminName,
+          'userId': likeUserId,
+          'userName': likeUserName,
           'userRole': 'admin',
         }),
       );
@@ -133,14 +138,17 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
   // ── Comments ──────────────────────────────────────────
   void _openComments(int index) {
     final post = _posts[index];
+    // Ensure userId/userName are never empty — backend rejects empty strings
+    final commentUserId = _adminId.isNotEmpty ? _adminId : 'Admin';
+    final commentUserName = _adminName.isNotEmpty ? _adminName : 'Admin';
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => AchievementCommentsSheet(
         achievementId: post['achievementId'].toString(),
-        userId: _adminId,
-        userName: _adminName,
+        userId: commentUserId,
+        userName: commentUserName,
         userRole: 'admin',
         initialComments: ((post['comments'] as List?) ?? [])
             .map((e) => Map<String, dynamic>.from(e as Map))

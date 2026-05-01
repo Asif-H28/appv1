@@ -83,7 +83,6 @@ class StudentNoticeCard extends StatelessWidget {
     }
   }
 
-  // first image URL if any
   String? get _thumbnailUrl {
     for (final a in _attachments) {
       final att = a as Map<String, dynamic>;
@@ -206,12 +205,15 @@ class StudentNoticeCard extends StatelessWidget {
                                     color: _accent,
                                   ),
                                   SizedBox(width: 3),
-                                  Text(
-                                    _createdBy,
-                                    style: TextStyle(
-                                      color: _accent,
-                                      fontSize: 10.5,
-                                      fontWeight: FontWeight.w600,
+                                  Flexible(
+                                    child: Text(
+                                      _createdBy,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: _accent,
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
                                   ),
                                   SizedBox(width: 6),
@@ -281,51 +283,56 @@ class StudentNoticeCard extends StatelessWidget {
                       Spacer(),
 
                       // expiry badge
-                      if (expiry.isNotEmpty)
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: _isExpiringSoon
-                                ? Colors.orange.withOpacity(0.1)
-                                : Colors.grey[100],
-                            borderRadius: BorderRadius.circular(3),
-                            border: Border.all(
-                              color: _isExpiringSoon
-                                  ? Colors.orange.withOpacity(0.3)
-                                  : Colors.grey[200]!,
+                      if (expiry.isNotEmpty) ...[
+                        Flexible(
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
                             ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.access_time_rounded,
-                                size: 10,
+                            decoration: BoxDecoration(
+                              color: _isExpiringSoon
+                                  ? Colors.orange.withOpacity(0.1)
+                                  : Colors.grey[100],
+                              borderRadius: BorderRadius.circular(3),
+                              border: Border.all(
                                 color: _isExpiringSoon
-                                    ? Colors.orange[700]
-                                    : AppColors.textSecondary,
+                                    ? Colors.orange.withOpacity(0.3)
+                                    : Colors.grey[200]!,
                               ),
-                              SizedBox(width: 4),
-                              Text(
-                                expiry,
-                                style: TextStyle(
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.access_time_rounded,
+                                  size: 10,
                                   color: _isExpiringSoon
                                       ? Colors.orange[700]
                                       : AppColors.textSecondary,
-                                  fontSize: 10.5,
-                                  fontWeight: _isExpiringSoon
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
                                 ),
-                              ),
-                            ],
+                                SizedBox(width: 4),
+                                Flexible(
+                                  child: Text(
+                                    expiry,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: _isExpiringSoon
+                                          ? Colors.orange[700]
+                                          : AppColors.textSecondary,
+                                      fontSize: 10.5,
+                                      fontWeight: _isExpiringSoon
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-
-                      SizedBox(width: 8),
+                        SizedBox(width: 8),
+                      ],
 
                       // read more
                       Container(

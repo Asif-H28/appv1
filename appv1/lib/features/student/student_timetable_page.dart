@@ -402,7 +402,13 @@ class _StudentTimetablePageState extends State<StudentTimetablePage>
     if (slots.isEmpty) return _buildEmptyDay(day);
 
     return ListView.separated(
-      padding: EdgeInsets.fromLTRB(14, 14, 14, 40),
+      // After
+      padding: EdgeInsets.fromLTRB(
+        14,
+        14,
+        14,
+        40 + MediaQuery.of(context).padding.bottom,
+      ),
       itemCount: slots.length,
       separatorBuilder: (_, __) => Padding(
         padding: EdgeInsets.only(left: 20),

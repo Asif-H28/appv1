@@ -2,289 +2,106 @@ import 'package:appv1/features/main_app/pages/login_page.dart';
 import 'package:appv1/features/main_app/pages/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../core/constants/app_colors.dart';
 
 class SettingsPage extends StatefulWidget {
+  const SettingsPage({super.key});
+
   @override
-  _SettingsPageState createState() => _SettingsPageState();
+  State<SettingsPage> createState() => _SettingsPageState();
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  bool _notificationsEnabled = true;
+  // ── Colours matching the screenshot ───────────────────
+  static const _teal = Color(0xFF00796B);
+  static const _signOutBg = Color(0xFF8B3A1E); // deep burnt-sienna/brown
+  static const _textPrimary = Color(0xFF111827);
+  static const _textSecondary = Color(0xFF6B7280);
+  static const _cardBg = Color(0xFFF9FAFB);
+  static const _borderColor = Color(0xFFE5E7EB);
+
+  String _orgName = '';
+  String _adminEmail = '';
+  String _renewalDate = 'September 24, 2025';
   bool _isLoggingOut = false;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Column(
-        children: [
-          // ─── Gradient Header ───
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  AppColors.primary,
-                  AppColors.primary.withOpacity(0.75),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-            child: SafeArea(
-              bottom: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-                child: Row(
-                  children: [
-                    Text(
-                      'Settings',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // ─── White Body with rounded top corners ───
-          Expanded(
-            child: Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: AppColors.background,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(30),
-                  topRight: Radius.circular(30),
-                ),
-              ),
-              clipBehavior: Clip.antiAlias,
-              child: SingleChildScrollView(
-                padding: EdgeInsets.fromLTRB(20, 24, 20, 40),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // ── Preferences Section ──
-                    _sectionLabel('Preferences'),
-                    SizedBox(height: 10),
-                    _buildSettingsCard(
-                      children: [
-                        _buildSwitchTile(
-                          icon: Icons.notifications_outlined,
-                          iconColor: Colors.orange,
-                          title: 'Notifications',
-                          subtitle: 'Receive push notifications',
-                          value: _notificationsEnabled,
-                          onChanged: (val) =>
-                              setState(() => _notificationsEnabled = val),
-                        ),
-                        _divider(),
-                        _buildArrowTile(
-                          icon: Icons.language_outlined,
-                          iconColor: Colors.blue,
-                          title: 'Language',
-                          subtitle: 'English',
-                          onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Language settings coming soon!'),
-                                behavior: SnackBarBehavior.floating,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                        _divider(),
-                        _buildArrowTile(
-                          icon: Icons.color_lens_outlined,
-                          iconColor: AppColors.primary,
-                          title: 'Theme',
-                          subtitle: 'Light',
-                          onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Theme settings coming soon!'),
-                                behavior: SnackBarBehavior.floating,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-
-                    SizedBox(height: 24),
-
-                    // ── About Section ──
-                    _sectionLabel('About'),
-                    SizedBox(height: 10),
-                    _buildSettingsCard(
-                      children: [
-                        _buildArrowTile(
-                          icon: Icons.info_outline,
-                          iconColor: Colors.teal,
-                          title: 'App Version',
-                          subtitle: '1.0.0',
-                          onTap: null,
-                        ),
-                        _divider(),
-                        _buildArrowTile(
-                          icon: Icons.privacy_tip_outlined,
-                          iconColor: Colors.purple,
-                          title: 'Privacy Policy',
-                          subtitle: 'View our privacy policy',
-                          onTap: () {},
-                        ),
-                        _divider(),
-                        _buildArrowTile(
-                          icon: Icons.description_outlined,
-                          iconColor: Colors.indigo,
-                          title: 'Terms of Service',
-                          subtitle: 'View terms and conditions',
-                          onTap: () {},
-                        ),
-                      ],
-                    ),
-
-                    SizedBox(height: 24),
-
-                    // ── Account Section ──
-                    _sectionLabel('Account'),
-                    SizedBox(height: 10),
-                    _buildSettingsCard(
-                      children: [
-                        // ── Logout tile ──
-                        ListTile(
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 4,
-                          ),
-                          leading: CircleAvatar(
-                            backgroundColor: Colors.red.withOpacity(0.1),
-                            child: Icon(
-                              Icons.logout_rounded,
-                              color: Colors.red[600],
-                              size: 20,
-                            ),
-                          ),
-                          title: Text(
-                            'Logout',
-                            style: TextStyle(
-                              color: Colors.red[600],
-                              fontWeight: FontWeight.w600,
-                              fontSize: 15,
-                            ),
-                          ),
-                          subtitle: Text(
-                            'Sign out of your account',
-                            style: TextStyle(
-                              color: Colors.red[300],
-                              fontSize: 12,
-                            ),
-                          ),
-                          trailing: _isLoggingOut
-                              ? SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    color: Colors.red[400],
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : Icon(
-                                  Icons.chevron_right,
-                                  color: Colors.red[300],
-                                ),
-                          onTap: _isLoggingOut ? null : _confirmLogout,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+  void initState() {
+    super.initState();
+    _loadPrefs();
   }
 
-  // ─── Logout: show confirm dialog ───
+  Future<void> _loadPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    setState(() {
+      _orgName = prefs.getString('userOrg') ?? 'Your Organization';
+      _adminEmail =
+          prefs.getString('adminEmail') ??
+          prefs.getString('userEmail') ??
+          '';
+    });
+  }
+
+  // ── Logout ────────────────────────────────────────────
   void _confirmLogout() {
-    showDialog(
+    showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Row(
-          children: [
-            CircleAvatar(
-              backgroundColor: Colors.red.withOpacity(0.1),
-              child: Icon(Icons.logout_rounded, color: Colors.red[600]),
+      builder:
+          (ctx) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(3),
             ),
-            SizedBox(width: 12),
-            Text('Logout', style: TextStyle(fontWeight: FontWeight.bold)),
-          ],
-        ),
-        content: Text(
-          'Are you sure you want to sign out of your account?',
-          style: TextStyle(color: AppColors.textSecondary, height: 1.4),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              'Cancel',
-              style: TextStyle(
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w600,
+            title: const Text(
+              'Sign Out',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+            ),
+            content: const Text(
+              'Are you sure you want to sign out of the dashboard?',
+              style: TextStyle(color: _textSecondary, fontSize: 13, height: 1.4),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx, false),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(
+                    color: _textSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx); // close dialog first
-              _performLogout();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red[600],
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(ctx, true);
+                  _performLogout();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _signOutBg,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+                child: const Text(
+                  'Sign Out',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                ),
               ),
-            ),
-            child: Text(
-              'Yes, Logout',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
-  // ─── Logout: clear prefs + navigate to LoginPage ───
   Future<void> _performLogout() async {
     setState(() => _isLoggingOut = true);
-
     try {
       final prefs = await SharedPreferences.getInstance();
-
-      // ── Clear Admin FCM token before wiping prefs ──────────
       final orgId = prefs.getString('orgId') ?? '';
       if (orgId.isNotEmpty) {
         await NotificationService.clearAdminToken(orgId: orgId);
       }
-
-      // Clear all auth-related keys, preserve non-auth data if needed
       await prefs.remove('isLoggedIn');
       await prefs.remove('userRole');
       await prefs.remove('authToken');
@@ -302,132 +119,238 @@ class _SettingsPageState extends State<SettingsPage> {
 
       if (!mounted) return;
       setState(() => _isLoggingOut = false);
-
-      // Navigate to LoginPage and remove all previous routes
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (_) => LoginPage()),
-        (route) => false, // removes entire back stack
+        (route) => false,
       );
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
       setState(() => _isLoggingOut = false);
-
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              Icon(Icons.error_outline, color: Colors.white, size: 18),
-              SizedBox(width: 8),
-              Text('Logout failed. Please try again.'),
-            ],
-          ),
-          backgroundColor: Colors.red[600],
+        const SnackBar(
+          content: Text('Sign out failed. Please try again.'),
+          backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
         ),
       );
     }
   }
 
-  // ─── Helpers ───
-  Widget _sectionLabel(String label) {
-    return Text(
-      label.toUpperCase(),
-      style: TextStyle(
-        color: AppColors.textSecondary,
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 1.1,
+  // ═══════════════════════════════════════════════════════
+  @override
+  Widget build(BuildContext context) {
+    final navBottom = MediaQuery.of(context).padding.bottom;
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── Title header ──────────────────────────────
+            _buildHeader(),
+
+            // ── Scrollable content ────────────────────────
+            Expanded(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.fromLTRB(20, 24, 20, 32 + navBottom),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ── Subscription card ─────────────────
+                    _buildSubscriptionCard(),
+                    const SizedBox(height: 32),
+
+                    // ── Sign Out button ───────────────────
+                    _buildSignOutButton(),
+
+                    const SizedBox(height: 36),
+
+                    // ── Footer ────────────────────────────
+                    _buildFooter(),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildSettingsCard({required List<Widget> children}) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 8,
-            offset: Offset(0, 2),
+  // ── Header ─────────────────────────────────────────────
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Admin Settings',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              color: _textPrimary,
+              height: 1.1,
+            ),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'Manage your institutional identity and\nsecurity credentials.',
+            style: TextStyle(
+              fontSize: 13.5,
+              color: _textSecondary,
+              height: 1.45,
+            ),
           ),
         ],
       ),
-      child: Column(children: children),
     );
   }
 
-  Widget _buildSwitchTile({
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-    required String subtitle,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) {
-    return ListTile(
-      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: CircleAvatar(
-        backgroundColor: iconColor.withOpacity(0.1),
-        child: Icon(icon, color: iconColor, size: 20),
+  // ── Subscription card ──────────────────────────────────
+  Widget _buildSubscriptionCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: _cardBg,
+        borderRadius: BorderRadius.circular(3),
+        border: Border.all(color: _borderColor),
       ),
-      title: Text(
-        title,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Label + icon row
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'CURRENT TIER',
+                      style: TextStyle(
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w800,
+                        color: _teal,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'Subscription\nActive',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: _textPrimary,
+                        height: 1.2,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: _teal.withOpacity(0.07),
+                  borderRadius: BorderRadius.circular(3),
+                  border: Border.all(color: _teal.withOpacity(0.2)),
+                ),
+                child: const Icon(
+                  Icons.verified_rounded,
+                  color: _teal,
+                  size: 24,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+          Container(height: 1, color: _borderColor),
+          const SizedBox(height: 14),
+
+          // Renewal date
+          Row(
+            children: [
+              Icon(
+                Icons.calendar_today_rounded,
+                size: 14,
+                color: _textSecondary,
+              ),
+              const SizedBox(width: 7),
+              Text(
+                'Renewal Date: $_renewalDate',
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: _textSecondary,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Sign Out button ────────────────────────────────────
+  Widget _buildSignOutButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 52,
+      child: ElevatedButton(
+        onPressed: _isLoggingOut ? null : _confirmLogout,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _signOutBg,
+          disabledBackgroundColor: _signOutBg.withOpacity(0.5),
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+        ),
+        child: _isLoggingOut
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2.2,
+                ),
+              )
+            : const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.logout_rounded, size: 18, color: Colors.white),
+                  SizedBox(width: 10),
+                  Text(
+                    'Sign Out of Dashboard',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+
+  // ── Footer ─────────────────────────────────────────────
+  Widget _buildFooter() {
+    return Center(
+      child: Text(
+        'SCHOOLSYNC ADMIN PANEL © 2024  •  INSTITUTIONAL\nVERSION 4.8.2',
+        textAlign: TextAlign.center,
         style: TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: 15,
-          color: AppColors.textPrimary,
+          fontSize: 10,
+          fontWeight: FontWeight.w500,
+          color: _textSecondary.withOpacity(0.7),
+          letterSpacing: 0.4,
+          height: 1.6,
         ),
       ),
-      subtitle: Text(
-        subtitle,
-        style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
-      ),
-      trailing: Switch(
-        value: value,
-        onChanged: onChanged,
-        activeColor: AppColors.primary,
-      ),
     );
   }
-
-  Widget _buildArrowTile({
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-    required String subtitle,
-    required VoidCallback? onTap,
-  }) {
-    return ListTile(
-      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: CircleAvatar(
-        backgroundColor: iconColor.withOpacity(0.1),
-        child: Icon(icon, color: iconColor, size: 20),
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: 15,
-          color: AppColors.textPrimary,
-        ),
-      ),
-      subtitle: Text(
-        subtitle,
-        style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
-      ),
-      trailing: onTap != null
-          ? Icon(Icons.chevron_right, color: AppColors.textSecondary)
-          : null,
-      onTap: onTap,
-    );
-  }
-
-  Widget _divider() =>
-      Divider(height: 1, indent: 68, endIndent: 16, color: Colors.grey[200]);
 }

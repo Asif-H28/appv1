@@ -311,9 +311,19 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     ];
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: items.map((q) => Expanded(child: QuickBtn(item: q))).toList(),
+
+    // 2-column grid matching the design screenshot
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 1.55,
+      ),
+      itemCount: items.length,
+      itemBuilder: (_, i) => QuickBtn(item: items[i]),
     );
   }
 
