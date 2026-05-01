@@ -12,6 +12,7 @@ import '../../student/student_pending_screen.dart';
 import '../../student/student_rejected_screen.dart';
 import '../../teacher/presentation/pages/teacher_main_screen.dart';
 import '../../teacher/presentation/pages/teacher_pending_screen.dart';
+import 'forgot_password_page.dart';
 import '../main_app_screen.dart';
 
 class LoginPage extends StatefulWidget {
@@ -577,7 +578,14 @@ class __AdminLoginTabState extends State<_AdminLoginTab> {
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const ForgotPasswordPage(),
+                    ),
+                  );
+                },
                 style: TextButton.styleFrom(
                   padding: EdgeInsets.symmetric(horizontal: 0, vertical: 6),
                 ),
@@ -800,7 +808,14 @@ class __TeacherLoginTabState extends State<_TeacherLoginTab> {
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const ForgotPasswordPage(),
+                    ),
+                  );
+                },
                 style: TextButton.styleFrom(
                   padding: EdgeInsets.symmetric(horizontal: 0, vertical: 6),
                 ),
@@ -1111,7 +1126,34 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
                 ),
               ),
             ),
-            SizedBox(height: 20),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const ForgotPasswordPage(),
+                    ),
+                  );
+                },
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 0,
+                    vertical: 6,
+                  ),
+                ),
+                child: Text(
+                  'Forgot Password?',
+                  style: TextStyle(
+                    color: widget.accent,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 4),
             _signInBtn(
               accent: widget.accent,
               isLoading: _isLoading,
