@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -51,7 +52,7 @@ class _TeacherProfileSectionState extends State<TeacherProfileSection> {
     try {
       final res = await http.get(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/teacher/$_teacherId/profile',
+          '${ApiConstants.apiBaseUrl}/teacher/$_teacherId/profile',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -85,7 +86,7 @@ class _TeacherProfileSectionState extends State<TeacherProfileSection> {
 
       final res = await http.put(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/teacher/$_teacherId/profile',
+          '${ApiConstants.apiBaseUrl}/teacher/$_teacherId/profile',
         ),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(body),
@@ -146,7 +147,7 @@ class _TeacherProfileSectionState extends State<TeacherProfileSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Profile header card ──
+          // â”€â”€ Profile header card â”€â”€
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -442,3 +443,4 @@ class _TeacherProfileSectionState extends State<TeacherProfileSection> {
     );
   }
 }
+

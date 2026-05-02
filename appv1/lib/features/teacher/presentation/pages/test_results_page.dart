@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -56,7 +57,7 @@ class _TestResultsPageState extends State<TestResultsPage>
     super.dispose();
   }
 
-  // ── Load teacher name from SharedPreferences (key = 'teacherName') ──
+  // â”€â”€ Load teacher name from SharedPreferences (key = 'teacherName') â”€â”€
   Future<void> _loadTeacherName() async {
     if (widget.teacherName.isNotEmpty) {
       setState(() => _resolvedTeacherName = widget.teacherName);
@@ -73,7 +74,7 @@ class _TestResultsPageState extends State<TestResultsPage>
     try {
       final response = await http.get(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/join/class/${widget.classId}',
+          '${ApiConstants.apiBaseUrl}/join/class/${widget.classId}',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -114,7 +115,7 @@ class _TestResultsPageState extends State<TestResultsPage>
           widget.test['_id']?.toString() ??
           '';
       final response = await http.get(
-        Uri.parse('https://appv1backend.onrender.com/api/result/test/$testId'),
+        Uri.parse('${ApiConstants.apiBaseUrl}/result/test/$testId'),
         headers: {'Content-Type': 'application/json'},
       );
       if (!mounted) return;
@@ -184,7 +185,7 @@ class _TestResultsPageState extends State<TestResultsPage>
   Future<void> _deleteResult(String resultId) async {
     try {
       final response = await http.delete(
-        Uri.parse('https://appv1backend.onrender.com/api/result/$resultId'),
+        Uri.parse('${ApiConstants.apiBaseUrl}/result/$resultId'),
         headers: {'Content-Type': 'application/json'},
       );
       if (!mounted) return;
@@ -289,7 +290,7 @@ class _TestResultsPageState extends State<TestResultsPage>
       backgroundColor: AppColors.background,
       body: Column(
         children: [
-          // ── Gradient Header ──
+          // â”€â”€ Gradient Header â”€â”€
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -466,7 +467,7 @@ class _TestResultsPageState extends State<TestResultsPage>
             ),
           ),
 
-          // ── Body ──
+          // â”€â”€ Body â”€â”€
           Expanded(
             child: Container(
               decoration: BoxDecoration(
@@ -536,7 +537,7 @@ class _TestResultsPageState extends State<TestResultsPage>
     ),
   );
 
-  // ── Tab 1: Students List ──
+  // â”€â”€ Tab 1: Students List â”€â”€
   Widget _buildStudentsTab() {
     if (_loadingStudents) {
       return Center(
@@ -733,7 +734,7 @@ class _TestResultsPageState extends State<TestResultsPage>
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
-                        '${(existingResult['percentage'] ?? 0).toStringAsFixed(1)}%  •  ${existingResult['grade'] ?? ''}  •  ${(existingResult['overallStatus'] ?? '').toUpperCase()}',
+                        '${(existingResult['percentage'] ?? 0).toStringAsFixed(1)}%  â€¢  ${existingResult['grade'] ?? ''}  â€¢  ${(existingResult['overallStatus'] ?? '').toUpperCase()}',
                         style: TextStyle(
                           color: _gradeColor(
                             existingResult['grade']?.toString() ?? '',
@@ -791,7 +792,7 @@ class _TestResultsPageState extends State<TestResultsPage>
     );
   }
 
-  // ── Tab 2: Results ──
+  // â”€â”€ Tab 2: Results â”€â”€
   Widget _buildResultsTab() {
     if (_loadingResults) {
       return Center(
@@ -1087,7 +1088,7 @@ class _TestResultsPageState extends State<TestResultsPage>
                         SizedBox(width: 6),
                         Flexible(
                           child: Text(
-                            '• $remarks',
+                            'â€¢ $remarks',
                             style: TextStyle(
                               fontSize: 10,
                               color: AppColors.textSecondary,
@@ -1127,3 +1128,4 @@ class _TestResultsPageState extends State<TestResultsPage>
     }
   }
 }
+

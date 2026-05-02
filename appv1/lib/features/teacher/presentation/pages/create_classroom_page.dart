@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -86,7 +87,7 @@ class _CreateClassroomPageState extends State<CreateClassroomPage> {
           .toList();
 
       final response = await http.post(
-        Uri.parse('https://appv1backend.onrender.com/api/classroom/create'),
+        Uri.parse('${ApiConstants.apiBaseUrl}/classroom/create'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'teacherId': widget.teacherId,
@@ -147,9 +148,9 @@ class _CreateClassroomPageState extends State<CreateClassroomPage> {
     super.dispose();
   }
 
-  // ─────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // BUILD
-  // ─────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   @override
   Widget build(BuildContext context) {
@@ -157,7 +158,7 @@ class _CreateClassroomPageState extends State<CreateClassroomPage> {
       backgroundColor: AppColors.background,
       body: Column(
         children: [
-          // ── Gradient header ──
+          // â”€â”€ Gradient header â”€â”€
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -280,7 +281,7 @@ class _CreateClassroomPageState extends State<CreateClassroomPage> {
             ),
           ),
 
-          // ── Body ──
+          // â”€â”€ Body â”€â”€
           Expanded(
             child: SafeArea(
               top: false,
@@ -289,7 +290,7 @@ class _CreateClassroomPageState extends State<CreateClassroomPage> {
                 child: ListView(
                   padding: EdgeInsets.fromLTRB(14, 14, 14, 40),
                   children: [
-                    // ── Classroom name ──
+                    // â”€â”€ Classroom name â”€â”€
                     _label('CLASSROOM NAME'),
                     SizedBox(height: 6),
                     _inputField(
@@ -303,7 +304,7 @@ class _CreateClassroomPageState extends State<CreateClassroomPage> {
                     ),
                     SizedBox(height: 16),
 
-                    // ── Subjects header ──
+                    // â”€â”€ Subjects header â”€â”€
                     Row(
                       children: [
                         _label('SUBJECTS & LESSONS'),
@@ -344,7 +345,7 @@ class _CreateClassroomPageState extends State<CreateClassroomPage> {
                     ),
                     SizedBox(height: 8),
 
-                    // ── Subject cards ──
+                    // â”€â”€ Subject cards â”€â”€
                     ..._subjects.asMap().entries.map((entry) {
                       final si = entry.key;
                       final sub = entry.value;
@@ -362,9 +363,9 @@ class _CreateClassroomPageState extends State<CreateClassroomPage> {
     );
   }
 
-  // ─────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // SUBJECT CARD
-  // ─────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _buildSubjectCard(
     int si,
@@ -381,7 +382,7 @@ class _CreateClassroomPageState extends State<CreateClassroomPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Subject header row ──
+          // â”€â”€ Subject header row â”€â”€
           Padding(
             padding: EdgeInsets.fromLTRB(12, 10, 8, 8),
             child: Row(
@@ -429,7 +430,7 @@ class _CreateClassroomPageState extends State<CreateClassroomPage> {
             ),
           ),
 
-          // ── Subject name input ──
+          // â”€â”€ Subject name input â”€â”€
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 12),
             child: TextFormField(
@@ -448,7 +449,7 @@ class _CreateClassroomPageState extends State<CreateClassroomPage> {
 
           SizedBox(height: 10),
 
-          // ── Lessons header ──
+          // â”€â”€ Lessons header â”€â”€
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 12),
             child: Row(
@@ -495,7 +496,7 @@ class _CreateClassroomPageState extends State<CreateClassroomPage> {
 
           SizedBox(height: 6),
 
-          // ── Lesson rows ──
+          // â”€â”€ Lesson rows â”€â”€
           ...lessons.asMap().entries.map((le) {
             final li = le.key;
             final ctrl = le.value;
@@ -550,7 +551,7 @@ class _CreateClassroomPageState extends State<CreateClassroomPage> {
 
           SizedBox(height: 10),
 
-          // ── Lesson count badge ──
+          // â”€â”€ Lesson count badge â”€â”€
           Padding(
             padding: EdgeInsets.fromLTRB(12, 0, 12, 10),
             child: Container(
@@ -574,9 +575,9 @@ class _CreateClassroomPageState extends State<CreateClassroomPage> {
     );
   }
 
-  // ─────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // HELPERS
-  // ─────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _label(String text) => Text(
     text,
@@ -636,3 +637,4 @@ class _CreateClassroomPageState extends State<CreateClassroomPage> {
     contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
   );
 }
+

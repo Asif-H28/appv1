@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -47,7 +48,7 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
     });
     try {
       final res2 = await http.get(
-        Uri.parse('https://appv1-backend.onrender.com/api/comprehensive-assessment/list?orgId=${widget.orgId}&classId=${widget.classId}'),
+        Uri.parse('${ApiConstants.apiBaseUrl}/comprehensive-assessment/list?orgId=${widget.orgId}&classId=${widget.classId}'),
         headers: {'Content-Type': 'application/json'},
       );
 
@@ -85,7 +86,7 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
     print('Attempting to delete test with ID: $testId');
     setState(() => _deletingMap[testId] = true);
     try {
-      final url = 'https://appv1-backend.onrender.com/api/comprehensive-assessment/delete/$testId';
+      final url = '${ApiConstants.apiBaseUrl}/comprehensive-assessment/delete/$testId';
       print('Delete URL: $url');
       final response = await http.delete(
         Uri.parse(url),
@@ -306,7 +307,7 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
 
     return Column(
       children: [
-        // ── Action bar ──
+        // â”€â”€ Action bar â”€â”€
         Padding(
           padding: EdgeInsets.fromLTRB(14, 14, 14, 0),
           child: Row(
@@ -390,7 +391,7 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
 
         SizedBox(height: 10),
 
-        // ── Body ──
+        // â”€â”€ Body â”€â”€
         _tests.isEmpty
             ? _buildEmpty()
             : Expanded(
@@ -434,7 +435,7 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Card header ──
+          // â”€â”€ Card header â”€â”€
           Container(
             padding: EdgeInsets.fromLTRB(10, 9, 6, 9),
             decoration: BoxDecoration(
@@ -535,7 +536,7 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
             ),
           ),
 
-          // ── Footer: Enter Marks button ──
+          // â”€â”€ Footer: Enter Marks button â”€â”€
           Padding(
             padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
             child: Row(
@@ -550,7 +551,7 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
                   ),
                   child: Text(
                     testId.length > 12
-                        ? '# ${testId.substring(0, 12)}…'
+                        ? '# ${testId.substring(0, 12)}â€¦'
                         : '# $testId',
                     style: TextStyle(
                       color: AppColors.textSecondary,
@@ -752,3 +753,4 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
     ),
   );
 }
+

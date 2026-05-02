@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:appv1/features/teacher/presentation/pages/classroom_timetable_tab.dart';
 import 'package:flutter/material.dart';
@@ -70,7 +71,7 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
     try {
       final res = await http.get(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/classroom/${widget.classId}',
+          '${ApiConstants.apiBaseUrl}/classroom/${widget.classId}',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -106,7 +107,7 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
     try {
       final res = await http.put(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/classroom/${widget.classId}',
+          '${ApiConstants.apiBaseUrl}/classroom/${widget.classId}',
         ),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'className': newName}),
@@ -156,7 +157,7 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
       backgroundColor: AppColors.background,
       body: Column(
         children: [
-          // ── Gradient header ──────────────────────────
+          // â”€â”€ Gradient header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -270,7 +271,7 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
             ),
           ),
 
-          // ── Body ─────────────────────────────────────
+          // â”€â”€ Body â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           Expanded(
             child: SafeArea(
               top: false,
@@ -475,3 +476,4 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
     ),
   );
 }
+

@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -77,13 +78,13 @@ class _TimetableSlotEditSheetState extends State<TimetableSlotEditSheet> {
     super.dispose();
   }
 
-  // ── Fetch teachers ────────────────────────────────────
+  // â”€â”€ Fetch teachers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Future<void> _fetchTeachers() async {
     try {
       final res = await http.get(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/teacher/org/${widget.orgId}',
+          '${ApiConstants.apiBaseUrl}/teacher/org/${widget.orgId}',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -104,7 +105,7 @@ class _TimetableSlotEditSheetState extends State<TimetableSlotEditSheet> {
     }
   }
 
-  // ── Time picker ───────────────────────────────────────
+  // â”€â”€ Time picker â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Future<void> _pickTime(TextEditingController ctrl) async {
     TimeOfDay initial = TimeOfDay(hour: 9, minute: 0);
@@ -137,7 +138,7 @@ class _TimetableSlotEditSheetState extends State<TimetableSlotEditSheet> {
     }
   }
 
-  // ── Subject picker ────────────────────────────────────
+  // â”€â”€ Subject picker â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Future<void> _pickSubject() async {
     final picked = await showModalBottomSheet<String>(
@@ -154,7 +155,7 @@ class _TimetableSlotEditSheetState extends State<TimetableSlotEditSheet> {
     }
   }
 
-  // ── Teacher picker ────────────────────────────────────
+  // â”€â”€ Teacher picker â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Future<void> _pickTeacher() async {
     final picked = await showModalBottomSheet<Map<String, dynamic>>(
@@ -175,7 +176,7 @@ class _TimetableSlotEditSheetState extends State<TimetableSlotEditSheet> {
     }
   }
 
-  // ── Validate ──────────────────────────────────────────
+  // â”€â”€ Validate â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   String? _validate() {
     if (_startCtrl.text.trim().isEmpty) return 'Start time is required.';
@@ -187,7 +188,7 @@ class _TimetableSlotEditSheetState extends State<TimetableSlotEditSheet> {
     return null;
   }
 
-  // ── Save — PUT /slot ──────────────────────────────────
+  // â”€â”€ Save â€” PUT /slot â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Future<void> _save() async {
     final err = _validate();
@@ -217,7 +218,7 @@ class _TimetableSlotEditSheetState extends State<TimetableSlotEditSheet> {
     try {
       final res = await http.put(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/timetable/${widget.timetableId}/slot',
+          '${ApiConstants.apiBaseUrl}/timetable/${widget.timetableId}/slot',
         ),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(payload),
@@ -245,7 +246,7 @@ class _TimetableSlotEditSheetState extends State<TimetableSlotEditSheet> {
     }
   }
 
-  // ── Helpers ───────────────────────────────────────────
+  // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   void _snack(String msg, {bool isError = false}) =>
       ScaffoldMessenger.of(context).showSnackBar(
@@ -358,7 +359,7 @@ class _TimetableSlotEditSheetState extends State<TimetableSlotEditSheet> {
         },
       );
 
-  // Shared picker tile — same style as Add sheet
+  // Shared picker tile â€” same style as Add sheet
   Widget _pickerTile({
     required IconData icon,
     required String placeholder,
@@ -412,7 +413,7 @@ class _TimetableSlotEditSheetState extends State<TimetableSlotEditSheet> {
     );
   }
 
-  // ── Build ─────────────────────────────────────────────
+  // â”€â”€ Build â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   @override
   Widget build(BuildContext context) {
@@ -474,7 +475,7 @@ class _TimetableSlotEditSheetState extends State<TimetableSlotEditSheet> {
                     children: [
                       Text(
                         'Edit Period $periodNum'
-                        ' — ${widget.day}',
+                        ' â€” ${widget.day}',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 14,
@@ -522,7 +523,7 @@ class _TimetableSlotEditSheetState extends State<TimetableSlotEditSheet> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ── Type chips ──
+                // â”€â”€ Type chips â”€â”€
                 _label('PERIOD TYPE'),
                 SizedBox(
                   height: 44,
@@ -587,7 +588,7 @@ class _TimetableSlotEditSheetState extends State<TimetableSlotEditSheet> {
                 ),
                 SizedBox(height: 16),
 
-                // ── Times ──
+                // â”€â”€ Times â”€â”€
                 Row(
                   children: [
                     Expanded(
@@ -599,7 +600,7 @@ class _TimetableSlotEditSheetState extends State<TimetableSlotEditSheet> {
                     Padding(
                       padding: EdgeInsets.fromLTRB(10, 16, 10, 0),
                       child: Text(
-                        '–',
+                        'â€“',
                         style: TextStyle(
                           color: AppColors.textSecondary,
                           fontWeight: FontWeight.bold,
@@ -616,7 +617,7 @@ class _TimetableSlotEditSheetState extends State<TimetableSlotEditSheet> {
                   ],
                 ),
 
-                // ── Subject + Teacher (class/lab only) ──
+                // â”€â”€ Subject + Teacher (class/lab only) â”€â”€
                 if (isClass) ...[
                   SizedBox(height: 16),
                   _label('SUBJECT'),
@@ -701,9 +702,9 @@ class _TimetableSlotEditSheetState extends State<TimetableSlotEditSheet> {
   }
 }
 
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // SUBJECT PICKER  (identical to Add sheet)
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _SubjectPickerSheet extends StatefulWidget {
   final List<String> subjects;
@@ -888,9 +889,9 @@ class __SubjectPickerSheetState extends State<_SubjectPickerSheet> {
   }
 }
 
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // TEACHER PICKER  (identical to Add sheet)
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _TeacherPickerSheet extends StatefulWidget {
   final List<Map<String, dynamic>> teachers;
@@ -1116,3 +1117,4 @@ class __TeacherPickerSheetState extends State<_TeacherPickerSheet> {
     );
   }
 }
+

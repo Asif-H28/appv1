@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 // admin_achievements_page.dart
 import 'dart:convert';
 import 'package:appv1/features/student/achievement_comments_sheet.dart';
@@ -63,7 +64,7 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
     try {
       final res = await http.get(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/achievement/org/$_orgId',
+          '${ApiConstants.apiBaseUrl}/achievement/org/$_orgId',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -91,13 +92,13 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
     }
   }
 
-  // ── Like toggle ───────────────────────────────────────
+  // â”€â”€ Like toggle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Future<void> _toggleLike(int index) async {
     final post = _posts[index];
     final achId = post['achievementId'].toString();
     final likes = List<dynamic>.from(post['likes'] as List? ?? []);
 
-    // Ensure userId/userName are never empty — backend rejects empty strings
+    // Ensure userId/userName are never empty â€” backend rejects empty strings
     final likeUserId = _adminId.isNotEmpty ? _adminId : 'Admin';
     final likeUserName = _adminName.isNotEmpty ? _adminName : 'Admin';
 
@@ -123,7 +124,7 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
     try {
       await http.post(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/achievement/$achId/like',
+          '${ApiConstants.apiBaseUrl}/achievement/$achId/like',
         ),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
@@ -135,10 +136,10 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
     } catch (_) {}
   }
 
-  // ── Comments ──────────────────────────────────────────
+  // â”€â”€ Comments â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   void _openComments(int index) {
     final post = _posts[index];
-    // Ensure userId/userName are never empty — backend rejects empty strings
+    // Ensure userId/userName are never empty â€” backend rejects empty strings
     final commentUserId = _adminId.isNotEmpty ? _adminId : 'Admin';
     final commentUserName = _adminName.isNotEmpty ? _adminName : 'Admin';
     showModalBottomSheet(
@@ -165,7 +166,7 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
     );
   }
 
-  // ── Create ────────────────────────────────────────────
+  // â”€â”€ Create â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   void _openCreate() async {
     if (_navigating) return;
     setState(() => _navigating = true);
@@ -190,7 +191,7 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
     }
   }
 
-  // ── Edit ──────────────────────────────────────────────
+  // â”€â”€ Edit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   void _openEdit(int index) async {
     if (_navigating) return;
     setState(() => _navigating = true);
@@ -217,7 +218,7 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
     }
   }
 
-  // ── Delete ────────────────────────────────────────────
+  // â”€â”€ Delete â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   void _confirmDelete(int index) {
     showDialog(
       context: context,
@@ -263,14 +264,14 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
     final achId = _posts[index]['achievementId'].toString();
     try {
       await http.delete(
-        Uri.parse('https://appv1backend.onrender.com/api/achievement/$achId'),
+        Uri.parse('${ApiConstants.apiBaseUrl}/achievement/$achId'),
         headers: {'Content-Type': 'application/json'},
       );
       if (mounted) setState(() => _posts.removeAt(index));
     } catch (_) {}
   }
 
-  // ════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -309,7 +310,7 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
     );
   }
 
-  // ── Skeleton loader ───────────────────────────────────
+  // â”€â”€ Skeleton loader â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildSkeleton() {
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
@@ -325,7 +326,7 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
     );
   }
 
-  // ── Error state ───────────────────────────────────────
+  // â”€â”€ Error state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildError() {
     return Center(
       child: Column(
@@ -363,7 +364,7 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
     );
   }
 
-  // ── Empty state ───────────────────────────────────────
+  // â”€â”€ Empty state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildEmpty() {
     return Center(
       child: Column(
@@ -389,3 +390,4 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
     );
   }
 }
+

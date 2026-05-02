@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -155,7 +156,7 @@ class _StudentLeaveScreenState extends State<StudentLeaveScreen>
   }
 }
 
-// ── Apply Leave Tab ───────────────────────────────────────────────────────────
+// â”€â”€ Apply Leave Tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _ApplyLeaveTab extends StatefulWidget {
   final String studentId;
@@ -222,7 +223,7 @@ class _ApplyLeaveTabState extends State<_ApplyLeaveTab> {
           .toList();
 
       final res = await http.post(
-        Uri.parse('https://appv1backend.onrender.com/api/leave/student/apply'),
+        Uri.parse('${ApiConstants.apiBaseUrl}/leave/student/apply'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'studentId': widget.studentId,
@@ -492,7 +493,7 @@ class _ApplyLeaveTabState extends State<_ApplyLeaveTab> {
   }
 }
 
-// ── My Leaves Tab ─────────────────────────────────────────────────────────────
+// â”€â”€ My Leaves Tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _MyLeavesTab extends StatefulWidget {
   final String studentId;
@@ -521,7 +522,7 @@ class _MyLeavesTabState extends State<_MyLeavesTab> {
     try {
       final res = await http.get(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/leave/student/${widget.studentId}',
+          '${ApiConstants.apiBaseUrl}/leave/student/${widget.studentId}',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -638,7 +639,7 @@ class _MyLeavesTabState extends State<_MyLeavesTab> {
     try {
       final res = await http.delete(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/leave/student/$leaveId',
+          '${ApiConstants.apiBaseUrl}/leave/student/$leaveId',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -793,7 +794,7 @@ class _MyLeavesTabState extends State<_MyLeavesTab> {
   }
 }
 
-// ── Leave Card ────────────────────────────────────────────────────────────────
+// â”€â”€ Leave Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _LeaveCard extends StatefulWidget {
   final Map<String, dynamic> leave;
@@ -886,7 +887,7 @@ class _LeaveCardState extends State<_LeaveCard> {
                 ),
               ),
               const Spacer(),
-              // Delete button — pending only
+              // Delete button â€” pending only
               if (isPending)
                 GestureDetector(
                   onTap: _deleting
@@ -1034,3 +1035,4 @@ class _LeaveCardState extends State<_LeaveCard> {
     );
   }
 }
+

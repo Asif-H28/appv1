@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -73,7 +74,7 @@ class _CaResultsPageState extends State<CaResultsPage>
     try {
       final response = await http.get(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/join/class/${widget.classId}',
+          '${ApiConstants.apiBaseUrl}/join/class/${widget.classId}',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -114,7 +115,7 @@ class _CaResultsPageState extends State<CaResultsPage>
           widget.assessment['_id']?.toString() ??
           '';
       
-      final url = 'https://appv1-backend.onrender.com/api/comprehensive-result/assessment/$assessmentId';
+      final url = '${ApiConstants.apiBaseUrl}/comprehensive-result/assessment/$assessmentId';
       print('Fetching CA results: $url');
       final response = await http.get(
         Uri.parse(url),
@@ -191,7 +192,7 @@ class _CaResultsPageState extends State<CaResultsPage>
 
   Future<void> _deleteResult(String resultId) async {
     try {
-      final url = 'https://appv1-backend.onrender.com/api/comprehensive-result/delete/$resultId';
+      final url = '${ApiConstants.apiBaseUrl}/comprehensive-result/delete/$resultId';
       print('Deleting CA result: $url');
       final response = await http.delete(
         Uri.parse(url),
@@ -672,3 +673,4 @@ class _CaResultsPageState extends State<CaResultsPage>
     );
   }
 }
+

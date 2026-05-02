@@ -1,10 +1,11 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 // view_school_data.dart
 // Models + service layer for View My School screen
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-// ── School basic details ──────────────────────────────
+// â”€â”€ School basic details â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 class SchoolBasicData {
   final String schoolName;
   final String campusAddress;
@@ -32,7 +33,7 @@ class SchoolBasicData {
   );
 }
 
-// ── Fee structure ─────────────────────────────────────
+// â”€â”€ Fee structure â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 class FeeItem {
   final String id;
   final String structureName;
@@ -75,7 +76,7 @@ class FeeItem {
   }
 }
 
-// ── Role ──────────────────────────────────────────────
+// â”€â”€ Role â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 class RoleItem {
   final String id;
   final String position;
@@ -90,7 +91,7 @@ class RoleItem {
   );
 }
 
-// ── Combined view model ───────────────────────────────
+// â”€â”€ Combined view model â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 class SchoolViewModel {
   final SchoolBasicData basic;
   final List<FeeItem> fees;
@@ -103,9 +104,9 @@ class SchoolViewModel {
   });
 }
 
-// ── Service ───────────────────────────────────────────
+// â”€â”€ Service â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 class ViewSchoolService {
-  static const _base = 'https://appv1backend.onrender.com/api/org';
+  static const _base = '${ApiConstants.apiBaseUrl}/org';
 
   static Future<SchoolViewModel> loadAll(String orgId) async {
     final results = await Future.wait([
@@ -172,3 +173,4 @@ class ViewSchoolService {
     return [];
   }
 }
+

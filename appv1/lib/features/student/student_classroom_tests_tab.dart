@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -44,7 +45,7 @@ class _StudentClassroomTestsTabState extends State<StudentClassroomTestsTab> {
 
     try {
       final res = await http.get(
-        Uri.parse('https://appv1backend.onrender.com/api/test/class/$classId'),
+        Uri.parse('${ApiConstants.apiBaseUrl}/test/class/$classId'),
         headers: {'Content-Type': 'application/json'},
       );
       if (!mounted) return;
@@ -210,3 +211,4 @@ class _StudentClassroomTestsTabState extends State<StudentClassroomTestsTab> {
     ),
   );
 }
+

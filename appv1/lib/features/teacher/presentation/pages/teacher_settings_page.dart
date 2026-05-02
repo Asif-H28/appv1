@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -142,7 +143,7 @@ class _TeacherSettingsPageState extends State<TeacherSettingsPage>
         try {
           await http.post(
             Uri.parse(
-              'https://appv1backend.onrender.com/api/notification/fcm/teacher/clear',
+              '${ApiConstants.apiBaseUrl}/notification/fcm/teacher/clear',
             ),
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode({'teacherId': teacherId}),
@@ -315,3 +316,4 @@ class _TeacherSettingsPageState extends State<TeacherSettingsPage>
     );
   }
 }
+

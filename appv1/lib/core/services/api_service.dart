@@ -1,8 +1,9 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static const String _baseUrl = 'https://appv1backend.onrender.com/api';
+  static const String _baseUrl = '${ApiConstants.apiBaseUrl}';
 
   // Create Organization (matches your curl)
   static Future<Map<String, dynamic>> createOrganization({
@@ -43,3 +44,4 @@ class ApiService {
     }
   }
 }
+

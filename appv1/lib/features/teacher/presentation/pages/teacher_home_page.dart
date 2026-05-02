@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -18,24 +19,24 @@ class TeacherHomePage extends StatefulWidget {
 }
 
 class _TeacherHomePageState extends State<TeacherHomePage> {
-  // ── Prefs ──────────────────────────────────────────
+  // â”€â”€ Prefs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   String _name = '';
   String _teacherId = '';
   String _orgId = '';
 
-  // ── Schedule ───────────────────────────────────────
+  // â”€â”€ Schedule â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   bool _schedLoading = true;
   bool _schedError = false;
   List<Map<String, dynamic>> _todaySlots = [];
   String _todayLabel = '';
 
-  // ── Classrooms ─────────────────────────────────────
+  // â”€â”€ Classrooms â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   bool _classLoading = true;
   bool _classError = false;
   List<Map<String, dynamic>> _classrooms = [];
   bool _showAllClassrooms = false;
 
-  // ── Student Leaves ─────────────────────────────────
+  // â”€â”€ Student Leaves â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   int _pendingLeaveCount = 0;
   bool _pendingLeaveLoading = false;
 
@@ -45,7 +46,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     _loadData();
   }
 
-  // ── Load prefs + all data ──────────────────────────
+  // â”€â”€ Load prefs + all data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Future<void> _loadData() async {
     final prefs = await SharedPreferences.getInstance();
@@ -64,7 +65,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     await _fetchPendingLeaveCounts();
   }
 
-  // ── Today's schedule ───────────────────────────────
+  // â”€â”€ Today's schedule â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Future<void> _fetchTodaySchedule() async {
     setState(() {
@@ -74,7 +75,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     try {
       final res = await http.get(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/timetable/teacher/$_teacherId',
+          '${ApiConstants.apiBaseUrl}/timetable/teacher/$_teacherId',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -111,7 +112,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     }
   }
 
-  // ── Classrooms ─────────────────────────────────────
+  // â”€â”€ Classrooms â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Future<void> _fetchClassrooms() async {
     setState(() {
@@ -124,7 +125,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
       if (_teacherId.isNotEmpty) {
         final res = await http.get(
           Uri.parse(
-            'https://appv1backend.onrender.com/api/classroom/teacher/$_teacherId',
+            '${ApiConstants.apiBaseUrl}/classroom/teacher/$_teacherId',
           ),
           headers: {'Content-Type': 'application/json'},
         );
@@ -140,7 +141,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
       if (raw.isEmpty && _orgId.isNotEmpty) {
         final res = await http.get(
           Uri.parse(
-            'https://appv1backend.onrender.com/api/classroom/org/$_orgId',
+            '${ApiConstants.apiBaseUrl}/classroom/org/$_orgId',
           ),
           headers: {'Content-Type': 'application/json'},
         );
@@ -167,7 +168,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     }
   }
 
-  // ── Pending leave counts ───────────────────────────
+  // â”€â”€ Pending leave counts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Future<void> _fetchPendingLeaveCounts() async {
     if (_classrooms.isEmpty) return;
@@ -179,7 +180,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
         if (classId.isEmpty) continue;
         final res = await http.get(
           Uri.parse(
-            'https://appv1backend.onrender.com/api/leave/student/class/$classId/pending',
+            '${ApiConstants.apiBaseUrl}/leave/student/class/$classId/pending',
           ),
           headers: {'Content-Type': 'application/json'},
         );
@@ -197,7 +198,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     }
   }
 
-  // ── Helpers ────────────────────────────────────────
+  // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   String _todayKey() {
     const days = [
@@ -228,7 +229,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     ),
   );
 
-  // ── Build ──────────────────────────────────────────
+  // â”€â”€ Build â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   @override
   Widget build(BuildContext context) {
@@ -264,7 +265,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     );
   }
 
-  // ── Header ─────────────────────────────────────────
+  // â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _buildHeader() {
     return Container(
@@ -338,14 +339,14 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     );
   }
 
-  // ── Today's Schedule section ───────────────────────
+  // â”€â”€ Today's Schedule section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _buildTodaySection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         HomeSectionHeader(
-          title: "Today's Schedule — $_todayLabel",
+          title: "Today's Schedule â€” $_todayLabel",
           subtitle: (!_schedLoading && _todaySlots.isNotEmpty)
               ? '${_todaySlots.length} period${_todaySlots.length == 1 ? '' : 's'}'
               : null,
@@ -379,7 +380,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     );
   }
 
-  // ── My Classrooms section ──────────────────────────
+  // â”€â”€ My Classrooms section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _buildClassroomsSection() {
     final displayList = _showAllClassrooms
@@ -467,7 +468,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     );
   }
 
-  // ── Student Leave section ──────────────────────────
+  // â”€â”€ Student Leave section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _buildStudentLeaveSection() {
     return Column(
@@ -593,7 +594,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     );
   }
 
-  // ── Notice section ─────────────────────────────────
+  // â”€â”€ Notice section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _buildNoticeSection() {
     final notices = [
@@ -644,7 +645,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
   }
 }
 
-// ── Notice model ───────────────────────────────────────
+// â”€â”€ Notice model â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _Notice {
   final String title;
@@ -652,3 +653,4 @@ class _Notice {
   final String time;
   const _Notice(this.title, this.preview, this.time);
 }
+

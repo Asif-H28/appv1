@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:http/http.dart' as http;
@@ -66,7 +67,7 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
 
     try {
       final url = Uri.parse(
-        'https://appv1backend.onrender.com/api/test/class/$classId',
+        '${ApiConstants.apiBaseUrl}/test/class/$classId',
       );
       final response = await http.get(url);
 
@@ -115,7 +116,7 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
     final testId = _selectedTest!['testId'];
     try {
       final url = Uri.parse(
-        'https://appv1backend.onrender.com/api/result/test/$testId',
+        '${ApiConstants.apiBaseUrl}/result/test/$testId',
       );
       final response = await http.get(url);
 
@@ -165,7 +166,7 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
 
     try {
       final url = Uri.parse(
-        'https://appv1backend.onrender.com/api/attendance/class/$classId/week?year=$_selectedYear&month=$_selectedMonth&week=$_selectedWeek',
+        '${ApiConstants.apiBaseUrl}/attendance/class/$classId/week?year=$_selectedYear&month=$_selectedMonth&week=$_selectedWeek',
       );
       final response = await http.get(url);
 
@@ -441,9 +442,9 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
                                 onTap: () {
                                   setState(() {
                                     _drawerType = DrawerType
-                                        .subjectDetails; // ← force reset
+                                        .subjectDetails; // â† force reset
                                     _selectedStudentResult =
-                                        null; // ← clear any previous result
+                                        null; // â† clear any previous result
                                   });
                                   Scaffold.of(context).openEndDrawer();
                                 },
@@ -1396,3 +1397,4 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
     );
   }
 }
+

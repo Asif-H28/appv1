@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -30,7 +31,7 @@ class _TeacherPendingScreenState extends State<TeacherPendingScreen>
   void initState() {
     super.initState();
 
-    // ── Pulse animation for the pending icon ──
+    // â”€â”€ Pulse animation for the pending icon â”€â”€
     _pulseController = AnimationController(
       vsync: this,
       duration: Duration(seconds: 2),
@@ -40,7 +41,7 @@ class _TeacherPendingScreenState extends State<TeacherPendingScreen>
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
 
-    // ── Auto-check every 30 seconds ──
+    // â”€â”€ Auto-check every 30 seconds â”€â”€
     _autoCheckTimer = Timer.periodic(
       Duration(seconds: 30),
       (_) => _checkStatus(),
@@ -70,7 +71,7 @@ class _TeacherPendingScreenState extends State<TeacherPendingScreen>
 
       final response = await http.get(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/teacher/$teacherId/profile',
+          '${ApiConstants.apiBaseUrl}/teacher/$teacherId/profile',
         ),
         headers: {
           'Content-Type': 'application/json',
@@ -96,7 +97,7 @@ class _TeacherPendingScreenState extends State<TeacherPendingScreen>
                 Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
                 SizedBox(width: 8),
                 Text(
-                  '🎉 You have been approved! Welcome aboard.',
+                  'ðŸŽ‰ You have been approved! Welcome aboard.',
                   style: TextStyle(fontWeight: FontWeight.w600),
                 ),
               ],
@@ -232,7 +233,7 @@ class _TeacherPendingScreenState extends State<TeacherPendingScreen>
       backgroundColor: AppColors.background,
       body: Stack(
         children: [
-          // ── Decorative blobs ──
+          // â”€â”€ Decorative blobs â”€â”€
           Positioned(
             top: -60,
             right: -60,
@@ -261,7 +262,7 @@ class _TeacherPendingScreenState extends State<TeacherPendingScreen>
           SafeArea(
             child: Column(
               children: [
-                // ── Top bar ──
+                // â”€â”€ Top bar â”€â”€
                 Padding(
                   padding: EdgeInsets.fromLTRB(20, 16, 20, 0),
                   child: Row(
@@ -335,7 +336,7 @@ class _TeacherPendingScreenState extends State<TeacherPendingScreen>
                     padding: EdgeInsets.fromLTRB(24, 32, 24, 32),
                     child: Column(
                       children: [
-                        // ── Pulsing pending icon ──
+                        // â”€â”€ Pulsing pending icon â”€â”€
                         ScaleTransition(
                           scale: _pulseAnimation,
                           child: Stack(
@@ -425,7 +426,7 @@ class _TeacherPendingScreenState extends State<TeacherPendingScreen>
                         ),
                         SizedBox(height: 28),
 
-                        // ── Status card ──
+                        // â”€â”€ Status card â”€â”€
                         Container(
                           width: double.infinity,
                           padding: EdgeInsets.all(20),
@@ -475,7 +476,7 @@ class _TeacherPendingScreenState extends State<TeacherPendingScreen>
                         ),
                         SizedBox(height: 28),
 
-                        // ── Info box ──
+                        // â”€â”€ Info box â”€â”€
                         Container(
                           padding: EdgeInsets.all(16),
                           decoration: BoxDecoration(
@@ -508,7 +509,7 @@ class _TeacherPendingScreenState extends State<TeacherPendingScreen>
                         ),
                         SizedBox(height: 28),
 
-                        // ── Check status button ──
+                        // â”€â”€ Check status button â”€â”€
                         SizedBox(
                           width: double.infinity,
                           height: 54,
@@ -674,3 +675,4 @@ class _TeacherPendingScreenState extends State<TeacherPendingScreen>
     ),
   );
 }
+

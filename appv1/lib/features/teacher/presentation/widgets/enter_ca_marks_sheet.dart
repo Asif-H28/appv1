@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -137,7 +138,7 @@ class _EnterCaMarksSheetState extends State<EnterCaMarksSheet> {
     };
 
     try {
-      final url = 'https://appv1-backend.onrender.com/api/comprehensive-result/assessment/$assessmentId/result';
+      final url = '${ApiConstants.apiBaseUrl}/comprehensive-result/assessment/$assessmentId/result';
       print('Saving CA marks to $url');
       print('Payload: ${jsonEncode(payload)}');
       final response = await http.post(
@@ -418,3 +419,4 @@ class _EnterCaMarksSheetState extends State<EnterCaMarksSheet> {
     );
   }
 }
+

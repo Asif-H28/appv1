@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -35,7 +36,7 @@ class _StudentNotificationScreenState extends State<StudentNotificationScreen> {
     await _fetchUnreadCount();
   }
 
-  // ── Fetch both APIs and merge into one sorted list ────
+  // â”€â”€ Fetch both APIs and merge into one sorted list â”€â”€â”€â”€
   Future<void> _fetchAll() async {
     if (!mounted) return;
     setState(() => _loading = true);
@@ -43,11 +44,11 @@ class _StudentNotificationScreenState extends State<StudentNotificationScreen> {
     final List<Map<String, dynamic>> combined = [];
 
     try {
-      // 1️⃣ My personal notifications
+      // 1ï¸âƒ£ My personal notifications
       if (_studentId.isNotEmpty) {
         final res = await http.get(
           Uri.parse(
-            'https://appv1backend.onrender.com/api/notification/student/$_studentId',
+            '${ApiConstants.apiBaseUrl}/notification/student/$_studentId',
           ),
           headers: {'Content-Type': 'application/json'},
         );
@@ -64,11 +65,11 @@ class _StudentNotificationScreenState extends State<StudentNotificationScreen> {
         }
       }
 
-      // 2️⃣ Class-wide notifications
+      // 2ï¸âƒ£ Class-wide notifications
       if (_classId.isNotEmpty) {
         final res = await http.get(
           Uri.parse(
-            'https://appv1backend.onrender.com/api/notification/class/$_classId',
+            '${ApiConstants.apiBaseUrl}/notification/class/$_classId',
           ),
           headers: {'Content-Type': 'application/json'},
         );
@@ -104,13 +105,13 @@ class _StudentNotificationScreenState extends State<StudentNotificationScreen> {
     }
   }
 
-  // ── Get unread count from API ─────────────────────────
+  // â”€â”€ Get unread count from API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Future<void> _fetchUnreadCount() async {
     if (_classId.isEmpty || _studentId.isEmpty) return;
     try {
       final res = await http.get(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/notification/class/$_classId/unread/$_studentId',
+          '${ApiConstants.apiBaseUrl}/notification/class/$_classId/unread/$_studentId',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -123,13 +124,13 @@ class _StudentNotificationScreenState extends State<StudentNotificationScreen> {
     } catch (_) {}
   }
 
-  // ── Mark single notification as read ─────────────────
+  // â”€â”€ Mark single notification as read â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Future<void> _markAsRead(String notifId) async {
     if (_studentId.isEmpty) return;
     try {
       await http.put(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/notification/$notifId/read',
+          '${ApiConstants.apiBaseUrl}/notification/$notifId/read',
         ),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'userId': _studentId}),
@@ -155,13 +156,13 @@ class _StudentNotificationScreenState extends State<StudentNotificationScreen> {
     } catch (_) {}
   }
 
-  // ── Mark all as read ──────────────────────────────────
+  // â”€â”€ Mark all as read â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Future<void> _markAllAsRead() async {
     if (_classId.isEmpty || _studentId.isEmpty) return;
     try {
       await http.put(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/notification/class/$_classId/read-all',
+          '${ApiConstants.apiBaseUrl}/notification/class/$_classId/read-all',
         ),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'userId': _studentId}),
@@ -211,7 +212,7 @@ class _StudentNotificationScreenState extends State<StudentNotificationScreen> {
     );
   }
 
-  // ── Header ────────────────────────────────────────────
+  // â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildHeader() {
     return Container(
       decoration: const BoxDecoration(
@@ -340,7 +341,7 @@ class _StudentNotificationScreenState extends State<StudentNotificationScreen> {
     );
   }
 
-  // ── Notification list ─────────────────────────────────
+  // â”€â”€ Notification list â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildList() {
     return RefreshIndicator(
       color: Colors.teal,
@@ -363,7 +364,7 @@ class _StudentNotificationScreenState extends State<StudentNotificationScreen> {
     );
   }
 
-  // ── Empty state ───────────────────────────────────────
+  // â”€â”€ Empty state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildEmpty() {
     return Center(
       child: Padding(
@@ -432,3 +433,4 @@ class _StudentNotificationScreenState extends State<StudentNotificationScreen> {
     );
   }
 }
+

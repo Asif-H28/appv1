@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -64,7 +65,7 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen>
     try {
       final res = await http.get(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/attendance/summary/$classId/$studentId',
+          '${ApiConstants.apiBaseUrl}/attendance/summary/$classId/$studentId',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -135,10 +136,10 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen>
         ),
         child: Column(
           children: [
-            // ── Header with embedded tab bar ──
+            // â”€â”€ Header with embedded tab bar â”€â”€
             _buildHeader(),
 
-            // ── Body ──
+            // â”€â”€ Body â”€â”€
             Expanded(
               child: _isLoading
                   ? _buildLoader()
@@ -147,7 +148,7 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen>
                   : TabBarView(
                       controller: _tabController,
                       children: [
-                        // ── Tab 1: Daily Records ──
+                        // â”€â”€ Tab 1: Daily Records â”€â”€
                         RefreshIndicator(
                           color: _accent,
                           onRefresh: _fetchSummary,
@@ -171,7 +172,7 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen>
                           ),
                         ),
 
-                        // ── Tab 2: Insights ──
+                        // â”€â”€ Tab 2: Insights â”€â”€
                         RefreshIndicator(
                           color: _accent,
                           onRefresh: _fetchSummary,
@@ -196,7 +197,7 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen>
     );
   }
 
-  // ── Header ────────────────────────────────────────────
+  // â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _buildHeader() {
     return Container(
@@ -211,7 +212,7 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen>
         bottom: false,
         child: Column(
           children: [
-            // ── Title row ──
+            // â”€â”€ Title row â”€â”€
             Padding(
               padding: EdgeInsets.fromLTRB(14, 12, 16, 12),
               child: Row(
@@ -291,7 +292,7 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen>
                                     ),
                                     SizedBox(width: 5),
                                     Text(
-                                      '${_percentage.toStringAsFixed(1)}%  •  $_statusLabel',
+                                      '${_percentage.toStringAsFixed(1)}%  â€¢  $_statusLabel',
                                       style: TextStyle(
                                         color: Colors.white.withOpacity(0.9),
                                         fontSize: 10,
@@ -310,7 +311,7 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen>
               ),
             ),
 
-            // ── Tab bar ──
+            // â”€â”€ Tab bar â”€â”€
             Container(
               margin: EdgeInsets.fromLTRB(14, 0, 14, 12),
               height: 38,
@@ -368,7 +369,7 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen>
     );
   }
 
-  // ── States ────────────────────────────────────────────
+  // â”€â”€ States â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _buildLoader() => Center(
     child: Column(
@@ -437,3 +438,4 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen>
     ),
   );
 }
+

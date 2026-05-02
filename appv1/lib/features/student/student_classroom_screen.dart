@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -39,7 +40,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen>
     super.dispose();
   }
 
-  // ── Step 1: load classroom ─────────────────────────────
+  // â”€â”€ Step 1: load classroom â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Future<void> _loadClassroom() async {
     final prefs = await SharedPreferences.getInstance();
@@ -55,7 +56,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen>
 
     try {
       final res = await http.get(
-        Uri.parse('https://appv1backend.onrender.com/api/classroom/$_classId'),
+        Uri.parse('${ApiConstants.apiBaseUrl}/classroom/$_classId'),
         headers: {'Content-Type': 'application/json'},
       );
       if (!mounted) return;
@@ -65,7 +66,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen>
         final classroom = body['classroom'] as Map<String, dynamic>? ?? {};
         setState(() => _classroom = classroom);
 
-        // ── Step 2: fetch teacher name using teacherId ──
+        // â”€â”€ Step 2: fetch teacher name using teacherId â”€â”€
         final teacherId = classroom['teacherId']?.toString() ?? '';
         if (teacherId.isNotEmpty) {
           await _loadTeacherName(teacherId);
@@ -87,13 +88,13 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen>
     }
   }
 
-  // ── Step 2: fetch teacher by ID ────────────────────────
+  // â”€â”€ Step 2: fetch teacher by ID â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Future<void> _loadTeacherName(String teacherId) async {
     try {
       final res = await http.get(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/teacher/$teacherId/profile',
+          '${ApiConstants.apiBaseUrl}/teacher/$teacherId/profile',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -107,7 +108,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen>
         }
       }
     } catch (_) {
-      // silently fail — teacher tag just won't show
+      // silently fail â€” teacher tag just won't show
     }
   }
 
@@ -124,7 +125,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen>
         ),
         child: Column(
           children: [
-            // ── Gradient header ──
+            // â”€â”€ Gradient header â”€â”€
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -141,7 +142,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen>
                       padding: EdgeInsets.fromLTRB(14, 12, 16, 12),
                       child: Row(
                         children: [
-                          // ── Back button ──
+                          // â”€â”€ Back button â”€â”€
                           GestureDetector(
                             onTap: () => Navigator.pop(context),
                             child: Container(
@@ -160,7 +161,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen>
                           ),
                           SizedBox(width: 10),
 
-                          // ── Icon ──
+                          // â”€â”€ Icon â”€â”€
                           Container(
                             padding: EdgeInsets.all(7),
                             decoration: BoxDecoration(
@@ -178,7 +179,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen>
                           ),
                           SizedBox(width: 10),
 
-                          // ── Title + teacher tag ──
+                          // â”€â”€ Title + teacher tag â”€â”€
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -194,7 +195,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen>
                                 SizedBox(height: 4),
                                 Row(
                                   children: [
-                                    // ── Teacher name tag ──
+                                    // â”€â”€ Teacher name tag â”€â”€
                                     if (_teacherName.isNotEmpty) ...[
                                       Container(
                                         padding: EdgeInsets.symmetric(
@@ -239,7 +240,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen>
                                       SizedBox(width: 6),
                                     ],
 
-                                    // ── Subjects count tag ──
+                                    // â”€â”€ Subjects count tag â”€â”€
                                     if (!_isLoading &&
                                         _classroom['subjects'] != null) ...[
                                       Container(
@@ -274,7 +275,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen>
                       ),
                     ),
 
-                    // ── Tab bar ──
+                    // â”€â”€ Tab bar â”€â”€
                     Container(
                       margin: EdgeInsets.fromLTRB(14, 0, 14, 12),
                       height: 38,
@@ -316,7 +317,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen>
               ),
             ),
 
-            // ── Body ──
+            // â”€â”€ Body â”€â”€
             Expanded(
               child: _isLoading
                   ? _buildLoader()
@@ -337,7 +338,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen>
     );
   }
 
-  // ── Loader ────────────────────────────────────────────
+  // â”€â”€ Loader â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _buildLoader() => Center(
     child: Column(
@@ -353,7 +354,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen>
     ),
   );
 
-  // ── Error ─────────────────────────────────────────────
+  // â”€â”€ Error â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _buildError() => Center(
     child: Padding(
@@ -414,3 +415,4 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen>
     ),
   );
 }
+

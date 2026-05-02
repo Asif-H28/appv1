@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -62,7 +63,7 @@ class _TeacherAchievementsPageState extends State<TeacherAchievementsPage> {
     try {
       final res = await http.get(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/achievement/org/$_orgId',
+          '${ApiConstants.apiBaseUrl}/achievement/org/$_orgId',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -116,7 +117,7 @@ class _TeacherAchievementsPageState extends State<TeacherAchievementsPage> {
     try {
       await http.post(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/achievement/$achId/like',
+          '${ApiConstants.apiBaseUrl}/achievement/$achId/like',
         ),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
@@ -246,7 +247,7 @@ class _TeacherAchievementsPageState extends State<TeacherAchievementsPage> {
     final achId = _posts[index]['achievementId'].toString();
     try {
       await http.delete(
-        Uri.parse('https://appv1backend.onrender.com/api/achievement/$achId'),
+        Uri.parse('${ApiConstants.apiBaseUrl}/achievement/$achId'),
         headers: {'Content-Type': 'application/json'},
       );
       if (mounted) setState(() => _posts.removeAt(index));
@@ -436,3 +437,4 @@ class _TeacherAchievementsPageState extends State<TeacherAchievementsPage> {
     );
   }
 }
+

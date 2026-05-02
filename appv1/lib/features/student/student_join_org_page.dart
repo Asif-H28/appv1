@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -36,7 +37,7 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
 
     _studentId = prefs.getString('studentId') ?? '';
 
-    // ── Read orgId from tempOrg JSON or flat key ──
+    // â”€â”€ Read orgId from tempOrg JSON or flat key â”€â”€
     final tempOrgRaw = prefs.getString('tempOrg');
     if (tempOrgRaw != null && tempOrgRaw.isNotEmpty) {
       try {
@@ -46,12 +47,12 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
     }
     if (_orgId.isEmpty) _orgId = prefs.getString('tempOrgId') ?? '';
 
-    // ── Check if orgName already cached ──
+    // â”€â”€ Check if orgName already cached â”€â”€
     _orgName = prefs.getString('tempOrgName') ?? '';
 
     if (mounted) setState(() {});
 
-    // ── Fetch org name from API if not cached ──
+    // â”€â”€ Fetch org name from API if not cached â”€â”€
     if (_orgName.isEmpty && _orgId.isNotEmpty) {
       await _fetchOrgName(prefs);
     }
@@ -59,11 +60,11 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
     await _fetchClasses();
   }
 
-  // ── NEW: fetch org details to get orgName ──────────────
+  // â”€â”€ NEW: fetch org details to get orgName â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Future<void> _fetchOrgName(SharedPreferences prefs) async {
     try {
       final res = await http.get(
-        Uri.parse('https://appv1backend.onrender.com/api/org/$_orgId'),
+        Uri.parse('${ApiConstants.apiBaseUrl}/org/$_orgId'),
         headers: {'Content-Type': 'application/json'},
       );
       if (!mounted) return;
@@ -73,22 +74,22 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
         final name = org?['orgName']?.toString() ?? '';
         if (name.isNotEmpty) {
           _orgName = name;
-          // ── Cache it so next time we don't need to fetch ──
+          // â”€â”€ Cache it so next time we don't need to fetch â”€â”€
           await prefs.setString('tempOrgName', name);
           if (mounted) setState(() {});
         }
       }
     } catch (_) {
-      // silently fail — header will show 'Loading...'
+      // silently fail â€” header will show 'Loading...'
     }
   }
 
-  // ─── Helpers ───────────────────────────────────────────
+  // â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   String _className(Map<String, dynamic>? cls) =>
       cls?['className']?.toString() ?? 'Class';
 
-  // ─── API ───────────────────────────────────────────────
+  // â”€â”€â”€ API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Future<void> _fetchClasses() async {
     if (_orgId.isEmpty) return;
@@ -96,7 +97,7 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
     try {
       final res = await http.get(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/student/orgs/$_orgId/classes',
+          '${ApiConstants.apiBaseUrl}/student/orgs/$_orgId/classes',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -134,7 +135,7 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
           _selectedClass!['_id']?.toString() ??
           '';
       final res = await http.post(
-        Uri.parse('https://appv1backend.onrender.com/api/student/join-request'),
+        Uri.parse('${ApiConstants.apiBaseUrl}/student/join-request'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'studentId': _studentId, 'classId': classId}),
       );
@@ -170,7 +171,7 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
     );
   }
 
-  // ─── Build ─────────────────────────────────────────────
+  // â”€â”€â”€ Build â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   @override
   Widget build(BuildContext context) {
@@ -185,7 +186,7 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
         ),
         child: Column(
           children: [
-            // ── Gradient header ──
+            // â”€â”€ Gradient header â”€â”€
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
@@ -254,7 +255,7 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                // ✅ Shows API org name or "Loading..."
+                                // âœ… Shows API org name or "Loading..."
                                 Text(
                                   _orgName.isNotEmpty ? _orgName : 'Loading...',
                                   style: TextStyle(
@@ -278,10 +279,10 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
 
                       Text(
                         _step == 1
-                            ? 'Select Class 📚'
+                            ? 'Select Class ðŸ“š'
                             : _step == 2
-                            ? 'Confirm Request ✅'
-                            : 'Request Sent! 🎉',
+                            ? 'Confirm Request âœ…'
+                            : 'Request Sent! ðŸŽ‰',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 20,
@@ -309,7 +310,7 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
               ),
             ),
 
-            // ── Body ──
+            // â”€â”€ Body â”€â”€
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
@@ -350,7 +351,7 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
     );
   }
 
-  // ─── Step 1: Class list ────────────────────────────────
+  // â”€â”€â”€ Step 1: Class list â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _buildClassList() {
     if (_classes.isEmpty) {
@@ -557,7 +558,7 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
     );
   }
 
-  // ─── Step 2: Confirm ───────────────────────────────────
+  // â”€â”€â”€ Step 2: Confirm â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _buildConfirm() {
     final className = _className(_selectedClass);
@@ -580,7 +581,7 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
                 _confirmRow(
                   Icons.business_rounded,
                   'ORGANIZATION',
-                  // ✅ real API org name here
+                  // âœ… real API org name here
                   _orgName.isNotEmpty ? _orgName : 'Loading...',
                 ),
                 Divider(height: 16, color: Colors.grey[100]),
@@ -727,7 +728,7 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
     ],
   );
 
-  // ─── Step 3: Done ──────────────────────────────────────
+  // â”€â”€â”€ Step 3: Done â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _buildDone() => Center(
     child: Padding(
@@ -798,7 +799,7 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
     ),
   );
 
-  // ─── Step indicator ────────────────────────────────────
+  // â”€â”€â”€ Step indicator â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _stepDot(int step) => Container(
     width: 26,
@@ -825,3 +826,4 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
     child: Container(height: 2, color: Colors.white.withOpacity(0.3)),
   );
 }
+

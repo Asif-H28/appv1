@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:appv1/features/main_app/pages/notification_service.dart';
 import 'package:appv1/features/student/notification/student_notification_screen.dart';
@@ -57,7 +58,7 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
       if (_classId.isNotEmpty) {
         final r = await http.get(
           Uri.parse(
-            'https://appv1backend.onrender.com/api/notification/class/$_classId/unread/$_studentId',
+            '${ApiConstants.apiBaseUrl}/notification/class/$_classId/unread/$_studentId',
           ),
           headers: {'Content-Type': 'application/json'},
         );
@@ -69,7 +70,7 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
       if (_studentId.isNotEmpty) {
         final r = await http.get(
           Uri.parse(
-            'https://appv1backend.onrender.com/api/notification/student/$_studentId',
+            '${ApiConstants.apiBaseUrl}/notification/student/$_studentId',
           ),
           headers: {'Content-Type': 'application/json'},
         );
@@ -299,3 +300,4 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
     );
   }
 }
+

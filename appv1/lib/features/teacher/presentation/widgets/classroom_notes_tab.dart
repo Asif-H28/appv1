@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -46,7 +47,7 @@ class _ClassroomNotesTabState extends State<ClassroomNotesTab> {
     try {
       final response = await http.get(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/notes/class/${widget.classId}',
+          '${ApiConstants.apiBaseUrl}/notes/class/${widget.classId}',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -82,7 +83,7 @@ class _ClassroomNotesTabState extends State<ClassroomNotesTab> {
   Future<void> _deleteNote(String notesId, int index) async {
     try {
       final response = await http.delete(
-        Uri.parse('https://appv1backend.onrender.com/api/notes/$notesId'),
+        Uri.parse('${ApiConstants.apiBaseUrl}/notes/$notesId'),
         headers: {'Content-Type': 'application/json'},
       );
       if (!mounted) return;
@@ -101,7 +102,7 @@ class _ClassroomNotesTabState extends State<ClassroomNotesTab> {
     try {
       final response = await http.delete(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/notes/class/${widget.classId}/all',
+          '${ApiConstants.apiBaseUrl}/notes/class/${widget.classId}/all',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -294,7 +295,7 @@ class _ClassroomNotesTabState extends State<ClassroomNotesTab> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // ── Action bar ──
+        // â”€â”€ Action bar â”€â”€
         Padding(
           padding: EdgeInsets.fromLTRB(14, 14, 14, 0),
           child: Row(
@@ -400,7 +401,7 @@ class _ClassroomNotesTabState extends State<ClassroomNotesTab> {
 
         SizedBox(height: 10),
 
-        // ── Body ──
+        // â”€â”€ Body â”€â”€
         Expanded(
           child: _isLoading
               ? Center(
@@ -570,3 +571,4 @@ class _ClassroomNotesTabState extends State<ClassroomNotesTab> {
     ),
   );
 }
+

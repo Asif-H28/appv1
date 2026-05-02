@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -55,7 +56,7 @@ class _ClassroomStudentsTabState extends State<ClassroomStudentsTab>
     try {
       final response = await http.get(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/join/class/${widget.classId}',
+          '${ApiConstants.apiBaseUrl}/join/class/${widget.classId}',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -101,7 +102,7 @@ class _ClassroomStudentsTabState extends State<ClassroomStudentsTab>
 
     return Column(
       children: [
-        // ── Inner tab bar ──
+        // â”€â”€ Inner tab bar â”€â”€
         Container(
           color: Colors.white,
           padding: EdgeInsets.fromLTRB(14, 12, 14, 10),
@@ -224,3 +225,4 @@ class _ClassroomStudentsTabState extends State<ClassroomStudentsTab>
     ),
   );
 }
+

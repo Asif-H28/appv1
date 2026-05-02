@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -78,7 +79,7 @@ class _TimetableAddSlotSheetState extends State<TimetableAddSlotSheet> {
     try {
       final res = await http.get(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/teacher/org/${widget.orgId}',
+          '${ApiConstants.apiBaseUrl}/teacher/org/${widget.orgId}',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -201,7 +202,7 @@ class _TimetableAddSlotSheetState extends State<TimetableAddSlotSheet> {
     try {
       final res = await http.post(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/timetable/${widget.timetableId}/slot',
+          '${ApiConstants.apiBaseUrl}/timetable/${widget.timetableId}/slot',
         ),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(payload),
@@ -453,7 +454,7 @@ class _TimetableAddSlotSheetState extends State<TimetableAddSlotSheet> {
                       ),
                       Text(
                         'P${widget.nextPeriodNumber}'
-                        ' • $_selectedDay',
+                        ' â€¢ $_selectedDay',
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.75),
                           fontSize: 11,
@@ -600,7 +601,7 @@ class _TimetableAddSlotSheetState extends State<TimetableAddSlotSheet> {
                     Padding(
                       padding: EdgeInsets.fromLTRB(10, 16, 10, 0),
                       child: Text(
-                        '–',
+                        'â€“',
                         style: TextStyle(
                           color: AppColors.textSecondary,
                           fontWeight: FontWeight.bold,
@@ -701,9 +702,9 @@ class _TimetableAddSlotSheetState extends State<TimetableAddSlotSheet> {
   }
 }
 
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // SUBJECT PICKER
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _SubjectPickerSheet extends StatefulWidget {
   final List<String> subjects;
@@ -888,9 +889,9 @@ class __SubjectPickerSheetState extends State<_SubjectPickerSheet> {
   }
 }
 
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // TEACHER PICKER
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _TeacherPickerSheet extends StatefulWidget {
   final List<Map<String, dynamic>> teachers;
@@ -1116,3 +1117,4 @@ class __TeacherPickerSheetState extends State<_TeacherPickerSheet> {
     );
   }
 }
+

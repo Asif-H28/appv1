@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:appv1/features/main_app/pages/home_widgets2.dart';
 import 'package:appv1/features/main_app/pages/school_page.dart';
@@ -83,15 +84,15 @@ class _HomePageState extends State<HomePage> {
   Future<Map<String, dynamic>?> _safeGet(String path) async {
     try {
       final res = await http.get(
-        Uri.parse('https://appv1backend.onrender.com/api/$path'),
+        Uri.parse('${ApiConstants.apiBaseUrl}/$path'),
         headers: {'Content-Type': 'application/json'},
       );
       if (res.statusCode == 200)
         return jsonDecode(res.body) as Map<String, dynamic>;
-      debugPrint('[HomePage] HTTP ${res.statusCode} → $path');
+      debugPrint('[HomePage] HTTP ${res.statusCode} â†’ $path');
       return null;
     } catch (e) {
-      debugPrint('[HomePage] error → $path : $e');
+      debugPrint('[HomePage] error â†’ $path : $e');
       return null;
     }
   }
@@ -357,3 +358,4 @@ class _QA {
   final VoidCallback onTap;
   const _QA(this.label, this.icon, this.onTap);
 }
+

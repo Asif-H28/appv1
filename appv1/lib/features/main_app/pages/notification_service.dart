@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:appv1/features/main_app/pages/notification_router.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -7,26 +8,26 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-// ── Background handler (must be top-level) ─────────────
+// â”€â”€ Background handler (must be top-level) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 @pragma('vm:entry-point')
 Future<void> firebaseBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
   debugPrint('[FCM:BG] ${message.notification?.title}');
 }
 
-// ── Local notifications plugin ─────────────────────────
+// â”€â”€ Local notifications plugin â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 final FlutterLocalNotificationsPlugin localNotif =
     FlutterLocalNotificationsPlugin();
 
-// ✅ ValueNotifier — increments when foreground message arrives
+// âœ… ValueNotifier â€” increments when foreground message arrives
 // StudentMainScreen listens to this and re-fetches badge count
 final ValueNotifier<int> notifCountNotifier = ValueNotifier<int>(0);
 
-// ✅ Admin-specific notifier — fires when a teacher-leave-request FCM arrives
+// âœ… Admin-specific notifier â€” fires when a teacher-leave-request FCM arrives
 // MainAppScreen listens to this and re-fetches admin leave badge count
 final ValueNotifier<int> adminNotifCountNotifier = ValueNotifier<int>(0);
 
-// ── Android notification channel ───────────────────────
+// â”€â”€ Android notification channel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const AndroidNotificationChannel notifChannel = AndroidNotificationChannel(
   'schoolsync_v4_channel',
   'SchoolSync Notifications',
@@ -37,22 +38,22 @@ const AndroidNotificationChannel notifChannel = AndroidNotificationChannel(
 );
 
 class NotificationService {
-  static const String _baseUrl = 'https://appv1backend.onrender.com';
+  static const String _baseUrl = '${ApiConstants.baseUrl}';
 
-  // ── Init (call in main.dart) ───────────────────────
+  // â”€â”€ Init (call in main.dart) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static Future<void> initFirebase() async {
     await Firebase.initializeApp();
 
     FirebaseMessaging.onBackgroundMessage(firebaseBackgroundHandler);
 
-    // ✅ Create Android channel WITH sound BEFORE plugin init
+    // âœ… Create Android channel WITH sound BEFORE plugin init
     await localNotif
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
         >()
         ?.createNotificationChannel(notifChannel);
 
-    // ✅ Android 13+ — request POST_NOTIFICATIONS permission
+    // âœ… Android 13+ â€” request POST_NOTIFICATIONS permission
     await localNotif
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
@@ -74,7 +75,7 @@ class NotificationService {
     );
   }
 
-  // ── Request permission ─────────────────────────────
+  // â”€â”€ Request permission â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static Future<void> requestPermission() async {
     final settings = await FirebaseMessaging.instance.requestPermission(
       alert: true,
@@ -85,7 +86,7 @@ class NotificationService {
     debugPrint('[FCM] Permission: ${settings.authorizationStatus}');
   }
 
-  // ── Save FCM token after login ─────────────────────
+  // â”€â”€ Save FCM token after login â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static Future<void> saveTokenAfterLogin({
     required String userId,
     required String role,
@@ -130,7 +131,7 @@ class NotificationService {
     }
   }
 
-  // ── Save Admin FCM token after admin login ─────────────
+  // â”€â”€ Save Admin FCM token after admin login â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static Future<void> saveAdminTokenAfterLogin({
     required String orgId,
   }) async {
@@ -153,7 +154,7 @@ class NotificationService {
     }
   }
 
-  // ── Clear Admin FCM token on admin logout ──────────────
+  // â”€â”€ Clear Admin FCM token on admin logout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static Future<void> clearAdminToken({
     required String orgId,
   }) async {
@@ -169,7 +170,7 @@ class NotificationService {
     }
   }
 
-  // ── Listen for token refresh ───────────────────────
+  // â”€â”€ Listen for token refresh â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static void listenTokenRefresh() {
     FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
       debugPrint('[FCM] Token refreshed');
@@ -182,7 +183,7 @@ class NotificationService {
     });
   }
 
-  // ── Foreground notification listener ──────────────
+  // â”€â”€ Foreground notification listener â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static void listenForeground() {
     FirebaseMessaging.onMessage.listen((message) {
       debugPrint('[FCM:FG] title=${message.notification?.title}');
@@ -190,10 +191,10 @@ class NotificationService {
       final android = message.notification?.android;
       if (notif == null) return;
 
-      // ✅ Signal students (StudentMainScreen re-fetches badge)
+      // âœ… Signal students (StudentMainScreen re-fetches badge)
       notifCountNotifier.value += 1;
 
-      // ✅ Signal admin when it's a teacher-leave-request notification
+      // âœ… Signal admin when it's a teacher-leave-request notification
       final route = message.data['route']?.toString() ?? '';
       if (route == 'teacher-leave-requests') {
         adminNotifCountNotifier.value += 1;
@@ -227,7 +228,7 @@ class NotificationService {
     });
   }
 
-  // ── Background tap listener ────────────────────────
+  // â”€â”€ Background tap listener â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static void listenBackgroundTap(BuildContext context) {
     FirebaseMessaging.onMessageOpenedApp.listen((message) {
       debugPrint('[FCM] BG tap: ${message.data}');
@@ -235,7 +236,7 @@ class NotificationService {
     });
   }
 
-  // ── Terminated tap (app cold start) ───────────────
+  // â”€â”€ Terminated tap (app cold start) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static Future<void> checkInitialMessage(BuildContext context) async {
     final message = await FirebaseMessaging.instance.getInitialMessage();
     if (message != null) {
@@ -245,7 +246,7 @@ class NotificationService {
     }
   }
 
-  // ── Navigation handler ─────────────────────────────
+  // â”€â”€ Navigation handler â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static void _navigateFromData(
     BuildContext context,
     Map<String, dynamic> data,
@@ -259,7 +260,7 @@ class NotificationService {
     NotificationRouter.handleRoute(route);
   }
 
-  // ── Subscribe / Unsubscribe ────────────────────────
+  // â”€â”€ Subscribe / Unsubscribe â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static Future<void> subscribeToTopic(String topic) async {
     await FirebaseMessaging.instance.subscribeToTopic(topic);
     debugPrint('[FCM] Subscribed: $topic');
@@ -270,7 +271,7 @@ class NotificationService {
     debugPrint('[FCM] Unsubscribed: $topic');
   }
 
-  // ── Manual send methods ────────────────────────────
+  // â”€â”€ Manual send methods â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static Future<bool> sendToClass({
     required String classId,
     required String orgId,
@@ -366,7 +367,7 @@ class NotificationService {
     }
   }
 
-  // ── Notification history ───────────────────────────
+  // â”€â”€ Notification history â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static Future<List<Map<String, dynamic>>> getClassHistory(
     String classId,
   ) async {
@@ -403,7 +404,7 @@ class NotificationService {
     }
   }
 
-  // ── Full init (call once after login) ─────────────
+  // â”€â”€ Full init (call once after login) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   static Future<void> initListeners(BuildContext context) async {
     listenForeground();
     listenBackgroundTap(context);
@@ -411,47 +412,47 @@ class NotificationService {
     await checkInitialMessage(context);
   }
 
-  // ── Teacher leave request notifications (admin) ───
+  // â”€â”€ Teacher leave request notifications (admin) â”€â”€â”€
   static Future<List<Map<String, dynamic>>> getTeacherLeaveNotifications(
     String orgId,
   ) async {
     final url = '$_baseUrl/api/notification/org/$orgId/teacher-leave-requests';
-    debugPrint('── [LeaveNotif:API] GET $url');
+    debugPrint('â”€â”€ [LeaveNotif:API] GET $url');
     try {
       final res = await http.get(
         Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
       );
-      debugPrint('── [LeaveNotif:API] Status: ${res.statusCode}');
-      debugPrint('── [LeaveNotif:API] Body: ${res.body}');
+      debugPrint('â”€â”€ [LeaveNotif:API] Status: ${res.statusCode}');
+      debugPrint('â”€â”€ [LeaveNotif:API] Body: ${res.body}');
 
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body) as Map<String, dynamic>;
-        debugPrint('── [LeaveNotif:API] Top-level keys: ${data.keys.toList()}');
+        debugPrint('â”€â”€ [LeaveNotif:API] Top-level keys: ${data.keys.toList()}');
 
         final rawList = data['notifications'];
-        debugPrint('── [LeaveNotif:API] notifications value: $rawList');
-        debugPrint('── [LeaveNotif:API] notifications type: ${rawList.runtimeType}');
+        debugPrint('â”€â”€ [LeaveNotif:API] notifications value: $rawList');
+        debugPrint('â”€â”€ [LeaveNotif:API] notifications type: ${rawList.runtimeType}');
 
         if (rawList == null) {
-          debugPrint('── [LeaveNotif:API] ❌ "notifications" key is null');
+          debugPrint('â”€â”€ [LeaveNotif:API] âŒ "notifications" key is null');
           return [];
         }
 
         final list = rawList as List;
-        debugPrint('── [LeaveNotif:API] ✅ List length: ${list.length}');
+        debugPrint('â”€â”€ [LeaveNotif:API] âœ… List length: ${list.length}');
         for (int i = 0; i < list.length; i++) {
-          debugPrint('── [LeaveNotif:API] item[$i] type: ${list[i].runtimeType}');
-          debugPrint('── [LeaveNotif:API] item[$i]: ${list[i]}');
+          debugPrint('â”€â”€ [LeaveNotif:API] item[$i] type: ${list[i].runtimeType}');
+          debugPrint('â”€â”€ [LeaveNotif:API] item[$i]: ${list[i]}');
         }
         return list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
       }
 
-      debugPrint('── [LeaveNotif:API] ❌ Non-200 response');
+      debugPrint('â”€â”€ [LeaveNotif:API] âŒ Non-200 response');
       return [];
     } catch (e, st) {
-      debugPrint('── [LeaveNotif:API] ❌ Exception: $e');
-      debugPrint('── [LeaveNotif:API] Stack: $st');
+      debugPrint('â”€â”€ [LeaveNotif:API] âŒ Exception: $e');
+      debugPrint('â”€â”€ [LeaveNotif:API] Stack: $st');
       return [];
     }
   }
@@ -486,3 +487,4 @@ class NotificationService {
     }
   }
 }
+

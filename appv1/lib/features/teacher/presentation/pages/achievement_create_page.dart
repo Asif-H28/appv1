@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 // achievement_create_page.dart
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -16,7 +17,7 @@ class AchievementCreatePage extends StatefulWidget {
   final String orgId;
   final String orgName;
   final Map<String, dynamic>? existingPost;
-  final bool isAdmin; // ← already exists, no change needed
+  final bool isAdmin; // â† already exists, no change needed
 
   const AchievementCreatePage({
     super.key,
@@ -87,12 +88,12 @@ class AchievementCreatePageState extends State<AchievementCreatePage> {
     super.dispose();
   }
 
-  // ── Resolve identity ─────────────────────────────
+  // â”€â”€ Resolve identity â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Future<void> _resolveIdentityAndLoadClasses() async {
     final prefs = await SharedPreferences.getInstance();
 
-    // ── Admin: read userId from prefs ────────────
-    // ── Teacher: read teacherId from prefs ───────
+    // â”€â”€ Admin: read userId from prefs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // â”€â”€ Teacher: read teacherId from prefs â”€â”€â”€â”€â”€â”€â”€
     final tId = widget.isAdmin
         ? (prefs.getString('userId') ?? widget.teacherId)
         : (prefs.getString('teacherId') ?? widget.teacherId);
@@ -111,7 +112,7 @@ class AchievementCreatePageState extends State<AchievementCreatePage> {
     final cId = prefs.getString('classId') ?? widget.classId;
     final cName = prefs.getString('className') ?? widget.className;
 
-    debugPrint('[INIT] ── resolved identity ──────────');
+    debugPrint('[INIT] â”€â”€ resolved identity â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€');
     debugPrint('[INIT] isAdmin      = ${widget.isAdmin}');
     debugPrint('[INIT] teacherId    = $tId');
     debugPrint('[INIT] teacherName  = $tName');
@@ -119,7 +120,7 @@ class AchievementCreatePageState extends State<AchievementCreatePage> {
     debugPrint('[INIT] orgName      = $oName');
     debugPrint('[INIT] classId      = $cId');
     debugPrint('[INIT] className    = $cName');
-    debugPrint('[INIT] ────────────────────────────────');
+    debugPrint('[INIT] â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€');
 
     if (!mounted) return;
     setState(() {
@@ -133,13 +134,13 @@ class AchievementCreatePageState extends State<AchievementCreatePage> {
       }
     });
 
-    // ── Admin skips class/student loading ─────────
+    // â”€â”€ Admin skips class/student loading â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if (widget.isAdmin) return;
 
     loadClasses(prefs: prefs);
   }
 
-  // ── Load classes (teacher only) ──────────────────
+  // â”€â”€ Load classes (teacher only) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Future<void> loadClasses({SharedPreferences? prefs}) async {
     // Admin never calls this
     if (widget.isAdmin) return;
@@ -151,7 +152,7 @@ class AchievementCreatePageState extends State<AchievementCreatePage> {
           ? resolvedOrgId
           : (prefs.getString('orgId') ?? widget.orgId);
 
-      final url = 'https://appv1backend.onrender.com/api/classroom/org/$orgId';
+      final url = '${ApiConstants.apiBaseUrl}/classroom/org/$orgId';
       debugPrint('[CLASS] GET $url');
 
       final res = await http.get(
@@ -194,7 +195,7 @@ class AchievementCreatePageState extends State<AchievementCreatePage> {
         _fallbackClass();
       }
     } catch (e, st) {
-      debugPrint('[CLASS] ❌ exception: $e\n$st');
+      debugPrint('[CLASS] âŒ exception: $e\n$st');
       if (mounted) {
         setState(() => classesLoading = false);
         _fallbackClass();
@@ -212,7 +213,7 @@ class AchievementCreatePageState extends State<AchievementCreatePage> {
     }
   }
 
-  // ── Load students (teacher only) ─────────────────
+  // â”€â”€ Load students (teacher only) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Future<void> loadStudents(String classId) async {
     if (classId.isEmpty || widget.isAdmin) return;
 
@@ -221,7 +222,7 @@ class AchievementCreatePageState extends State<AchievementCreatePage> {
       taggedStudents = [];
       allStudents = [];
     });
-    final url = 'https://appv1backend.onrender.com/api/student/class/$classId';
+    final url = '${ApiConstants.apiBaseUrl}/student/class/$classId';
     try {
       final res = await http.get(
         Uri.parse(url),
@@ -241,12 +242,12 @@ class AchievementCreatePageState extends State<AchievementCreatePage> {
         setState(() => studentsLoading = false);
       }
     } catch (e, st) {
-      debugPrint('[STUDENTS] ❌ exception: $e\n$st');
+      debugPrint('[STUDENTS] âŒ exception: $e\n$st');
       if (mounted) setState(() => studentsLoading = false);
     }
   }
 
-  // ── Image upload ─────────────────────────────────
+  // â”€â”€ Image upload â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Future<void> pickAndUploadImage() async {
     final picker = ImagePicker();
     final picked = await picker.pickImage(
@@ -256,7 +257,7 @@ class AchievementCreatePageState extends State<AchievementCreatePage> {
     if (picked == null) return;
 
     setState(() => uploadingImage = true);
-    const url = 'https://appv1backend.onrender.com/api/upload/image';
+    const url = '${ApiConstants.apiBaseUrl}/upload/image';
     try {
       final req = http.MultipartRequest('POST', Uri.parse(url));
       req.files.add(await http.MultipartFile.fromPath('file', picked.path));
@@ -273,7 +274,7 @@ class AchievementCreatePageState extends State<AchievementCreatePage> {
         });
       }
     } catch (e, st) {
-      debugPrint('[UPLOAD] ❌ exception: $e\n$st');
+      debugPrint('[UPLOAD] âŒ exception: $e\n$st');
     }
     if (mounted) setState(() => uploadingImage = false);
   }
@@ -286,7 +287,7 @@ class AchievementCreatePageState extends State<AchievementCreatePage> {
         final pubId = uploadedPublicIds[pubIdIndex];
         try {
           await http.post(
-            Uri.parse('https://appv1backend.onrender.com/api/upload/delete'),
+            Uri.parse('${ApiConstants.apiBaseUrl}/upload/delete'),
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode({'publicId': pubId, 'resourceType': 'image'}),
           );
@@ -299,7 +300,7 @@ class AchievementCreatePageState extends State<AchievementCreatePage> {
     setState(() => uploadedUrls.removeAt(index));
   }
 
-  // ── Tags ─────────────────────────────────────────
+  // â”€â”€ Tags â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   void toggleTag(Map<String, dynamic> student) {
     final id = student['studentId'].toString();
     setState(() {
@@ -314,7 +315,7 @@ class AchievementCreatePageState extends State<AchievementCreatePage> {
     });
   }
 
-  // ── Preview ──────────────────────────────────────
+  // â”€â”€ Preview â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   void showPreview() {
     if (captionCtrl.text.trim().isEmpty && uploadedUrls.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -340,7 +341,7 @@ class AchievementCreatePageState extends State<AchievementCreatePage> {
     );
   }
 
-  // ── Submit ───────────────────────────────────────
+  // â”€â”€ Submit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Future<void> submit() async {
     if (captionCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(
@@ -353,9 +354,9 @@ class AchievementCreatePageState extends State<AchievementCreatePage> {
 
     try {
       if (isEdit) {
-        // ── EDIT (same for both admin and teacher) ──
+        // â”€â”€ EDIT (same for both admin and teacher) â”€â”€
         final achId = widget.existingPost!['achievementId'].toString();
-        final url = 'https://appv1backend.onrender.com/api/achievement/$achId';
+        final url = '${ApiConstants.apiBaseUrl}/achievement/$achId';
         final payload = jsonEncode({
           'caption': captionCtrl.text.trim(),
           'taggedStudents': taggedStudents,
@@ -373,7 +374,7 @@ class AchievementCreatePageState extends State<AchievementCreatePage> {
           throw Exception('Edit failed: ${res.statusCode} ${res.body}');
         }
       } else {
-        // ── CREATE ───────────────────────────────────
+        // â”€â”€ CREATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         final prefs = await SharedPreferences.getInstance();
 
         final orgId = resolvedOrgId.isNotEmpty
@@ -386,7 +387,7 @@ class AchievementCreatePageState extends State<AchievementCreatePage> {
                   widget.orgName);
 
         if (orgId.isEmpty) {
-          debugPrint('[SUBMIT] ❌ orgId is empty — cannot create post');
+          debugPrint('[SUBMIT] âŒ orgId is empty â€” cannot create post');
           if (mounted) {
             setState(() => submitting = false);
             ScaffoldMessenger.of(context).showSnackBar(
@@ -406,10 +407,10 @@ class AchievementCreatePageState extends State<AchievementCreatePage> {
           return;
         }
 
-        const url = 'https://appv1backend.onrender.com/api/achievement/create';
+        const url = '${ApiConstants.apiBaseUrl}/achievement/create';
 
-        // ── Admin payload: only orgId + isAdmin = true ──
-        // ── Teacher payload: full fields ────────────────
+        // â”€â”€ Admin payload: only orgId + isAdmin = true â”€â”€
+        // â”€â”€ Teacher payload: full fields â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         final Map<String, dynamic> bodyMap;
 
         if (widget.isAdmin) {
@@ -447,7 +448,7 @@ class AchievementCreatePageState extends State<AchievementCreatePage> {
           if (className.isEmpty) missing.add('className');
 
           if (missing.isNotEmpty) {
-            debugPrint('[SUBMIT] ❌ Still missing: $missing');
+            debugPrint('[SUBMIT] âŒ Still missing: $missing');
             if (mounted) {
               setState(() => submitting = false);
               ScaffoldMessenger.of(context).showSnackBar(
@@ -501,7 +502,7 @@ class AchievementCreatePageState extends State<AchievementCreatePage> {
 
       if (mounted) Navigator.pop(context, true);
     } catch (e, st) {
-      debugPrint('[SUBMIT] ❌ exception: $e\n$st');
+      debugPrint('[SUBMIT] âŒ exception: $e\n$st');
       if (mounted) {
         setState(() => submitting = false);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -521,3 +522,4 @@ class AchievementCreatePageState extends State<AchievementCreatePage> {
   @override
   Widget build(BuildContext context) => AchievementCreateBody(state: this);
 }
+

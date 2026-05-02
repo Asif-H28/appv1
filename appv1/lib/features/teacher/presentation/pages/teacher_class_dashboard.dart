@@ -1,9 +1,10 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 const Color _accent = Colors.teal;
-const String _base = 'https://appv1backend.onrender.com';
+const String _base = '${ApiConstants.baseUrl}';
 
 class TeacherClassDashboard extends StatefulWidget {
   final String classId;
@@ -22,12 +23,12 @@ class TeacherClassDashboard extends StatefulWidget {
 class _TeacherClassDashboardState extends State<TeacherClassDashboard> {
   bool _loading = true;
 
-  // Today attendance — from attendance.totalPresent / totalAbsent
+  // Today attendance â€” from attendance.totalPresent / totalAbsent
   int? _todayPresent;
   int? _todayAbsent;
   bool _attNotMarked = false;
 
-  // Overall attendance — sum(totalPresent) / sum(totalPresent+totalAbsent)
+  // Overall attendance â€” sum(totalPresent) / sum(totalPresent+totalAbsent)
   double _overallAttPct = 0;
   int _totalDaysMarked = 0;
 
@@ -65,7 +66,7 @@ class _TeacherClassDashboardState extends State<TeacherClassDashboard> {
     if (mounted) setState(() => _loading = false);
   }
 
-  // ── Today: attendance is a single object ──────────
+  // â”€â”€ Today: attendance is a single object â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Future<void> _fetchTodayAtt() async {
     try {
       final res = await http.get(
@@ -93,7 +94,7 @@ class _TeacherClassDashboardState extends State<TeacherClassDashboard> {
     }
   }
 
-  // ── History: attendances is a list of objects ─────
+  // â”€â”€ History: attendances is a list of objects â”€â”€â”€â”€â”€
   Future<void> _fetchHistoryAtt() async {
     try {
       final res = await http.get(
@@ -121,7 +122,7 @@ class _TeacherClassDashboardState extends State<TeacherClassDashboard> {
     }
   }
 
-  // ── Results ────────────────────────────────────────
+  // â”€â”€ Results â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Future<void> _fetchResults() async {
     try {
       final res = await http.get(
@@ -166,7 +167,7 @@ class _TeacherClassDashboardState extends State<TeacherClassDashboard> {
     }
   }
 
-  // ── Tests cross-reference with results ────────────
+  // â”€â”€ Tests cross-reference with results â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Future<void> _fetchTests() async {
     try {
       final responses = await Future.wait([
@@ -238,7 +239,7 @@ class _TeacherClassDashboardState extends State<TeacherClassDashboard> {
     );
   }
 
-  // ── Today attendance ───────────────────────────────
+  // â”€â”€ Today attendance â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildTodayAttendance() {
     final total = (_todayPresent ?? 0) + (_todayAbsent ?? 0);
     return _card(
@@ -305,7 +306,7 @@ class _TeacherClassDashboardState extends State<TeacherClassDashboard> {
     );
   }
 
-  // ── Overall attendance + results ───────────────────
+  // â”€â”€ Overall attendance + results â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildOverallRow() {
     final attColor = _overallAttPct >= 75 ? Colors.green : Colors.orange;
     return Row(
@@ -380,7 +381,7 @@ class _TeacherClassDashboardState extends State<TeacherClassDashboard> {
     );
   }
 
-  // ── Tests ──────────────────────────────────────────
+  // â”€â”€ Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildTestsCard() {
     return _card(
       child: Column(
@@ -423,7 +424,7 @@ class _TeacherClassDashboardState extends State<TeacherClassDashboard> {
     );
   }
 
-  // ── Top performers ─────────────────────────────────
+  // â”€â”€ Top performers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildTopPerformers() {
     return _card(
       child: Column(
@@ -437,7 +438,7 @@ class _TeacherClassDashboardState extends State<TeacherClassDashboard> {
             final name = r['studentName']?.toString() ?? 'Student';
             final pct = (r['percentage'] as num?)?.toDouble() ?? 0;
             final grade = r['grade']?.toString() ?? '';
-            final medals = ['🥇', '🥈', '🥉'];
+            final medals = ['ðŸ¥‡', 'ðŸ¥ˆ', 'ðŸ¥‰'];
             return Container(
               margin: const EdgeInsets.only(bottom: 8),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
@@ -503,7 +504,7 @@ class _TeacherClassDashboardState extends State<TeacherClassDashboard> {
     );
   }
 
-  // ── Shared widgets ─────────────────────────────────
+  // â”€â”€ Shared widgets â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _card({required Widget child}) => Container(
     width: double.infinity,
     padding: const EdgeInsets.all(12),
@@ -670,3 +671,4 @@ class _TeacherClassDashboardState extends State<TeacherClassDashboard> {
     return Colors.red;
   }
 }
+

@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -129,7 +130,7 @@ class _EditCaSheetState extends State<EditCaSheet> {
     print('Attempting to update test with ID: $testId');
 
     try {
-      final url = 'https://appv1-backend.onrender.com/api/comprehensive-assessment/update/$testId';
+      final url = '${ApiConstants.apiBaseUrl}/comprehensive-assessment/update/$testId';
       print('Update URL: $url');
       
       final payload = jsonEncode({
@@ -567,3 +568,4 @@ class _EditCaSheetState extends State<EditCaSheet> {
     ),
   );
 }
+

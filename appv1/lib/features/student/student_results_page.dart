@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -64,7 +65,7 @@ class _StudentResultsPageState extends State<StudentResultsPage>
     });
     try {
       final res = await http.get(
-        Uri.parse('https://appv1backend.onrender.com/api/test/class/$_classId'),
+        Uri.parse('${ApiConstants.apiBaseUrl}/test/class/$_classId'),
         headers: {'Content-Type': 'application/json'},
       );
       if (!mounted) return;
@@ -108,7 +109,7 @@ class _StudentResultsPageState extends State<StudentResultsPage>
     });
     try {
       final res = await http.get(
-        Uri.parse('https://appv1backend.onrender.com/api/result/test/$testId'),
+        Uri.parse('${ApiConstants.apiBaseUrl}/result/test/$testId'),
         headers: {'Content-Type': 'application/json'},
       );
       if (!mounted) return;
@@ -163,7 +164,7 @@ class _StudentResultsPageState extends State<StudentResultsPage>
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // ── Top control bar ──────────────────────────
+        // â”€â”€ Top control bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         ResultsTopBar(
           tests: _tests,
           selectedTest: _selectedTest,
@@ -173,7 +174,7 @@ class _StudentResultsPageState extends State<StudentResultsPage>
         ),
         const Divider(height: 1, thickness: 1, color: Color(0xFFF0F0F0)),
 
-        // ── Content ──────────────────────────────────
+        // â”€â”€ Content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         Expanded(
           child: _testsLoading
               ? const ResultsSkeleton()
@@ -220,3 +221,4 @@ class _StudentResultsPageState extends State<StudentResultsPage>
     );
   }
 }
+

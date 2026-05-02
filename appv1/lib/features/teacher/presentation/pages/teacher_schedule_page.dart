@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -80,7 +81,7 @@ class _TeacherSchedulePageState extends State<TeacherSchedulePage>
     return days[DateTime.now().weekday];
   }
 
-  // ── Fetch full week schedule ───────────────────────
+  // â”€â”€ Fetch full week schedule â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Future<void> _fetchSchedule() async {
     setState(() {
@@ -90,7 +91,7 @@ class _TeacherSchedulePageState extends State<TeacherSchedulePage>
     try {
       final res = await http.get(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/timetable/teacher/${widget.teacherId}',
+          '${ApiConstants.apiBaseUrl}/timetable/teacher/${widget.teacherId}',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -138,7 +139,7 @@ class _TeacherSchedulePageState extends State<TeacherSchedulePage>
     }
   }
 
-  // ── Helpers ────────────────────────────────────────
+  // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   int _periodNum(Map<String, dynamic> s) => s['periodNumber'] is int
       ? s['periodNumber'] as int
@@ -196,7 +197,7 @@ class _TeacherSchedulePageState extends State<TeacherSchedulePage>
     return Colors.teal[600]!;
   }
 
-  // ── Build ──────────────────────────────────────────
+  // â”€â”€ Build â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   @override
   Widget build(BuildContext context) {
@@ -221,7 +222,7 @@ class _TeacherSchedulePageState extends State<TeacherSchedulePage>
     );
   }
 
-  // ── Header ─────────────────────────────────────────
+  // â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _buildHeader() {
     return Container(
@@ -352,7 +353,7 @@ class _TeacherSchedulePageState extends State<TeacherSchedulePage>
     );
   }
 
-  // ── Day tab bar ────────────────────────────────────
+  // â”€â”€ Day tab bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _buildDayTabBar() {
     return Container(
@@ -424,7 +425,7 @@ class _TeacherSchedulePageState extends State<TeacherSchedulePage>
     );
   }
 
-  // ── Day tab content ────────────────────────────────
+  // â”€â”€ Day tab content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _buildDayTab(String day) {
     final slots = _schedule[day] ?? [];
@@ -546,7 +547,7 @@ class _TeacherSchedulePageState extends State<TeacherSchedulePage>
                         ),
                         SizedBox(width: 4),
                         Text(
-                          '$start – $end',
+                          '$start â€“ $end',
                           style: TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 11,
@@ -675,7 +676,7 @@ class _TeacherSchedulePageState extends State<TeacherSchedulePage>
           ),
           SizedBox(height: 12),
           Text(
-            isToday ? 'No classes today! 🎉' : 'No classes on $day',
+            isToday ? 'No classes today! ðŸŽ‰' : 'No classes on $day',
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 14,
@@ -733,3 +734,4 @@ class _TeacherSchedulePageState extends State<TeacherSchedulePage>
     ),
   );
 }
+

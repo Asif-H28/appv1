@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -50,7 +51,7 @@ class _TeacherLeaveSectionState extends State<TeacherLeaveSection> {
     try {
       final res = await http.get(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/leave/teacher/$_teacherId',
+          '${ApiConstants.apiBaseUrl}/leave/teacher/$_teacherId',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -83,7 +84,7 @@ class _TeacherLeaveSectionState extends State<TeacherLeaveSection> {
           .toList();
 
       final res = await http.post(
-        Uri.parse('https://appv1backend.onrender.com/api/leave/teacher/apply'),
+        Uri.parse('${ApiConstants.apiBaseUrl}/leave/teacher/apply'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'teacherId': _teacherId,
@@ -212,7 +213,7 @@ class _TeacherLeaveSectionState extends State<TeacherLeaveSection> {
     try {
       final res = await http.delete(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/leave/teacher/$leaveId',
+          '${ApiConstants.apiBaseUrl}/leave/teacher/$leaveId',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -640,7 +641,7 @@ class _TeacherLeaveSectionState extends State<TeacherLeaveSection> {
   }
 }
 
-// ── Leave card ───────────────────────────────────────────────────────────────
+// â”€â”€ Leave card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _LeaveCard extends StatefulWidget {
   final Map<String, dynamic> leave;
@@ -687,7 +688,7 @@ class _LeaveCardState extends State<_LeaveCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Status row ──
+          // â”€â”€ Status row â”€â”€
           Row(
             children: [
               Container(
@@ -733,7 +734,7 @@ class _LeaveCardState extends State<_LeaveCard> {
                 ),
               ),
               const Spacer(),
-              // ── Delete button — only for pending ──
+              // â”€â”€ Delete button â€” only for pending â”€â”€
               if (isPending)
                 GestureDetector(
                   onTap: _deleting
@@ -788,7 +789,7 @@ class _LeaveCardState extends State<_LeaveCard> {
 
           const SizedBox(height: 10),
 
-          // ── Reason ──
+          // â”€â”€ Reason â”€â”€
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -809,7 +810,7 @@ class _LeaveCardState extends State<_LeaveCard> {
 
           const SizedBox(height: 8),
 
-          // ── Date chips ──
+          // â”€â”€ Date chips â”€â”€
           Wrap(
             spacing: 5,
             runSpacing: 5,
@@ -833,7 +834,7 @@ class _LeaveCardState extends State<_LeaveCard> {
             }).toList(),
           ),
 
-          // ── Review note ──
+          // â”€â”€ Review note â”€â”€
           if (reviewNote.isNotEmpty) ...[
             const SizedBox(height: 10),
             Container(
@@ -868,7 +869,7 @@ class _LeaveCardState extends State<_LeaveCard> {
             ),
           ],
 
-          // ── Applied date ──
+          // â”€â”€ Applied date â”€â”€
           if (createdAt.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(
@@ -881,3 +882,4 @@ class _LeaveCardState extends State<_LeaveCard> {
     );
   }
 }
+

@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:appv1/features/main_app/pages/notification_service.dart';
 import 'package:flutter/material.dart';
@@ -111,7 +112,7 @@ class _LoginPageState extends State<LoginPage>
                       ),
                       SizedBox(height: 16),
                       Text(
-                        'Welcome back 👋',
+                        'Welcome back ðŸ‘‹',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 22,
@@ -217,9 +218,9 @@ class _LoginPageState extends State<LoginPage>
   }
 }
 
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // SHARED HELPERS
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 Widget _loginLabel(String text) => Text(
   text,
@@ -423,9 +424,9 @@ void _showSnack(BuildContext ctx, String msg, Color color) {
   );
 }
 
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // ADMIN LOGIN TAB
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _AdminLoginTab extends StatefulWidget {
   final Color accent;
@@ -454,7 +455,7 @@ class __AdminLoginTabState extends State<_AdminLoginTab> {
     setState(() => _isLoading = true);
     try {
       final res = await http.post(
-        Uri.parse('https://appv1backend.onrender.com/api/org/admin/login'),
+        Uri.parse('${ApiConstants.apiBaseUrl}/org/admin/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'adminEmail': _emailCtrl.text.trim(),
@@ -489,14 +490,14 @@ class __AdminLoginTabState extends State<_AdminLoginTab> {
         if (!mounted) return;
         setState(() => _isLoading = false);
 
-        // ── Save FCM token for admin ────────────────────
+        // â”€â”€ Save FCM token for admin â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         final orgId = org['orgId']?.toString() ?? '';
         if (orgId.isNotEmpty) {
           await NotificationService.requestPermission();
           await NotificationService.saveAdminTokenAfterLogin(orgId: orgId);
         }
 
-        // ── Init notification listeners ─────────────────
+        // â”€â”€ Init notification listeners â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         NotificationService.initListeners(context);
 
         _showSnack(context, 'Welcome back, Admin!', Colors.green[600]!);
@@ -560,7 +561,7 @@ class __AdminLoginTabState extends State<_AdminLoginTab> {
                 return null;
               },
               decoration: _loginFieldDeco(
-                hint: '••••••••',
+                hint: 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
                 icon: Icons.lock_outline_rounded,
                 accent: widget.accent,
                 suffixIcon: IconButton(
@@ -626,9 +627,9 @@ class __AdminLoginTabState extends State<_AdminLoginTab> {
   }
 }
 
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // TEACHER LOGIN TAB
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _TeacherLoginTab extends StatefulWidget {
   final Color accent;
@@ -657,7 +658,7 @@ class __TeacherLoginTabState extends State<_TeacherLoginTab> {
     setState(() => _isLoading = true);
     try {
       final res = await http.post(
-        Uri.parse('https://appv1backend.onrender.com/api/teacher/login'),
+        Uri.parse('${ApiConstants.apiBaseUrl}/teacher/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'email': _emailCtrl.text.trim(),
@@ -683,7 +684,7 @@ class __TeacherLoginTabState extends State<_TeacherLoginTab> {
 
       final profileRes = await http.get(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/teacher/$teacherId/profile',
+          '${ApiConstants.apiBaseUrl}/teacher/$teacherId/profile',
         ),
         headers: {
           'Content-Type': 'application/json',
@@ -706,7 +707,7 @@ class __TeacherLoginTabState extends State<_TeacherLoginTab> {
       await prefs.setString('orgId', profile['orgId']?.toString() ?? '');
       await prefs.setBool('teacherVerified', isVerified);
 
-      // ── Save FCM token for teacher ─────────────────
+      // â”€â”€ Save FCM token for teacher â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       if (teacherId.isNotEmpty) {
         await NotificationService.requestPermission();
         await NotificationService.saveTokenAfterLogin(
@@ -724,7 +725,7 @@ class __TeacherLoginTabState extends State<_TeacherLoginTab> {
 
         _showSnack(
           context,
-          'Welcome, ${profile['name'] ?? 'Teacher'}! 👋',
+          'Welcome, ${profile['name'] ?? 'Teacher'}! ðŸ‘‹',
           Colors.teal[600]!,
         );
         Navigator.pushReplacement(
@@ -790,7 +791,7 @@ class __TeacherLoginTabState extends State<_TeacherLoginTab> {
                 return null;
               },
               decoration: _loginFieldDeco(
-                hint: '••••••••',
+                hint: 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
                 icon: Icons.lock_outline_rounded,
                 accent: widget.accent,
                 suffixIcon: IconButton(
@@ -856,9 +857,9 @@ class __TeacherLoginTabState extends State<_TeacherLoginTab> {
   }
 }
 
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // STUDENT LOGIN TAB
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _StudentLoginTab extends StatefulWidget {
   final Color accent;
@@ -887,7 +888,7 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
     setState(() => _isLoading = true);
     try {
       final res = await http.post(
-        Uri.parse('https://appv1backend.onrender.com/api/student/login'),
+        Uri.parse('${ApiConstants.apiBaseUrl}/student/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'email': _emailCtrl.text.trim(),
@@ -897,26 +898,26 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
       if (!mounted) return;
       setState(() => _isLoading = false);
 
-      // ── LOG 1: Raw HTTP response ───────────────────
+      // â”€â”€ LOG 1: Raw HTTP response â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       debugPrint('');
-      debugPrint('╔══════════════════════════════════════════╗');
-      debugPrint('║       STUDENT LOGIN RAW RESPONSE         ║');
-      debugPrint('╠══════════════════════════════════════════╣');
-      debugPrint('║ Status Code : ${res.statusCode}');
-      debugPrint('║ Raw Body    : ${res.body}');
-      debugPrint('╚══════════════════════════════════════════╝');
+      debugPrint('â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—');
+      debugPrint('â•‘       STUDENT LOGIN RAW RESPONSE         â•‘');
+      debugPrint('â• â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•£');
+      debugPrint('â•‘ Status Code : ${res.statusCode}');
+      debugPrint('â•‘ Raw Body    : ${res.body}');
+      debugPrint('â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
 
       Map<String, dynamic> body = {};
       try {
         body = jsonDecode(res.body) as Map<String, dynamic>;
       } catch (_) {
-        debugPrint('❌ JSON decode failed: ${res.body}');
+        debugPrint('âŒ JSON decode failed: ${res.body}');
         _showSnack(context, 'Unexpected server response.', Colors.red[600]!);
         return;
       }
 
       if (res.statusCode != 200 || body['success'] != true) {
-        debugPrint('❌ Login failed: ${body['message'] ?? body['error']}');
+        debugPrint('âŒ Login failed: ${body['message'] ?? body['error']}');
         _showSnack(
           context,
           body['message']?.toString() ??
@@ -932,19 +933,19 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
           body['data'] as Map<String, dynamic>? ??
           {};
 
-      // ── LOG 2: Parsed student object ───────────────
+      // â”€â”€ LOG 2: Parsed student object â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       debugPrint('');
-      debugPrint('╔══════════════════════════════════════════╗');
-      debugPrint('║         PARSED STUDENT OBJECT            ║');
-      debugPrint('╠══════════════════════════════════════════╣');
-      debugPrint('║ studentId  : ${student['studentId']}');
-      debugPrint('║ name       : ${student['name']}');
-      debugPrint('║ joinStatus : ${student['joinStatus']}');
-      debugPrint('║ classId    : ${student['classId']}');
-      debugPrint('║ orgId      : ${student['orgId']}');
-      debugPrint('╚══════════════════════════════════════════╝');
+      debugPrint('â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—');
+      debugPrint('â•‘         PARSED STUDENT OBJECT            â•‘');
+      debugPrint('â• â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•£');
+      debugPrint('â•‘ studentId  : ${student['studentId']}');
+      debugPrint('â•‘ name       : ${student['name']}');
+      debugPrint('â•‘ joinStatus : ${student['joinStatus']}');
+      debugPrint('â•‘ classId    : ${student['classId']}');
+      debugPrint('â•‘ orgId      : ${student['orgId']}');
+      debugPrint('â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
 
-      // ── Save to prefs ──────────────────────────────
+      // â”€â”€ Save to prefs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('isLoggedIn', true);
       await prefs.setString('userRole', 'student');
@@ -962,13 +963,13 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
       );
       await prefs.setString('orgId', student['orgId'].toString());
 
-      // ── Save tempOrg ───────────────────────────────
+      // â”€â”€ Save tempOrg â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       final tempOrg = student['tempOrg'] as Map<String, dynamic>?;
       debugPrint('');
-      debugPrint('╔══════════════════════════════════════════╗');
-      debugPrint('║           SAVING TEMP ORG                ║');
-      debugPrint('╠══════════════════════════════════════════╣');
-      debugPrint('║ tempOrg is null? : ${tempOrg == null}');
+      debugPrint('â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—');
+      debugPrint('â•‘           SAVING TEMP ORG                â•‘');
+      debugPrint('â• â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•£');
+      debugPrint('â•‘ tempOrg is null? : ${tempOrg == null}');
       if (tempOrg != null) {
         await prefs.setString('tempOrg', jsonEncode(tempOrg));
         await prefs.setString('tempOrgId', tempOrg['orgId']?.toString() ?? '');
@@ -976,18 +977,18 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
           'tempOrgName',
           tempOrg['orgName']?.toString() ?? '',
         );
-        debugPrint('║ ✅ tempOrgId   : ${tempOrg['orgId']}');
-        debugPrint('║ ✅ tempOrgName : ${tempOrg['orgName']}');
+        debugPrint('â•‘ âœ… tempOrgId   : ${tempOrg['orgId']}');
+        debugPrint('â•‘ âœ… tempOrgName : ${tempOrg['orgName']}');
       } else {
         final flatOrgId = student['tempOrgId']?.toString() ?? '';
         if (flatOrgId.isNotEmpty) {
           await prefs.setString('tempOrgId', flatOrgId);
-          debugPrint('║ ✅ flat tempOrgId : $flatOrgId');
+          debugPrint('â•‘ âœ… flat tempOrgId : $flatOrgId');
         } else {
-          debugPrint('║ ❌ No org data found!');
+          debugPrint('â•‘ âŒ No org data found!');
         }
       }
-      debugPrint('╚══════════════════════════════════════════╝');
+      debugPrint('â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
 
       if (!mounted) return;
 
@@ -996,7 +997,7 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
       final studentId = student['studentId']?.toString() ?? '';
       final studentName = student['name']?.toString() ?? 'Student';
 
-      // ── Save FCM token for student ─────────────────
+      // â”€â”€ Save FCM token for student â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       if (studentId.isNotEmpty && joinStatus == 'approved') {
         await NotificationService.requestPermission();
         await NotificationService.saveTokenAfterLogin(
@@ -1005,32 +1006,32 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
         );
       }
 
-      // ── LOG 3: Routing decision ────────────────────
+      // â”€â”€ LOG 3: Routing decision â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       debugPrint('');
-      debugPrint('╔══════════════════════════════════════════╗');
-      debugPrint('║           ROUTING DECISION               ║');
-      debugPrint('╠══════════════════════════════════════════╣');
-      debugPrint('║ joinStatus  : $joinStatus');
-      debugPrint('║ classId     : $classId');
-      debugPrint('║ studentName : $studentName');
-      debugPrint('╚══════════════════════════════════════════╝');
+      debugPrint('â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—');
+      debugPrint('â•‘           ROUTING DECISION               â•‘');
+      debugPrint('â• â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•£');
+      debugPrint('â•‘ joinStatus  : $joinStatus');
+      debugPrint('â•‘ classId     : $classId');
+      debugPrint('â•‘ studentName : $studentName');
+      debugPrint('â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
 
       switch (joinStatus) {
         case 'approved':
           if (classId.isNotEmpty) {
-            debugPrint('➡️  Routing to: StudentMainScreen');
+            debugPrint('âž¡ï¸  Routing to: StudentMainScreen');
             // Init notification listeners
             NotificationService.initListeners(context);
             _showSnack(
               context,
-              'Welcome back, $studentName! 👋',
+              'Welcome back, $studentName! ðŸ‘‹',
               Colors.green[600]!,
             );
             Navigator.of(context, rootNavigator: true).pushReplacement(
               MaterialPageRoute(builder: (_) => StudentMainScreen()),
             );
           } else {
-            debugPrint('➡️  Routing to: StudentJoinOrgPage');
+            debugPrint('âž¡ï¸  Routing to: StudentJoinOrgPage');
             Navigator.of(context, rootNavigator: true).pushReplacement(
               MaterialPageRoute(builder: (_) => StudentJoinOrgPage()),
             );
@@ -1038,7 +1039,7 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
           break;
 
         case 'pending':
-          debugPrint('➡️  Routing to: StudentPendingScreen');
+          debugPrint('âž¡ï¸  Routing to: StudentPendingScreen');
           Navigator.of(context, rootNavigator: true).pushReplacement(
             MaterialPageRoute(
               builder: (_) => StudentPendingScreen(studentName: studentName),
@@ -1047,7 +1048,7 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
           break;
 
         case 'rejected':
-          debugPrint('➡️  Routing to: StudentRejectedScreen');
+          debugPrint('âž¡ï¸  Routing to: StudentRejectedScreen');
           Navigator.of(context, rootNavigator: true).pushReplacement(
             MaterialPageRoute(
               builder: (_) => StudentRejectedScreen(studentName: studentName),
@@ -1056,7 +1057,7 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
           break;
 
         default:
-          debugPrint('➡️  Routing to: StudentJoinOrgPage (default)');
+          debugPrint('âž¡ï¸  Routing to: StudentJoinOrgPage (default)');
           Navigator.of(context, rootNavigator: true).pushReplacement(
             MaterialPageRoute(builder: (_) => StudentJoinOrgPage()),
           );
@@ -1064,8 +1065,8 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
     } catch (e, stack) {
       if (!mounted) return;
       setState(() => _isLoading = false);
-      debugPrint('❌ STUDENT LOGIN EXCEPTION: $e');
-      debugPrint('❌ STACK: $stack');
+      debugPrint('âŒ STUDENT LOGIN EXCEPTION: $e');
+      debugPrint('âŒ STACK: $stack');
       _showSnack(context, 'No internet connection.', Colors.red[600]!);
     }
   }
@@ -1111,7 +1112,7 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
                 return null;
               },
               decoration: _loginFieldDeco(
-                hint: '••••••••',
+                hint: 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
                 icon: Icons.lock_outline_rounded,
                 accent: widget.accent,
                 suffixIcon: IconButton(
@@ -1179,3 +1180,4 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
     );
   }
 }
+

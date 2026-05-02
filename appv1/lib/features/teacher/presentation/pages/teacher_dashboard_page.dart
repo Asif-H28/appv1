@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -6,7 +7,7 @@ import 'teacher_class_dashboard.dart';
 import 'teacher_student_roster.dart';
 
 const Color _accent = Colors.teal;
-const String _base = 'https://appv1backend.onrender.com';
+const String _base = '${ApiConstants.baseUrl}';
 
 class TeacherDashboardPage extends StatefulWidget {
   const TeacherDashboardPage({super.key});
@@ -104,7 +105,7 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage>
     final id = _extractClassId(cls);
     final name = _extractClassName(cls);
     if (id.isEmpty) return;
-    debugPrint('[Dashboard] switched → "$id" / "$name"');
+    debugPrint('[Dashboard] switched â†’ "$id" / "$name"');
     setState(() {
       _selectedId = id;
       _selectedName = name;
@@ -112,7 +113,7 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage>
     _tabController.animateTo(0);
   }
 
-  // ── Searchable class dropdown ──────────────────────
+  // â”€â”€ Searchable class dropdown â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   void _showClassDropdown(BuildContext context) {
     final List<Map<String, dynamic>> filtered = List.from(_classes);
     final searchCtrl = TextEditingController();
@@ -409,7 +410,7 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage>
     );
   }
 
-  // ── Header ─────────────────────────────────────────
+  // â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildHeader() {
     return Container(
       decoration: const BoxDecoration(
@@ -516,7 +517,7 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage>
     );
   }
 
-  // ── Tab bar ────────────────────────────────────────
+  // â”€â”€ Tab bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildTabBar() {
     return Container(
       color: Colors.white,
@@ -561,3 +562,4 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage>
     );
   }
 }
+

@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -84,7 +85,7 @@ class _StudentsManagementViewState extends State<StudentsManagementView> {
     try {
       final response = await http.delete(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/join/class/${widget.classId}/student/$studentId',
+          '${ApiConstants.apiBaseUrl}/join/class/${widget.classId}/student/$studentId',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -241,7 +242,7 @@ class _StudentsManagementViewState extends State<StudentsManagementView> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // ── Search + count ──
+        // â”€â”€ Search + count â”€â”€
         Container(
           color: Colors.white,
           padding: EdgeInsets.fromLTRB(12, 10, 12, 10),
@@ -536,3 +537,4 @@ class _StudentsManagementViewState extends State<StudentsManagementView> {
     ),
   );
 }
+

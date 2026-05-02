@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -83,7 +84,7 @@ class _CreateNoteSheetState extends State<CreateNoteSheet> {
       if (hasFiles) {
         final request = http.MultipartRequest(
           'POST',
-          Uri.parse('https://appv1backend.onrender.com/api/notes/create'),
+          Uri.parse('${ApiConstants.apiBaseUrl}/notes/create'),
         );
         request.fields['title'] = _titleCtrl.text.trim();
         request.fields['notesSharedBy'] = widget.sharedBy;
@@ -112,7 +113,7 @@ class _CreateNoteSheetState extends State<CreateNoteSheet> {
         response = await http.Response.fromStream(streamed);
       } else {
         response = await http.post(
-          Uri.parse('https://appv1backend.onrender.com/api/notes/create'),
+          Uri.parse('${ApiConstants.apiBaseUrl}/notes/create'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({
             'title': _titleCtrl.text.trim(),
@@ -129,7 +130,7 @@ class _CreateNoteSheetState extends State<CreateNoteSheet> {
       if (response.statusCode == 200 || response.statusCode == 201) {
         Navigator.pop(context);
         widget.onCreated();
-        _snack('Note created! 🎉', Colors.green[600]!);
+        _snack('Note created! ðŸŽ‰', Colors.green[600]!);
       } else {
         _snack(
           'Failed to create note. (${response.statusCode})',
@@ -182,7 +183,7 @@ class _CreateNoteSheetState extends State<CreateNoteSheet> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Handle ──
+            // â”€â”€ Handle â”€â”€
             Center(
               child: Container(
                 width: 36,
@@ -195,7 +196,7 @@ class _CreateNoteSheetState extends State<CreateNoteSheet> {
             ),
             SizedBox(height: 16),
 
-            // ── Header ──
+            // â”€â”€ Header â”€â”€
             Row(
               children: [
                 Container(
@@ -223,7 +224,7 @@ class _CreateNoteSheetState extends State<CreateNoteSheet> {
             ),
             SizedBox(height: 18),
 
-            // ── Title ──
+            // â”€â”€ Title â”€â”€
             _label('Note Title *'),
             SizedBox(height: 5),
             _inputField(
@@ -233,7 +234,7 @@ class _CreateNoteSheetState extends State<CreateNoteSheet> {
             ),
             SizedBox(height: 16),
 
-            // ── Attachments ──
+            // â”€â”€ Attachments â”€â”€
             _label('Attachments (optional)'),
             SizedBox(height: 8),
             Row(
@@ -264,7 +265,7 @@ class _CreateNoteSheetState extends State<CreateNoteSheet> {
               ],
             ),
 
-            // ── Image previews ──
+            // â”€â”€ Image previews â”€â”€
             if (_images.isNotEmpty) ...[
               SizedBox(height: 10),
               SizedBox(
@@ -281,7 +282,7 @@ class _CreateNoteSheetState extends State<CreateNoteSheet> {
               ),
             ],
 
-            // ── PDF previews ──
+            // â”€â”€ PDF previews â”€â”€
             if (_pdfs.isNotEmpty) ...[
               SizedBox(height: 8),
               ...List.generate(
@@ -293,7 +294,7 @@ class _CreateNoteSheetState extends State<CreateNoteSheet> {
 
             SizedBox(height: 20),
 
-            // ── Submit ──
+            // â”€â”€ Submit â”€â”€
             SizedBox(
               width: double.infinity,
               height: 46,
@@ -467,3 +468,4 @@ class _CreateNoteSheetState extends State<CreateNoteSheet> {
         ),
       );
 }
+

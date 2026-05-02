@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -39,7 +40,7 @@ class _AchievementDetailPageState extends State<AchievementDetailPage> {
     try {
       final res = await http.get(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/achievement/${widget.achievementId}',
+          '${ApiConstants.apiBaseUrl}/achievement/${widget.achievementId}',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -81,7 +82,7 @@ class _AchievementDetailPageState extends State<AchievementDetailPage> {
     try {
       await http.post(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/achievement/${widget.achievementId}/like',
+          '${ApiConstants.apiBaseUrl}/achievement/${widget.achievementId}/like',
         ),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
@@ -155,10 +156,10 @@ class _AchievementDetailPageState extends State<AchievementDetailPage> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: true,
-      // ✅ FIX 1: Never call Navigator.pop inside onPopInvokedWithResult
-      // The pop already happened — calling pop again causes _debugLocked crash
+      // âœ… FIX 1: Never call Navigator.pop inside onPopInvokedWithResult
+      // The pop already happened â€” calling pop again causes _debugLocked crash
       onPopInvokedWithResult: (didPop, result) {
-        // Nothing needed here — back button handles passing _changed
+        // Nothing needed here â€” back button handles passing _changed
       },
       child: Scaffold(
         backgroundColor: AppColors.background,
@@ -201,7 +202,7 @@ class _AchievementDetailPageState extends State<AchievementDetailPage> {
           child: Row(
             children: [
               GestureDetector(
-                // ✅ FIX 1: Use maybePop — safe, won't crash if navigator is locked
+                // âœ… FIX 1: Use maybePop â€” safe, won't crash if navigator is locked
                 onTap: () =>
                     Navigator.of(context).maybePop(_changed ? true : null),
                 child: Container(
@@ -293,7 +294,7 @@ class _AchievementDetailPageState extends State<AchievementDetailPage> {
                       ),
                     ),
                     Text(
-                      '${post['className'] ?? ''} · ${_timeAgo(post['createdAt']?.toString() ?? '')}',
+                      '${post['className'] ?? ''} Â· ${_timeAgo(post['createdAt']?.toString() ?? '')}',
                       style: TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 11,
@@ -361,7 +362,7 @@ class _AchievementDetailPageState extends State<AchievementDetailPage> {
                         borderRadius: BorderRadius.circular(3),
                       ),
                       child: Text(
-                        '🏷 ${s['studentName']}',
+                        'ðŸ· ${s['studentName']}',
                         style: const TextStyle(
                           color: Colors.teal,
                           fontSize: 11,
@@ -471,3 +472,4 @@ class _AchievementDetailPageState extends State<AchievementDetailPage> {
     );
   }
 }
+

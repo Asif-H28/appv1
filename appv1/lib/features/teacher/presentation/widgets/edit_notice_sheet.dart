@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -27,7 +28,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
   final List<File> _newImages = [];
   final List<File> _newPdfs = [];
 
-  // ── Existing attachments — user can mark for removal ──
+  // â”€â”€ Existing attachments â€” user can mark for removal â”€â”€
   late List<Map<String, dynamic>> _existingAttachments;
   final Set<int> _removedIndexes = {};
 
@@ -192,7 +193,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
           widget.notice['_id']?.toString() ??
           '';
 
-      // ── Step 1: DELETE each marked attachment via dedicated endpoint ──
+      // â”€â”€ Step 1: DELETE each marked attachment via dedicated endpoint â”€â”€
       for (final i in _removedIndexes) {
         final att = _existingAttachments[i];
         final publicId = att['publicId']?.toString() ?? '';
@@ -209,7 +210,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
         try {
           await http.delete(
             Uri.parse(
-              'https://appv1backend.onrender.com/api/notice/$noticeId/attachment',
+              '${ApiConstants.apiBaseUrl}/notice/$noticeId/attachment',
             ),
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode({
@@ -222,14 +223,14 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
         }
       }
 
-      // ── Step 2: PUT to update text fields + upload any new files ──
+      // â”€â”€ Step 2: PUT to update text fields + upload any new files â”€â”€
       final hasNewFiles = _newImages.isNotEmpty || _newPdfs.isNotEmpty;
       http.Response response;
 
       if (hasNewFiles) {
         final request = http.MultipartRequest(
           'PUT',
-          Uri.parse('https://appv1backend.onrender.com/api/notice/$noticeId'),
+          Uri.parse('${ApiConstants.apiBaseUrl}/notice/$noticeId'),
         );
         request.fields['title'] = _titleCtrl.text.trim();
         request.fields['description'] = _descCtrl.text.trim();
@@ -258,7 +259,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
         final streamed = await request.send();
         response = await http.Response.fromStream(streamed);
       } else {
-        // ── Only text fields changed (or only deletions) ──
+        // â”€â”€ Only text fields changed (or only deletions) â”€â”€
         final body = <String, dynamic>{
           'title': _titleCtrl.text.trim(),
           'description': _descCtrl.text.trim(),
@@ -267,7 +268,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
           body['expiresAt'] = _expiresAt!.toUtc().toIso8601String();
         }
         response = await http.put(
-          Uri.parse('https://appv1backend.onrender.com/api/notice/$noticeId'),
+          Uri.parse('${ApiConstants.apiBaseUrl}/notice/$noticeId'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode(body),
         );
@@ -278,7 +279,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
 
       if (response.statusCode == 200) {
         Navigator.pop(context);
-        widget.onUpdated(); // ← triggers refresh on parent screen
+        widget.onUpdated(); // â† triggers refresh on parent screen
         _snack('Notice updated!', Colors.green[600]!);
       } else {
         _snack('Failed to update. (${response.statusCode})', Colors.red[600]!);
@@ -329,7 +330,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Handle ──
+            // â”€â”€ Handle â”€â”€
             Center(
               child: Container(
                 width: 36,
@@ -342,7 +343,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
             ),
             SizedBox(height: 16),
 
-            // ── Sheet title ──
+            // â”€â”€ Sheet title â”€â”€
             Row(
               children: [
                 Container(
@@ -366,7 +367,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
             ),
             SizedBox(height: 18),
 
-            // ── Title ──
+            // â”€â”€ Title â”€â”€
             _label('Notice Title *'),
             SizedBox(height: 5),
             _inputField(
@@ -376,7 +377,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
             ),
             SizedBox(height: 13),
 
-            // ── Description ──
+            // â”€â”€ Description â”€â”€
             _label('Description'),
             SizedBox(height: 5),
             _inputField(
@@ -387,13 +388,13 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
             ),
             SizedBox(height: 13),
 
-            // ── Expiry ──
+            // â”€â”€ Expiry â”€â”€
             _label('Expiry Date'),
             SizedBox(height: 5),
             _datePickerTile(),
             SizedBox(height: 16),
 
-            // ── Existing attachments with remove option ──
+            // â”€â”€ Existing attachments with remove option â”€â”€
             if (_existingAttachments.isNotEmpty) ...[
               Row(
                 children: [
@@ -434,7 +435,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
                   ),
                   child: Row(
                     children: [
-                      // ── Image thumbnail or file icon ──
+                      // â”€â”€ Image thumbnail or file icon â”€â”€
                       if (isImg)
                         ClipRRect(
                           borderRadius: BorderRadius.only(
@@ -494,7 +495,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
 
                       SizedBox(width: 8),
 
-                      // ── File name ──
+                      // â”€â”€ File name â”€â”€
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -529,7 +530,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
                         ),
                       ),
 
-                      // ── Toggle remove / restore ──
+                      // â”€â”€ Toggle remove / restore â”€â”€
                       GestureDetector(
                         onTap: () => setState(() {
                           if (isRemoved) {
@@ -589,7 +590,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
               SizedBox(height: 8),
             ],
 
-            // ── Append new files ──
+            // â”€â”€ Append new files â”€â”€
             _label('Append New Files (optional)'),
             SizedBox(height: 8),
             Row(
@@ -620,7 +621,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
               ],
             ),
 
-            // ── New image previews ──
+            // â”€â”€ New image previews â”€â”€
             if (_newImages.isNotEmpty) ...[
               SizedBox(height: 12),
               SizedBox(
@@ -634,7 +635,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
               ),
             ],
 
-            // ── New PDF previews ──
+            // â”€â”€ New PDF previews â”€â”€
             if (_newPdfs.isNotEmpty) ...[
               SizedBox(height: 10),
               ...List.generate(
@@ -645,7 +646,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
 
             SizedBox(height: 20),
 
-            // ── Submit ──
+            // â”€â”€ Submit â”€â”€
             SizedBox(
               width: double.infinity,
               height: 46,
@@ -882,3 +883,4 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
     ),
   );
 }
+

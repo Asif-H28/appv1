@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:appv1/features/teacher/presentation/pages/achievement_comments_sheet.dart';
 import 'package:flutter/material.dart';
@@ -38,7 +39,7 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
     final studentId = prefs.getString('studentId') ?? '';
     final studentName = prefs.getString('studentName') ?? '';
 
-    // ── PRINT every key stored in SharedPrefs ──
+    // â”€â”€ PRINT every key stored in SharedPrefs â”€â”€
     debugPrint('==== [Achievements] all prefs keys: ${prefs.getKeys()}');
     debugPrint('==== [Achievements] orgId       = "$orgId"');
     debugPrint('==== [Achievements] studentId   = "$studentId"');
@@ -56,7 +57,7 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
 
   Future<void> _fetchFeed() async {
     if (_orgId.isEmpty) {
-      debugPrint('==== [Achievements] SKIPPED fetch — orgId is empty');
+      debugPrint('==== [Achievements] SKIPPED fetch â€” orgId is empty');
       setState(() {
         _loading = false;
       });
@@ -68,7 +69,7 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
       _error = false;
     });
 
-    final url = 'https://appv1backend.onrender.com/api/achievement/org/$_orgId';
+    final url = '${ApiConstants.apiBaseUrl}/achievement/org/$_orgId';
     debugPrint('==== [Achievements] GET $url');
 
     try {
@@ -85,7 +86,7 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
       if (res.statusCode == 200) {
         final body = jsonDecode(res.body) as Map;
 
-        // ── PRINT top-level keys so we know the exact shape ──
+        // â”€â”€ PRINT top-level keys so we know the exact shape â”€â”€
         debugPrint('==== [Achievements] body keys = ${body.keys.toList()}');
 
         // Try common key names defensively
@@ -148,7 +149,7 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
     try {
       await http.post(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/achievement/$achId/like',
+          '${ApiConstants.apiBaseUrl}/achievement/$achId/like',
         ),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
@@ -245,7 +246,7 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
               'No achievements yet',
               style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
             ),
-            // ── shows orgId + post count on screen ──
+            // â”€â”€ shows orgId + post count on screen â”€â”€
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
               child: Text(
@@ -277,7 +278,7 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
   }
 }
 
-// ── Card ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _StudentAchievementCard extends StatefulWidget {
   final Map<String, dynamic> post;
@@ -399,7 +400,7 @@ class _StudentAchievementCardState extends State<_StudentAchievementCard> {
                         ),
                       ),
                       Text(
-                        '${post['className'] ?? ''} · '
+                        '${post['className'] ?? ''} Â· '
                         '${_timeAgo(post['createdAt']?.toString() ?? '')}',
                         style: TextStyle(
                           color: AppColors.textSecondary,
@@ -486,7 +487,7 @@ class _StudentAchievementCardState extends State<_StudentAchievementCard> {
                               borderRadius: BorderRadius.circular(3),
                             ),
                             child: Text(
-                              '🏷 ${s['studentName']}',
+                              'ðŸ· ${s['studentName']}',
                               style: const TextStyle(
                                 color: Colors.teal,
                                 fontSize: 11,
@@ -602,3 +603,4 @@ class _ActionBtn extends StatelessWidget {
     );
   }
 }
+

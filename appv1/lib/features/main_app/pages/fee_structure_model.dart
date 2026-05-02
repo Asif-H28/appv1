@@ -1,10 +1,11 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 // fee_structure_model.dart
 // Data model + API service for Fee Structures
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-// ── Model ────────────────────────────────────────────────
+// â”€â”€ Model â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 class BreakdownItem {
   String component;
   double amount;
@@ -72,9 +73,9 @@ class FeeStructure {
   double get breakdownTotal => breakdown.fold(0, (sum, b) => sum + b.amount);
 }
 
-// ── API Service ──────────────────────────────────────────
+// â”€â”€ API Service â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 class FeeStructureService {
-  static const _base = 'https://appv1backend.onrender.com/api/org/school/fee';
+  static const _base = '${ApiConstants.apiBaseUrl}/org/school/fee';
 
   // GET all
   static Future<List<FeeStructure>> getAll(String orgId) async {
@@ -135,3 +136,4 @@ class FeeStructureService {
     }
   }
 }
+

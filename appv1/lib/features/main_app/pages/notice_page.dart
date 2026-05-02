@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -92,7 +93,7 @@ class _NoticePageState extends State<NoticePage> {
     try {
       final res = await http.get(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/admin-notices/org/$_orgId',
+          '${ApiConstants.apiBaseUrl}/admin-notices/org/$_orgId',
         ),
       );
       if (res.statusCode == 200) {
@@ -126,7 +127,7 @@ class _NoticePageState extends State<NoticePage> {
     try {
       final res = await http.get(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/classroom/org/$_orgId',
+          '${ApiConstants.apiBaseUrl}/classroom/org/$_orgId',
         ),
       );
       if (res.statusCode == 200) {
@@ -181,7 +182,7 @@ class _NoticePageState extends State<NoticePage> {
     try {
       await http.delete(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/admin-notices/$noticeId',
+          '${ApiConstants.apiBaseUrl}/admin-notices/$noticeId',
         ),
       );
       _fetchNotices();
@@ -256,7 +257,7 @@ class _NoticePageState extends State<NoticePage> {
     );
   }
 
-  // ── Header ─────────────────────────────────────────────
+  // â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
@@ -285,7 +286,7 @@ class _NoticePageState extends State<NoticePage> {
             ),
           ),
           const SizedBox(width: 10),
-          // ── NEW: Create Notice button ──
+          // â”€â”€ NEW: Create Notice button â”€â”€
           GestureDetector(
             onTap: () => _openForm(),
             child: Container(
@@ -316,7 +317,7 @@ class _NoticePageState extends State<NoticePage> {
     );
   }
 
-  // ── Title section ─────────────────────────────────────
+  // â”€â”€ Title section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildTitleSection() {
     return Container(
       color: Colors.white,
@@ -333,14 +334,14 @@ class _NoticePageState extends State<NoticePage> {
               letterSpacing: 1.2,
             ),
           ),
-          const SizedBox(height: 10), // ← breathing room below text
+          const SizedBox(height: 10), // â† breathing room below text
           Container(height: 1, color: _border),
         ],
       ),
     );
   }
 
-  // ── Filter bar ────────────────────────────────────────
+  // â”€â”€ Filter bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildFilterBar() {
     final labels = {
       'recent': 'Sorted by Recent',
@@ -449,7 +450,7 @@ class _NoticePageState extends State<NoticePage> {
     );
   }
 
-  // ── Body ──────────────────────────────────────────────
+  // â”€â”€ Body â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildBody(double navBottom) {
     if (_loading) return const NoticeShimmer();
     if (_error.isNotEmpty) return _buildError();
@@ -531,3 +532,4 @@ class _NoticePageState extends State<NoticePage> {
     ),
   );
 }
+

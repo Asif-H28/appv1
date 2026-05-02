@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -23,7 +24,7 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
   final Map<String, bool> _deletingSubject = {};
   final Map<String, bool> _deletingLesson = {};
 
-  // ── Track which subjects are expanded ──
+  // â”€â”€ Track which subjects are expanded â”€â”€
   final Map<String, bool> _expanded = {};
 
   @override
@@ -54,9 +55,9 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
     _expanded.removeWhere((key, _) => !currentNames.contains(key));
   }
 
-  // ─────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // API CALLS
-  // ─────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Future<void> _toggleLesson(
     String subjectName,
@@ -66,7 +67,7 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
     try {
       await http.put(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/classroom/${widget.classId}/lessons/status',
+          '${ApiConstants.apiBaseUrl}/classroom/${widget.classId}/lessons/status',
         ),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
@@ -85,7 +86,7 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
       final encoded = Uri.encodeComponent(subjectName);
       final response = await http.delete(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/classroom/${widget.classId}/subjects/$encoded',
+          '${ApiConstants.apiBaseUrl}/classroom/${widget.classId}/subjects/$encoded',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -113,7 +114,7 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
       final encodedLes = Uri.encodeComponent(lessonName);
       final response = await http.delete(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/classroom/${widget.classId}/lessons/$encodedSub/$encodedLes',
+          '${ApiConstants.apiBaseUrl}/classroom/${widget.classId}/lessons/$encodedSub/$encodedLes',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -139,7 +140,7 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
     try {
       final response = await http.put(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/classroom/${widget.classId}/subjects',
+          '${ApiConstants.apiBaseUrl}/classroom/${widget.classId}/subjects',
         ),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'oldName': oldName, 'newName': newName.trim()}),
@@ -167,7 +168,7 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
     try {
       final response = await http.put(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/classroom/${widget.classId}/lessons',
+          '${ApiConstants.apiBaseUrl}/classroom/${widget.classId}/lessons',
         ),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
@@ -188,9 +189,9 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
     }
   }
 
-  // ─────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // DIALOGS & SHEETS
-  // ─────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   void _confirmDeleteSubject(String subjectName) {
     _showConfirmDialog(
@@ -487,7 +488,7 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
                 Navigator.pop(ctx);
                 await http.post(
                   Uri.parse(
-                    'https://appv1backend.onrender.com/api/classroom/${widget.classId}/subjects',
+                    '${ApiConstants.apiBaseUrl}/classroom/${widget.classId}/subjects',
                   ),
                   headers: {'Content-Type': 'application/json'},
                   body: jsonEncode({
@@ -530,7 +531,7 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
               Navigator.pop(ctx);
               await http.post(
                 Uri.parse(
-                  'https://appv1backend.onrender.com/api/classroom/${widget.classId}/lessons',
+                  '${ApiConstants.apiBaseUrl}/classroom/${widget.classId}/lessons',
                 ),
                 headers: {'Content-Type': 'application/json'},
                 body: jsonEncode({
@@ -546,9 +547,9 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
     );
   }
 
-  // ─────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // SHEET HELPERS
-  // ─────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _buildSheet({
     required BuildContext ctx,
@@ -711,9 +712,9 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
     );
   }
 
-  // ─────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // BUILD
-  // ─────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   @override
   Widget build(BuildContext context) {
@@ -722,7 +723,7 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
     return ListView(
       padding: EdgeInsets.fromLTRB(12, 12, 12, 80),
       children: [
-        // ── Action bar ──
+        // â”€â”€ Action bar â”€â”€
         Padding(
           padding: EdgeInsets.only(bottom: 10),
           child: Row(
@@ -780,7 +781,7 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
           ),
         ),
 
-        // ── Subject cards ──
+        // â”€â”€ Subject cards â”€â”€
         ...widget.subjects.map((sub) {
           final subName = sub['name']?.toString() ?? 'Subject';
           final lessons = sub['lessons'] as List? ?? [];
@@ -804,8 +805,8 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
                 context,
               ).copyWith(dividerColor: Colors.transparent),
               child: ExpansionTile(
-                // ── key fix: named key so Flutter matches widget
-                //    to state across rebuilds ──
+                // â”€â”€ key fix: named key so Flutter matches widget
+                //    to state across rebuilds â”€â”€
                 key: PageStorageKey(subName),
                 initiallyExpanded: isExpanded,
                 onExpansionChanged: (val) =>
@@ -1143,3 +1144,4 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
     ),
   );
 }
+

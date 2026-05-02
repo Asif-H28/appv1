@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -51,7 +52,7 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
       if (_orgId.isNotEmpty) {
         final res = await http.get(
           Uri.parse(
-            'https://appv1backend.onrender.com/api/classroom/org/$_orgId',
+            '${ApiConstants.apiBaseUrl}/classroom/org/$_orgId',
           ),
           headers: {'Content-Type': 'application/json'},
         );
@@ -70,7 +71,7 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
       if (raw.isEmpty && _teacherId.isNotEmpty) {
         final res = await http.get(
           Uri.parse(
-            'https://appv1backend.onrender.com/api/classroom/teacher/$_teacherId',
+            '${ApiConstants.apiBaseUrl}/classroom/teacher/$_teacherId',
           ),
           headers: {'Content-Type': 'application/json'},
         );
@@ -104,7 +105,7 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
   Future<void> _deleteClassroom(String classId, int index) async {
     try {
       final response = await http.delete(
-        Uri.parse('https://appv1backend.onrender.com/api/classroom/$classId'),
+        Uri.parse('${ApiConstants.apiBaseUrl}/classroom/$classId'),
         headers: {'Content-Type': 'application/json'},
       );
       if (!mounted) return;
@@ -244,7 +245,7 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
       backgroundColor: AppColors.background,
       body: Column(
         children: [
-          // ── Header ──
+          // â”€â”€ Header â”€â”€
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -373,7 +374,7 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
             ),
           ),
 
-          // ── Body ──
+          // â”€â”€ Body â”€â”€
           Expanded(
             child: Container(
               decoration: BoxDecoration(
@@ -565,3 +566,4 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
     ),
   );
 }
+

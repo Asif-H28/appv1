@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -42,7 +43,7 @@ class _ClassroomNoticesTabState extends State<ClassroomNoticesTab> {
     try {
       final response = await http.get(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/notice/classroom/${widget.classId}',
+          '${ApiConstants.apiBaseUrl}/notice/classroom/${widget.classId}',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -78,7 +79,7 @@ class _ClassroomNoticesTabState extends State<ClassroomNoticesTab> {
   Future<void> _deleteNotice(String noticeId, int index) async {
     try {
       final response = await http.delete(
-        Uri.parse('https://appv1backend.onrender.com/api/notice/$noticeId'),
+        Uri.parse('${ApiConstants.apiBaseUrl}/notice/$noticeId'),
         headers: {'Content-Type': 'application/json'},
       );
       if (!mounted) return;
@@ -97,7 +98,7 @@ class _ClassroomNoticesTabState extends State<ClassroomNoticesTab> {
     try {
       await http.delete(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/notice/purge/${widget.classId}',
+          '${ApiConstants.apiBaseUrl}/notice/purge/${widget.classId}',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -259,7 +260,7 @@ class _ClassroomNoticesTabState extends State<ClassroomNoticesTab> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // ── Action bar ──
+        // â”€â”€ Action bar â”€â”€
         Padding(
           padding: EdgeInsets.fromLTRB(14, 14, 14, 0),
           child: Row(
@@ -365,7 +366,7 @@ class _ClassroomNoticesTabState extends State<ClassroomNoticesTab> {
 
         SizedBox(height: 10),
 
-        // ── Body ──
+        // â”€â”€ Body â”€â”€
         Expanded(
           child: _isLoading
               ? Center(
@@ -534,3 +535,4 @@ class _ClassroomNoticesTabState extends State<ClassroomNoticesTab> {
     ),
   );
 }
+

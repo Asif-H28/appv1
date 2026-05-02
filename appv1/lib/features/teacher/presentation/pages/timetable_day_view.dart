@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -8,16 +9,16 @@ class TimetableDayView extends StatelessWidget {
   final String day;
   final List<Map<String, dynamic>> slots;
   final String timetableId;
-  final String orgId; // ← new
-  final List<String> classSubjects; // ← new
+  final String orgId; // â† new
+  final List<String> classSubjects; // â† new
   final VoidCallback onRefresh;
 
   const TimetableDayView({
     required this.day,
     required this.slots,
     required this.timetableId,
-    required this.orgId, // ← new
-    required this.classSubjects, // ← new
+    required this.orgId, // â† new
+    required this.classSubjects, // â† new
     required this.onRefresh,
   });
 
@@ -110,7 +111,7 @@ class TimetableDayView extends StatelessWidget {
     return m == 0 ? '${h}h' : '${h}h ${m}min';
   }
 
-  // ── Delete ────────────────────────────────────────────
+  // â”€â”€ Delete â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Future<void> _deleteSlot(
     BuildContext context,
@@ -153,7 +154,7 @@ class TimetableDayView extends StatelessWidget {
       final request = http.Request(
         'DELETE',
         Uri.parse(
-          'https://appv1backend.onrender.com/api/timetable/$timetableId/slot',
+          '${ApiConstants.apiBaseUrl}/timetable/$timetableId/slot',
         ),
       );
       request.headers['Content-Type'] = 'application/json';
@@ -180,7 +181,7 @@ class TimetableDayView extends StatelessWidget {
     }
   }
 
-  // ── Edit ──────────────────────────────────────────────
+  // â”€â”€ Edit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Future<void> _editSlot(
     BuildContext context,
@@ -194,8 +195,8 @@ class TimetableDayView extends StatelessWidget {
         day: day,
         slot: slot,
         timetableId: timetableId,
-        orgId: orgId, // ← add this field
-        classSubjects: classSubjects, // ← add this field
+        orgId: orgId, // â† add this field
+        classSubjects: classSubjects, // â† add this field
         onSaved: onRefresh,
       ),
     );
@@ -216,7 +217,7 @@ class TimetableDayView extends StatelessWidget {
     );
   }
 
-  // ── Build ─────────────────────────────────────────────
+  // â”€â”€ Build â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   @override
   Widget build(BuildContext context) {
@@ -271,7 +272,7 @@ class TimetableDayView extends StatelessWidget {
     );
   }
 
-  // ── Slot card ─────────────────────────────────────────
+  // â”€â”€ Slot card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _slotCard(BuildContext context, int i, Map<String, dynamic> slot) {
     final type = slot['type']?.toString() ?? 'class';
@@ -399,7 +400,7 @@ class TimetableDayView extends StatelessWidget {
                         ),
                         SizedBox(width: 4),
                         Text(
-                          '$startTime – $endTime',
+                          '$startTime â€“ $endTime',
                           style: TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 11,
@@ -593,3 +594,4 @@ class TimetableDayView extends StatelessWidget {
     );
   }
 }
+

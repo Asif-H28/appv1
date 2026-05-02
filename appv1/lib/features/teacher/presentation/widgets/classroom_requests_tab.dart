@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -35,7 +36,7 @@ class _ClassroomRequestsTabState extends State<ClassroomRequestsTab> {
     try {
       final response = await http.get(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/join/class/${widget.classId}',
+          '${ApiConstants.apiBaseUrl}/join/class/${widget.classId}',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -81,7 +82,7 @@ class _ClassroomRequestsTabState extends State<ClassroomRequestsTab> {
     try {
       final response = await http.put(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/join/$requestId/approve',
+          '${ApiConstants.apiBaseUrl}/join/$requestId/approve',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -93,7 +94,7 @@ class _ClassroomRequestsTabState extends State<ClassroomRequestsTab> {
 
       if (response.statusCode == 200) {
         _updateRequestStatus(requestId, 'approved');
-        _snack('✅ Student approved!', Colors.green[600]!);
+        _snack('âœ… Student approved!', Colors.green[600]!);
       } else {
         final body = jsonDecode(response.body) as Map<String, dynamic>;
         _snack(
@@ -116,7 +117,7 @@ class _ClassroomRequestsTabState extends State<ClassroomRequestsTab> {
     try {
       final response = await http.put(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/join/$requestId/reject',
+          '${ApiConstants.apiBaseUrl}/join/$requestId/reject',
         ),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'rejectionReason': reason}),
@@ -129,7 +130,7 @@ class _ClassroomRequestsTabState extends State<ClassroomRequestsTab> {
 
       if (response.statusCode == 200) {
         _updateRequestStatus(requestId, 'rejected');
-        _snack('❌ Request rejected.', Colors.orange[700]!);
+        _snack('âŒ Request rejected.', Colors.orange[700]!);
       } else {
         final body = jsonDecode(response.body) as Map<String, dynamic>;
         _snack(
@@ -281,7 +282,7 @@ class _ClassroomRequestsTabState extends State<ClassroomRequestsTab> {
       return _buildError();
     }
 
-    // ── Separate into pending vs actioned ──
+    // â”€â”€ Separate into pending vs actioned â”€â”€
     final pending = _requests
         .where((r) => r['status']?.toString() == 'pending')
         .toList();
@@ -299,7 +300,7 @@ class _ClassroomRequestsTabState extends State<ClassroomRequestsTab> {
       child: ListView(
         padding: EdgeInsets.fromLTRB(16, 16, 16, 40),
         children: [
-          // ── Pending ──
+          // â”€â”€ Pending â”€â”€
           if (pending.isNotEmpty) ...[
             _sectionHeader(
               Icons.pending_actions_rounded,
@@ -312,7 +313,7 @@ class _ClassroomRequestsTabState extends State<ClassroomRequestsTab> {
             SizedBox(height: 20),
           ],
 
-          // ── Actioned ──
+          // â”€â”€ Actioned â”€â”€
           if (actioned.isNotEmpty) ...[
             _sectionHeader(
               Icons.history_rounded,
@@ -424,10 +425,10 @@ class _ClassroomRequestsTabState extends State<ClassroomRequestsTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Top row: avatar + name + status badge ──
+            // â”€â”€ Top row: avatar + name + status badge â”€â”€
             Row(
               children: [
-                // ── Avatar ──
+                // â”€â”€ Avatar â”€â”€
                 Container(
                   width: 40,
                   height: 40,
@@ -454,7 +455,7 @@ class _ClassroomRequestsTabState extends State<ClassroomRequestsTab> {
                 ),
                 SizedBox(width: 12),
 
-                // ── Name + email ──
+                // â”€â”€ Name + email â”€â”€
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -479,7 +480,7 @@ class _ClassroomRequestsTabState extends State<ClassroomRequestsTab> {
                   ),
                 ),
 
-                // ── Status badge ──
+                // â”€â”€ Status badge â”€â”€
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
@@ -506,7 +507,7 @@ class _ClassroomRequestsTabState extends State<ClassroomRequestsTab> {
               ],
             ),
 
-            // ── Date ──
+            // â”€â”€ Date â”€â”€
             if (dateStr.isNotEmpty) ...[
               SizedBox(height: 8),
               Row(
@@ -528,7 +529,7 @@ class _ClassroomRequestsTabState extends State<ClassroomRequestsTab> {
               ),
             ],
 
-            // ── Action buttons (only for pending) ──
+            // â”€â”€ Action buttons (only for pending) â”€â”€
             if (isPending) ...[
               SizedBox(height: 12),
               isProcessing
@@ -544,7 +545,7 @@ class _ClassroomRequestsTabState extends State<ClassroomRequestsTab> {
                     )
                   : Row(
                       children: [
-                        // ── Approve ──
+                        // â”€â”€ Approve â”€â”€
                         Expanded(
                           child: GestureDetector(
                             onTap: () => _approve(requestId),
@@ -578,7 +579,7 @@ class _ClassroomRequestsTabState extends State<ClassroomRequestsTab> {
                         ),
                         SizedBox(width: 8),
 
-                        // ── Reject ──
+                        // â”€â”€ Reject â”€â”€
                         Expanded(
                           child: GestureDetector(
                             onTap: () => _reject(requestId),
@@ -614,7 +615,7 @@ class _ClassroomRequestsTabState extends State<ClassroomRequestsTab> {
                     ),
             ],
 
-            // ── Rejection reason (if rejected) ──
+            // â”€â”€ Rejection reason (if rejected) â”€â”€
             if (status == 'rejected' && request['rejectionReason'] != null) ...[
               SizedBox(height: 8),
               Container(
@@ -725,3 +726,4 @@ class _ClassroomRequestsTabState extends State<ClassroomRequestsTab> {
     ),
   );
 }
+

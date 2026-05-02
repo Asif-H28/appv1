@@ -1,10 +1,11 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'teacher_student_dashboard.dart';
 
 const Color _accent = Colors.teal;
-const String _base = 'https://appv1backend.onrender.com';
+const String _base = '${ApiConstants.baseUrl}';
 
 class TeacherStudentRoster extends StatefulWidget {
   final String classId;
@@ -36,18 +37,18 @@ class _TeacherStudentRosterState extends State<TeacherStudentRoster>
   @override
   void initState() {
     super.initState();
-    debugPrint('[Roster] initState — classId="${widget.classId}"');
+    debugPrint('[Roster] initState â€” classId="${widget.classId}"');
     _fetchStudents();
   }
 
   @override
   void didUpdateWidget(TeacherStudentRoster oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // ✅ Re-fetch if classId changes
+    // âœ… Re-fetch if classId changes
     if (oldWidget.classId != widget.classId) {
       debugPrint(
         '[Roster] classId changed from '
-        '"${oldWidget.classId}" → "${widget.classId}"',
+        '"${oldWidget.classId}" â†’ "${widget.classId}"',
       );
       _searchCtrl.clear();
       _search = '';
@@ -71,7 +72,7 @@ class _TeacherStudentRosterState extends State<TeacherStudentRoster>
       _filtered = [];
     });
 
-    // ✅ Use classId directly from widget — dynamically set by dashboard
+    // âœ… Use classId directly from widget â€” dynamically set by dashboard
     final classId = widget.classId.trim();
 
     debugPrint('[Roster] classId: "$classId"');
@@ -85,7 +86,7 @@ class _TeacherStudentRosterState extends State<TeacherStudentRoster>
       return;
     }
 
-    // ✅ Build URL from dynamic classId
+    // âœ… Build URL from dynamic classId
     final uri = Uri.parse('$_base/api/student/class/$classId');
     debugPrint('[Roster] Fetching: $uri');
 
@@ -117,7 +118,7 @@ class _TeacherStudentRosterState extends State<TeacherStudentRoster>
         );
 
         debugPrint(
-          '[Roster] ✅ Loaded ${list.length} students '
+          '[Roster] âœ… Loaded ${list.length} students '
           'for class "$classId"',
         );
 
@@ -172,7 +173,7 @@ class _TeacherStudentRosterState extends State<TeacherStudentRoster>
 
     return Column(
       children: [
-        // ── Search bar ─────────────────────────────
+        // â”€â”€ Search bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         Padding(
           padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
           child: Container(
@@ -216,7 +217,7 @@ class _TeacherStudentRosterState extends State<TeacherStudentRoster>
           ),
         ),
 
-        // ── Count + refresh row ────────────────────
+        // â”€â”€ Count + refresh row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         Padding(
           padding: const EdgeInsets.fromLTRB(14, 0, 14, 6),
           child: Row(
@@ -227,7 +228,7 @@ class _TeacherStudentRosterState extends State<TeacherStudentRoster>
                       ? _error
                       : '${_filtered.length} student'
                             '${_filtered.length == 1 ? '' : 's'}'
-                            ' · ${widget.className}',
+                            ' Â· ${widget.className}',
                   style: TextStyle(
                     fontSize: 11,
                     color: _error.isNotEmpty
@@ -237,7 +238,7 @@ class _TeacherStudentRosterState extends State<TeacherStudentRoster>
                   ),
                 ),
               const Spacer(),
-              // ✅ Always-visible refresh button
+              // âœ… Always-visible refresh button
               GestureDetector(
                 onTap: _fetchStudents,
                 child: Container(
@@ -271,7 +272,7 @@ class _TeacherStudentRosterState extends State<TeacherStudentRoster>
           ),
         ),
 
-        // ── Body ───────────────────────────────────
+        // â”€â”€ Body â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         Expanded(
           child: _loading
               ? _buildLoading()
@@ -294,7 +295,7 @@ class _TeacherStudentRosterState extends State<TeacherStudentRoster>
     );
   }
 
-  // ── Loading ────────────────────────────────────────
+  // â”€â”€ Loading â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildLoading() {
     return Center(
       child: Column(
@@ -311,7 +312,7 @@ class _TeacherStudentRosterState extends State<TeacherStudentRoster>
     );
   }
 
-  // ── Error state ────────────────────────────────────
+  // â”€â”€ Error state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildErrorState() {
     return Center(
       child: Column(
@@ -372,7 +373,7 @@ class _TeacherStudentRosterState extends State<TeacherStudentRoster>
     );
   }
 
-  // ── Empty state ────────────────────────────────────
+  // â”€â”€ Empty state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildEmpty() {
     return Center(
       child: Column(
@@ -413,7 +414,7 @@ class _TeacherStudentRosterState extends State<TeacherStudentRoster>
     );
   }
 
-  // ── Student card ───────────────────────────────────
+  // â”€â”€ Student card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _studentCard(Map<String, dynamic> student) {
     final name = student['name']?.toString() ?? 'Unknown';
     final email = student['email']?.toString() ?? '';
@@ -423,10 +424,10 @@ class _TeacherStudentRosterState extends State<TeacherStudentRoster>
 
     return GestureDetector(
       onTap: () {
-        // ✅ Pass dynamic classId from widget — not hardcoded
+        // âœ… Pass dynamic classId from widget â€” not hardcoded
         debugPrint(
           '[Roster] Tapped student: '
-          '${student['studentId']} — ${student['name']}',
+          '${student['studentId']} â€” ${student['name']}',
         );
         debugPrint('[Roster] Navigating with classId: "${widget.classId}"');
 
@@ -435,7 +436,7 @@ class _TeacherStudentRosterState extends State<TeacherStudentRoster>
           MaterialPageRoute(
             builder: (_) => TeacherStudentDashboard(
               student: student,
-              classId: widget.classId, // ✅ Dynamic — from selected class
+              classId: widget.classId, // âœ… Dynamic â€” from selected class
               className: widget.className,
             ),
           ),
@@ -566,3 +567,4 @@ class _TeacherStudentRosterState extends State<TeacherStudentRoster>
     );
   }
 }
+

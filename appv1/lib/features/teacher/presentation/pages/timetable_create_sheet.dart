@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -88,14 +89,14 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
     (slot['endTime'] as TextEditingController).dispose();
   }
 
-  // ── Fetch teachers + resolve name ─────────────────────
+  // â”€â”€ Fetch teachers + resolve name â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Future<void> _fetchTeachers() async {
     setState(() => _loadingTeachers = true);
     try {
       final res = await http.get(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/teacher/org/${widget.orgId}',
+          '${ApiConstants.apiBaseUrl}/teacher/org/${widget.orgId}',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -137,7 +138,7 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
     }
   }
 
-  // ── Add / Remove slot ─────────────────────────────────
+  // â”€â”€ Add / Remove slot â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   void _addSlot() {
     setState(() {
@@ -158,7 +159,7 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
     setState(() => _daySlots[_activeDay]!.removeAt(index));
   }
 
-  // ── Time picker ───────────────────────────────────────
+  // â”€â”€ Time picker â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Future<void> _pickTime(
     BuildContext context,
@@ -192,7 +193,7 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
     }
   }
 
-  // ── Subject picker ────────────────────────────────────
+  // â”€â”€ Subject picker â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Future<void> _pickSubject(BuildContext context, int index) async {
     final slot = _daySlots[_activeDay]![index];
@@ -209,7 +210,7 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
     }
   }
 
-  // ── Teacher picker ────────────────────────────────────
+  // â”€â”€ Teacher picker â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Future<void> _pickTeacher(BuildContext context, int index) async {
     final slot = _daySlots[_activeDay]![index];
@@ -234,7 +235,7 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
     }
   }
 
-  // ── Validation ────────────────────────────────────────
+  // â”€â”€ Validation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   String? _validate() {
     bool hasAtLeastOne = false;
@@ -261,7 +262,7 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
     return null;
   }
 
-  // ── Build payload ─────────────────────────────────────
+  // â”€â”€ Build payload â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   List<Map<String, dynamic>> _buildSlotsPayload() {
     final List<Map<String, dynamic>> result = [];
@@ -289,7 +290,7 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
     return result;
   }
 
-  // ── Submit ────────────────────────────────────────────
+  // â”€â”€ Submit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Future<void> _submit() async {
     final error = _validate();
@@ -325,7 +326,7 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
 
     try {
       final res = await http.post(
-        Uri.parse('https://appv1backend.onrender.com/api/timetable/create'),
+        Uri.parse('${ApiConstants.apiBaseUrl}/timetable/create'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(payload),
       );
@@ -380,7 +381,7 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
     );
   }
 
-  // ── Type helpers ──────────────────────────────────────
+  // â”€â”€ Type helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Color _typeColor(String t) {
     switch (t) {
@@ -420,7 +421,7 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
     }
   }
 
-  // ── Build ─────────────────────────────────────────────
+  // â”€â”€ Build â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   @override
   Widget build(BuildContext context) {
@@ -437,7 +438,7 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
           _sheetHandle(),
           _sheetHeader(context),
 
-          // ── Resolved name indicator ──
+          // â”€â”€ Resolved name indicator â”€â”€
           if (_resolvedCreatedByName.isEmpty)
             Container(
               width: double.infinity,
@@ -514,7 +515,7 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
             child: Row(
               children: [
                 Text(
-                  '$_activeDay — '
+                  '$_activeDay â€” '
                   '${_daySlots[_activeDay]!.length} periods',
                   style: TextStyle(
                     color: AppColors.textSecondary,
@@ -573,7 +574,7 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
     );
   }
 
-  // ── Slot card ─────────────────────────────────────────
+  // â”€â”€ Slot card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _slotCard(BuildContext context, int index) {
     final slot = _daySlots[_activeDay]![index];
@@ -665,7 +666,7 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
                         vertical: 18,
                       ),
                       child: Text(
-                        '–',
+                        'â€“',
                         style: TextStyle(
                           color: AppColors.textSecondary,
                           fontWeight: FontWeight.bold,
@@ -729,7 +730,7 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
     );
   }
 
-  // ── Picker tile ───────────────────────────────────────
+  // â”€â”€ Picker tile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _pickerTile({
     required IconData icon,
@@ -784,7 +785,7 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
     );
   }
 
-  // ── Time field ────────────────────────────────────────
+  // â”€â”€ Time field â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _timeField({
     required BuildContext context,
@@ -846,7 +847,7 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
     );
   }
 
-  // ── Type dropdown ─────────────────────────────────────
+  // â”€â”€ Type dropdown â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _typeDropdown(Map<String, dynamic> slot, Color color) {
     return Container(
@@ -898,7 +899,7 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
     );
   }
 
-  // ── Shared helpers ────────────────────────────────────
+  // â”€â”€ Shared helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _label(String text) => Text(
     text,
@@ -1210,9 +1211,9 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
   }
 }
 
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // SUBJECT PICKER SHEET
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _SubjectPickerSheet extends StatefulWidget {
   final String current;
@@ -1463,9 +1464,9 @@ class __SubjectPickerSheetState extends State<_SubjectPickerSheet> {
   }
 }
 
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // TEACHER PICKER SHEET
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _TeacherPickerSheet extends StatefulWidget {
   final List<Map<String, dynamic>> teachers;
@@ -1761,3 +1762,4 @@ class __TeacherPickerSheetState extends State<_TeacherPickerSheet> {
     );
   }
 }
+

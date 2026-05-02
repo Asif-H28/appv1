@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -55,7 +56,7 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
 
     try {
       final url =
-          'https://appv1backend.onrender.com/api/achievement'
+          '${ApiConstants.apiBaseUrl}/achievement'
           '/${widget.achievementId}/comment';
       final payload = {
         'userId': widget.userId,
@@ -64,8 +65,8 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
         'text': text,
       };
 
-      debugPrint('── [AddComment] POST $url');
-      debugPrint('── [AddComment] Payload: ${jsonEncode(payload)}');
+      debugPrint('â”€â”€ [AddComment] POST $url');
+      debugPrint('â”€â”€ [AddComment] Payload: ${jsonEncode(payload)}');
 
       final res = await http.post(
         Uri.parse(url),
@@ -73,27 +74,27 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
         body: jsonEncode(payload),
       );
 
-      debugPrint('── [AddComment] Status: ${res.statusCode}');
-      debugPrint('── [AddComment] Response body: ${res.body}');
+      debugPrint('â”€â”€ [AddComment] Status: ${res.statusCode}');
+      debugPrint('â”€â”€ [AddComment] Response body: ${res.body}');
 
       if (!mounted) return;
       if (res.statusCode == 200 || res.statusCode == 201) {
         final body = jsonDecode(res.body) as Map;
         final comment = Map<String, dynamic>.from(body['comment'] as Map);
         final count = body['commentCount'] as int? ?? _comments.length + 1;
-        debugPrint('── [AddComment] ✅ Comment added: $comment');
+        debugPrint('â”€â”€ [AddComment] âœ… Comment added: $comment');
         setState(() {
           _comments.insert(0, comment);
           _submitting = false;
         });
         widget.onChanged(List.from(_comments), count);
       } else {
-        debugPrint('── [AddComment] ❌ Failed with status ${res.statusCode}: ${res.body}');
+        debugPrint('â”€â”€ [AddComment] âŒ Failed with status ${res.statusCode}: ${res.body}');
         if (mounted) setState(() => _submitting = false);
       }
     } catch (e, st) {
-      debugPrint('── [AddComment] 🔥 Exception: $e');
-      debugPrint('── [AddComment] StackTrace: $st');
+      debugPrint('â”€â”€ [AddComment] ðŸ”¥ Exception: $e');
+      debugPrint('â”€â”€ [AddComment] StackTrace: $st');
       if (mounted) setState(() => _submitting = false);
     }
   }
@@ -105,7 +106,7 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
     try {
       await http.delete(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/achievement'
+          '${ApiConstants.apiBaseUrl}/achievement'
           '/${widget.achievementId}/comment/$commentId',
         ),
         headers: {'Content-Type': 'application/json'},
@@ -353,7 +354,7 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
                     maxLines: 3,
                     textCapitalization: TextCapitalization.sentences,
                     decoration: InputDecoration(
-                      hintText: 'Add a comment…',
+                      hintText: 'Add a commentâ€¦',
                       hintStyle: TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 13,
@@ -425,3 +426,4 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
     );
   }
 }
+

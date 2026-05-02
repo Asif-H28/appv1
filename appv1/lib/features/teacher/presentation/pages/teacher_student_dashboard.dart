@@ -1,9 +1,10 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 const Color _accent = Colors.teal;
-const String _base = 'https://appv1backend.onrender.com';
+const String _base = '${ApiConstants.baseUrl}';
 
 class TeacherStudentDashboard extends StatefulWidget {
   final Map<String, dynamic> student;
@@ -25,14 +26,14 @@ class TeacherStudentDashboard extends StatefulWidget {
 class _TeacherStudentDashboardState extends State<TeacherStudentDashboard> {
   bool _loading = true;
 
-  // ── Attendance — from API direct fields ────────────
+  // â”€â”€ Attendance â€” from API direct fields â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   int _totalDays = 0;
   int _totalPresent = 0;
   int _totalAbsent = 0;
   double _attPct = 0;
   List<Map<String, dynamic>> _attRecords = [];
 
-  // ── Results ────────────────────────────────────────
+  // â”€â”€ Results â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   List<Map<String, dynamic>> _results = [];
   double _avgPct = 0;
   int _passCount = 0;
@@ -44,7 +45,7 @@ class _TeacherStudentDashboardState extends State<TeacherStudentDashboard> {
     _loadAll();
   }
 
-  // ── studentId from passed student map ─────────────
+  // â”€â”€ studentId from passed student map â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   String get _studentId => widget.student['studentId']?.toString() ?? '';
 
   String get _studentName => widget.student['name']?.toString() ?? 'Student';
@@ -63,14 +64,14 @@ class _TeacherStudentDashboardState extends State<TeacherStudentDashboard> {
     if (mounted) setState(() => _loading = false);
   }
 
-  // ── Attendance ─────────────────────────────────────
+  // â”€â”€ Attendance â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Future<void> _fetchAtt() async {
     if (_studentId.isEmpty) {
-      debugPrint('[StudentAtt] ⚠️ studentId is empty — skipping');
+      debugPrint('[StudentAtt] âš ï¸ studentId is empty â€” skipping');
       return;
     }
 
-    // ✅ Correct endpoint
+    // âœ… Correct endpoint
     final url = '$_base/api/attendance/summary/${widget.classId}/$_studentId';
 
     debugPrint('[StudentAtt] URL = "$url"');
@@ -103,16 +104,16 @@ class _TeacherStudentDashboardState extends State<TeacherStudentDashboard> {
             .toList();
 
         debugPrint(
-          '[StudentAtt] ✅ days=$_totalDays '
+          '[StudentAtt] âœ… days=$_totalDays '
           'present=$_totalPresent absent=$_totalAbsent pct=$_attPct',
         );
       }
     } catch (e) {
-      debugPrint('[StudentAtt] ❌ Exception: $e');
+      debugPrint('[StudentAtt] âŒ Exception: $e');
     }
   }
 
-  // ── Results ────────────────────────────────────────
+  // â”€â”€ Results â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Future<void> _fetchResults() async {
     if (_studentId.isEmpty) return;
     try {
@@ -129,7 +130,7 @@ class _TeacherStudentDashboardState extends State<TeacherStudentDashboard> {
 
       if (res.statusCode == 200) {
         final b = jsonDecode(res.body) as Map<String, dynamic>;
-        // ✅ Key is "results"
+        // âœ… Key is "results"
         final list = (b['results'] as List? ?? [])
             .map((e) => Map<String, dynamic>.from(e as Map))
             .toList();
@@ -144,10 +145,10 @@ class _TeacherStudentDashboardState extends State<TeacherStudentDashboard> {
         double sum = 0;
         int pass = 0, fail = 0;
         for (final r in list) {
-          // ✅ percentage is a direct num field
+          // âœ… percentage is a direct num field
           final pct = (r['percentage'] as num?)?.toDouble() ?? 0;
           sum += pct;
-          // ✅ overallStatus is "pass" or "fail"
+          // âœ… overallStatus is "pass" or "fail"
           final status = r['overallStatus']?.toString().toLowerCase() ?? '';
           if (status == 'pass')
             pass++;
@@ -232,7 +233,7 @@ class _TeacherStudentDashboardState extends State<TeacherStudentDashboard> {
     );
   }
 
-  // ── Header ─────────────────────────────────────────
+  // â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildHeader(BuildContext context) {
     final joinStatus = widget.student['joinStatus']?.toString() ?? '';
     final isApproved = joinStatus == 'approved';
@@ -356,7 +357,7 @@ class _TeacherStudentDashboardState extends State<TeacherStudentDashboard> {
     );
   }
 
-  // ── Attendance card ────────────────────────────────
+  // â”€â”€ Attendance card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildAttCard() {
     final attColor = _attPct >= 75 ? Colors.green : Colors.orange;
     return _card(
@@ -493,7 +494,7 @@ class _TeacherStudentDashboardState extends State<TeacherStudentDashboard> {
     );
   }
 
-  // ── Results card ───────────────────────────────────
+  // â”€â”€ Results card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildResultsCard() {
     return _card(
       child: Column(
@@ -560,7 +561,7 @@ class _TeacherStudentDashboardState extends State<TeacherStudentDashboard> {
   }
 
   Widget _resultRow(Map<String, dynamic> r) {
-    // ✅ Use exact field names from API response
+    // âœ… Use exact field names from API response
     final title = r['testModule']?.toString() ?? 'Test';
     final pct = (r['percentage'] as num?)?.toDouble() ?? 0;
     final scored = (r['totalScoredMarks'] as num?)?.toDouble() ?? 0;
@@ -598,7 +599,7 @@ class _TeacherStudentDashboardState extends State<TeacherStudentDashboard> {
                 ),
                 child: Center(
                   child: Text(
-                    grade.isNotEmpty ? grade : '—',
+                    grade.isNotEmpty ? grade : 'â€”',
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
@@ -660,7 +661,7 @@ class _TeacherStudentDashboardState extends State<TeacherStudentDashboard> {
                       borderRadius: BorderRadius.circular(3),
                     ),
                     child: Text(
-                      status == 'pass' ? '✓ Pass' : '✗ Fail',
+                      status == 'pass' ? 'âœ“ Pass' : 'âœ— Fail',
                       style: TextStyle(
                         fontSize: 9.5,
                         fontWeight: FontWeight.w600,
@@ -722,7 +723,7 @@ class _TeacherStudentDashboardState extends State<TeacherStudentDashboard> {
     );
   }
 
-  // ── Shared widgets ─────────────────────────────────
+  // â”€â”€ Shared widgets â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _card({required Widget child}) => Container(
     width: double.infinity,
     padding: const EdgeInsets.all(12),
@@ -842,3 +843,4 @@ class _TeacherStudentDashboardState extends State<TeacherStudentDashboard> {
     ),
   );
 }
+

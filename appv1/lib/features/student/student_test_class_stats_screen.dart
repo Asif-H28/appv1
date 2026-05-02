@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -38,7 +39,7 @@ class _StudentTestClassStatsScreenState
     });
     try {
       final res = await http.get(
-        Uri.parse('https://appv1backend.onrender.com/api/result/test/$_testId'),
+        Uri.parse('${ApiConstants.apiBaseUrl}/result/test/$_testId'),
         headers: {'Content-Type': 'application/json'},
       );
       if (!mounted) return;
@@ -72,7 +73,7 @@ class _StudentTestClassStatsScreenState
     }
   }
 
-  // ── Computed stats ────────────────────────────────────
+  // â”€â”€ Computed stats â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   int get _totalStudents => _results.length;
 
@@ -103,7 +104,7 @@ class _StudentTestClassStatsScreenState
             .map((r) => ((r['percentage'] as num?) ?? 0).toDouble())
             .reduce((a, b) => a < b ? a : b);
 
-  // ── Grade distribution ────────────────────────────────
+  // â”€â”€ Grade distribution â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Map<String, int> get _gradeDistribution {
     final map = <String, int>{
@@ -152,7 +153,7 @@ class _StudentTestClassStatsScreenState
         ),
         child: Column(
           children: [
-            // ── Header ──
+            // â”€â”€ Header â”€â”€
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -261,7 +262,7 @@ class _StudentTestClassStatsScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Overview stat tiles ──
+          // â”€â”€ Overview stat tiles â”€â”€
           Row(
             children: [
               Expanded(
@@ -325,7 +326,7 @@ class _StudentTestClassStatsScreenState
           ),
           SizedBox(height: 16),
 
-          // ── Pass vs Fail visual bar ──
+          // â”€â”€ Pass vs Fail visual bar â”€â”€
           _sectionHeader('Pass / Fail Overview'),
           SizedBox(height: 10),
           Container(
@@ -365,7 +366,7 @@ class _StudentTestClassStatsScreenState
                   ],
                 ),
                 SizedBox(height: 14),
-                // ── Stacked bar ──
+                // â”€â”€ Stacked bar â”€â”€
                 ClipRRect(
                   borderRadius: BorderRadius.circular(3),
                   child: Row(
@@ -404,7 +405,7 @@ class _StudentTestClassStatsScreenState
           ),
           SizedBox(height: 16),
 
-          // ── Grade distribution ──
+          // â”€â”€ Grade distribution â”€â”€
           _sectionHeader('Grade Distribution'),
           SizedBox(height: 10),
           Container(
@@ -491,14 +492,14 @@ class _StudentTestClassStatsScreenState
           ),
           SizedBox(height: 16),
 
-          // ── Subject averages ──
+          // â”€â”€ Subject averages â”€â”€
           _buildSubjectAverages(),
         ],
       ),
     );
   }
 
-  // ── Subject averages ──────────────────────────────────
+  // â”€â”€ Subject averages â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _buildSubjectAverages() {
     // Collect per-subject averages
@@ -593,7 +594,7 @@ class _StudentTestClassStatsScreenState
     );
   }
 
-  // ── Small helpers ─────────────────────────────────────
+  // â”€â”€ Small helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _sectionHeader(String title) => Row(
     children: [
@@ -800,3 +801,4 @@ class _StudentTestClassStatsScreenState
     ),
   );
 }
+

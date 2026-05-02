@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -53,7 +54,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
       // Get all results for this student, find the one matching testId
       final res = await http.get(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/result/student/$studentId',
+          '${ApiConstants.apiBaseUrl}/result/student/$studentId',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -93,7 +94,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
     }
   }
 
-  // ── Grade color ───────────────────────────────────────
+  // â”€â”€ Grade color â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Color _gradeColor(String grade) {
     switch (grade.toUpperCase()) {
@@ -128,7 +129,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
         ),
         child: Column(
           children: [
-            // ── Header ──
+            // â”€â”€ Header â”€â”€
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -200,7 +201,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                           ],
                         ),
                       ),
-                      // ── Class stats button ──
+                      // â”€â”€ Class stats button â”€â”€
                       GestureDetector(
                         onTap: () => Navigator.push(
                           context,
@@ -263,7 +264,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
     );
   }
 
-  // ── Result view ───────────────────────────────────────
+  // â”€â”€ Result view â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _buildResult() {
     final result = _result!;
@@ -280,7 +281,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Score summary card ──
+          // â”€â”€ Score summary card â”€â”€
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
@@ -317,7 +318,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                   padding: EdgeInsets.all(18),
                   child: Row(
                     children: [
-                      // ── Grade circle ──
+                      // â”€â”€ Grade circle â”€â”€
                       Container(
                         width: 70,
                         height: 70,
@@ -395,7 +396,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                               ),
                             ),
                             SizedBox(height: 8),
-                            // ── Progress bar ──
+                            // â”€â”€ Progress bar â”€â”€
                             ClipRRect(
                               borderRadius: BorderRadius.circular(3),
                               child: LinearProgressIndicator(
@@ -438,7 +439,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
           ),
           SizedBox(height: 16),
 
-          // ── Subject results section header ──
+          // â”€â”€ Subject results section header â”€â”€
           Row(
             children: [
               Container(
@@ -462,7 +463,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
           ),
           SizedBox(height: 10),
 
-          // ── Subject result cards ──
+          // â”€â”€ Subject result cards â”€â”€
           ...subjectResults.map((s) {
             final sub = s as Map<String, dynamic>;
             final name = sub['subjectName']?.toString() ?? '';
@@ -522,7 +523,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                     SizedBox(height: 10),
                     Row(
                       children: [
-                        // ── Score big ──
+                        // â”€â”€ Score big â”€â”€
                         RichText(
                           text: TextSpan(
                             children: [
@@ -557,7 +558,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                               ),
                             ),
                             Text(
-                              'Pass ≥ $min',
+                              'Pass â‰¥ $min',
                               style: TextStyle(
                                 color: AppColors.textSecondary,
                                 fontSize: 10.5,
@@ -622,7 +623,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
     );
   }
 
-  // ── States ────────────────────────────────────────────
+  // â”€â”€ States â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _buildLoader() => Center(
     child: Column(
@@ -734,3 +735,4 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
     ),
   );
 }
+

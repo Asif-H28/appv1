@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -43,7 +44,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
     super.dispose();
   }
 
-  // ── Fetch profile ──────────────────────────────────
+  // â”€â”€ Fetch profile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Future<void> _fetchProfile() async {
     setState(() {
       _isLoading = true;
@@ -64,7 +65,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
     try {
       final res = await http.get(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/student/profile/$studentId',
+          '${ApiConstants.apiBaseUrl}/student/profile/$studentId',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -87,7 +88,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
         try {
           final clsRes = await http.get(
             Uri.parse(
-              'https://appv1backend.onrender.com/api/student/orgs/$orgId/classes',
+              '${ApiConstants.apiBaseUrl}/student/orgs/$orgId/classes',
             ),
             headers: {'Content-Type': 'application/json'},
           );
@@ -135,7 +136,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
     _selectedGender = genders.contains(g) ? g : null;
   }
 
-  // ── Save profile ───────────────────────────────────
+  // â”€â”€ Save profile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Future<void> _saveProfile() async {
     final studentId = _student['studentId']?.toString() ?? '';
     if (studentId.isEmpty) return;
@@ -155,7 +156,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
     try {
       final res = await http.put(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/student/profile/$studentId',
+          '${ApiConstants.apiBaseUrl}/student/profile/$studentId',
         ),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(body),
@@ -187,8 +188,8 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
     }
   }
 
-  // ── Logout ─────────────────────────────────────────
-  // ── Logout ─────────────────────────────────────────
+  // â”€â”€ Logout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â”€â”€ Logout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Future<void> _logout() async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -201,12 +202,12 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
     final prefs = await SharedPreferences.getInstance();
     final studentId = prefs.getString('studentId') ?? '';
 
-    // ✅ Step 1 — Clear FCM token on backend BEFORE clearing local session
+    // âœ… Step 1 â€” Clear FCM token on backend BEFORE clearing local session
     if (studentId.isNotEmpty) {
       try {
         await http.post(
           Uri.parse(
-            'https://appv1backend.onrender.com/api/notification/fcm/student/clear',
+            '${ApiConstants.apiBaseUrl}/notification/fcm/student/clear',
           ),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({'studentId': studentId}),
@@ -214,15 +215,15 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
         debugPrint('[FCM] Token cleared on logout');
       } catch (e) {
         debugPrint('[FCM] Token clear failed: $e');
-        // ✅ Don't block logout even if this fails
+        // âœ… Don't block logout even if this fails
       }
     }
 
-    // ✅ Step 2 — Clear local session
+    // âœ… Step 2 â€” Clear local session
     await prefs.clear();
     if (!mounted) return;
 
-    // ✅ Step 3 — Navigate to login
+    // âœ… Step 3 â€” Navigate to login
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => LoginPage()),
       (route) => false,
@@ -261,7 +262,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
     );
   }
 
-  // ── Build ──────────────────────────────────────────
+  // â”€â”€ Build â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -282,12 +283,12 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
         physics: const AlwaysScrollableScrollPhysics(),
         child: Column(
           children: [
-            // ✅ Avatar card — replaces old duplicate header
+            // âœ… Avatar card â€” replaces old duplicate header
             _buildAvatarCard(),
-            // ✅ Action buttons row
+            // âœ… Action buttons row
             _buildActionRow(),
             const SizedBox(height: 8),
-            // ✅ Content
+            // âœ… Content
             Padding(
               padding: const EdgeInsets.fromLTRB(14, 0, 14, 40),
               child: _isEditing
@@ -312,7 +313,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
     );
   }
 
-  // ── Avatar card ────────────────────────────────────
+  // â”€â”€ Avatar card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildAvatarCard() {
     final name = _student['name']?.toString() ?? '';
     final email = _student['email']?.toString() ?? '';
@@ -576,7 +577,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
     );
   }
 
-  // ── Edit / Logout action row ───────────────────────
+  // â”€â”€ Edit / Logout action row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildActionRow() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 14, 14, 0),
@@ -657,7 +658,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
     );
   }
 
-  // ── States ─────────────────────────────────────────
+  // â”€â”€ States â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildLoader() => const Center(
     child: CircularProgressIndicator(color: _accent, strokeWidth: 2.5),
   );
@@ -715,3 +716,4 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
     ),
   );
 }
+

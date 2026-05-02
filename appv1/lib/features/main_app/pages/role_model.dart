@@ -1,10 +1,11 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 // role_model.dart
 // Data model + API service for School Management Profiles / Roles
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-// ── Model ────────────────────────────────────────────────
+// â”€â”€ Model â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 class SchoolRole {
   final String id;
   final String orgId;
@@ -49,9 +50,9 @@ class SchoolRole {
   );
 }
 
-// ── API Service ──────────────────────────────────────────
+// â”€â”€ API Service â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 class RoleService {
-  static const _base = 'https://appv1backend.onrender.com/api/org/school/roles';
+  static const _base = '${ApiConstants.apiBaseUrl}/org/school/roles';
 
   // GET all
   static Future<List<SchoolRole>> getAll(String orgId) async {
@@ -110,3 +111,4 @@ class RoleService {
     }
   }
 }
+

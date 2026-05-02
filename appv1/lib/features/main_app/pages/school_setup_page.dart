@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,8 +13,8 @@ class SchoolSetupPage extends StatefulWidget {
 }
 
 class _SchoolSetupPageState extends State<SchoolSetupPage> {
-  // ── Constants ─────────────────────────────────────────
-  static const _base = 'https://appv1backend.onrender.com/api/org';
+  // â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  static const _base = '${ApiConstants.apiBaseUrl}/org';
   static const _teal = Color(0xFF00796B);
   static const _tealDark = Color(0xFF004D40);
   static const _textDark = Color(0xFF1A1A1A);
@@ -27,19 +28,19 @@ class _SchoolSetupPageState extends State<SchoolSetupPage> {
   static const _divider = Color(0xFFE5E7EB);
   static const _orange = Color(0xFFB45309);
 
-  // ── Controllers ───────────────────────────────────────
+  // â”€â”€ Controllers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   final _schoolNameCtrl = TextEditingController();
   final _campusAddressCtrl = TextEditingController();
   final _schoolEmailCtrl = TextEditingController();
   final _primaryContactCtrl = TextEditingController();
 
-  // ── Focus nodes ───────────────────────────────────────
+  // â”€â”€ Focus nodes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   final _nameFocus = FocusNode();
   final _addressFocus = FocusNode();
   final _emailFocus = FocusNode();
   final _contactFocus = FocusNode();
 
-  // ── State ─────────────────────────────────────────────
+  // â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   bool _loading = true;
   bool _saving = false;
   bool _hasData = false;
@@ -65,7 +66,7 @@ class _SchoolSetupPageState extends State<SchoolSetupPage> {
     super.dispose();
   }
 
-  // ── Init ──────────────────────────────────────────────
+  // â”€â”€ Init â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Future<void> _init() async {
     final prefs = await SharedPreferences.getInstance();
     _orgId = prefs.getString('orgId') ?? '';
@@ -73,7 +74,7 @@ class _SchoolSetupPageState extends State<SchoolSetupPage> {
     await _fetchDetails();
   }
 
-  // ── GET ───────────────────────────────────────────────
+  // â”€â”€ GET â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Future<void> _fetchDetails() async {
     if (_orgId.isEmpty) {
       setState(() => _loading = false);
@@ -98,7 +99,7 @@ class _SchoolSetupPageState extends State<SchoolSetupPage> {
     if (mounted) setState(() => _loading = false);
   }
 
-  // ── PUT ───────────────────────────────────────────────
+  // â”€â”€ PUT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Future<void> _saveConfiguration() async {
     if (_saving) return;
     FocusScope.of(context).unfocus();
@@ -134,7 +135,7 @@ class _SchoolSetupPageState extends State<SchoolSetupPage> {
     if (mounted) setState(() => _saving = false);
   }
 
-  // ── Snack ─────────────────────────────────────────────
+  // â”€â”€ Snack â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   void _snack(String msg, {bool isError = false}) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -151,9 +152,9 @@ class _SchoolSetupPageState extends State<SchoolSetupPage> {
     );
   }
 
-  // ════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   //  BUILD
-  // ════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -203,14 +204,14 @@ class _SchoolSetupPageState extends State<SchoolSetupPage> {
     );
   }
 
-  // ── Top bar ───────────────────────────────────────────
+  // â”€â”€ Top bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildTopBar() {
     return Container(
       color: _bgPage,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          // ── Back button ──────────────────────────────
+          // â”€â”€ Back button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           GestureDetector(
             onTap: () => Navigator.maybePop(context),
             child: Container(
@@ -237,7 +238,7 @@ class _SchoolSetupPageState extends State<SchoolSetupPage> {
           ),
           const SizedBox(width: 12),
 
-          // ── Org name ─────────────────────────────────
+          // â”€â”€ Org name â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           Expanded(
             child: Text(
               _orgName,
@@ -255,7 +256,7 @@ class _SchoolSetupPageState extends State<SchoolSetupPage> {
     );
   }
 
-  // ── Hero block ────────────────────────────────────────
+  // â”€â”€ Hero block â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildHero() {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 4, 16, 0),
@@ -299,7 +300,7 @@ class _SchoolSetupPageState extends State<SchoolSetupPage> {
     );
   }
 
-  // ── Core Information card ─────────────────────────────
+  // â”€â”€ Core Information card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildCoreInfoCard() {
     return _card(
       child: Column(
@@ -354,7 +355,7 @@ class _SchoolSetupPageState extends State<SchoolSetupPage> {
     );
   }
 
-  // ── Contact Details card ──────────────────────────────
+  // â”€â”€ Contact Details card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildContactCard() {
     return _card(
       child: Column(
@@ -410,7 +411,7 @@ class _SchoolSetupPageState extends State<SchoolSetupPage> {
     );
   }
 
-  // ── Save button ───────────────────────────────────────
+  // â”€â”€ Save button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildSaveButton() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -448,11 +449,11 @@ class _SchoolSetupPageState extends State<SchoolSetupPage> {
     );
   }
 
-  // ════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   //  HELPERS
-  // ════════════════════════════════════════════════════
+  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
-  // ── White card wrapper ────────────────────────────────
+  // â”€â”€ White card wrapper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _card({required Widget child}) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -472,7 +473,7 @@ class _SchoolSetupPageState extends State<SchoolSetupPage> {
     );
   }
 
-  // ── Field label ───────────────────────────────────────
+  // â”€â”€ Field label â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _fieldLabel(String text) {
     return Text(
       text,
@@ -485,7 +486,7 @@ class _SchoolSetupPageState extends State<SchoolSetupPage> {
     );
   }
 
-  // ── Input field ───────────────────────────────────────
+  // â”€â”€ Input field â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _inputField({
     required TextEditingController controller,
     required FocusNode focusNode,
@@ -546,3 +547,4 @@ class _SchoolSetupPageState extends State<SchoolSetupPage> {
     );
   }
 }
+

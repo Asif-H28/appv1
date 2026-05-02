@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:appv1/features/student/notification/student_notification_screen.dart';
 import 'package:appv1/features/student/student_leave_screen.dart';
@@ -19,13 +20,13 @@ class StudentHomePage extends StatefulWidget {
 }
 
 class _StudentHomePageState extends State<StudentHomePage> {
-  // ── Prefs ──────────────────────────────────────────
+  // â”€â”€ Prefs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   String _studentName = '';
   String _orgName = '';
   String _className = '';
   String _classId = '';
 
-  // ── Today schedule ─────────────────────────────────
+  // â”€â”€ Today schedule â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   bool _schedLoading = true;
   bool _schedError = false;
   String _todayLabel = '';
@@ -53,7 +54,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
     }
   }
 
-  // ── Today API ──────────────────────────────────────
+  // â”€â”€ Today API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Future<void> _fetchToday() async {
     setState(() {
       _schedLoading = true;
@@ -62,7 +63,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
     try {
       final res = await http.get(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/timetable/class/$_classId/today',
+          '${ApiConstants.apiBaseUrl}/timetable/class/$_classId/today',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -100,7 +101,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
     }
   }
 
-  // ── Helpers ────────────────────────────────────────
+  // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   String _todayKey() {
     const days = [
       '',
@@ -134,12 +135,12 @@ class _StudentHomePageState extends State<StudentHomePage> {
     ),
   );
 
-  // ── Build ──────────────────────────────────────────
+  // â”€â”€ Build â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      // ✅ SafeArea removed — StudentMainScreen header handles it
+      // âœ… SafeArea removed â€” StudentMainScreen header handles it
       body: RefreshIndicator(
         color: _accent,
         onRefresh: _fetchToday,
@@ -163,7 +164,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
     );
   }
 
-  // ── Header — bell removed (lives in StudentMainScreen) ──
+  // â”€â”€ Header â€” bell removed (lives in StudentMainScreen) â”€â”€
   Widget _buildHeader() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -206,7 +207,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
     );
   }
 
-  // ── Banner ─────────────────────────────────────────
+  // â”€â”€ Banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildBanner() {
     return Container(
       width: double.infinity,
@@ -297,7 +298,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
     ],
   );
 
-  // ── Today's timetable section ──────────────────────
+  // â”€â”€ Today's timetable section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildTodaySection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -309,7 +310,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Today's Classes — $_todayLabel",
+                    "Today's Classes â€” $_todayLabel",
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -522,7 +523,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
     );
   }
 
-  // ── Quick access section ───────────────────────────
+  // â”€â”€ Quick access section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildQuickAccessSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -664,3 +665,4 @@ class _StudentHomePageState extends State<StudentHomePage> {
     );
   }
 }
+

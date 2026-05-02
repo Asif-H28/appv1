@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -65,7 +66,7 @@ class _StudentOtpPageState extends State<StudentOtpPage> {
     setState(() => _isVerifying = true);
     try {
       final response = await http.post(
-        Uri.parse('https://appv1backend.onrender.com/api/student/verify-otp'),
+        Uri.parse('${ApiConstants.apiBaseUrl}/student/verify-otp'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'studentId': widget.studentId, 'otp': _otp}),
       );
@@ -73,7 +74,7 @@ class _StudentOtpPageState extends State<StudentOtpPage> {
       setState(() => _isVerifying = false);
 
       if (response.statusCode == 200) {
-        _snack('Email verified! 🎉', Colors.green[600]!);
+        _snack('Email verified! ðŸŽ‰', Colors.green[600]!);
         await Future.delayed(Duration(milliseconds: 600));
         if (!mounted) return;
         Navigator.pushReplacement(
@@ -95,7 +96,7 @@ class _StudentOtpPageState extends State<StudentOtpPage> {
     setState(() => _isResending = true);
     try {
       await http.post(
-        Uri.parse('https://appv1backend.onrender.com/api/student/resend-otp'),
+        Uri.parse('${ApiConstants.apiBaseUrl}/student/resend-otp'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'studentId': widget.studentId}),
       );
@@ -130,7 +131,7 @@ class _StudentOtpPageState extends State<StudentOtpPage> {
       backgroundColor: AppColors.background,
       body: Column(
         children: [
-          // ── Header ──
+          // â”€â”€ Header â”€â”€
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
@@ -204,14 +205,14 @@ class _StudentOtpPageState extends State<StudentOtpPage> {
               padding: EdgeInsets.fromLTRB(24, 32, 24, 24),
               child: Column(
                 children: [
-                  // ── OTP boxes ──
+                  // â”€â”€ OTP boxes â”€â”€
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: List.generate(6, (i) => _otpBox(i)),
                   ),
                   SizedBox(height: 32),
 
-                  // ── Verify button ──
+                  // â”€â”€ Verify button â”€â”€
                   SizedBox(
                     width: double.infinity,
                     height: 44,
@@ -246,7 +247,7 @@ class _StudentOtpPageState extends State<StudentOtpPage> {
                   ),
                   SizedBox(height: 20),
 
-                  // ── Resend ──
+                  // â”€â”€ Resend â”€â”€
                   _resendTimer > 0
                       ? Text(
                           'Resend OTP in ${_resendTimer}s',
@@ -332,3 +333,4 @@ class _StudentOtpPageState extends State<StudentOtpPage> {
     );
   }
 }
+

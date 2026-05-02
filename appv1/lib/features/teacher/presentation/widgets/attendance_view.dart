@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -47,7 +48,7 @@ class _AttendanceViewState extends State<AttendanceView> {
     try {
       final response = await http.get(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/attendance/class/${widget.classId}/date/$dateStr',
+          '${ApiConstants.apiBaseUrl}/attendance/class/${widget.classId}/date/$dateStr',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -154,14 +155,14 @@ class _AttendanceViewState extends State<AttendanceView> {
       if (_existingAttendanceId != null) {
         response = await http.put(
           Uri.parse(
-            'https://appv1backend.onrender.com/api/attendance/$_existingAttendanceId',
+            '${ApiConstants.apiBaseUrl}/attendance/$_existingAttendanceId',
           ),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({'students': students}),
         );
       } else {
         response = await http.post(
-          Uri.parse('https://appv1backend.onrender.com/api/attendance/create'),
+          Uri.parse('${ApiConstants.apiBaseUrl}/attendance/create'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({
             'attendanceDate': dateStr,
@@ -235,7 +236,7 @@ class _AttendanceViewState extends State<AttendanceView> {
     );
   }
 
-  // ── Header: date row + quick actions + progress ──
+  // â”€â”€ Header: date row + quick actions + progress â”€â”€
   Widget _buildHeader() {
     return Container(
       color: Colors.white,
@@ -325,7 +326,7 @@ class _AttendanceViewState extends State<AttendanceView> {
             ],
           ),
 
-          // Row 2: saved badge (only when saved) — own line, no overflow
+          // Row 2: saved badge (only when saved) â€” own line, no overflow
           if (_saved) ...[
             SizedBox(height: 6),
             Container(
@@ -398,7 +399,7 @@ class _AttendanceViewState extends State<AttendanceView> {
     );
   }
 
-  // ── Sticky save button ──
+  // â”€â”€ Sticky save button â”€â”€
   Widget _buildSaveBar() {
     return Container(
       padding: EdgeInsets.fromLTRB(14, 10, 14, 14),
@@ -466,7 +467,7 @@ class _AttendanceViewState extends State<AttendanceView> {
                               ? (_saved
                                     ? 'Update Attendance'
                                     : 'Save Attendance')
-                              : '$_markedCount / ${widget.students.length} marked — mark all to save',
+                              : '$_markedCount / ${widget.students.length} marked â€” mark all to save',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 12.5,
@@ -638,3 +639,4 @@ class _AttendanceViewState extends State<AttendanceView> {
     ),
   );
 }
+

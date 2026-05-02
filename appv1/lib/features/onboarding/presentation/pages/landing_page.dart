@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,9 +12,9 @@ import '../../../main_app/pages/login_page.dart';
 import '../widgets/custom_textfield.dart';
 import '../widgets/student_register_sheet.dart';
 
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // SHARED HELPERS
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const Color _accent = Colors.teal;
 
@@ -145,9 +146,9 @@ void _snack(BuildContext ctx, String msg, Color color) {
   );
 }
 
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // LANDING PAGE
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class LandingPage extends StatefulWidget {
   @override
@@ -188,7 +189,7 @@ class _LandingPageState extends State<LandingPage>
         ),
         child: Column(
           children: [
-            // ── Gradient header ──
+            // â”€â”€ Gradient header â”€â”€
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -204,7 +205,7 @@ class _LandingPageState extends State<LandingPage>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // ── Back + Logo row ──
+                      // â”€â”€ Back + Logo row â”€â”€
                       Row(
                         children: [
                           GestureDetector(
@@ -266,8 +267,8 @@ class _LandingPageState extends State<LandingPage>
 
                       Text(
                         _selectedTab == 0
-                            ? 'Create Organization 🏫'
-                            : 'Join Organization 🔍',
+                            ? 'Create Organization ðŸ«'
+                            : 'Join Organization ðŸ”',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 20,
@@ -286,7 +287,7 @@ class _LandingPageState extends State<LandingPage>
                       ),
                       SizedBox(height: 14),
 
-                      // ── Tab bar ──
+                      // â”€â”€ Tab bar â”€â”€
                       Container(
                         height: 44,
                         decoration: BoxDecoration(
@@ -328,7 +329,7 @@ class _LandingPageState extends State<LandingPage>
               ),
             ),
 
-            // ── Body ──
+            // â”€â”€ Body â”€â”€
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
@@ -370,9 +371,9 @@ class _LandingPageState extends State<LandingPage>
   }
 }
 
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // CREATE ORG TAB
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _CreateOrgTab extends StatefulWidget {
   @override
@@ -475,7 +476,7 @@ class __CreateOrgTabState extends State<_CreateOrgTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Info banner ──
+            // â”€â”€ Info banner â”€â”€
             Container(
               padding: EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -592,7 +593,7 @@ class __CreateOrgTabState extends State<_CreateOrgTab> {
                 return null;
               },
               decoration: _fieldDeco(
-                hint: '••••••••',
+                hint: 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
                 icon: Icons.lock_outline_rounded,
                 suffixIcon: IconButton(
                   icon: Icon(
@@ -651,9 +652,9 @@ class __CreateOrgTabState extends State<_CreateOrgTab> {
   }
 }
 
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // JOIN ORG TAB
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _JoinOrgTab extends StatefulWidget {
   @override
@@ -684,7 +685,7 @@ class __JoinOrgTabState extends State<_JoinOrgTab> {
     try {
       final res = await http.get(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/org/search?query=${Uri.encodeComponent(query.trim())}',
+          '${ApiConstants.apiBaseUrl}/org/search?query=${Uri.encodeComponent(query.trim())}',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -703,7 +704,7 @@ class __JoinOrgTabState extends State<_JoinOrgTab> {
           else if (body['results'] != null)
             raw = body['results'] as List;
         } catch (_) {
-          // body might be empty on 204 — treat as no results
+          // body might be empty on 204 â€” treat as no results
         }
         setState(() {
           _results = raw.map((e) => e as Map<String, dynamic>).toList();
@@ -730,7 +731,7 @@ class __JoinOrgTabState extends State<_JoinOrgTab> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // ── Search bar ──
+        // â”€â”€ Search bar â”€â”€
         Padding(
           padding: EdgeInsets.fromLTRB(14, 14, 14, 8),
           child: TextField(
@@ -790,7 +791,7 @@ class __JoinOrgTabState extends State<_JoinOrgTab> {
           ),
         ),
 
-        // ── Search button ──
+        // â”€â”€ Search button â”€â”€
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 14),
           child: _primaryBtn(
@@ -907,7 +908,7 @@ class __JoinOrgTabState extends State<_JoinOrgTab> {
       padding: EdgeInsets.fromLTRB(14, 8, 14, 32),
       child: Column(
         children: [
-          // ── Illustration card ──
+          // â”€â”€ Illustration card â”€â”€
           Container(
             padding: EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -950,7 +951,7 @@ class __JoinOrgTabState extends State<_JoinOrgTab> {
           ),
           SizedBox(height: 14),
 
-          // ── Search tips ──
+          // â”€â”€ Search tips â”€â”€
           _searchTip(
             Icons.business_outlined,
             'Search by name',
@@ -1013,9 +1014,9 @@ class __JoinOrgTabState extends State<_JoinOrgTab> {
   );
 }
 
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // ORG RESULT CARD
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _OrgResultCard extends StatelessWidget {
   final Map<String, dynamic> org;
@@ -1045,7 +1046,7 @@ class _OrgResultCard extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             child: Row(
               children: [
-                // ── Avatar ──
+                // â”€â”€ Avatar â”€â”€
                 Container(
                   width: 40,
                   height: 40,
@@ -1155,9 +1156,9 @@ class _OrgResultCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // ROLE SELECTION BOTTOM SHEET
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _RoleSelectionSheet extends StatelessWidget {
   final String orgName;
@@ -1175,7 +1176,7 @@ class _RoleSelectionSheet extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // ── Drag handle ──
+          // â”€â”€ Drag handle â”€â”€
           Container(
             width: 36,
             height: 4,
@@ -1186,7 +1187,7 @@ class _RoleSelectionSheet extends StatelessWidget {
           ),
           SizedBox(height: 18),
 
-          // ── Org info row ──
+          // â”€â”€ Org info row â”€â”€
           Container(
             padding: EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -1295,7 +1296,7 @@ class _RoleSelectionSheet extends StatelessWidget {
           ),
           SizedBox(height: 14),
 
-          // ── Role cards ──
+          // â”€â”€ Role cards â”€â”€
           Row(
             children: [
               Expanded(
@@ -1341,9 +1342,9 @@ class _RoleSelectionSheet extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // ROLE CARD
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _RoleCard extends StatelessWidget {
   final IconData icon;
@@ -1430,9 +1431,9 @@ class _RoleCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // TEACHER REGISTER BOTTOM SHEET
-// ─────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _TeacherRegisterSheet extends StatefulWidget {
   final String orgName;
@@ -1464,7 +1465,7 @@ class __TeacherRegisterSheetState extends State<_TeacherRegisterSheet> {
     setState(() => _isLoading = true);
     try {
       final regRes = await http.post(
-        Uri.parse('https://appv1backend.onrender.com/api/teacher/register'),
+        Uri.parse('${ApiConstants.apiBaseUrl}/teacher/register'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'name': _nameCtrl.text.trim(),
@@ -1502,7 +1503,7 @@ class __TeacherRegisterSheetState extends State<_TeacherRegisterSheet> {
 
       await http.post(
         Uri.parse(
-          'https://appv1backend.onrender.com/api/teacher/$teacherId/join-request',
+          '${ApiConstants.apiBaseUrl}/teacher/$teacherId/join-request',
         ),
         headers: {'Content-Type': 'application/json'},
       );
@@ -1550,7 +1551,7 @@ class __TeacherRegisterSheetState extends State<_TeacherRegisterSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Drag handle ──
+              // â”€â”€ Drag handle â”€â”€
               Center(
                 child: Container(
                   width: 36,
@@ -1563,7 +1564,7 @@ class __TeacherRegisterSheetState extends State<_TeacherRegisterSheet> {
               ),
               SizedBox(height: 16),
 
-              // ── Sheet header ──
+              // â”€â”€ Sheet header â”€â”€
               Row(
                 children: [
                   Container(
@@ -1620,7 +1621,7 @@ class __TeacherRegisterSheetState extends State<_TeacherRegisterSheet> {
               ),
               SizedBox(height: 10),
 
-              // ── Org ID chip ──
+              // â”€â”€ Org ID chip â”€â”€
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
@@ -1697,7 +1698,7 @@ class __TeacherRegisterSheetState extends State<_TeacherRegisterSheet> {
                   return null;
                 },
                 decoration: _fieldDeco(
-                  hint: '••••••••',
+                  hint: 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
                   icon: Icons.lock_outline_rounded,
                   suffixIcon: IconButton(
                     icon: Icon(
@@ -1740,3 +1741,4 @@ class __TeacherRegisterSheetState extends State<_TeacherRegisterSheet> {
     );
   }
 }
+

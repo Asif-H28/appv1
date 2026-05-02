@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -35,7 +36,7 @@ class _ClassroomsPageState extends State<ClassroomsPage> {
         return;
       }
 
-      final url = Uri.parse('https://appv1backend.onrender.com/api/classroom/org/$orgId');
+      final url = Uri.parse('${ApiConstants.apiBaseUrl}/classroom/org/$orgId');
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
@@ -221,3 +222,4 @@ class _ClassroomsPageState extends State<ClassroomsPage> {
     );
   }
 }
+

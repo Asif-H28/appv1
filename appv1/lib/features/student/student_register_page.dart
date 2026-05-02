@@ -1,3 +1,4 @@
+﻿import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -35,7 +36,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
 
     try {
       final response = await http.post(
-        Uri.parse('https://appv1backend.onrender.com/api/student/register'),
+        Uri.parse('${ApiConstants.apiBaseUrl}/student/register'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'name': _nameCtrl.text.trim(),
@@ -48,7 +49,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
       debugPrint('STATUS: ${response.statusCode}');
       debugPrint('BODY: ${response.body}');
 
-      // ── Guard: widget may have been disposed during await ──
+      // â”€â”€ Guard: widget may have been disposed during await â”€â”€
       if (!mounted) return;
       setState(() => _isLoading = false);
 
@@ -61,13 +62,13 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
           return;
         }
 
-        // ── Extract student data ──
+        // â”€â”€ Extract student data â”€â”€
         final student =
             (body['student'] as Map<String, dynamic>?) ??
             (body['data'] as Map<String, dynamic>?) ??
             {};
 
-        // ── Save to SharedPreferences ──
+        // â”€â”€ Save to SharedPreferences â”€â”€
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString(
           'studentId',
@@ -84,10 +85,10 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
         await prefs.setString('userRole', 'student');
         await prefs.setBool('isLoggedIn', true);
 
-        // ── Final mounted check before navigation ──
+        // â”€â”€ Final mounted check before navigation â”€â”€
         if (!mounted) return;
 
-        // ── Navigate using context directly, no rootNavigator, no delay ──
+        // â”€â”€ Navigate using context directly, no rootNavigator, no delay â”€â”€
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => StudentJoinOrgPage()),
@@ -143,7 +144,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
       backgroundColor: AppColors.background,
       body: Column(
         children: [
-          // ── Header ──
+          // â”€â”€ Header â”€â”€
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
@@ -194,7 +195,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
                     ),
 
                     SizedBox(height: 14),
-                    // ── Flow steps banner ──
+                    // â”€â”€ Flow steps banner â”€â”€
                     Container(
                       padding: EdgeInsets.symmetric(
                         horizontal: 12,
@@ -221,7 +222,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
             ),
           ),
 
-          // ── Form ──
+          // â”€â”€ Form â”€â”€
           Expanded(
             child: SingleChildScrollView(
               padding: EdgeInsets.fromLTRB(20, 22, 20, 20),
@@ -463,3 +464,4 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
     ),
   );
 }
+
