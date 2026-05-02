@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../../../../core/constants/app_colors.dart';
-import 'create_test_sheet.dart';
-import 'edit_test_sheet.dart';
-import '../pages/test_results_page.dart';
+import 'create_ca_sheet.dart';
+import 'edit_ca_sheet.dart';
+import '../pages/ca_results_page.dart';
 
 class ClassroomTestsTab extends StatefulWidget {
   final String classId;
@@ -46,32 +46,32 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
       _hasError = false;
     });
     try {
-      final response = await http.get(
-        Uri.parse(
-          'https://appv1backend.onrender.com/api/test/class/${widget.classId}',
-        ),
+      final res2 = await http.get(
+        Uri.parse('https://appv1-backend.onrender.com/api/comprehensive-assessment/list?orgId=${widget.orgId}&classId=${widget.classId}'),
         headers: {'Content-Type': 'application/json'},
       );
+
       if (!mounted) return;
-      if (response.statusCode == 200) {
-        final body = jsonDecode(response.body);
-        List<dynamic> raw = [];
-        if (body is List)
-          raw = body;
-        else if (body['tests'] is List)
-          raw = body['tests'];
-        else if (body['data'] is List)
-          raw = body['data'];
-        setState(() {
-          _tests = raw.map((e) => e as Map<String, dynamic>).toList();
-          _isLoading = false;
-        });
-      } else {
-        setState(() {
-          _isLoading = false;
-          _hasError = true;
-        });
+
+      List<Map<String, dynamic>> raw2 = [];
+      if (res2.statusCode == 200) {
+        final body2 = jsonDecode(res2.body);
+        if (body2 is List) raw2 = body2.map((e) => e as Map<String, dynamic>).toList();
+        else if (body2['data'] is List) raw2 = (body2['data'] as List).map((e) => e as Map<String, dynamic>).toList();
+        for (var t in raw2) t['isCA'] = true;
       }
+
+      raw2.sort((a, b) {
+        final d1 = DateTime.tryParse(a['createdAt']?.toString() ?? '') ?? DateTime(2000);
+        final d2 = DateTime.tryParse(b['createdAt']?.toString() ?? '') ?? DateTime(2000);
+        return d2.compareTo(d1);
+      });
+
+      setState(() {
+        _tests = raw2;
+        _isLoading = false;
+        _hasError = (res2.statusCode != 200);
+      });
     } catch (_) {
       if (!mounted) return;
       setState(() {
@@ -82,27 +82,35 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
   }
 
   Future<void> _deleteTest(String testId) async {
+    print('Attempting to delete test with ID: $testId');
     setState(() => _deletingMap[testId] = true);
     try {
+      final url = 'https://appv1-backend.onrender.com/api/comprehensive-assessment/delete/$testId';
+      print('Delete URL: $url');
       final response = await http.delete(
-        Uri.parse('https://appv1backend.onrender.com/api/test/$testId'),
+        Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
       );
+      print('Delete response status: ${response.statusCode}');
+      print('Delete response body: ${response.body}');
+      
       if (!mounted) return;
       if (response.statusCode == 200 || response.statusCode == 204) {
         setState(() {
           _deletingMap.remove(testId);
-          _tests.removeWhere((t) => t['testId']?.toString() == testId);
+          _tests.removeWhere((t) => t['assessmentId']?.toString() == testId || t['_id']?.toString() == testId || t['testId']?.toString() == testId);
         });
-        _snack('Test deleted.', Colors.green[600]!);
+        _snack('Assessment deleted.', Colors.green[600]!);
       } else {
         setState(() => _deletingMap.remove(testId));
-        _snack('Failed to delete test.', Colors.red[600]!);
+        final Map<String, dynamic> bodyDecoded = jsonDecode(response.body);
+        _snack(bodyDecoded['message']?.toString() ?? 'Failed to delete. Status: ${response.statusCode}', Colors.red[600]!);
       }
-    } catch (_) {
+    } catch (e) {
+      print('Delete exception: $e');
       if (!mounted) return;
       setState(() => _deletingMap.remove(testId));
-      _snack('No internet connection.', Colors.red[600]!);
+      _snack('No internet connection or server error.', Colors.red[600]!);
     }
   }
 
@@ -219,12 +227,14 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
     );
   }
 
-  void _openCreateSheet() {
+
+
+  void _openCreateCaSheet() {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => CreateTestSheet(
+      builder: (_) => CreateCaSheet(
         classId: widget.classId,
         teacherId: widget.teacherId,
         teacherName: widget.teacherName,
@@ -232,27 +242,27 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
         className: widget.className,
         classSubjects: widget.classSubjects,
         onCreated: (newTest) {
+          newTest['isCA'] = true;
           setState(() => _tests.insert(0, newTest));
-          _snack('Test created!', Colors.green[600]!);
+          _snack('Assessment created!', Colors.green[600]!);
         },
       ),
     );
   }
 
-  void _openEditSheet(Map<String, dynamic> test) {
+  void _openEditCaSheet(Map<String, dynamic> test) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => EditTestSheet(
+      builder: (_) => EditCaSheet(
         test: test,
-        classSubjects: widget.classSubjects,
         onUpdated: (updated) {
           final idx = _tests.indexWhere(
-            (t) => t['testId']?.toString() == updated['testId']?.toString(),
+            (t) => (t['assessmentId']?.toString() ?? t['_id']?.toString()) == (updated['assessmentId']?.toString() ?? updated['_id']?.toString()),
           );
           if (idx != -1) setState(() => _tests[idx] = updated);
-          _snack('Test updated!', Colors.green[600]!);
+          _snack('Assessment updated!', Colors.green[600]!);
         },
       ),
     );
@@ -262,8 +272,8 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => TestResultsPage(
-          test: test,
+        builder: (_) => CaResultsPage(
+          assessment: test,
           classId: widget.classId,
           orgId: widget.orgId,
           teacherName: widget.teacherName,
@@ -350,7 +360,7 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
               SizedBox(width: 8),
               // Create button
               GestureDetector(
-                onTap: _openCreateSheet,
+                onTap: _openCreateCaSheet,
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: 12, vertical: 9),
                   decoration: BoxDecoration(
@@ -400,9 +410,10 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
   }
 
   Widget _testCard(Map<String, dynamic> test) {
-    final testId = test['testId']?.toString() ?? '';
-    final testName = test['testModule']?.toString() ?? 'Unnamed Test';
-    final subjects = test['subjects'] as List? ?? [];
+    final testId = test['assessmentId']?.toString() ?? test['_id']?.toString() ?? '';
+    final testName = test['title']?.toString() ?? 'Unnamed Assessment';
+    final tName = test['teacherName']?.toString() ?? 'Unknown Teacher';
+    final cName = test['className']?.toString() ?? 'Unknown Class';
     final createdAt = test['createdAt']?.toString() ?? '';
     final isDeleting = _deletingMap[testId] == true;
 
@@ -439,7 +450,7 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
                     color: _accent.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(3),
                   ),
-                  child: Icon(Icons.quiz_rounded, color: _accent, size: 16),
+                  child: Icon(Icons.assignment_turned_in_rounded, color: _accent, size: 16),
                 ),
                 SizedBox(width: 10),
                 Expanded(
@@ -456,7 +467,20 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      if (dateStr.isNotEmpty)
+                      SizedBox(height: 2),
+                      Row(
+                        children: [
+                          Icon(Icons.person_outline, size: 10, color: AppColors.textSecondary),
+                          SizedBox(width: 3),
+                          Text(tName, style: TextStyle(color: AppColors.textSecondary, fontSize: 10.5)),
+                          SizedBox(width: 8),
+                          Icon(Icons.class_outlined, size: 10, color: AppColors.textSecondary),
+                          SizedBox(width: 3),
+                          Text(cName, style: TextStyle(color: AppColors.textSecondary, fontSize: 10.5)),
+                        ],
+                      ),
+                      if (dateStr.isNotEmpty) ...[
+                        SizedBox(height: 2),
                         Row(
                           children: [
                             Icon(
@@ -474,6 +498,7 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
                             ),
                           ],
                         ),
+                      ],
                     ],
                   ),
                 ),
@@ -496,7 +521,7 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
                       _iconBtn(
                         Icons.edit_outlined,
                         _accent,
-                        () => _openEditSheet(test),
+                        () => _openEditCaSheet(test),
                       ),
                       SizedBox(width: 4),
                       _iconBtn(
@@ -509,76 +534,6 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
               ],
             ),
           ),
-
-          // ── Subjects ──
-          if (subjects.isNotEmpty) ...[
-            Padding(
-              padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.book_outlined,
-                    size: 10,
-                    color: AppColors.textSecondary,
-                  ),
-                  SizedBox(width: 4),
-                  Text(
-                    'Subjects (${subjects.length})',
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.2,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 7),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10),
-              child: Wrap(
-                spacing: 5,
-                runSpacing: 5,
-                children: subjects.map((s) {
-                  final sub = s as Map<String, dynamic>;
-                  final name = sub['subjectName']?.toString() ?? '';
-                  final max = sub['maximumScore']?.toString() ?? '0';
-                  final min = sub['minimumScore']?.toString() ?? '0';
-                  return Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: _accent.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(3),
-                      border: Border.all(color: _accent.withOpacity(0.18)),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          name,
-                          style: TextStyle(
-                            color: _accent,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 11,
-                          ),
-                        ),
-                        SizedBox(height: 1),
-                        Row(
-                          children: [
-                            _scoreBadge('Max', max, _accent),
-                            SizedBox(width: 4),
-                            _scoreBadge('Min', min, Colors.orange[700]!),
-                          ],
-                        ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-          ],
 
           // ── Footer: Enter Marks button ──
           Padding(
@@ -715,7 +670,7 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
               child: SizedBox(
                 height: 38,
                 child: ElevatedButton.icon(
-                  onPressed: _openCreateSheet,
+                  onPressed: _openCreateCaSheet,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _accent,
                     foregroundColor: Colors.white,
