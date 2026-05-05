@@ -467,7 +467,7 @@ class _AttendanceViewState extends State<AttendanceView> {
                               ? (_saved
                                     ? 'Update Attendance'
                                     : 'Save Attendance')
-                              : '$_markedCount / ${widget.students.length} marked â€” mark all to save',
+                              : '$_markedCount / ${widget.students.length} marked mark all to save',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 12.5,
@@ -639,4 +639,3 @@ class _AttendanceViewState extends State<AttendanceView> {
     ),
   );
 }
-

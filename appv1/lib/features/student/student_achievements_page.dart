@@ -378,7 +378,7 @@ class _StudentAchievementCardState extends State<_StudentAchievementCard> {
                   ),
                   alignment: Alignment.center,
                   child: Text(
-                    (post['teacherName']?.toString() ?? 'T')[0].toUpperCase(),
+                    ((post['teacherName']?.toString() ?? '').isNotEmpty ? post['teacherName'].toString() : (post['orgName']?.toString() ?? '').isNotEmpty ? post['orgName'].toString() : 'U')[0].toUpperCase(),
                     style: const TextStyle(
                       color: Colors.teal,
                       fontWeight: FontWeight.bold,
@@ -392,7 +392,7 @@ class _StudentAchievementCardState extends State<_StudentAchievementCard> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        post['teacherName']?.toString() ?? '',
+                        (post['teacherName']?.toString() ?? '').isNotEmpty ? post['teacherName'].toString() : post['orgName']?.toString() ?? 'Admin',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
@@ -400,7 +400,7 @@ class _StudentAchievementCardState extends State<_StudentAchievementCard> {
                         ),
                       ),
                       Text(
-                        '${post['className'] ?? ''} Â· '
+                        '${(post['className']?.toString() ?? '').isNotEmpty ? post['className'].toString() : 'Admin'} · '
                         '${_timeAgo(post['createdAt']?.toString() ?? '')}',
                         style: TextStyle(
                           color: AppColors.textSecondary,

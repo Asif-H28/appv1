@@ -62,9 +62,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
     });
     try {
       final res = await http.get(
-        Uri.parse(
-          '${ApiConstants.apiBaseUrl}/timetable/class/$_classId/today',
-        ),
+        Uri.parse('${ApiConstants.apiBaseUrl}/timetable/class/$_classId/today'),
         headers: {'Content-Type': 'application/json'},
       );
       if (!mounted) return;
@@ -310,7 +308,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Today's Classes â€” $_todayLabel",
+                    "Today's Classes $_todayLabel",
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
@@ -665,4 +663,3 @@ class _StudentHomePageState extends State<StudentHomePage> {
     );
   }
 }
-

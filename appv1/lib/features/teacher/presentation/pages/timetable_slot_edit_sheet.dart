@@ -83,9 +83,7 @@ class _TimetableSlotEditSheetState extends State<TimetableSlotEditSheet> {
   Future<void> _fetchTeachers() async {
     try {
       final res = await http.get(
-        Uri.parse(
-          '${ApiConstants.apiBaseUrl}/teacher/org/${widget.orgId}',
-        ),
+        Uri.parse('${ApiConstants.apiBaseUrl}/teacher/org/${widget.orgId}'),
         headers: {'Content-Type': 'application/json'},
       );
       if (!mounted) return;
@@ -475,7 +473,7 @@ class _TimetableSlotEditSheetState extends State<TimetableSlotEditSheet> {
                     children: [
                       Text(
                         'Edit Period $periodNum'
-                        ' â€” ${widget.day}',
+                        ' ${widget.day}',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 14,
@@ -1117,4 +1115,3 @@ class __TeacherPickerSheetState extends State<_TeacherPickerSheet> {
     );
   }
 }
-

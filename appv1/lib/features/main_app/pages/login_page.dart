@@ -1,4 +1,4 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:appv1/features/main_app/pages/notification_service.dart';
 import 'package:flutter/material.dart';
@@ -561,7 +561,7 @@ class __AdminLoginTabState extends State<_AdminLoginTab> {
                 return null;
               },
               decoration: _loginFieldDeco(
-                hint: 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
+                hint: '••••••••',
                 icon: Icons.lock_outline_rounded,
                 accent: widget.accent,
                 suffixIcon: IconButton(
@@ -789,7 +789,7 @@ class __TeacherLoginTabState extends State<_TeacherLoginTab> {
                 return null;
               },
               decoration: _loginFieldDeco(
-                hint: 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
+                hint: '••••••••',
                 icon: Icons.lock_outline_rounded,
                 accent: widget.accent,
                 suffixIcon: IconButton(
@@ -1134,7 +1134,7 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
                 return null;
               },
               decoration: _loginFieldDeco(
-                hint: 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
+                hint: '••••••••',
                 icon: Icons.lock_outline_rounded,
                 accent: widget.accent,
                 suffixIcon: IconButton(
