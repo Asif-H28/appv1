@@ -74,9 +74,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     });
     try {
       final res = await http.get(
-        Uri.parse(
-          '${ApiConstants.apiBaseUrl}/timetable/teacher/$_teacherId',
-        ),
+        Uri.parse('${ApiConstants.apiBaseUrl}/timetable/teacher/$_teacherId'),
         headers: {'Content-Type': 'application/json'},
       );
       if (!mounted) return;
@@ -124,9 +122,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
 
       if (_teacherId.isNotEmpty) {
         final res = await http.get(
-          Uri.parse(
-            '${ApiConstants.apiBaseUrl}/classroom/teacher/$_teacherId',
-          ),
+          Uri.parse('${ApiConstants.apiBaseUrl}/classroom/teacher/$_teacherId'),
           headers: {'Content-Type': 'application/json'},
         );
         if (!mounted) return;
@@ -140,9 +136,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
 
       if (raw.isEmpty && _orgId.isNotEmpty) {
         final res = await http.get(
-          Uri.parse(
-            '${ApiConstants.apiBaseUrl}/classroom/org/$_orgId',
-          ),
+          Uri.parse('${ApiConstants.apiBaseUrl}/classroom/org/$_orgId'),
           headers: {'Content-Type': 'application/json'},
         );
         if (!mounted) return;
@@ -346,7 +340,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         HomeSectionHeader(
-          title: "Today's Schedule â€” $_todayLabel",
+          title: "Today's Schedule $_todayLabel",
           subtitle: (!_schedLoading && _todaySlots.isNotEmpty)
               ? '${_todaySlots.length} period${_todaySlots.length == 1 ? '' : 's'}'
               : null,
@@ -653,4 +647,3 @@ class _Notice {
   final String time;
   const _Notice(this.title, this.preview, this.time);
 }
-

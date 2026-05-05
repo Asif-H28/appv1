@@ -1,4 +1,4 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -43,5 +43,128 @@ class ApiService {
       return {'success': false, 'message': 'Network error: $e'};
     }
   }
+  // Fetch Classrooms by Org ID
+  static Future<Map<String, dynamic>> fetchClassroomsByOrg(String orgId) async {
+    try {
+      final url = '$_baseUrl/classroom/list/$orgId';
+      print('Fetching classrooms from: $url');
+      
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      print('Classrooms Response Status: ${response.statusCode}');
+      print('Classrooms Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return {
+          'success': true,
+          'classrooms': data['classrooms'] ?? [],
+        };
+      } else {
+        return {
+          'success': false,
+          'message': 'Failed to load classrooms: ${response.statusCode}',
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
+
+  // Fetch Attendance by Class and Date
+  static Future<Map<String, dynamic>> fetchAttendanceByClass(
+    String classId,
+    String date,
+  ) async {
+    try {
+      final url = '$_baseUrl/attendance/class/$classId/date/$date';
+      print('Fetching attendance from: $url');
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      print('Attendance Response Status: ${response.statusCode}');
+      print('Attendance Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'data': jsonDecode(response.body),
+        };
+      } else {
+        return {
+          'success': false,
+          'message': 'Failed to load attendance: ${response.statusCode}',
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
+
+  // Fetch Comprehensive Assessments by Class
+  static Future<Map<String, dynamic>> fetchAssessmentsByClass(String classId) async {
+    try {
+      final url = '$_baseUrl/comprehensive-assessment/class/$classId';
+      print('Fetching assessments from: $url');
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      print('Assessments Response Status: ${response.statusCode}');
+      print('Assessments Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'data': jsonDecode(response.body),
+        };
+      } else {
+        return {
+          'success': false,
+          'message': 'Failed to load assessments: ${response.statusCode}',
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
+  // Fetch Comprehensive Assessment Results by Assessment ID
+  static Future<Map<String, dynamic>> fetchAssessmentResults(String assessmentId) async {
+    try {
+      final url = '$_baseUrl/comprehensive-result/assessment/$assessmentId';
+      print('Fetching assessment results from: $url');
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      print('Assessment Results Response Status: ${response.statusCode}');
+      print('Assessment Results Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'data': jsonDecode(response.body),
+        };
+      } else {
+        return {
+          'success': false,
+          'message': 'Failed to load assessment results: ${response.statusCode}',
+        };
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
 }
+
 
