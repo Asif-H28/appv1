@@ -1,4 +1,4 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -7,6 +7,7 @@ import '../../../../core/constants/app_colors.dart';
 class EnterCaMarksSheet extends StatefulWidget {
   final Map<String, dynamic> assessment;
   final Map<String, dynamic> student;
+  final String classId;
   final String orgId;
   final String teacherName;
   final Map<String, dynamic>? existingResult;
@@ -16,6 +17,7 @@ class EnterCaMarksSheet extends StatefulWidget {
     Key? key,
     required this.assessment,
     required this.student,
+    required this.classId,
     required this.orgId,
     required this.teacherName,
     this.existingResult,
@@ -129,7 +131,7 @@ class _EnterCaMarksSheetState extends State<EnterCaMarksSheet> {
     final payload = {
       "studentId": studentId,
       "studentName": studentName,
-      "classId": widget.assessment['classId'] ?? '',
+      "classId": widget.classId,
       "orgId": widget.orgId,
       "className": widget.assessment['className'] ?? '',
       "publishedBy": widget.teacherName,
@@ -137,22 +139,32 @@ class _EnterCaMarksSheetState extends State<EnterCaMarksSheet> {
       "coScholasticResults": coScholasticResults,
     };
 
+    print('[EnterCaMarksSheet] Submitting Payload:');
+    print('  studentId: "$studentId"');
+    print('  studentName: "$studentName"');
+    print('  classId: "${widget.classId}"');
+    print('  orgId: "${widget.orgId}"');
+    print('  publishedBy: "${widget.teacherName}"');
+
+    if (studentId.isEmpty || studentName.isEmpty || widget.classId.isEmpty || widget.orgId.isEmpty || widget.teacherName.isEmpty) {
+      print('[EnterCaMarksSheet] ERROR: Missing required fields');
+      setState(() => _isLoading = false);
+      _snack('Error: Missing required student or class info.', Colors.red[600]!);
+      return;
+    }
+
     try {
       final url = '${ApiConstants.apiBaseUrl}/comprehensive-result/assessment/$assessmentId/result';
-      print('Saving CA marks to $url');
-      print('Payload: ${jsonEncode(payload)}');
       final response = await http.post(
         Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(payload),
       );
-      print('Status: ${response.statusCode}');
-      print('Body: ${response.body}');
 
       if (!mounted) return;
       if (response.statusCode == 200 || response.statusCode == 201) {
         final body = jsonDecode(response.body);
-        final data = body['data'] ?? payload; // Use payload as fallback if data is missing
+        final data = body['data'] ?? payload;
         setState(() => _isLoading = false);
         Navigator.pop(context);
         widget.onSaved(data is Map<String, dynamic> ? data : payload);
@@ -419,4 +431,3 @@ class _EnterCaMarksSheetState extends State<EnterCaMarksSheet> {
     );
   }
 }
-

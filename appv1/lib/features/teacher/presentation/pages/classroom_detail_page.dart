@@ -1,8 +1,9 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:appv1/features/teacher/presentation/pages/classroom_timetable_tab.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../widgets/subject_lessons_tab.dart';
 import '../widgets/classroom_students_tab.dart';
@@ -29,6 +30,7 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
   bool _isLoading = true;
   bool _hasError = false;
   Map<String, dynamic> _classroom = {};
+  String _teacherNameFromPrefs = '';
 
   bool _isEditingName = false;
   final _nameController = TextEditingController();
@@ -53,7 +55,15 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
       if (!_tabController.indexIsChanging)
         setState(() => _currentTab = _tabController.index);
     });
+    _loadTeacherName();
     _fetchClassroom();
+  }
+
+  Future<void> _loadTeacherName() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _teacherNameFromPrefs = prefs.getString('teacherName') ?? '';
+    });
   }
 
   @override
@@ -157,7 +167,6 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
       backgroundColor: AppColors.background,
       body: Column(
         children: [
-          // â”€â”€ Gradient header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -270,8 +279,6 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
               ),
             ),
           ),
-
-          // â”€â”€ Body â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           Expanded(
             child: SafeArea(
               top: false,
@@ -293,13 +300,11 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
                     : TabBarView(
                         controller: _tabController,
                         children: [
-                          // 0 Subjects
                           SubjectLessonsTab(
                             classId: widget.classId,
                             subjects: typedSubjects,
                             onRefresh: _fetchClassroom,
                           ),
-                          // 1 Students
                           ClassroomStudentsTab(
                             classId: widget.classId,
                             students: students
@@ -307,31 +312,28 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
                                 .toList(),
                             onRefresh: _fetchClassroom,
                           ),
-                          // 2 Notices
                           ClassroomNoticesTab(classId: widget.classId),
-                          // 3 Notes
                           ClassroomNotesTab(classId: widget.classId),
-                          // 4 Requests
                           ClassroomRequestsTab(classId: widget.classId),
-                          // 5 Tests
                           ClassroomTestsTab(
                             classId: widget.classId,
                             teacherId:
                                 _classroom['teacherId']?.toString() ?? '',
-                            teacherName:
-                                _classroom['teacherName']?.toString() ?? '',
+                            teacherName: _teacherNameFromPrefs.isNotEmpty 
+                                ? _teacherNameFromPrefs 
+                                : (_classroom['teacherName']?.toString() ?? ''),
                             orgId: _classroom['orgId']?.toString() ?? '',
                             className: className,
                             classSubjects: typedSubjects,
                           ),
-                          // 6 Timetable
                           ClassroomTimetableTab(
                             classId: widget.classId,
                             orgId: _classroom['orgId']?.toString() ?? '',
                             teacherId:
                                 _classroom['teacherId']?.toString() ?? '',
-                            teacherName:
-                                _classroom['teacherName']?.toString() ?? '',
+                            teacherName: _teacherNameFromPrefs.isNotEmpty 
+                                ? _teacherNameFromPrefs 
+                                : (_classroom['teacherName']?.toString() ?? ''),
                             className: className,
                             classSubjects: typedSubjects,
                           ),
@@ -476,4 +478,3 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage>
     ),
   );
 }
-

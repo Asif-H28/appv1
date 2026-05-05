@@ -1,4 +1,4 @@
 class ApiConstants {
-  static const String baseUrl = 'https://igpknxs5c7.execute-api.ap-south-1.amazonaws.com/dev';
+  static const String baseUrl = 'https://appv1-backend.onrender.com';
   static const String apiBaseUrl = '$baseUrl/api';
 }
