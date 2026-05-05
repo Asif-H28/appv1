@@ -1,11 +1,10 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
-import 'student_test_class_stats_screen.dart';
 
 const Color _accent = Colors.teal;
 
@@ -14,8 +13,7 @@ class StudentTestResultScreen extends StatefulWidget {
   const StudentTestResultScreen({required this.test});
 
   @override
-  _StudentTestResultScreenState createState() =>
-      _StudentTestResultScreenState();
+  _StudentTestResultScreenState createState() => _StudentTestResultScreenState();
 }
 
 class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
@@ -23,9 +21,8 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
   String _error = '';
   Map<String, dynamic>? _result;
 
-  String get _testId => widget.test['testId']?.toString() ?? '';
-
-  String get _module => widget.test['testModule']?.toString() ?? 'Test';
+  String get _testId => widget.test['assessmentId']?.toString() ?? widget.test['_id']?.toString() ?? '';
+  String get _title => widget.test['title']?.toString() ?? 'Assessment';
 
   @override
   void initState() {
@@ -51,11 +48,8 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
     }
 
     try {
-      // Get all results for this student, find the one matching testId
       final res = await http.get(
-        Uri.parse(
-          '${ApiConstants.apiBaseUrl}/result/student/$studentId',
-        ),
+        Uri.parse('${ApiConstants.apiBaseUrl}/comprehensive-result/assessment/$_testId'),
         headers: {'Content-Type': 'application/json'},
       );
       if (!mounted) return;
@@ -65,14 +59,12 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
         List<dynamic> raw = [];
         if (body is List)
           raw = body;
-        else if (body['results'] != null)
-          raw = body['results'] as List;
         else if (body['data'] != null)
           raw = body['data'] as List;
 
         final match = raw
             .cast<Map<String, dynamic>>()
-            .where((r) => r['testId']?.toString() == _testId)
+            .where((r) => r['studentId']?.toString() == studentId)
             .toList();
 
         setState(() {
@@ -94,30 +86,6 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
     }
   }
 
-  // â”€â”€ Grade color â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-  Color _gradeColor(String grade) {
-    switch (grade.toUpperCase()) {
-      case 'A+':
-        return Color(0xFF00897B);
-      case 'A':
-        return Color(0xFF43A047);
-      case 'B+':
-        return Color(0xFF7CB342);
-      case 'B':
-        return Color(0xFFC0CA33);
-      case 'C':
-        return Color(0xFFFFA726);
-      case 'D':
-        return Color(0xFFFF7043);
-      default:
-        return Color(0xFFE53935);
-    }
-  }
-
-  Color _statusColor(String status) =>
-      status.toLowerCase() == 'pass' ? Colors.green[600]! : Colors.red[600]!;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -129,7 +97,6 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
         ),
         child: Column(
           children: [
-            // â”€â”€ Header â”€â”€
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -171,7 +138,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                           ),
                         ),
                         child: Icon(
-                          Icons.quiz_rounded,
+                          Icons.assignment_turned_in_rounded,
                           color: Colors.white,
                           size: 18,
                         ),
@@ -182,7 +149,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              _module,
+                              _title,
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 15,
@@ -201,54 +168,11 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                           ],
                         ),
                       ),
-                      // â”€â”€ Class stats button â”€â”€
-                      GestureDetector(
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                StudentTestClassStatsScreen(test: widget.test),
-                          ),
-                        ),
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 7,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(3),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.3),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.bar_chart_rounded,
-                                size: 14,
-                                color: Colors.white,
-                              ),
-                              SizedBox(width: 5),
-                              Text(
-                                'Class Stats',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                 ),
               ),
             ),
-
             Expanded(
               child: _isLoading
                   ? _buildLoader()
@@ -264,366 +188,316 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
     );
   }
 
-  // â”€â”€ Result view â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
   Widget _buildResult() {
-    final result = _result!;
-    final grade = result['grade']?.toString() ?? 'N/A';
-    final percentage = (result['percentage'] as num?) ?? 0;
-    final overallStatus = result['overallStatus']?.toString() ?? 'N/A';
-    final totalScored = (result['totalScoredMarks'] as num?) ?? 0;
-    final totalMax = (result['totalMaximumMarks'] as num?) ?? 0;
-    final publishedBy = result['publishedBy']?.toString() ?? '';
-    final subjectResults = (result['subjectResults'] as List<dynamic>?) ?? [];
-
     return SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(14, 16, 14, 40),
+      child: _resultCard(_result!),
+    );
+  }
+
+  Widget _resultCard(Map<String, dynamic> result) {
+    final scholastic = result['scholasticResults'] as List? ?? [];
+    final coScholastic = result['coScholasticResults'] as List? ?? [];
+    
+    double totalScored = 0;
+    double totalMax = 0;
+    
+    for (final s in scholastic) {
+      totalScored += (s['totalMarksScored'] as num?)?.toDouble() ?? 0;
+      final subName = s['subjectName']?.toString();
+      final assessmentSubjects = widget.test['scholasticSubjects'] as List? ?? [];
+      final assessmentSub = assessmentSubjects.firstWhere(
+        (as) => as['subjectName'] == subName,
+        orElse: () => null,
+      );
+      if (assessmentSub != null) {
+        final internalMax = (assessmentSub['internalMaximumScore'] as num?)?.toDouble() ?? 0;
+        final externalMax = (assessmentSub['externalMaximumScore'] as num?)?.toDouble() ?? 0;
+        totalMax += (internalMax + externalMax);
+      }
+    }
+
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(3),
+        side: BorderSide(color: Colors.teal.shade100, width: 1),
+      ),
+      color: Colors.white,
+      margin: EdgeInsets.zero,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // â”€â”€ Score summary card â”€â”€
           Container(
-            width: double.infinity,
+            padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(3),
-              border: Border.all(color: Colors.grey[200]!),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
-                  blurRadius: 8,
-                  offset: Offset(0, 2),
+              color: Colors.teal.withOpacity(0.04),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(3)),
+              border: Border(bottom: BorderSide(color: Colors.teal.shade100)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.teal.shade200),
+                  ),
+                  child: Icon(Icons.stars_rounded, color: Colors.teal[600], size: 24),
+                ),
+                SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Overall Performance',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.teal[900]),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Total: ${totalScored.toStringAsFixed(0)} / ${totalMax.toStringAsFixed(0)}',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Colors.teal[800]),
+                    ),
+                  ],
                 ),
               ],
             ),
+          ),
+          Container(
+            padding: EdgeInsets.all(16),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  height: 3,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        _gradeColor(grade),
-                        _gradeColor(grade).withOpacity(0.5),
-                      ],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                    ),
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(3),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(18),
-                  child: Row(
+                if (scholastic.isNotEmpty) ...[
+                  Row(
                     children: [
-                      // â”€â”€ Grade circle â”€â”€
-                      Container(
-                        width: 70,
-                        height: 70,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: _gradeColor(grade).withOpacity(0.1),
-                          border: Border.all(
-                            color: _gradeColor(grade).withOpacity(0.3),
-                            width: 2,
-                          ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            grade,
-                            style: TextStyle(
-                              color: _gradeColor(grade),
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
+                      Icon(Icons.menu_book_rounded, size: 16, color: Colors.teal),
+                      SizedBox(width: 8),
+                      Text(
+                        'SCHOLASTIC AREAS',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.teal[700], letterSpacing: 0.5),
                       ),
-                      SizedBox(width: 18),
+                    ],
+                  ),
+                  SizedBox(height: 12),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(3),
+                      border: Border.all(color: Colors.teal.shade100),
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: Colors.teal.shade50,
+                            borderRadius: BorderRadius.vertical(top: Radius.circular(3)),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child: Text(
+                                  'SUBJECT',
+                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.teal[900], letterSpacing: 0.5),
+                                ),
+                              ),
+                              Expanded(
+                                flex: 2,
+                                child: Text(
+                                  'MARKS',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.teal[900], letterSpacing: 0.5),
+                                ),
+                              ),
+                              Expanded(
+                                child: Text(
+                                  'GRADE',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.teal[900], letterSpacing: 0.5),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        ...scholastic.map((s) {
+                          final subName = s['subjectName']?.toString() ?? '';
+                          final scored = (s['totalMarksScored'] as num?)?.toDouble() ?? 0;
+                          final grade = s['grade']?.toString() ?? '-';
+                          
+                          final assessmentSubjects = widget.test['scholasticSubjects'] as List? ?? [];
+                          final assessmentSub = assessmentSubjects.firstWhere(
+                            (as) => as['subjectName'] == subName,
+                            orElse: () => null,
+                          );
+                          double max = 0;
+                          if (assessmentSub != null) {
+                            final iM = (assessmentSub['internalMaximumScore'] as num?)?.toDouble() ?? 0;
+                            final eM = (assessmentSub['externalMaximumScore'] as num?)?.toDouble() ?? 0;
+                            max = iM + eM;
+                          }
 
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.end,
+                          return Container(
+                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            decoration: BoxDecoration(
+                              border: Border(bottom: BorderSide(color: Colors.grey.shade100)),
+                            ),
+                            child: Row(
                               children: [
-                                Text(
-                                  '${percentage.toStringAsFixed(1)}%',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 26,
-                                    color: AppColors.textPrimary,
-                                    height: 1,
+                                Expanded(
+                                  flex: 3,
+                                  child: Text(
+                                    subName,
+                                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey[800]),
                                   ),
                                 ),
-                                SizedBox(width: 8),
-                                Container(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: _statusColor(
-                                      overallStatus,
-                                    ).withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(3),
-                                    border: Border.all(
-                                      color: _statusColor(
-                                        overallStatus,
-                                      ).withOpacity(0.3),
-                                    ),
-                                  ),
+                                Expanded(
+                                  flex: 2,
                                   child: Text(
-                                    overallStatus.toUpperCase(),
-                                    style: TextStyle(
-                                      color: _statusColor(overallStatus),
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                    '${scored.toStringAsFixed(0)} / ${max.toStringAsFixed(0)}',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.teal[800]),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    grade,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.teal[700]),
                                   ),
                                 ),
                               ],
                             ),
-                            SizedBox(height: 6),
-                            Text(
-                              '$totalScored / $totalMax marks',
-                              style: TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 13,
-                              ),
-                            ),
-                            SizedBox(height: 8),
-                            // â”€â”€ Progress bar â”€â”€
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(3),
-                              child: LinearProgressIndicator(
-                                value: percentage / 100,
-                                minHeight: 6,
-                                backgroundColor: Colors.grey[200],
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  _gradeColor(grade),
+                          );
+                        }).toList(),
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.teal.shade50.withOpacity(0.5),
+                            borderRadius: BorderRadius.vertical(bottom: Radius.circular(3)),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child: Text(
+                                  'Total',
+                                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.teal[900]),
                                 ),
                               ),
-                            ),
-                            if (publishedBy.isNotEmpty) ...[
-                              SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.person_rounded,
-                                    size: 11,
-                                    color: AppColors.textSecondary,
-                                  ),
-                                  SizedBox(width: 3),
-                                  Text(
-                                    'By $publishedBy',
-                                    style: TextStyle(
-                                      color: AppColors.textSecondary,
-                                      fontSize: 11,
-                                    ),
-                                  ),
-                                ],
+                              Expanded(
+                                flex: 2,
+                                child: Text(
+                                  '${totalScored.toStringAsFixed(0)} / ${totalMax.toStringAsFixed(0)}',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: Colors.teal[900]),
+                                ),
                               ),
+                              Expanded(child: SizedBox()),
                             ],
-                          ],
+                          ),
                         ),
+                      ],
+                    ),
+                  ),
+                ],
+                if (coScholastic.isNotEmpty) ...[
+                  SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Icon(Icons.palette_rounded, size: 16, color: Colors.teal),
+                      SizedBox(width: 8),
+                      Text(
+                        'CO-SCHOLASTIC ACTIVITIES',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.teal[700], letterSpacing: 0.5),
                       ),
                     ],
                   ),
+                  SizedBox(height: 12),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(3),
+                      border: Border.all(color: Colors.teal.shade100),
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: Colors.teal.shade50,
+                            borderRadius: BorderRadius.vertical(top: Radius.circular(3)),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child: Text(
+                                  'ACTIVITY',
+                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.teal[900], letterSpacing: 0.5),
+                                ),
+                              ),
+                              Expanded(
+                                child: Text(
+                                  'GRADE',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.teal[900], letterSpacing: 0.5),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        ...coScholastic.map((c) {
+                          final name = c['activityName']?.toString() ?? '';
+                          final grade = c['grade']?.toString() ?? '-';
+                          return Container(
+                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                            decoration: BoxDecoration(
+                              border: Border(bottom: BorderSide(color: Colors.grey.shade100)),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  flex: 3,
+                                  child: Text(
+                                    name,
+                                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey[800]),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Text(
+                                    grade,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.teal[700]),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ],
+                    ),
+                  ),
+                ],
+                SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text(
+                      'Published by ${result['publishedBy'] ?? 'Teacher'}',
+                      style: TextStyle(fontSize: 10, fontStyle: FontStyle.italic, color: Colors.grey[500]),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-          SizedBox(height: 16),
-
-          // â”€â”€ Subject results section header â”€â”€
-          Row(
-            children: [
-              Container(
-                width: 3,
-                height: 16,
-                decoration: BoxDecoration(
-                  color: _accent,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              SizedBox(width: 8),
-              Text(
-                'Subject-wise Results',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 10),
-
-          // â”€â”€ Subject result cards â”€â”€
-          ...subjectResults.map((s) {
-            final sub = s as Map<String, dynamic>;
-            final name = sub['subjectName']?.toString() ?? '';
-            final scored = (sub['scoredMarks'] as num?) ?? 0;
-            final max = (sub['maximumScore'] as num?) ?? 0;
-            final min = (sub['minimumScore'] as num?) ?? 0;
-            final status = sub['status']?.toString() ?? '';
-            final remarks = sub['remarks']?.toString() ?? '';
-            final pct = max > 0 ? (scored / max) : 0.0;
-            final sColor = _statusColor(status);
-
-            return Container(
-              margin: EdgeInsets.only(bottom: 10),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(3),
-                border: Border.all(color: Colors.grey[200]!),
-              ),
-              child: Padding(
-                padding: EdgeInsets.all(14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            name,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13.5,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: sColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(3),
-                            border: Border.all(color: sColor.withOpacity(0.3)),
-                          ),
-                          child: Text(
-                            status.toUpperCase(),
-                            style: TextStyle(
-                              color: sColor,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 10),
-                    Row(
-                      children: [
-                        // â”€â”€ Score big â”€â”€
-                        RichText(
-                          text: TextSpan(
-                            children: [
-                              TextSpan(
-                                text: '$scored',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 22,
-                                  color: AppColors.textPrimary,
-                                ),
-                              ),
-                              TextSpan(
-                                text: ' / $max',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Spacer(),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              '${(pct * 100).toStringAsFixed(1)}%',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                            Text(
-                              'Pass â‰¥ $min',
-                              style: TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 10.5,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 8),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(3),
-                      child: LinearProgressIndicator(
-                        value: pct.toDouble(),
-                        minHeight: 5,
-                        backgroundColor: Colors.grey[200],
-                        valueColor: AlwaysStoppedAnimation<Color>(sColor),
-                      ),
-                    ),
-                    if (remarks.isNotEmpty) ...[
-                      SizedBox(height: 8),
-                      Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 7,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[50],
-                          borderRadius: BorderRadius.circular(3),
-                          border: Border.all(color: Colors.grey[200]!),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.chat_bubble_outline_rounded,
-                              size: 12,
-                              color: AppColors.textSecondary,
-                            ),
-                            SizedBox(width: 6),
-                            Expanded(
-                              child: Text(
-                                remarks,
-                                style: TextStyle(
-                                  color: AppColors.textSecondary,
-                                  fontSize: 11.5,
-                                  fontStyle: FontStyle.italic,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            );
-          }).toList(),
         ],
       ),
     );
   }
-
-  // â”€â”€ States â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _buildLoader() => Center(
     child: Column(
@@ -722,7 +596,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
           ),
           SizedBox(height: 6),
           Text(
-            'Your teacher has not published your result for this test yet.',
+            'Your teacher has not published your result for this assessment yet.',
             textAlign: TextAlign.center,
             style: TextStyle(
               color: AppColors.textSecondary,
@@ -735,4 +609,3 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
     ),
   );
 }
-
