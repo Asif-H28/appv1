@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:url_launcher/url_launcher.dart';
+import '../../teacher/presentation/widgets/pdf_viewer_page.dart';
 
 class NoticeDetailSheet extends StatelessWidget {
   final Map<String, dynamic> notice;
@@ -404,12 +405,54 @@ class _AttachmentTile extends StatelessWidget {
     final name = attachment['originalName']?.toString() ?? 'Attachment';
     final type = attachment['resourceType']?.toString() ?? 'image';
     final isPdf = type == 'raw' || name.toLowerCase().endsWith('.pdf');
+    final isImage = type == 'image' || 
+                   (name.toLowerCase().endsWith('.jpg')) ||
+                   (name.toLowerCase().endsWith('.jpeg')) ||
+                   (name.toLowerCase().endsWith('.png'));
+
+    if (isImage) {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(3),
+          border: Border.all(color: const Color(0xFF009688).withOpacity(0.15)),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Image.network(
+          url,
+          fit: BoxFit.fitWidth,
+          width: double.infinity,
+          errorBuilder: (_, __, ___) => Container(
+            height: 60,
+            color: Colors.grey.shade100,
+            child: const Center(child: Icon(Icons.broken_image_rounded, color: Colors.grey)),
+          ),
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return Container(
+              height: 120,
+              color: Colors.grey.shade50,
+              child: const Center(child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF009688))),
+            );
+          },
+        ),
+      );
+    }
 
     return GestureDetector(
       onTap: () async {
-        final uri = Uri.tryParse(url);
-        if (uri != null && await canLaunchUrl(uri)) {
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        if (isPdf) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => PdfViewerPage(url: url, fileName: name),
+            ),
+          );
+        } else {
+          final uri = Uri.tryParse(url);
+          if (uri != null && await canLaunchUrl(uri)) {
+            await launchUrl(uri, mode: LaunchMode.externalApplication);
+          }
         }
       },
       child: Container(
@@ -431,7 +474,7 @@ class _AttachmentTile extends StatelessWidget {
                 borderRadius: BorderRadius.circular(3),
               ),
               child: Icon(
-                isPdf ? Icons.picture_as_pdf_rounded : Icons.image_rounded,
+                isPdf ? Icons.picture_as_pdf_rounded : Icons.insert_drive_file_rounded,
                 size: 16,
                 color: isPdf ? Colors.red[400] : const Color(0xFF009688),
               ),

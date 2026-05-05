@@ -773,17 +773,75 @@ class HomeNoClassroomsCard extends StatelessWidget {
 // NOTICE CARD
 // ─────────────────────────────────────────────────────
 
+class HomeNoNoticesCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.teal[50],
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: Colors.teal.withOpacity(0.18)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.teal.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(3),
+            ),
+            child: Icon(
+              Icons.campaign_outlined,
+              color: Colors.teal[600],
+              size: 18,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            'No announcements found',
+            style: TextStyle(
+              color: Colors.teal[700],
+              fontSize: 12.5,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class HomeNoticeCard extends StatelessWidget {
-  final dynamic notice;
+  final Map<String, dynamic> notice;
   final VoidCallback onTap;
   const HomeNoticeCard({required this.notice, required this.onTap});
 
+  String _formatDate(String iso) {
+    if (iso.isEmpty) return 'Today';
+    try {
+      final dt = DateTime.parse(iso).toLocal();
+      final now = DateTime.now();
+      final diff = now.difference(dt).inDays;
+      if (diff == 0) return 'Today';
+      if (diff == 1) return 'Yesterday';
+      return '${diff}d ago';
+    } catch (_) {
+      return '';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final title = notice['title']?.toString() ?? 'Notice';
+    final preview = notice['description']?.toString() ?? '';
+    final time = _formatDate(notice['createdAt']?.toString() ?? '');
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(6),
@@ -792,18 +850,17 @@ class HomeNoticeCard extends StatelessWidget {
             BoxShadow(
               color: Colors.black.withOpacity(0.022),
               blurRadius: 4,
-              offset: Offset(0, 1),
+              offset: const Offset(0, 1),
             ),
           ],
         ),
         child: Row(
           children: [
-            // Orange icon — retained per requirement
             Container(
-              width: 36,
-              height: 36,
+              width: 32,
+              height: 32,
               decoration: BoxDecoration(
-                color: Colors.orange[50],
+                color: Colors.teal.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(3),
               ),
               child: Icon(
@@ -820,8 +877,8 @@ class HomeNoticeCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    notice.title,
-                    style: TextStyle(
+                    title,
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 12.5,
                       color: AppColors.textPrimary,
@@ -829,9 +886,9 @@ class HomeNoticeCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  SizedBox(height: 2),
+                  const SizedBox(height: 2),
                   Text(
-                    notice.preview,
+                    preview,
                     style: TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 11,
@@ -842,20 +899,20 @@ class HomeNoticeCard extends StatelessWidget {
                 ],
               ),
             ),
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
 
             // Time + chevron
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  notice.time,
+                  time,
                   style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 10,
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Icon(
                   Icons.chevron_right_rounded,
                   size: 16,

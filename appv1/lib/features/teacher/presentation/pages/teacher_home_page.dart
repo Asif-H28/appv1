@@ -1,4 +1,4 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -10,6 +10,7 @@ import 'teacher_schedule_page.dart';
 import 'teacher_home_widgets.dart';
 import 'notice_page.dart';
 import 'student_leave_review_page.dart';
+import '../widgets/notice_detail_sheet.dart';
 
 const Color _accent = Colors.teal;
 
@@ -19,26 +20,30 @@ class TeacherHomePage extends StatefulWidget {
 }
 
 class _TeacherHomePageState extends State<TeacherHomePage> {
-  // â”€â”€ Prefs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Prefs ───────────────────────────────────────────
   String _name = '';
   String _teacherId = '';
   String _orgId = '';
 
-  // â”€â”€ Schedule â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Schedule ─────────────────────────────────────────
   bool _schedLoading = true;
   bool _schedError = false;
   List<Map<String, dynamic>> _todaySlots = [];
   String _todayLabel = '';
 
-  // â”€â”€ Classrooms â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Classrooms ───────────────────────────────────────
   bool _classLoading = true;
   bool _classError = false;
   List<Map<String, dynamic>> _classrooms = [];
   bool _showAllClassrooms = false;
 
-  // â”€â”€ Student Leaves â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Student Leaves ──────────────────────────────────
   int _pendingLeaveCount = 0;
   bool _pendingLeaveLoading = false;
+
+  // ── Notices ──────────────────────────────────────────
+  List<Map<String, dynamic>> _notices = [];
+  bool _noticesLoading = true;
 
   @override
   void initState() {
@@ -46,7 +51,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     _loadData();
   }
 
-  // â”€â”€ Load prefs + all data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Load prefs + all data ────────────────────────────
 
   Future<void> _loadData() async {
     final prefs = await SharedPreferences.getInstance();
@@ -61,11 +66,12 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
       else
         Future(() => setState(() => _schedLoading = false)),
       _fetchClassrooms(),
+      _fetchNotices(),
     ]);
     await _fetchPendingLeaveCounts();
   }
 
-  // â”€â”€ Today's schedule â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Today's schedule ─────────────────────────────────
 
   Future<void> _fetchTodaySchedule() async {
     setState(() {
@@ -110,7 +116,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     }
   }
 
-  // â”€â”€ Classrooms â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Classrooms ───────────────────────────────────────
 
   Future<void> _fetchClassrooms() async {
     setState(() {
@@ -162,7 +168,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     }
   }
 
-  // â”€â”€ Pending leave counts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Pending leave counts ──────────────────────────────
 
   Future<void> _fetchPendingLeaveCounts() async {
     if (_classrooms.isEmpty) return;
@@ -192,7 +198,41 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     }
   }
 
-  // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Fetch Notices ────────────────────────────────────
+
+  Future<void> _fetchNotices() async {
+    if (_orgId.isEmpty) return;
+    setState(() => _noticesLoading = true);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final authToken = prefs.getString('authToken') ?? '';
+
+      final res = await http.get(
+        Uri.parse('${ApiConstants.apiBaseUrl}/admin-notices/teacher/$_orgId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $authToken',
+        },
+      );
+      if (res.statusCode == 200) {
+        final body = jsonDecode(res.body);
+        final list = (body['notices'] as List? ?? []);
+        if (mounted) {
+          setState(() {
+            _notices = list.map((e) => Map<String, dynamic>.from(e)).toList();
+            _noticesLoading = false;
+          });
+        }
+      } else {
+        if (mounted) setState(() => _noticesLoading = false);
+      }
+    } catch (e) {
+      debugPrint('[TeacherHomePage] fetchNotices error: $e');
+      if (mounted) setState(() => _noticesLoading = false);
+    }
+  }
+
+  // ── Helpers ──────────────────────────────────────────
 
   String _todayKey() {
     const days = [
@@ -208,13 +248,6 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     return days[DateTime.now().weekday];
   }
 
-  String _greeting() {
-    final h = DateTime.now().hour;
-    if (h < 12) return 'Good Morning';
-    if (h < 17) return 'Good Afternoon';
-    return 'Good Evening';
-  }
-
   void _goToSchedule() => Navigator.push(
     context,
     MaterialPageRoute(
@@ -223,7 +256,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     ),
   );
 
-  // â”€â”€ Build â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Build ─────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -259,7 +292,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     );
   }
 
-  // â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Header ────────────────────────────────────────────
 
   Widget _buildHeader() {
     return Container(
@@ -333,7 +366,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     );
   }
 
-  // â”€â”€ Today's Schedule section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Today's Schedule section ──────────────────────────
 
   Widget _buildTodaySection() {
     return Column(
@@ -374,7 +407,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     );
   }
 
-  // â”€â”€ My Classrooms section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── My Classrooms section ─────────────────────────────
 
   Widget _buildClassroomsSection() {
     final displayList = _showAllClassrooms
@@ -462,7 +495,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     );
   }
 
-  // â”€â”€ Student Leave section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Student Leave section ─────────────────────────────
 
   Widget _buildStudentLeaveSection() {
     return Column(
@@ -588,62 +621,110 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     );
   }
 
-  // â”€â”€ Notice section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Notice section ────────────────────────────────────
 
   Widget _buildNoticeSection() {
-    final notices = [
-      _Notice(
-        'School Annual Day Preparation',
-        'All teachers are requested to...',
-        'Today',
-      ),
-      _Notice(
-        'Staff Meeting Tomorrow',
-        'Mandatory staff meeting at 4 PM in...',
-        'Yesterday',
-      ),
-      _Notice(
-        'Exam Schedule Released',
-        'The final exam timetable has been...',
-        '2 days ago',
-      ),
-    ];
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         HomeSectionHeader(
           title: 'Notice Board',
-          subtitle: '${notices.length} notices',
-          actionLabel: 'View All',
-          onAction: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => NoticePage()),
-          ),
+          subtitle: _noticesLoading
+              ? null
+              : _notices.isEmpty
+                  ? 'No notices'
+                  : '${_notices.length} notice${_notices.length == 1 ? '' : 's'}',
+          // actionLabel: 'View All', // REMOVED per requirement
+          // onAction: () => Navigator.push(
+          //   context,
+          //   MaterialPageRoute(builder: (_) => const NoticePage()),
+          // ),
         ),
         const SizedBox(height: 10),
-        ...notices.map(
-          (n) => Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: HomeNoticeCard(
-              notice: n,
+        if (_noticesLoading)
+          const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator(color: Colors.teal)))
+        else if (_notices.isEmpty)
+          HomeNoNoticesCard()
+        else ...[
+          ..._notices.take(3).map(
+                (n) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: HomeNoticeCard(
+                    notice: n,
+                    onTap: () => showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (context) => NoticeDetailSheet(notice: n),
+                    ),
+                  ),
+                ),
+              ),
+          if (_notices.length > 3) ...[
+            const SizedBox(height: 4),
+            GestureDetector(
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => NoticePage()),
+                MaterialPageRoute(builder: (_) => const NoticePage()),
+              ),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 11),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(3),
+                  border: Border.all(color: Colors.teal.withOpacity(0.2)),
+                ),
+                child: const Center(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'View All Notices',
+                        style: TextStyle(
+                          color: Colors.teal,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(width: 4),
+                      Icon(Icons.arrow_forward_rounded, size: 14, color: Colors.teal),
+                    ],
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
+          ] else if (_notices.isNotEmpty) ...[
+            // Small card for view all if notices are few
+            const SizedBox(height: 4),
+            GestureDetector(
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const NoticePage()),
+              ),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.teal.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(3),
+                  border: Border.all(color: Colors.teal.withOpacity(0.1)),
+                ),
+                child: const Center(
+                  child: Text(
+                    'Go to Notice Board',
+                    style: TextStyle(
+                      color: Colors.teal,
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
       ],
     );
   }
-}
-
-// â”€â”€ Notice model â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-class _Notice {
-  final String title;
-  final String preview;
-  final String time;
-  const _Notice(this.title, this.preview, this.time);
 }
