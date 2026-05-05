@@ -1,4 +1,4 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:appv1/features/main_app/pages/notification_service.dart';
 import 'package:appv1/features/student/notification/student_notification_screen.dart';
@@ -8,7 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
 import 'student_home_page.dart';
-import 'student_results_page.dart';
+
 import 'student_profile_page.dart';
 import 'student_achievements_page.dart';
 
@@ -100,7 +100,7 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
 
   final List<Widget> _pages = [
     StudentHomePage(),
-    StudentResultsPage(),
+
     const StudentAchievementsPage(),
     StudentProfilePage(),
   ];
@@ -248,18 +248,12 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
               _navItem(0, Icons.home_rounded, Icons.home_outlined, 'Home'),
               _navItem(
                 1,
-                Icons.bar_chart_rounded,
-                Icons.bar_chart_outlined,
-                'Results',
-              ),
-              _navItem(
-                2,
                 Icons.emoji_events_rounded,
                 Icons.emoji_events_outlined,
                 'Achievements',
               ),
               _navItem(
-                3,
+                2,
                 Icons.person_rounded,
                 Icons.person_outline_rounded,
                 'Profile',

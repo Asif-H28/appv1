@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'teacher_notification_screen.dart';
 
 const Color _accent = Colors.teal;
 
@@ -68,10 +69,15 @@ class TeacherDashboardHeader extends StatelessWidget {
                   ),
 
                   // Bell icon
-                  Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Container(
+                  GestureDetector(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const TeacherNotificationScreen()),
+                    ),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
                         width: 38,
                         height: 38,
                         decoration: BoxDecoration(
@@ -112,7 +118,8 @@ class TeacherDashboardHeader extends StatelessWidget {
                             ),
                           ),
                         ),
-                    ],
+                      ],
+                    ),
                   ),
                 ],
               ),

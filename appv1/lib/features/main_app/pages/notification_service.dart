@@ -1,4 +1,4 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:appv1/features/main_app/pages/notification_router.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -8,26 +8,29 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-// â”€â”€ Background handler (must be top-level) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Background handler (must be top-level) ─────────────
 @pragma('vm:entry-point')
 Future<void> firebaseBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
   debugPrint('[FCM:BG] ${message.notification?.title}');
 }
 
-// â”€â”€ Local notifications plugin â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Local notifications plugin ──────────────────────────
 final FlutterLocalNotificationsPlugin localNotif =
     FlutterLocalNotificationsPlugin();
 
-// âœ… ValueNotifier â€” increments when foreground message arrives
+// ✅ ValueNotifier — increments when foreground message arrives
 // StudentMainScreen listens to this and re-fetches badge count
 final ValueNotifier<int> notifCountNotifier = ValueNotifier<int>(0);
 
-// âœ… Admin-specific notifier â€” fires when a teacher-leave-request FCM arrives
+// ✅ Admin-specific notifier — fires when a teacher-leave-request FCM arrives
 // MainAppScreen listens to this and re-fetches admin leave badge count
 final ValueNotifier<int> adminNotifCountNotifier = ValueNotifier<int>(0);
 
-// â”€â”€ Android notification channel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ✅ Teacher-specific notifier — fires for teacher push notifications
+final ValueNotifier<int> teacherNotifCountNotifier = ValueNotifier<int>(0);
+
+// ── Android notification channel ────────────────────────
 const AndroidNotificationChannel notifChannel = AndroidNotificationChannel(
   'schoolsync_v4_channel',
   'SchoolSync Notifications',
@@ -40,20 +43,20 @@ const AndroidNotificationChannel notifChannel = AndroidNotificationChannel(
 class NotificationService {
   static const String _baseUrl = '${ApiConstants.baseUrl}';
 
-  // â”€â”€ Init (call in main.dart) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Init (call in main.dart) ─────────────────────────
   static Future<void> initFirebase() async {
     await Firebase.initializeApp();
 
     FirebaseMessaging.onBackgroundMessage(firebaseBackgroundHandler);
 
-    // âœ… Create Android channel WITH sound BEFORE plugin init
+    // ✅ Create Android channel WITH sound BEFORE plugin init
     await localNotif
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
         >()
         ?.createNotificationChannel(notifChannel);
 
-    // âœ… Android 13+ â€” request POST_NOTIFICATIONS permission
+    // ✅ Android 13+ — request POST_NOTIFICATIONS permission
     await localNotif
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
@@ -75,7 +78,7 @@ class NotificationService {
     );
   }
 
-  // â”€â”€ Request permission â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Request permission ───────────────────────────────
   static Future<void> requestPermission() async {
     final settings = await FirebaseMessaging.instance.requestPermission(
       alert: true,
@@ -86,7 +89,7 @@ class NotificationService {
     debugPrint('[FCM] Permission: ${settings.authorizationStatus}');
   }
 
-  // â”€â”€ Save FCM token after login â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Save FCM token after login ──────────────────────
   static Future<void> saveTokenAfterLogin({
     required String userId,
     required String role,
@@ -131,7 +134,7 @@ class NotificationService {
     }
   }
 
-  // â”€â”€ Save Admin FCM token after admin login â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Save Admin FCM token after admin login ──────────
   static Future<void> saveAdminTokenAfterLogin({
     required String orgId,
   }) async {
@@ -154,7 +157,7 @@ class NotificationService {
     }
   }
 
-  // â”€â”€ Clear Admin FCM token on admin logout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Clear Admin FCM token on admin logout ───────────
   static Future<void> clearAdminToken({
     required String orgId,
   }) async {
@@ -170,7 +173,7 @@ class NotificationService {
     }
   }
 
-  // â”€â”€ Listen for token refresh â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Listen for token refresh ────────────────────────
   static void listenTokenRefresh() {
     FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
       debugPrint('[FCM] Token refreshed');
@@ -183,7 +186,7 @@ class NotificationService {
     });
   }
 
-  // â”€â”€ Foreground notification listener â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Foreground notification listener ───────────────
   static void listenForeground() {
     FirebaseMessaging.onMessage.listen((message) {
       debugPrint('[FCM:FG] title=${message.notification?.title}');
@@ -191,15 +194,18 @@ class NotificationService {
       final android = message.notification?.android;
       if (notif == null) return;
 
-      // âœ… Signal students (StudentMainScreen re-fetches badge)
+      // ✅ Signal students (StudentMainScreen re-fetches badge)
       notifCountNotifier.value += 1;
 
-      // âœ… Signal admin when it's a teacher-leave-request notification
+      // ✅ Signal admin when it's a teacher-leave-request notification
       final route = message.data['route']?.toString() ?? '';
       if (route == 'teacher-leave-requests') {
         adminNotifCountNotifier.value += 1;
         debugPrint('[FCM:FG] Admin leave notifier incremented');
       }
+
+      // ✅ Signal teachers
+      teacherNotifCountNotifier.value += 1;
 
       localNotif.show(
         notif.hashCode,
@@ -228,7 +234,7 @@ class NotificationService {
     });
   }
 
-  // â”€â”€ Background tap listener â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Background tap listener ─────────────────────────
   static void listenBackgroundTap(BuildContext context) {
     FirebaseMessaging.onMessageOpenedApp.listen((message) {
       debugPrint('[FCM] BG tap: ${message.data}');
@@ -236,7 +242,7 @@ class NotificationService {
     });
   }
 
-  // â”€â”€ Terminated tap (app cold start) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Terminated tap (app cold start) ──────────────────
   static Future<void> checkInitialMessage(BuildContext context) async {
     final message = await FirebaseMessaging.instance.getInitialMessage();
     if (message != null) {
@@ -246,7 +252,7 @@ class NotificationService {
     }
   }
 
-  // â”€â”€ Navigation handler â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Navigation handler ──────────────────────────────
   static void _navigateFromData(
     BuildContext context,
     Map<String, dynamic> data,
@@ -260,7 +266,7 @@ class NotificationService {
     NotificationRouter.handleRoute(route);
   }
 
-  // â”€â”€ Subscribe / Unsubscribe â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Subscribe / Unsubscribe ─────────────────────────
   static Future<void> subscribeToTopic(String topic) async {
     await FirebaseMessaging.instance.subscribeToTopic(topic);
     debugPrint('[FCM] Subscribed: $topic');
@@ -271,7 +277,7 @@ class NotificationService {
     debugPrint('[FCM] Unsubscribed: $topic');
   }
 
-  // â”€â”€ Manual send methods â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Manual send methods ─────────────────────────────
   static Future<bool> sendToClass({
     required String classId,
     required String orgId,
@@ -367,7 +373,7 @@ class NotificationService {
     }
   }
 
-  // â”€â”€ Notification history â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Notification history ─────────────────────────────
   static Future<List<Map<String, dynamic>>> getClassHistory(
     String classId,
   ) async {
@@ -404,7 +410,7 @@ class NotificationService {
     }
   }
 
-  // â”€â”€ Full init (call once after login) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Full init (call once after login) ──────────────
   static Future<void> initListeners(BuildContext context) async {
     listenForeground();
     listenBackgroundTap(context);
@@ -412,47 +418,25 @@ class NotificationService {
     await checkInitialMessage(context);
   }
 
-  // â”€â”€ Teacher leave request notifications (admin) â”€â”€â”€
+  // ── Teacher leave request notifications (admin) ───
   static Future<List<Map<String, dynamic>>> getTeacherLeaveNotifications(
     String orgId,
   ) async {
     final url = '$_baseUrl/api/notification/org/$orgId/teacher-leave-requests';
-    debugPrint('â”€â”€ [LeaveNotif:API] GET $url');
     try {
       final res = await http.get(
         Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
       );
-      debugPrint('â”€â”€ [LeaveNotif:API] Status: ${res.statusCode}');
-      debugPrint('â”€â”€ [LeaveNotif:API] Body: ${res.body}');
-
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body) as Map<String, dynamic>;
-        debugPrint('â”€â”€ [LeaveNotif:API] Top-level keys: ${data.keys.toList()}');
-
         final rawList = data['notifications'];
-        debugPrint('â”€â”€ [LeaveNotif:API] notifications value: $rawList');
-        debugPrint('â”€â”€ [LeaveNotif:API] notifications type: ${rawList.runtimeType}');
-
-        if (rawList == null) {
-          debugPrint('â”€â”€ [LeaveNotif:API] âŒ "notifications" key is null');
-          return [];
-        }
-
+        if (rawList == null) return [];
         final list = rawList as List;
-        debugPrint('â”€â”€ [LeaveNotif:API] âœ… List length: ${list.length}');
-        for (int i = 0; i < list.length; i++) {
-          debugPrint('â”€â”€ [LeaveNotif:API] item[$i] type: ${list[i].runtimeType}');
-          debugPrint('â”€â”€ [LeaveNotif:API] item[$i]: ${list[i]}');
-        }
         return list.map((e) => Map<String, dynamic>.from(e as Map)).toList();
       }
-
-      debugPrint('â”€â”€ [LeaveNotif:API] âŒ Non-200 response');
       return [];
-    } catch (e, st) {
-      debugPrint('â”€â”€ [LeaveNotif:API] âŒ Exception: $e');
-      debugPrint('â”€â”€ [LeaveNotif:API] Stack: $st');
+    } catch (e) {
       return [];
     }
   }
@@ -486,5 +470,44 @@ class NotificationService {
       debugPrint('[LeaveNotif] markAllRead error: $e');
     }
   }
-}
 
+  /// Bulk mark ALL student leave requests for a teacher as read.
+  static Future<void> markAllStudentLeavesRead({
+    required String teacherId,
+    required String token,
+  }) async {
+    try {
+      final res = await http.put(
+        Uri.parse('$_baseUrl/api/notification/teacher/student-leave-requests/mark-all-read'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({'teacherId': teacherId}),
+      );
+      debugPrint('[StudentNotif] markAllRead: ${res.statusCode}');
+    } catch (e) {
+      debugPrint('[StudentNotif] markAllRead error: $e');
+    }
+  }
+
+  /// Bulk mark ALL admin leave reviews for a teacher as read.
+  static Future<void> markAllAdminReviewsRead({
+    required String teacherId,
+    required String token,
+  }) async {
+    try {
+      final res = await http.put(
+        Uri.parse('$_baseUrl/api/notification/teacher/admin-leave-reviews/mark-all-read'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({'teacherId': teacherId}),
+      );
+      debugPrint('[AdminReviewNotif] markAllRead: ${res.statusCode}');
+    } catch (e) {
+      debugPrint('[AdminReviewNotif] markAllRead error: $e');
+    }
+  }
+}

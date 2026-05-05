@@ -1,8 +1,63 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../core/constants/api_constants.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../widgets/notice_detail_sheet.dart';
 
-class NoticePage extends StatelessWidget {
-  const NoticePage();
+class NoticePage extends StatefulWidget {
+  const NoticePage({super.key});
+
+  @override
+  State<NoticePage> createState() => _NoticePageState();
+}
+
+class _NoticePageState extends State<NoticePage> {
+  List<Map<String, dynamic>> _notices = [];
+  bool _loading = true;
+  String _orgId = '';
+  String _authToken = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    final prefs = await SharedPreferences.getInstance();
+    _orgId = prefs.getString('orgId') ?? '';
+    _authToken = prefs.getString('authToken') ?? '';
+    await _fetchNotices();
+  }
+
+  Future<void> _fetchNotices() async {
+    if (_orgId.isEmpty) return;
+    setState(() => _loading = true);
+    try {
+      final res = await http.get(
+        Uri.parse('${ApiConstants.apiBaseUrl}/admin-notices/teacher/$_orgId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $_authToken',
+        },
+      );
+      if (res.statusCode == 200) {
+        final body = jsonDecode(res.body);
+        final list = (body['notices'] as List? ?? []);
+        setState(() {
+          _notices = list.map((e) => Map<String, dynamic>.from(e)).toList();
+          _loading = false;
+        });
+      } else {
+        setState(() => _loading = false);
+      }
+    } catch (e) {
+      debugPrint('[NoticePage] fetch error: $e');
+      setState(() => _loading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -10,11 +65,11 @@ class NoticePage extends StatelessWidget {
       backgroundColor: AppColors.background,
       body: Column(
         children: [
-          // ── Teal header ──
+          // ── Header ───────────────────────────────────────────
           Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.teal, Colors.teal.withOpacity(0.72)],
+                colors: [Colors.teal, Color(0xFF00897B)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -22,41 +77,38 @@ class NoticePage extends StatelessWidget {
             child: SafeArea(
               bottom: false,
               child: Padding(
-                padding: EdgeInsets.fromLTRB(16, 12, 16, 16),
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
                 child: Row(
                   children: [
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
                       child: Container(
-                        padding: EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(3),
+                          border: Border.all(color: Colors.white.withOpacity(0.25)),
                         ),
-                        child: Icon(
-                          Icons.arrow_back_rounded,
-                          color: Colors.white,
-                          size: 18,
-                        ),
+                        child: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 18),
                       ),
                     ),
-                    SizedBox(width: 12),
-                    Column(
+                    const SizedBox(width: 16),
+                    const Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'Notice Board',
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 17,
+                            fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
-                          'Announcements & updates',
+                          'All announcements & updates',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.78),
-                            fontSize: 11.5,
+                            color: Colors.white70,
+                            fontSize: 11,
                           ),
                         ),
                       ],
@@ -67,125 +119,170 @@ class NoticePage extends StatelessWidget {
             ),
           ),
 
-          // ── Coming soon body ──
+          // ── List ─────────────────────────────────────────────
           Expanded(
-            child: Center(
-              child: Padding(
-                padding: EdgeInsets.all(32),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Teal icon container
-                    Container(
-                      width: 72,
-                      height: 72,
-                      decoration: BoxDecoration(
-                        color: Colors.teal.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: Colors.teal.withOpacity(0.2)),
-                      ),
-                      child: Icon(
-                        Icons.campaign_rounded,
-                        color: Colors.teal[400],
-                        size: 34,
-                      ),
-                    ),
-                    SizedBox(height: 20),
-
-                    Text(
-                      'Coming Soon',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'The Notice Board feature is\ncurrently under development.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 13,
-                        height: 1.5,
-                      ),
-                    ),
-                    SizedBox(height: 28),
-
-                    // Teal info banner
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.teal.withOpacity(0.06),
-                        borderRadius: BorderRadius.circular(3),
-                        border: Border.all(color: Colors.teal.withOpacity(0.2)),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.info_outline_rounded,
-                            size: 14,
-                            color: Colors.teal[600],
-                          ),
-                          SizedBox(width: 8),
-                          Text(
-                            'Stay tuned for updates',
-                            style: TextStyle(
-                              color: Colors.teal[700],
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    SizedBox(height: 16),
-
-                    // Back button
-                    GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 10,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.teal,
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.arrow_back_rounded,
-                              color: Colors.white,
-                              size: 14,
-                            ),
-                            SizedBox(width: 7),
-                            Text(
-                              'Go Back',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
+            child: _loading
+                ? const Center(child: CircularProgressIndicator(color: Colors.teal))
+                : _notices.isEmpty
+                    ? _buildEmptyState()
+                    : RefreshIndicator(
+                        color: Colors.teal,
+                        onRefresh: _fetchNotices,
+                        child: ListView.separated(
+                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
+                          itemCount: _notices.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 12),
+                          itemBuilder: (context, index) => _buildNoticeCard(_notices[index]),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildNoticeCard(Map<String, dynamic> n) {
+    final title = n['title'] ?? 'Notice';
+    final desc = n['description'] ?? '';
+    final createdAt = n['createdAt'] ?? '';
+    final attachments = (n['attachments'] as List? ?? []);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(3),
+        border: Border(left: BorderSide(color: Colors.teal.shade700, width: 4)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _showDetail(n),
+          borderRadius: BorderRadius.circular(3),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                    if (attachments.isNotEmpty)
+                      const Icon(Icons.attachment_rounded, size: 14, color: Colors.teal),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  desc,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey.shade600,
+                    height: 1.5,
+                  ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      _formatDate(createdAt),
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey.shade500,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const Row(
+                      children: [
+                        Text(
+                          'Read More',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.teal,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(width: 4),
+                        Icon(Icons.arrow_forward_rounded, size: 11, color: Colors.teal),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.teal.withOpacity(0.05),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.campaign_rounded, color: Colors.teal, size: 48),
+          ),
+          const SizedBox(height: 20),
+          const Text(
+            'No announcements found',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'New updates from your school will appear here.',
+            style: TextStyle(color: Colors.grey, fontSize: 13),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatDate(String iso) {
+    if (iso.isEmpty) return '';
+    try {
+      final dt = DateTime.parse(iso).toLocal();
+      final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return '${dt.day} ${months[dt.month - 1]} ${dt.year}';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  void _showDetail(Map<String, dynamic> notice) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => NoticeDetailSheet(notice: notice),
     );
   }
 }
