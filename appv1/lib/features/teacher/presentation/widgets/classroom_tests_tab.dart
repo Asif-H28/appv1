@@ -8,6 +8,7 @@ import 'edit_ca_sheet.dart';
 import '../pages/ca_results_page.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:open_file/open_file.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
 
 class ClassroomTestsTab extends StatefulWidget {
@@ -235,28 +236,57 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
   Future<void> _exportTest(String assessmentId, String testName) async {
     setState(() => _exportingIds[assessmentId] = true);
     try {
+      // 1. Request permissions if on Android
+      if (Platform.isAndroid) {
+        final status = await Permission.storage.request();
+        if (!status.isGranted) {
+          // If storage permission is denied, we can still try to save to app-specific folder
+          // but let's notify the user.
+          debugPrint('Storage permission denied. Falling back to internal storage.');
+        }
+      }
+
       final url = Uri.parse('${ApiConstants.apiBaseUrl}/comprehensive-assessment/export/$assessmentId');
       final response = await http.get(url);
 
       if (response.statusCode == 200) {
-        final directory = await getApplicationDocumentsDirectory();
+        String? selectedPath;
         final fileName = '${testName.replaceAll(' ', '_')}_Marks.xlsx';
-        final filePath = '${directory.path}/$fileName';
-        final file = File(filePath);
-        await file.writeAsBytes(response.bodyBytes);
 
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Exported: $fileName'),
-              backgroundColor: Colors.green[700],
-              action: SnackBarAction(
-                label: 'Open',
-                textColor: Colors.white,
-                onPressed: () => OpenFile.open(filePath),
+        if (Platform.isAndroid) {
+          // Attempt to save to the public Download folder
+          final downloadDir = Directory('/storage/emulated/0/Download');
+          if (await downloadDir.exists()) {
+            selectedPath = '${downloadDir.path}/$fileName';
+          } else {
+            // Fallback to external storage app-specific directory
+            final externalDir = await getExternalStorageDirectory();
+            selectedPath = '${externalDir?.path}/$fileName';
+          }
+        } else {
+          // iOS or other platforms
+          final directory = await getApplicationDocumentsDirectory();
+          selectedPath = '${directory.path}/$fileName';
+        }
+
+        if (selectedPath != null) {
+          final file = File(selectedPath);
+          await file.writeAsBytes(response.bodyBytes);
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Saved to: ${Platform.isAndroid ? 'Downloads' : 'Documents'}'),
+                backgroundColor: Colors.green[700],
+                duration: const Duration(seconds: 5),
+                action: SnackBarAction(
+                  label: 'Open',
+                  textColor: Colors.white,
+                  onPressed: () => OpenFile.open(selectedPath),
+                ),
               ),
-            ),
-          );
+            );
+          }
         }
       } else {
         if (mounted) {
