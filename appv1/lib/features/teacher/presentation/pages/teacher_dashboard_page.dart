@@ -274,6 +274,11 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
                   ],
                 ),
               ),
+              IconButton(
+                icon: const Icon(Icons.refresh_rounded, color: Colors.white, size: 22),
+                onPressed: _fetchClassrooms,
+                tooltip: 'Reload Dashboard',
+              ),
               GestureDetector(
                 onTap: () {
                   Navigator.push(

@@ -49,6 +49,7 @@ dependencies:
   flutter_local_notifications: ^19.2.1   # ← safe for sdk ^3.11.1
   fl_chart: ^1.2.0
   path: ^1.9.0
+  excel: ^4.0.0
 
 
 dev_dependencies:

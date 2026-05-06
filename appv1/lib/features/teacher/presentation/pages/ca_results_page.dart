@@ -5,6 +5,10 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../widgets/enter_ca_marks_sheet.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:excel/excel.dart' hide Border, BorderStyle;
+import 'package:http_parser/http_parser.dart';
+import 'dart:io';
 
 class CaResultsPage extends StatefulWidget {
   final Map<String, dynamic> assessment;
@@ -147,6 +151,14 @@ class _CaResultsPageState extends State<CaResultsPage> with SingleTickerProvider
         backgroundColor: Colors.teal,
         foregroundColor: Colors.white,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.file_upload_outlined),
+            tooltip: 'Import Results from Excel',
+            onPressed: _openImportSheet,
+          ),
+          SizedBox(width: 8),
+        ],
         bottom: TabBar(
           controller: _tabController,
           labelColor: Colors.white,
@@ -629,6 +641,22 @@ class _CaResultsPageState extends State<CaResultsPage> with SingleTickerProvider
     );
   }
 
+  void _openImportSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _ImportResultsSheet(
+        assessmentId: widget.assessment['assessmentId']?.toString() ?? widget.assessment['_id']?.toString() ?? '',
+        teacherName: widget.teacherName,
+        onSuccess: () {
+          _fetchData();
+          Navigator.pop(context);
+        },
+      ),
+    );
+  }
+
   Widget _buildEmpty(String msg) => Center(
     child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -651,4 +679,281 @@ class _CaResultsPageState extends State<CaResultsPage> with SingleTickerProvider
       ],
     ),
   );
+}
+
+class _ImportResultsSheet extends StatefulWidget {
+  final String assessmentId;
+  final String teacherName;
+  final VoidCallback onSuccess;
+
+  const _ImportResultsSheet({
+    required this.assessmentId,
+    required this.teacherName,
+    required this.onSuccess,
+  });
+
+  @override
+  __ImportResultsSheetState createState() => __ImportResultsSheetState();
+}
+
+class __ImportResultsSheetState extends State<_ImportResultsSheet> {
+  File? _selectedFile;
+  List<List<dynamic>> _previewData = [];
+  bool _isUploading = false;
+  bool _showPreview = false;
+
+  Future<void> _pickFile() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['xlsx'],
+      );
+
+      if (result != null && result.files.single.path != null) {
+        final file = File(result.files.single.path!);
+        setState(() {
+          _selectedFile = file;
+          _showPreview = false;
+          _previewData = [];
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error picking file: $e'), backgroundColor: Colors.red),
+      );
+    }
+  }
+
+  Future<void> _generatePreview() async {
+    if (_selectedFile == null) return;
+    
+    try {
+      final bytes = _selectedFile!.readAsBytesSync();
+      final excel = Excel.decodeBytes(bytes);
+      
+      final table = excel.tables[excel.tables.keys.first];
+      if (table != null) {
+        setState(() {
+          // Get first 10 rows for preview
+          _previewData = table.rows.take(10).map((row) => row.map((cell) => cell?.value).toList()).toList();
+          _showPreview = true;
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error parsing Excel: $e'), backgroundColor: Colors.red),
+      );
+    }
+  }
+
+  Future<void> _uploadFile() async {
+    if (_selectedFile == null) return;
+
+    setState(() => _isUploading = true);
+    try {
+      final url = '${ApiConstants.apiBaseUrl}/comprehensive-result/import/${widget.assessmentId}';
+      final request = http.MultipartRequest('POST', Uri.parse(url));
+      
+      request.fields['publishedBy'] = widget.teacherName;
+      request.files.add(await http.MultipartFile.fromPath(
+        'file',
+        _selectedFile!.path,
+        contentType: MediaType('application', 'vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
+      ));
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Results imported successfully!'), backgroundColor: Colors.green),
+          );
+          widget.onSuccess();
+        }
+      } else {
+        final error = jsonDecode(response.body)['message'] ?? 'Upload failed';
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $error'), backgroundColor: Colors.red),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error uploading: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUploading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 30),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.file_upload_rounded, color: Colors.teal, size: 24),
+                        SizedBox(width: 12),
+                        Text(
+                          'Import Results',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.teal[900]),
+                        ),
+                        Spacer(),
+                        IconButton(
+                          icon: Icon(Icons.close),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ],
+                    ),
+                    const Divider(),
+                    const SizedBox(height: 16),
+                    
+                    // File Selection Area
+                    GestureDetector(
+                      onTap: _pickFile,
+                      child: Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.teal.withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.teal.withOpacity(0.2), style: BorderStyle.solid),
+                        ),
+                        child: Column(
+                          children: [
+                            Icon(
+                              _selectedFile == null ? Icons.upload_file_rounded : Icons.check_circle_rounded,
+                              size: 48,
+                              color: _selectedFile == null ? Colors.teal[300] : Colors.green[400],
+                            ),
+                            SizedBox(height: 12),
+                            Text(
+                              _selectedFile == null ? 'Tap to select Excel file' : 'File selected',
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.teal[800]),
+                            ),
+                            if (_selectedFile != null) ...[
+                              SizedBox(height: 4),
+                              Text(
+                                _selectedFile!.path.split('/').last,
+                                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 20),
+    
+                    if (_selectedFile != null) ...[
+                      if (!_showPreview)
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: _generatePreview,
+                            icon: Icon(Icons.visibility_outlined, size: 18),
+                            label: Text('Preview Data'),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.teal,
+                              side: BorderSide(color: Colors.teal),
+                              padding: EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                          ),
+                        )
+                      else ...[
+                        Text(
+                          'Data Preview (First 10 rows)',
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey[700]),
+                        ),
+                        SizedBox(height: 8),
+                        Container(
+                          height: 150,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[50],
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.grey[200]!),
+                          ),
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: SingleChildScrollView(
+                              child: DataTable(
+                                headingRowHeight: 30,
+                                dataRowHeight: 25,
+                                horizontalMargin: 12,
+                                columnSpacing: 20,
+                                columns: _previewData.isEmpty 
+                                  ? [] 
+                                  : _previewData.first.map((c) => DataColumn(label: Text(c?.toString() ?? '', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold)))).toList(),
+                                rows: _previewData.length <= 1 
+                                  ? [] 
+                                  : _previewData.skip(1).map((row) => DataRow(cells: row.map((c) => DataCell(Text(c?.toString() ?? '', style: TextStyle(fontSize: 10)))).toList())).toList(),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                      
+                      const SizedBox(height: 24),
+                      
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: _isUploading ? null : _uploadFile,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.teal,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            elevation: 0,
+                          ),
+                          child: _isUploading
+                              ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                              : Text('Proceed to Import', style: TextStyle(fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                    ],
+                    
+                    const SizedBox(height: 10),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
