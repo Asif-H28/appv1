@@ -3,7 +3,9 @@ import 'package:appv1/features/main_app/pages/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'core/services/update_service.dart';
 import 'core/theme/app_theme.dart';
+
 import 'core/constants/app_colors.dart';
 import 'features/main_app/pages/login_page.dart';
 import 'features/main_app/main_app_screen.dart';
@@ -27,6 +29,8 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -66,7 +70,91 @@ class __StartupRouterState extends State<_StartupRouter> {
   void initState() {
     super.initState();
     _checkLoginState();
+    _checkForUpdate();
   }
+
+  Future<void> _checkForUpdate() async {
+    // Wait for the app to initialize a bit
+    await Future.delayed(const Duration(seconds: 2));
+    final update = await UpdateService.checkForUpdate();
+    if (update != null && mounted) {
+      _showUpdateDialog(update);
+    }
+  }
+
+  void _showUpdateDialog(Map<String, dynamic> update) {
+    double progress = 0;
+    bool isDownloading = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text('Update Available 🎉'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Version ${update['version']} is available.'),
+              const SizedBox(height: 8),
+              Text(
+                update['releaseNotes'],
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                maxLines: 5,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (isDownloading) ...[
+                const SizedBox(height: 16),
+                LinearProgressIndicator(
+                  value: progress,
+                  backgroundColor: Colors.grey[200],
+                  valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                ),
+                const SizedBox(height: 4),
+                Text('${(progress * 100).toStringAsFixed(0)}%'),
+              ]
+            ],
+          ),
+          actions: [
+            if (!isDownloading)
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Later', style: TextStyle(color: Colors.grey)),
+              ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: isDownloading
+                  ? null
+                  : () async {
+                      setState(() => isDownloading = true);
+                      try {
+                        await UpdateService.downloadAndInstall(
+                          update['downloadUrl'],
+                          (p) => setState(() => progress = p),
+                        );
+                      } catch (e) {
+                        setState(() => isDownloading = false);
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Download failed. Please try again.')),
+                          );
+                        }
+                      }
+                    },
+              child: Text(isDownloading ? 'Downloading...' : 'Update Now'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
 
   Future<void> _checkLoginState() async {
     final prefs = await SharedPreferences.getInstance();
