@@ -1,4 +1,4 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -6,6 +6,9 @@ import '../../../../core/constants/app_colors.dart';
 import 'create_ca_sheet.dart';
 import 'edit_ca_sheet.dart';
 import '../pages/ca_results_page.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:open_file/open_file.dart';
+import 'dart:io';
 
 class ClassroomTestsTab extends StatefulWidget {
   final String classId;
@@ -34,6 +37,7 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
   bool _isLoading = true;
   bool _hasError = false;
   final Map<String, bool> _deletingMap = {};
+  Map<String, bool> _exportingIds = {};
 
   @override
   void initState() {
@@ -228,7 +232,57 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
     );
   }
 
+  Future<void> _exportTest(String assessmentId, String testName) async {
+    setState(() => _exportingIds[assessmentId] = true);
+    try {
+      final url = Uri.parse('${ApiConstants.apiBaseUrl}/comprehensive-assessment/export/$assessmentId');
+      final response = await http.get(url);
 
+      if (response.statusCode == 200) {
+        final directory = await getApplicationDocumentsDirectory();
+        final fileName = '${testName.replaceAll(' ', '_')}_Marks.xlsx';
+        final filePath = '${directory.path}/$fileName';
+        final file = File(filePath);
+        await file.writeAsBytes(response.bodyBytes);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Exported: $fileName'),
+              backgroundColor: Colors.green[700],
+              action: SnackBarAction(
+                label: 'Open',
+                textColor: Colors.white,
+                onPressed: () => OpenFile.open(filePath),
+              ),
+            ),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to export test: ${response.statusCode}'),
+              backgroundColor: Colors.red[600],
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error exporting test: $e'),
+            backgroundColor: Colors.red[600],
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _exportingIds[assessmentId] = false);
+      }
+    }
+  }
 
   void _openCreateCaSheet() {
     showModalBottomSheet(
@@ -541,22 +595,46 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
             padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
             child: Row(
               children: [
-                // Test ID badge
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    borderRadius: BorderRadius.circular(3),
-                    border: Border.all(color: Colors.grey[200]!),
-                  ),
-                  child: Text(
-                    testId.length > 12
-                        ? '# ${testId.substring(0, 12)}â€¦'
-                        : '# $testId',
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 9.5,
-                      fontFamily: 'monospace',
+                // Export button
+                GestureDetector(
+                  onTap: _exportingIds[testId] == true
+                      ? null
+                      : () => _exportTest(testId, testName),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: Colors.blue[50],
+                      borderRadius: BorderRadius.circular(3),
+                      border: Border.all(color: Colors.blue[100]!),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (_exportingIds[testId] == true)
+                          SizedBox(
+                            width: 12,
+                            height: 12,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 1.5,
+                              color: Colors.blue[700],
+                            ),
+                          )
+                        else
+                          Icon(
+                            Icons.file_download_outlined,
+                            color: Colors.blue[700],
+                            size: 14,
+                          ),
+                        SizedBox(width: 5),
+                        Text(
+                          _exportingIds[testId] == true ? 'Exporting...' : 'Export XLS',
+                          style: TextStyle(
+                            color: Colors.blue[700],
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
