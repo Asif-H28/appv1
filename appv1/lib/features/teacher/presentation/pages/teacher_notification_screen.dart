@@ -5,8 +5,11 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/services/api_service.dart';
 import '../../../main_app/pages/notification_service.dart';
 import '../../../student/notification/notification_card.dart';
+import 'student_leave_review_page.dart';
+import 'teacher_main_screen.dart';
 
 const Color _accent = Colors.teal;
 
@@ -28,6 +31,7 @@ class _TeacherNotificationScreenState extends State<TeacherNotificationScreen> w
 
   String _teacherId = '';
   String _authToken = '';
+  List<Map<String, dynamic>> _classrooms = [];
 
   @override
   void initState() {
@@ -40,6 +44,17 @@ class _TeacherNotificationScreenState extends State<TeacherNotificationScreen> w
     final prefs = await SharedPreferences.getInstance();
     _teacherId = prefs.getString('teacherId') ?? '';
     _authToken = prefs.getString('authToken') ?? '';
+    final orgId = prefs.getString('orgId') ?? '';
+    
+    if (orgId.isNotEmpty) {
+      final result = await ApiService.fetchClassroomsByOrg(orgId);
+      if (mounted) {
+        setState(() {
+          _classrooms = (result['classrooms'] as List? ?? []).map((e) => e as Map<String, dynamic>).toList();
+        });
+      }
+    }
+
     _fetchOrgNotifs();
     _fetchStudentNotifs();
   }
@@ -124,34 +139,56 @@ class _TeacherNotificationScreenState extends State<TeacherNotificationScreen> w
     }
   }
 
-  Future<void> _markAsRead(String notifId, bool isOrg) async {
-    if (_teacherId.isEmpty) return;
-    try {
-      await http.put(
-        Uri.parse('${ApiConstants.apiBaseUrl}/notification/$notifId/read'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $_authToken',
-        },
-        body: jsonEncode({'userId': _teacherId}),
-      );
-      // ✅ Trigger global notifier so home page badge updates
-      teacherNotifCountNotifier.value++;
-
-      if (mounted) {
-        setState(() {
-          final list = isOrg ? _orgNotifs : _studentNotifs;
-          final idx = list.indexWhere((n) => n['notificationId'] == notifId || n['_id'] == notifId);
-          if (idx != -1) {
-            final readBy = List<String>.from(list[idx]['readBy'] as List? ?? []);
-            if (!readBy.contains(_teacherId)) {
-              readBy.add(_teacherId);
-              list[idx] = {...list[idx], 'readBy': readBy};
-            }
-          }
-        });
+  Future<void> _markAsRead(String id, bool isOrg) async {
+    if (_authToken.isEmpty) return;
+    
+    // Optimistic UI update
+    setState(() {
+      if (isOrg) {
+        final idx = _orgNotifs.indexWhere((n) => (n['notificationId'] ?? n['_id']) == id);
+        if (idx != -1) {
+          final readBy = List.from(_orgNotifs[idx]['readBy'] ?? []);
+          if (!readBy.contains(_teacherId)) readBy.add(_teacherId);
+          _orgNotifs[idx]['readBy'] = readBy;
+        }
+      } else {
+        final idx = _studentNotifs.indexWhere((n) => (n['notificationId'] ?? n['_id']) == id);
+        if (idx != -1) {
+          final readBy = List.from(_studentNotifs[idx]['readBy'] ?? []);
+          if (!readBy.contains(_teacherId)) readBy.add(_teacherId);
+          _studentNotifs[idx]['readBy'] = readBy;
+        }
       }
-    } catch (_) {}
+    });
+
+    NotificationService.markAsRead(
+      notificationId: id,
+      teacherId: _teacherId,
+      token: _authToken,
+    ).then((_) {
+      teacherNotifCountNotifier.value++;
+    });
+
+    // ── Navigate based on notification type ──
+    if (isOrg) {
+      // Admin leave reviews -> Go to Settings (Leave history)
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const TeacherMainScreen(initialTab: 4)),
+        (route) => false,
+      );
+    } else {
+      // Student leave requests -> Go to Review page
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => StudentLeaveReviewPage(
+            classrooms: _classrooms,
+            teacherId: _teacherId,
+          ),
+        ),
+      );
+    }
   }
 
   void _bulkMarkRead(bool isOrg) {
@@ -371,7 +408,7 @@ class _TeacherNotificationScreenState extends State<TeacherNotificationScreen> w
           return NotificationCard(
             data: notif,
             isRead: isRead,
-            onTap: isRead ? null : () => _markAsRead(notifId, isOrg),
+            onTap: () => _markAsRead(notifId, isOrg),
           );
         },
       ),

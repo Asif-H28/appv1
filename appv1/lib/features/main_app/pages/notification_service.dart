@@ -510,4 +510,66 @@ class NotificationService {
       debugPrint('[AdminReviewNotif] markAllRead error: $e');
     }
   }
+
+  /// Mark a single notification as read by this teacherId.
+  static Future<void> markAsRead({
+    required String notificationId,
+    required String teacherId,
+    required String token,
+  }) async {
+    try {
+      await http.put(
+        Uri.parse('$_baseUrl/api/notification/$notificationId/read'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({'userId': teacherId}),
+      );
+    } catch (_) {}
+  }
+
+  /// Fetches total unread notifications for a teacher (Admin Reviews + Student Requests)
+  static Future<int> getTeacherNotificationCount({
+    required String teacherId,
+    required String token,
+  }) async {
+    int totalUnread = 0;
+    try {
+      // 1. Fetch Admin Leave Reviews
+      final resOrg = await http.get(
+        Uri.parse('$_baseUrl/api/notification/teacher/$teacherId/admin-leave-reviews'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (resOrg.statusCode == 200) {
+        final body = jsonDecode(resOrg.body) as Map;
+        final list = (body['notifications'] ?? []) as List;
+        totalUnread += list.where((n) {
+          final readBy = (n['readBy'] as List? ?? []);
+          return !readBy.any((r) => r.toString() == teacherId);
+        }).length;
+      }
+
+      // 2. Fetch Student Leave Requests
+      final resStudent = await http.get(
+        Uri.parse('$_baseUrl/api/notification/teacher/$teacherId/student-leave-requests'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (resStudent.statusCode == 200) {
+        final body = jsonDecode(resStudent.body) as Map;
+        final list = (body['notifications'] ?? []) as List;
+        totalUnread += list.where((n) {
+          final readBy = (n['readBy'] as List? ?? []);
+          return !readBy.any((r) => r.toString() == teacherId);
+        }).length;
+      }
+    } catch (_) {}
+    return totalUnread;
+  }
 }

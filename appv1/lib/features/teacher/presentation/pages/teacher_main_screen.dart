@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../main_app/pages/notification_service.dart';
 import 'teacher_home_page.dart';
 import 'teacher_classroom_page.dart';
 import 'teacher_dashboard_page.dart';
@@ -19,11 +21,47 @@ class TeacherMainScreen extends StatefulWidget {
 
 class _TeacherMainScreenState extends State<TeacherMainScreen> {
   late int _currentTab;
+  String _teacherId = '';
+  String _authToken = '';
 
   @override
   void initState() {
     super.initState();
     _currentTab = widget.initialTab;
+    _loadAndFetch();
+    teacherNotifCountNotifier.addListener(_onNotifReceived);
+  }
+
+  @override
+  void dispose() {
+    teacherNotifCountNotifier.removeListener(_onNotifReceived);
+    super.dispose();
+  }
+
+  void _onNotifReceived() {
+    // Only fetch if the value was incremented as a signal (e.g. from FCM)
+    // To avoid infinite loop if we update the value here, we should be careful.
+    // However, usually listeners don't trigger when value is set to same thing.
+    _fetchCount();
+  }
+
+  Future<void> _loadAndFetch() async {
+    final prefs = await SharedPreferences.getInstance();
+    _teacherId = prefs.getString('teacherId') ?? '';
+    _authToken = prefs.getString('authToken') ?? '';
+    _fetchCount();
+  }
+
+  Future<void> _fetchCount() async {
+    if (_teacherId.isEmpty || _authToken.isEmpty) return;
+    final count = await NotificationService.getTeacherNotificationCount(
+      teacherId: _teacherId,
+      token: _authToken,
+    );
+    if (mounted) {
+      // Use teacherNotifCountNotifier to store the real count
+      teacherNotifCountNotifier.value = count;
+    }
   }
 
   final List<Widget> _pages = [

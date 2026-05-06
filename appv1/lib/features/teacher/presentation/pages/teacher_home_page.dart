@@ -11,6 +11,8 @@ import 'teacher_home_widgets.dart';
 import 'notice_page.dart';
 import 'student_leave_review_page.dart';
 import '../widgets/notice_detail_sheet.dart';
+import 'teacher_notification_screen.dart';
+import '../../../main_app/pages/notification_service.dart';
 
 const Color _accent = Colors.teal;
 
@@ -343,20 +345,63 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
                 ),
               ),
               GestureDetector(
-                onTap: null,
-                child: Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(3),
-                    border: Border.all(color: Colors.white.withOpacity(0.3)),
-                  ),
-                  child: const Icon(
-                    Icons.notifications_outlined,
-                    color: Colors.white,
-                    size: 20,
-                  ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const TeacherNotificationScreen()),
+                  ).then((_) {
+                    // Trigger re-fetch in TeacherMainScreen
+                    teacherNotifCountNotifier.value++;
+                  });
+                },
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(3),
+                        border: Border.all(color: Colors.white.withOpacity(0.3)),
+                      ),
+                      child: const Icon(
+                        Icons.notifications_outlined,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                    ValueListenableBuilder<int>(
+                      valueListenable: teacherNotifCountNotifier,
+                      builder: (context, count, _) {
+                        if (count <= 0) return const SizedBox.shrink();
+                        return Positioned(
+                          top: -5,
+                          right: -5,
+                          child: Container(
+                            padding: const EdgeInsets.all(3),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFE53935),
+                              shape: BoxShape.circle,
+                            ),
+                            constraints: const BoxConstraints(
+                              minWidth: 18,
+                              minHeight: 18,
+                            ),
+                            child: Text(
+                              count > 99 ? '99+' : '$count',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ),
             ],
