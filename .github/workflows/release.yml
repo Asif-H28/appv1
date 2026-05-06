@@ -1,0 +1,52 @@
+name: Build and Release APK
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    name: Build and Release APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Get Version from pubspec.yaml
+        id: get_version
+        run: |
+          # Extract version from pubspec.yaml (e.g., 1.0.1 from 1.0.1+2)
+          VERSION=$(grep '^version: ' appv1/pubspec.yaml | cut -d ' ' -f 2 | cut -d '+' -f 1)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "TAG_NAME=v$VERSION" >> $GITHUB_ENV
+
+      - name: Install Dependencies
+        run: flutter pub get
+        working-directory: appv1
+
+      - name: Build APK
+        run: flutter build apk --release
+        working-directory: appv1
+
+      - name: Create or Update Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "appv1/build/app/outputs/flutter-apk/app-release.apk"
+          tag: ${{ env.TAG_NAME }}
+          name: Release ${{ env.TAG_NAME }}
+          body: "Automated release for version ${{ env.VERSION }}. Built on ${{ github.event.head_commit.timestamp }}"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          allowUpdates: true
+          makeLatest: true
