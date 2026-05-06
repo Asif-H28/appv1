@@ -1,10 +1,13 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/features/student/student_main_screen.dart';
+import 'package:appv1/features/student/student_rejected_screen.dart';
+import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../main_app/pages/login_page.dart';
 
 const Color _accent = Colors.teal;
 
@@ -26,10 +29,82 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
   String _orgId = '';
   String _orgName = '';
 
+  bool _isCheckingStatus = false;
+
   @override
   void initState() {
     super.initState();
     _init();
+  }
+
+  Future<void> _checkStatus() async {
+    if (_isCheckingStatus) return;
+    setState(() => _isCheckingStatus = true);
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final studentId = prefs.getString('studentId') ?? '';
+
+      if (studentId.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Session expired. Please sign out and login again.')),
+          );
+        }
+        setState(() => _isCheckingStatus = false);
+        return;
+      }
+
+      final res = await http.get(
+        Uri.parse('${ApiConstants.apiBaseUrl}/student/profile/$studentId'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (!mounted) return;
+
+      if (res.statusCode == 200) {
+        final body = jsonDecode(res.body);
+        final student = body['student'] as Map<String, dynamic>? ?? {};
+        final status = student['joinStatus']?.toString() ?? 'pending';
+
+        // Update local prefs
+        await prefs.setString('joinStatus', status);
+        if (student['classId'] != null) {
+          await prefs.setString('classId', student['classId'].toString());
+        }
+
+        if (status == 'approved') {
+          Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const StudentMainScreen()),
+            (route) => false,
+          );
+        } else if (status == 'rejected') {
+          Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => StudentRejectedScreen(studentName: student['name'] ?? 'Student')),
+            (route) => false,
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Your request is still under review. Please wait.'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to check status. Try again later.')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Connection error. Please check your internet.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isCheckingStatus = false);
+    }
   }
 
   Future<void> _init() async {
@@ -37,7 +112,7 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
 
     _studentId = prefs.getString('studentId') ?? '';
 
-    // â”€â”€ Read orgId from tempOrg JSON or flat key â”€â”€
+    // ── Read orgId from tempOrg JSON or flat key ──
     final tempOrgRaw = prefs.getString('tempOrg');
     if (tempOrgRaw != null && tempOrgRaw.isNotEmpty) {
       try {
@@ -47,12 +122,12 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
     }
     if (_orgId.isEmpty) _orgId = prefs.getString('tempOrgId') ?? '';
 
-    // â”€â”€ Check if orgName already cached â”€â”€
+    // ── Check if orgName already cached ──
     _orgName = prefs.getString('tempOrgName') ?? '';
 
     if (mounted) setState(() {});
 
-    // â”€â”€ Fetch org name from API if not cached â”€â”€
+    // ── Fetch org name from API if not cached ──
     if (_orgName.isEmpty && _orgId.isNotEmpty) {
       await _fetchOrgName(prefs);
     }
@@ -60,7 +135,7 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
     await _fetchClasses();
   }
 
-  // â”€â”€ NEW: fetch org details to get orgName â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── NEW: fetch org details to get orgName ──────────────
   Future<void> _fetchOrgName(SharedPreferences prefs) async {
     try {
       final res = await http.get(
@@ -74,22 +149,22 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
         final name = org?['orgName']?.toString() ?? '';
         if (name.isNotEmpty) {
           _orgName = name;
-          // â”€â”€ Cache it so next time we don't need to fetch â”€â”€
+          // ── Cache it so next time we don't need to fetch ──
           await prefs.setString('tempOrgName', name);
           if (mounted) setState(() {});
         }
       }
     } catch (_) {
-      // silently fail â€” header will show 'Loading...'
+      // silently fail — header will show 'Loading...'
     }
   }
 
-  // â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Helpers ─────────────────────────────────────────────
 
   String _className(Map<String, dynamic>? cls) =>
       cls?['className']?.toString() ?? 'Class';
 
-  // â”€â”€â”€ API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── API ───────────────────────────────────────────────────
 
   Future<void> _fetchClasses() async {
     if (_orgId.isEmpty) return;
@@ -142,6 +217,9 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
       if (!mounted) return;
       setState(() => _isSubmitting = false);
       if (res.statusCode == 200 || res.statusCode == 201) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('joinStatus', 'pending');
+        await prefs.setString('orgId', _orgId);
         setState(() => _step = 3);
       } else {
         final body = jsonDecode(res.body) as Map<String, dynamic>;
@@ -171,7 +249,7 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
     );
   }
 
-  // â”€â”€â”€ Build â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Build ──────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -186,7 +264,7 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
         ),
         child: Column(
           children: [
-            // â”€â”€ Gradient header â”€â”€
+            // ── Gradient header ──
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
@@ -255,7 +333,7 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                // âœ… Shows API org name or "Loading..."
+                                // ✅ Shows API org name or "Loading..."
                                 Text(
                                   _orgName.isNotEmpty ? _orgName : 'Loading...',
                                   style: TextStyle(
@@ -279,10 +357,10 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
 
                       Text(
                         _step == 1
-                            ? 'Select Class ðŸ“š'
+                            ? 'Select Class 📚'
                             : _step == 2
-                            ? 'Confirm Request âœ…'
-                            : 'Request Sent! ðŸŽ‰',
+                            ? 'Confirm Request ✅'
+                            : 'Request Sent! 🎉',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 20,
@@ -310,7 +388,7 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
               ),
             ),
 
-            // â”€â”€ Body â”€â”€
+            // ── Body ──
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
@@ -351,7 +429,7 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
     );
   }
 
-  // â”€â”€â”€ Step 1: Class list â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Step 1: Class list ──────────────────────────────────
 
   Widget _buildClassList() {
     if (_classes.isEmpty) {
@@ -558,7 +636,7 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
     );
   }
 
-  // â”€â”€â”€ Step 2: Confirm â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Step 2: Confirm ───────────────────────────────────
 
   Widget _buildConfirm() {
     final className = _className(_selectedClass);
@@ -581,7 +659,7 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
                 _confirmRow(
                   Icons.business_rounded,
                   'ORGANIZATION',
-                  // âœ… real API org name here
+                  // ✅ real API org name here
                   _orgName.isNotEmpty ? _orgName : 'Loading...',
                 ),
                 Divider(height: 16, color: Colors.grey[100]),
@@ -728,7 +806,7 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
     ],
   );
 
-  // â”€â”€â”€ Step 3: Done â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Step 3: Done ──────────────────────────────────────
 
   Widget _buildDone() => Center(
     child: Padding(
@@ -794,12 +872,101 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
               ],
             ),
           ),
+          const SizedBox(height: 32),
+
+          // ── Check status button ──
+          GestureDetector(
+            onTap: _checkStatus,
+            child: Container(
+              width: double.infinity,
+              height: 50,
+              decoration: BoxDecoration(
+                color: _accent,
+                borderRadius: BorderRadius.circular(3),
+                boxShadow: [
+                  BoxShadow(
+                    color: _accent.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: _isCheckingStatus
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.refresh_rounded, color: Colors.white, size: 18),
+                          SizedBox(width: 8),
+                          Text(
+                            'Check Approval Status',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+          // ── Sign out button ──
+          GestureDetector(
+            onTap: () async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.clear();
+              if (mounted) {
+                Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => LoginPage()),
+                  (route) => false,
+                );
+              }
+            },
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(3),
+                border: Border.all(color: Colors.grey[200]!),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.logout_rounded,
+                    color: AppColors.textSecondary,
+                    size: 16,
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    'Sign Out',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     ),
   );
 
-  // â”€â”€â”€ Step indicator â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Step indicator ───────────────────────────────────
 
   Widget _stepDot(int step) => Container(
     width: 26,
@@ -826,4 +993,3 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
     child: Container(height: 2, color: Colors.white.withOpacity(0.3)),
   );
 }
-

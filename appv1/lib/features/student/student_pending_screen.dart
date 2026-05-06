@@ -1,20 +1,105 @@
+import 'dart:convert';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/features/student/student_main_screen.dart';
+import 'package:appv1/features/student/student_rejected_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../main_app/pages/login_page.dart';
 
 const Color _accent = Colors.teal;
 
-class StudentPendingScreen extends StatelessWidget {
+class StudentPendingScreen extends StatefulWidget {
   final String studentName;
   const StudentPendingScreen({required this.studentName});
+
+  @override
+  State<StudentPendingScreen> createState() => _StudentPendingScreenState();
+}
+
+class _StudentPendingScreenState extends State<StudentPendingScreen> {
+  bool _isChecking = false;
+
+  Future<void> _checkStatus() async {
+    if (_isChecking) return;
+    setState(() => _isChecking = true);
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final studentId = prefs.getString('studentId') ?? '';
+
+      if (studentId.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Session expired. Please sign out and login again.')),
+          );
+        }
+        setState(() => _isChecking = false);
+        return;
+      }
+
+      final res = await http.get(
+        Uri.parse('${ApiConstants.apiBaseUrl}/student/profile/$studentId'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (!mounted) return;
+
+      if (res.statusCode == 200) {
+        final body = jsonDecode(res.body);
+        final student = body['student'] as Map<String, dynamic>? ?? {};
+        final status = student['joinStatus']?.toString() ?? 'pending';
+
+        // Update local prefs
+        await prefs.setString('joinStatus', status);
+        if (student['classId'] != null) {
+          await prefs.setString('classId', student['classId'].toString());
+        }
+
+        if (status == 'approved') {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const StudentMainScreen()),
+            (route) => false,
+          );
+        } else if (status == 'rejected') {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => StudentRejectedScreen(studentName: widget.studentName)),
+            (route) => false,
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Your request is still under review. Please wait.'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to check status. Try again later.')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Connection error. Please check your internet.')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isChecking = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle(
+        value: const SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
           statusBarIconBrightness: Brightness.light,
           systemNavigationBarColor: AppColors.background,
@@ -35,11 +120,11 @@ class StudentPendingScreen extends StatelessWidget {
               child: SafeArea(
                 bottom: false,
                 child: Padding(
-                  padding: EdgeInsets.fromLTRB(14, 12, 16, 24),
+                  padding: const EdgeInsets.fromLTRB(14, 12, 16, 24),
                   child: Row(
                     children: [
                       Container(
-                        padding: EdgeInsets.all(7),
+                        padding: const EdgeInsets.all(7),
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(3),
@@ -47,17 +132,17 @@ class StudentPendingScreen extends StatelessWidget {
                             color: Colors.white.withOpacity(0.3),
                           ),
                         ),
-                        child: Icon(
+                        child: const Icon(
                           Icons.pending_actions_rounded,
                           color: Colors.white,
                           size: 18,
                         ),
                       ),
-                      SizedBox(width: 10),
+                      const SizedBox(width: 10),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
+                          const Text(
                             'Request Pending',
                             style: TextStyle(
                               color: Colors.white,
@@ -83,12 +168,12 @@ class StudentPendingScreen extends StatelessWidget {
             // ── Body ──
             Expanded(
               child: Container(
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: AppColors.background,
                   borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                 ),
                 child: SingleChildScrollView(
-                  padding: EdgeInsets.fromLTRB(16, 28, 16, 40),
+                  padding: const EdgeInsets.fromLTRB(16, 28, 16, 40),
                   child: Column(
                     children: [
                       // ── Status icon ──
@@ -105,18 +190,18 @@ class StudentPendingScreen extends StatelessWidget {
                           size: 40,
                         ),
                       ),
-                      SizedBox(height: 18),
+                      const SizedBox(height: 18),
 
                       Text(
-                        'Hi, $studentName! 👋',
-                        style: TextStyle(
+                        'Hi, ${widget.studentName}! 👋',
+                        style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 20,
                           color: AppColors.textPrimary,
                         ),
                       ),
-                      SizedBox(height: 8),
-                      Text(
+                      const SizedBox(height: 8),
+                      const Text(
                         'Your request to join the class\nhas been sent successfully.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
@@ -125,12 +210,12 @@ class StudentPendingScreen extends StatelessWidget {
                           height: 1.5,
                         ),
                       ),
-                      SizedBox(height: 24),
+                      const SizedBox(height: 24),
 
                       // ── Status card ──
                       Container(
                         width: double.infinity,
-                        padding: EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: Colors.orange.withOpacity(0.05),
                           borderRadius: BorderRadius.circular(3),
@@ -146,7 +231,7 @@ class StudentPendingScreen extends StatelessWidget {
                               'Status',
                               'Pending Approval',
                             ),
-                            SizedBox(height: 12),
+                            const SizedBox(height: 12),
                             _statusRow(
                               Icons.info_outline_rounded,
                               _accent,
@@ -156,11 +241,11 @@ class StudentPendingScreen extends StatelessWidget {
                           ],
                         ),
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
 
                       // ── Info banner ──
                       Container(
-                        padding: EdgeInsets.all(12),
+                        padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: _accent.withOpacity(0.05),
                           borderRadius: BorderRadius.circular(3),
@@ -168,12 +253,12 @@ class StudentPendingScreen extends StatelessWidget {
                         ),
                         child: Row(
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.notifications_outlined,
                               color: _accent,
                               size: 15,
                             ),
-                            SizedBox(width: 10),
+                            const SizedBox(width: 10),
                             Expanded(
                               child: Text(
                                 'You\'ll be notified once your teacher approves your request. Please check back later.',
@@ -187,18 +272,71 @@ class StudentPendingScreen extends StatelessWidget {
                           ],
                         ),
                       ),
-                      SizedBox(height: 28),
+                      const SizedBox(height: 32),
+
+                      // ── Check status button ──
+                      GestureDetector(
+                        onTap: _checkStatus,
+                        child: Container(
+                          width: double.infinity,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: _accent,
+                            borderRadius: BorderRadius.circular(3),
+                            boxShadow: [
+                              BoxShadow(
+                                color: _accent.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: _isChecking
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.refresh_rounded, color: Colors.white, size: 18),
+                                      SizedBox(width: 8),
+                                      Text(
+                                        'Check Approval Status',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
 
                       // ── Sign out button ──
                       GestureDetector(
-                        onTap: () => Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (_) => LoginPage()),
-                          (route) => false,
-                        ),
+                        onTap: () async {
+                          final prefs = await SharedPreferences.getInstance();
+                          await prefs.clear();
+                          if (mounted) {
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(builder: (_) => LoginPage()),
+                              (route) => false,
+                            );
+                          }
+                        },
                         child: Container(
                           width: double.infinity,
-                          padding: EdgeInsets.all(14),
+                          padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(3),
@@ -212,7 +350,7 @@ class StudentPendingScreen extends StatelessWidget {
                                 color: AppColors.textSecondary,
                                 size: 16,
                               ),
-                              SizedBox(width: 8),
+                              const SizedBox(width: 8),
                               Text(
                                 'Sign Out',
                                 style: TextStyle(
@@ -249,7 +387,7 @@ class StudentPendingScreen extends StatelessWidget {
             ),
             child: Icon(icon, color: color, size: 16),
           ),
-          SizedBox(width: 12),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
