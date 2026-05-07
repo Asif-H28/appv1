@@ -6,15 +6,6 @@ import '../../../../core/constants/app_colors.dart';
 // QuickBtn — 2-column card style matching design screenshot
 // ═══════════════════════════════════════════════════════
 
-// Maps each label to which character index gets the orange highlight
-const Map<String, int> _highlightIndex = {
-  'Classrooms': 1, // C[L]assrooms
-  'Leaves': 1, // L[E]aves
-  'Notice': 2, // No[T]ice
-  'School': 3, // Sch[O]ol
-  'Join Requests': 1, // J[O]in Requests
-};
-
 class QuickBtn extends StatefulWidget {
   final dynamic item;
   const QuickBtn({super.key, required this.item});
@@ -26,7 +17,6 @@ class _QuickBtnState extends State<QuickBtn> {
   bool _pressed = false;
 
   static const _teal = Color(0xFF00796B);
-  static const _orange = Color(0xFFE07B39);
 
   static final Map<String, CustomPainter> _painters = {
     'Classrooms': _QAClassroomPainter(),
@@ -36,25 +26,17 @@ class _QuickBtnState extends State<QuickBtn> {
     'Join Requests': _QAJoinRequestPainter(),
   };
 
-  // Builds the uppercase label with one letter highlighted in orange
+  // Builds the uppercase label with uniform teal color
   Widget _styledLabel(String label) {
-    final upper = label.toUpperCase();
-    final hiIdx = _highlightIndex[label] ?? 0;
-    final spans = <TextSpan>[];
-    for (int i = 0; i < upper.length; i++) {
-      spans.add(TextSpan(
-        text: upper[i],
-        style: TextStyle(
-          color: i == hiIdx ? _orange : _teal,
-          fontWeight: FontWeight.w800,
-          fontSize: 11,
-          letterSpacing: 1.1,
-        ),
-      ));
-    }
-    return RichText(
+    return Text(
+      label.toUpperCase(),
       textAlign: TextAlign.center,
-      text: TextSpan(children: spans),
+      style: const TextStyle(
+        color: _teal,
+        fontWeight: FontWeight.w800,
+        fontSize: 11,
+        letterSpacing: 1.1,
+      ),
     );
   }
 
