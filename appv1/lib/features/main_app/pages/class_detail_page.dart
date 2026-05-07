@@ -1,10 +1,12 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
+import 'package:appv1/features/teacher/presentation/pages/assessment_results_page.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-enum DrawerType { subjectDetails, studentResult }
+enum DrawerType { subjectDetails }
 
 class ClassDetailPage extends StatefulWidget {
   final Map<String, dynamic> classData;
@@ -30,118 +32,54 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
 
   // Drawer state
   DrawerType _drawerType = DrawerType.subjectDetails;
-  Map<String, dynamic>? _selectedStudentResult;
 
-  // Test and Results State
-  List<dynamic> _tests = [];
-  Map<String, dynamic>? _selectedTest;
-  List<dynamic> _testResults = [];
-  bool _isLoadingTests = true;
-  bool _isLoadingResults = false;
-  String _testError = '';
-  String _searchQuery = '';
+  // Assessments State
+  List<dynamic> _assessments = [];
+  bool _isLoadingAssessments = true;
+  String _assessmentError = '';
+  final _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _fetchAttendanceData();
-    _fetchTests();
+    _fetchAssessments();
   }
 
-  Future<void> _fetchTests() async {
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _fetchAssessments() async {
     setState(() {
-      _isLoadingTests = true;
-      _testError = '';
+      _isLoadingAssessments = true;
+      _assessmentError = '';
     });
 
     final classId = widget.classData['classId'];
     if (classId == null) {
       if (mounted) {
         setState(() {
-          _testError = 'Invalid class ID';
-          _isLoadingTests = false;
+          _assessmentError = 'Invalid class ID';
+          _isLoadingAssessments = false;
         });
       }
       return;
     }
 
-    try {
-      final url = Uri.parse(
-        '${ApiConstants.apiBaseUrl}/test/class/$classId',
-      );
-      final response = await http.get(url);
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['success'] == true && mounted) {
-          final tests = data['tests'] as List<dynamic>? ?? [];
-          setState(() {
-            _tests = tests;
-            _isLoadingTests = false;
-            if (_tests.isNotEmpty) {
-              _selectedTest = _tests.first;
-              _fetchResults();
-            }
-          });
-        } else if (mounted) {
-          setState(() {
-            _testError = 'Failed to load tests';
-            _isLoadingTests = false;
-          });
-        }
-      } else if (mounted) {
+    final result = await ApiService.fetchAssessmentsByClass(classId);
+    if (mounted) {
+      if (result['success']) {
         setState(() {
-          _testError = 'Server Error ${response.statusCode}';
-          _isLoadingTests = false;
+          _assessments = result['data']?['assessments'] ?? [];
+          _isLoadingAssessments = false;
         });
-      }
-    } catch (e) {
-      if (mounted) {
+      } else {
         setState(() {
-          _testError = 'Network error: $e';
-          _isLoadingTests = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _fetchResults() async {
-    if (_selectedTest == null) return;
-
-    setState(() {
-      _isLoadingResults = true;
-      _testResults = [];
-    });
-
-    final testId = _selectedTest!['testId'];
-    try {
-      final url = Uri.parse(
-        '${ApiConstants.apiBaseUrl}/result/test/$testId',
-      );
-      final response = await http.get(url);
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['success'] == true && mounted) {
-          final results = data['results'] as List<dynamic>? ?? [];
-          results.sort(
-            (a, b) =>
-                (b['percentage'] as num).compareTo(a['percentage'] as num),
-          );
-          setState(() {
-            _testResults = results;
-            _isLoadingResults = false;
-          });
-        }
-      } else if (mounted) {
-        setState(() {
-          _isLoadingResults = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoadingResults = false;
+          _assessmentError = result['message'] ?? 'Failed to load assessments';
+          _isLoadingAssessments = false;
         });
       }
     }
@@ -343,7 +281,7 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
         child: SafeArea(
           child: _drawerType == DrawerType.subjectDetails
               ? _buildSubjectDetailsDrawer(subjects)
-              : _buildStudentResultDrawer(context),
+              : const Center(child: Text('Coming soon')),
         ),
       ),
       body: Builder(
@@ -358,15 +296,12 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Student count card
                 _buildStatCard(
                   icon: Icons.groups_rounded,
                   title: 'Total Students Enrolled',
                   value: '$studentCount',
                 ),
                 const SizedBox(height: 16),
-
-                // Academic Progress Card
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
@@ -441,10 +376,7 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
                               GestureDetector(
                                 onTap: () {
                                   setState(() {
-                                    _drawerType = DrawerType
-                                        .subjectDetails; // â† force reset
-                                    _selectedStudentResult =
-                                        null; // â† clear any previous result
+                                    _drawerType = DrawerType.subjectDetails;
                                   });
                                   Scaffold.of(context).openEndDrawer();
                                 },
@@ -475,8 +407,6 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
                   ),
                 ),
                 const SizedBox(height: 16),
-
-                // Attendance Line Graph Card
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
@@ -496,7 +426,6 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Header & Filters
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -551,8 +480,6 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
                         ],
                       ),
                       const SizedBox(height: 24),
-
-                      // Chart or Loading/Error
                       if (_isLoadingChart)
                         const SizedBox(
                           height: 200,
@@ -679,7 +606,7 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                _buildResultsCard(context),
+                _buildAssessmentsSection(context),
               ],
             ),
           );
@@ -688,293 +615,168 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
     );
   }
 
-  Widget _buildResultsCard(BuildContext context) {
+  Widget _buildAssessmentsSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.assignment_turned_in_rounded, color: Color(0xFF009688), size: 20),
+            const SizedBox(width: 8),
+            Text(
+              'Assessments',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF2D3748),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        if (_isLoadingAssessments)
+          const Center(child: CircularProgressIndicator(color: Color(0xFF009688)))
+        else if (_assessmentError.isNotEmpty)
+          _buildError(_assessmentError)
+        else if (_assessments.isEmpty)
+          _buildEmptyAssessments()
+        else
+          ..._assessments.map((a) => _buildAssessmentCard(a)).toList(),
+      ],
+    );
+  }
+
+  Widget _buildAssessmentCard(Map<String, dynamic> assessment) {
+    final date = assessment['createdAt'] != null 
+        ? DateTime.parse(assessment['createdAt']).toLocal() 
+        : DateTime.now();
+    
+    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final dateStr = "${months[date.month - 1]} ${date.day.toString().padLeft(2, '0')}, ${date.year}";
+
     return Container(
+      margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(3),
-        border: Border.all(color: const Color(0xFF009688).withOpacity(0.2)),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF009688).withOpacity(0.05),
-            blurRadius: 5,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header & Filters
+          Text(
+            assessment['title'] ?? 'Untitled Assessment',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF2D3142),
+            ),
+          ),
+          const SizedBox(height: 16),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Results',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF2D3748),
-                ),
+              const Icon(Icons.person_outline_rounded, size: 14, color: Color(0xFF009688)),
+              const SizedBox(width: 8),
+              Text(
+                'Created by: ${assessment['teacherName'] ?? 'Unknown'}',
+                style: const TextStyle(color: Color(0xFF009688), fontSize: 13, fontWeight: FontWeight.w500),
               ),
-              if (!_isLoadingTests && _tests.isNotEmpty)
-                Container(
-                  height: 36,
-                  constraints: const BoxConstraints(maxWidth: 160),
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF0F7F6),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
-                      color: const Color(0xFF009688).withOpacity(0.3),
-                    ),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<Map<String, dynamic>>(
-                      value: _selectedTest,
-                      isExpanded: true,
-                      icon: const Icon(
-                        Icons.arrow_drop_down,
-                        color: Color(0xFF009688),
-                      ),
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF2D3748),
-                      ),
-                      items: _tests.map<DropdownMenuItem<Map<String, dynamic>>>(
-                        (dynamic test) {
-                          return DropdownMenuItem<Map<String, dynamic>>(
-                            value: test as Map<String, dynamic>,
-                            child: Text(
-                              test['testModule'] ?? 'Unknown Test',
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
-                          );
-                        },
-                      ).toList(),
-                      onChanged: (Map<String, dynamic>? newValue) {
-                        setState(() {
-                          _selectedTest = newValue;
-                        });
-                        _fetchResults();
-                      },
-                    ),
-                  ),
-                ),
             ],
           ),
-          if (_isLoadingTests) ...[
-            const SizedBox(height: 16),
-            const Center(
-              child: CircularProgressIndicator(color: Color(0xFF009688)),
-            ),
-          ] else if (_testError.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            Text(_testError, style: const TextStyle(color: Colors.red)),
-          ] else if (_tests.isEmpty) ...[
-            const SizedBox(height: 16),
-            const Text(
-              'No tests assigned to this class.',
-              style: TextStyle(color: Colors.black54),
-            ),
-          ],
-
-          if (!_isLoadingTests && _tests.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            // Search Bar
-            TextField(
-              decoration: InputDecoration(
-                hintText: 'Search student...',
-                hintStyle: const TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFFA0AEC0),
-                ),
-                prefixIcon: const Icon(
-                  Icons.search,
-                  color: Color(0xFF718096),
-                  size: 20,
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  vertical: 0,
-                  horizontal: 16,
-                ),
-                filled: true,
-                fillColor: const Color(0xFFF7FAFC),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(6),
-                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(6),
-                  borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(6),
-                  borderSide: const BorderSide(color: Color(0xFF009688)),
-                ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              const Icon(Icons.calendar_today_rounded, size: 14, color: Color(0xFF009688)),
+              const SizedBox(width: 8),
+              Text(
+                'Created on: $dateStr',
+                style: const TextStyle(color: Color(0xFF009688), fontSize: 13, fontWeight: FontWeight.w500),
               ),
-              onChanged: (val) {
-                setState(() => _searchQuery = val);
+            ],
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AssessmentResultsPage(
+                      assessmentId: assessment['assessmentId'] ?? '',
+                      assessmentTitle: assessment['title'] ?? 'Assessment Results',
+                    ),
+                  ),
+                );
               },
-            ),
-          ],
-
-          const SizedBox(height: 24),
-          // Results Table
-          if (_isLoadingResults)
-            const Center(
-              child: CircularProgressIndicator(color: Color(0xFF009688)),
-            )
-          else if (_testResults.isEmpty && !_isLoadingTests)
-            const Center(
-              child: Text(
-                'No results available for this test.',
-                style: TextStyle(color: Colors.black54),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Color(0xFF009688), width: 1),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(3),
+                ),
               ),
-            )
-          else
-            _buildResultsTable(context),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'View Results',
+                    style: TextStyle(color: Color(0xFF009688), fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                  SizedBox(width: 8),
+                  Icon(Icons.arrow_forward_rounded, size: 16, color: Color(0xFF009688)),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildResultsTable(BuildContext context) {
-    final displayedResults = _testResults.where((r) {
-      final sName = (r['studentName'] ?? '').toString().toLowerCase();
-      return sName.contains(_searchQuery.toLowerCase());
-    }).toList();
-
-    if (displayedResults.isEmpty) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Text(
-            'No matching student found.',
-            style: TextStyle(color: Colors.black54),
+  Widget _buildEmptyAssessments() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(3),
+        border: Border.all(color: Colors.grey.withOpacity(0.1)),
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.assignment_outlined, size: 48, color: Colors.grey[300]),
+          const SizedBox(height: 16),
+          Text(
+            'No assessments found',
+            style: TextStyle(color: Colors.grey[600], fontSize: 14, fontWeight: FontWeight.w500),
           ),
-        ),
-      );
-    }
+        ],
+      ),
+    );
+  }
 
-    return Column(
-      children: [
-        // Table Header
-        Container(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-          decoration: const BoxDecoration(
-            border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
-          ),
-          child: Row(
-            children: const [
-              Expanded(
-                flex: 2,
-                child: Text(
-                  'Student Name',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF718096),
-                  ),
-                ),
-              ),
-              Expanded(
-                flex: 1,
-                child: Text(
-                  'Marks / Total Marks',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF718096),
-                  ),
-                  textAlign: TextAlign.right,
-                ),
-              ),
-            ],
-          ),
-        ),
-        // Table Rows
-        ...displayedResults.map((result) {
-          final globalRank = _testResults.indexOf(result);
-          final studentName = result['studentName'] ?? 'Unknown';
-          final scored = result['totalScoredMarks']?.toString() ?? '0';
-          final total = result['totalMaximumMarks']?.toString() ?? '0';
-
-          Widget? badge;
-          if (globalRank == 0)
-            badge = const Icon(
-              Icons.emoji_events,
-              color: Colors.amber,
-              size: 16,
-            );
-          else if (globalRank == 1)
-            badge = const Icon(
-              Icons.emoji_events,
-              color: Color(0xFFC0C0C0),
-              size: 16,
-            );
-          else if (globalRank == 2)
-            badge = const Icon(
-              Icons.emoji_events,
-              color: Color(0xFFCD7F32),
-              size: 16,
-            );
-
-          return InkWell(
-            onTap: () {
-              setState(() {
-                _drawerType = DrawerType.studentResult;
-                _selectedStudentResult = result;
-              });
-              Scaffold.of(context).openEndDrawer();
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-              decoration: const BoxDecoration(
-                border: Border(bottom: BorderSide(color: Color(0xFFF7FAFC))),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: Row(
-                      children: [
-                        if (badge != null) ...[badge, const SizedBox(width: 8)],
-                        Expanded(
-                          child: Text(
-                            studentName,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Color(0xFF2D3748),
-                              fontWeight: FontWeight.w600,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: Text(
-                      '$scored / $total',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF2D3748),
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.right,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }),
-      ],
+  Widget _buildError(String message) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.red.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(3),
+        border: Border.all(color: Colors.red.withOpacity(0.1)),
+      ),
+      child: Text(
+        message,
+        style: const TextStyle(color: Colors.red, fontSize: 13),
+        textAlign: TextAlign.center,
+      ),
     );
   }
 
@@ -1189,212 +991,4 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
       ],
     );
   }
-
-  Widget _buildStudentResultDrawer(BuildContext context) {
-    if (_selectedStudentResult == null) {
-      return const Center(child: Text('No student selected'));
-    }
-
-    final result = _selectedStudentResult!;
-    final studentName = result['studentName'] ?? 'Unknown';
-    final percentage = result['percentage']?.toString() ?? '0';
-    final grade = result['grade'] ?? '-';
-    final overallStatus =
-        result['overallStatus']?.toString().toUpperCase() ?? 'N/A';
-    final isPass = result['overallStatus'] == 'pass';
-    final subjects = result['subjectResults'] as List<dynamic>? ?? [];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          color: const Color(0xFF009688),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Student Result',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              InkWell(
-                onTap: () => Navigator.of(context).pop(),
-                child: const Icon(Icons.close, color: Colors.white),
-              ),
-            ],
-          ),
-        ),
-        // Student Header Overview
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: const BoxDecoration(
-            border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                studentName,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF2D3748),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Percentage',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF718096),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '$percentage%',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF2D3748),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      const Text(
-                        'Grade & Status',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF718096),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Text(
-                            'Grade $grade',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF2D3748),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isPass
-                                  ? Colors.green.withOpacity(0.1)
-                                  : Colors.red.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(3),
-                            ),
-                            child: Text(
-                              overallStatus,
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                color: isPass ? Colors.green : Colors.red,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        // Subject Wise View
-        Expanded(
-          child: subjects.isEmpty
-              ? const Center(
-                  child: Text(
-                    'No subject results found.',
-                    style: TextStyle(color: Colors.black54),
-                  ),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: subjects.length,
-                  itemBuilder: (context, index) {
-                    final sub = subjects[index];
-                    final sName = sub['subjectName'] ?? 'Subject';
-                    final sMarks = sub['scoredMarks']?.toString() ?? '0';
-                    final sTotal = sub['maximumScore']?.toString() ?? '0';
-                    final sStatus =
-                        sub['status']?.toString().toUpperCase() ?? '';
-                    final sPass = sub['status'] == 'pass';
-
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(3),
-                        border: Border.all(
-                          color: const Color(0xFF009688).withOpacity(0.2),
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                sName,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 14,
-                                  color: Color(0xFF2D3748),
-                                ),
-                              ),
-                              if (sStatus.isNotEmpty)
-                                Text(
-                                  sStatus,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
-                                    color: sPass ? Colors.green : Colors.red,
-                                  ),
-                                ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            '$sMarks / $sTotal',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
-                              color: Color(0xFF009688),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-        ),
-      ],
-    );
-  }
 }
-
