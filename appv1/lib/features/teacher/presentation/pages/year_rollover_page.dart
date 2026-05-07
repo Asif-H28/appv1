@@ -611,7 +611,7 @@ class _YearRolloverPageState extends State<YearRolloverPage> {
                     child: ElevatedButton(
                       onPressed: _performRollover,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF548D8B),
+                        backgroundColor: const Color(0xFF004D40),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
