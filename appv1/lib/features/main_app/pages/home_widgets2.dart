@@ -8,10 +8,11 @@ import '../../../../core/constants/app_colors.dart';
 
 // Maps each label to which character index gets the orange highlight
 const Map<String, int> _highlightIndex = {
-  'Classrooms': 1,  // C[L]assrooms
-  'Leaves': 1,      // L[E]aves
-  'Notice': 2,      // No[T]ice
-  'School': 3,      // Sch[O]ol
+  'Classrooms': 1, // C[L]assrooms
+  'Leaves': 1, // L[E]aves
+  'Notice': 2, // No[T]ice
+  'School': 3, // Sch[O]ol
+  'Join Requests': 1, // J[O]in Requests
 };
 
 class QuickBtn extends StatefulWidget {
@@ -32,6 +33,7 @@ class _QuickBtnState extends State<QuickBtn> {
     'Leaves': _QALeavePainter(),
     'Notice': _QANoticePainter(),
     'School': _QASchoolPainter(),
+    'Join Requests': _QAJoinRequestPainter(),
   };
 
   // Builds the uppercase label with one letter highlighted in orange
@@ -745,4 +747,47 @@ class _HomeShimmerState extends State<HomeShimmer>
       ),
     );
   }
+}
+
+class _QAJoinRequestPainter extends CustomPainter {
+  const _QAJoinRequestPainter();
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width, h = size.height;
+    final p = Paint()
+      ..color = const Color(0xFF009688)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final pf = Paint()
+      ..color = const Color(0xFF009688).withOpacity(0.12)
+      ..style = PaintingStyle.fill;
+
+    // Head
+    canvas.drawCircle(Offset(w * 0.45, h * 0.35), w * 0.18, pf);
+    canvas.drawCircle(Offset(w * 0.45, h * 0.35), w * 0.18, p);
+
+    // Body
+    final body = Path()
+      ..moveTo(w * 0.15, h * 0.85)
+      ..quadraticBezierTo(w * 0.15, h * 0.60, w * 0.45, h * 0.60)
+      ..quadraticBezierTo(w * 0.75, h * 0.60, w * 0.75, h * 0.85)
+      ..close();
+    canvas.drawPath(body, pf);
+    canvas.drawPath(body, p);
+
+    // Plus sign
+    final pp = Paint()
+      ..color = const Color(0xFFE07B39)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.8
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawLine(Offset(w * 0.75, h * 0.25), Offset(w * 0.95, h * 0.25), pp);
+    canvas.drawLine(Offset(w * 0.85, h * 0.15), Offset(w * 0.85, h * 0.35), pp);
+  }
+
+  @override
+  bool shouldRepaint(_) => false;
 }

@@ -165,6 +165,64 @@ class ApiService {
       return {'success': false, 'message': 'Network error: $e'};
     }
   }
+
+  // Fetch Pending Teacher Join Requests
+  static Future<Map<String, dynamic>> fetchTeacherJoinRequests(String orgId) async {
+    try {
+      final url = '$_baseUrl/teacher/join-requests/$orgId';
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return {
+          'success': true,
+          'requests': data['requests'] ?? [],
+        };
+      } else {
+        return {'success': false, 'message': 'Failed to load requests'};
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
+
+  // Approve Teacher Join Request
+  static Future<Map<String, dynamic>> approveTeacherRequest(String requestId) async {
+    try {
+      final url = '$_baseUrl/teacher/join-requests/$requestId/approve';
+      final response = await http.put(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+      );
+      if (response.statusCode == 200) {
+        return {'success': true};
+      } else {
+        return {'success': false, 'message': 'Failed to approve request'};
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
+
+  // Reject Teacher Join Request
+  static Future<Map<String, dynamic>> rejectTeacherRequest(String requestId) async {
+    try {
+      final url = '$_baseUrl/teacher/join-requests/$requestId/reject';
+      final response = await http.put(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+      );
+      if (response.statusCode == 200) {
+        return {'success': true};
+      } else {
+        return {'success': false, 'message': 'Failed to reject request'};
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
 }
 
 

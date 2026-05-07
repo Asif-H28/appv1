@@ -1,4 +1,4 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:appv1/features/main_app/pages/home_widgets2.dart';
 import 'package:appv1/features/main_app/pages/school_page.dart';
@@ -9,6 +9,7 @@ import 'home_widgets.dart';
 import 'classrooms_page.dart';
 import 'leave_request_page.dart';
 import 'notice_page.dart';
+import 'teacher_approvals_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -309,6 +310,14 @@ class _HomePageState extends State<HomePage> {
         () => Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const SchoolPage()),
+        ),
+      ),
+      _QA(
+        'Join Requests',
+        Icons.person_add_rounded,
+        () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const TeacherApprovalsPage()),
         ),
       ),
     ];
