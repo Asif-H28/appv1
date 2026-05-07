@@ -62,29 +62,24 @@ class _YearRolloverPageState extends State<YearRolloverPage> {
     setState(() => _isLoadingStudents = true);
     try {
       final response = await http.get(
-        Uri.parse('${ApiConstants.apiBaseUrl}/join/class/${widget.classId}'),
+        Uri.parse(
+          '${ApiConstants.apiBaseUrl}/student/class/${widget.classId}/names',
+        ),
         headers: {'Content-Type': 'application/json'},
       );
       if (response.statusCode == 200) {
         final body = jsonDecode(response.body);
-        List<dynamic> raw = [];
-        if (body is List)
-          raw = body;
-        else if (body['requests'] is List)
-          raw = body['requests'] as List;
-        else if (body['data'] is List)
-          raw = body['data'] as List;
-
-        final approved = raw
-            .map((e) => e as Map<String, dynamic>)
-            .where((r) => r['status']?.toString() == 'approved')
-            .toList();
+        final List<dynamic> raw = body['students'] ?? [];
 
         setState(() {
-          _students = approved;
-          _promotedIds = _students.map((e) => e['studentId']?.toString() ?? '').toSet();
+          _students = raw.map((e) => e as Map<String, dynamic>).toList();
+          _promotedIds = _students
+              .map((e) => e['studentId']?.toString() ?? '')
+              .toSet();
           _isLoadingStudents = false;
         });
+      } else {
+        setState(() => _isLoadingStudents = false);
       }
     } catch (_) {
       setState(() => _isLoadingStudents = false);
@@ -95,14 +90,17 @@ class _YearRolloverPageState extends State<YearRolloverPage> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => const Center(child: CircularProgressIndicator(color: Colors.teal)),
+      builder: (_) =>
+          const Center(child: CircularProgressIndicator(color: Colors.teal)),
     );
 
     try {
       final url = '${ApiConstants.apiBaseUrl}/org/${widget.orgId}/rollup-year';
       final body = {
         "newAcademicYear": _academicYearController.text,
-        "newAcademicYearStartDate": _selectedDate.toIso8601String().split('T')[0],
+        "newAcademicYearStartDate": _selectedDate.toIso8601String().split(
+          'T',
+        )[0],
         "classMappings": [
           {
             "oldClassId": widget.classId,
@@ -110,8 +108,8 @@ class _YearRolloverPageState extends State<YearRolloverPage> {
             "teacherId": widget.teacherId,
             "studentsToPromote": _promotedIds.toList(),
             "studentsToRetain": _retainedIds.toList(),
-          }
-        ]
+          },
+        ],
       };
 
       final response = await http.post(
@@ -127,14 +125,20 @@ class _YearRolloverPageState extends State<YearRolloverPage> {
         _showSuccessDialog();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${response.body}'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('Error: ${response.body}'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } catch (e) {
       if (!mounted) return;
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Network error: $e'), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text('Network error: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -144,7 +148,7 @@ class _YearRolloverPageState extends State<YearRolloverPage> {
       context: context,
       barrierDismissible: false,
       builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
@@ -156,7 +160,11 @@ class _YearRolloverPageState extends State<YearRolloverPage> {
                   color: Colors.teal.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.check_circle_rounded, color: Colors.teal, size: 48),
+                child: const Icon(
+                  Icons.check_circle_rounded,
+                  color: Colors.teal,
+                  size: 48,
+                ),
               ),
               const SizedBox(height: 24),
               const Text(
@@ -180,9 +188,17 @@ class _YearRolloverPageState extends State<YearRolloverPage> {
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     side: const BorderSide(color: Colors.teal),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(3),
+                    ),
                   ),
-                  child: const Text('Go Back to Class', style: TextStyle(color: Colors.teal, fontWeight: FontWeight.bold)),
+                  child: const Text(
+                    'Go Back to Class',
+                    style: TextStyle(
+                      color: Colors.teal,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -196,27 +212,6 @@ class _YearRolloverPageState extends State<YearRolloverPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _bg,
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF004D40),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Year Rollover',
-              style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              '${widget.className} Â· 2024-25',
-              style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 13),
-            ),
-          ],
-        ),
-      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -240,7 +235,7 @@ class _YearRolloverPageState extends State<YearRolloverPage> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(3),
         border: Border.all(color: _border),
       ),
       child: Column(
@@ -249,12 +244,24 @@ class _YearRolloverPageState extends State<YearRolloverPage> {
             onTap: () => setState(() => _currentStep = 1),
             title: Text(
               'New Academic Year',
-              style: TextStyle(fontWeight: FontWeight.bold, color: isDone ? Colors.teal : const Color(0xFF1E293B)),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: isDone ? Colors.teal : const Color(0xFF1E293B),
+              ),
             ),
-            subtitle: isDone ? Text('${_academicYearController.text} Â· ${_newClassNameController.text} Â· ${_startDateController.text}', style: const TextStyle(fontSize: 12)) : null,
-            trailing: isDone 
-              ? const Icon(Icons.check_circle_outline, color: Colors.teal)
-              : Icon(isOpen ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down),
+            subtitle: isDone
+                ? Text(
+                    '${_academicYearController.text} Â· ${_newClassNameController.text} Â· ${_startDateController.text}',
+                    style: const TextStyle(fontSize: 12),
+                  )
+                : null,
+            trailing: isDone
+                ? const Icon(Icons.check_circle_outline, color: Colors.teal)
+                : Icon(
+                    isOpen
+                        ? Icons.keyboard_arrow_up
+                        : Icons.keyboard_arrow_down,
+                  ),
           ),
           if (isOpen)
             Padding(
@@ -284,13 +291,18 @@ class _YearRolloverPageState extends State<YearRolloverPage> {
                         backgroundColor: const Color(0xFF004D40),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(3),
+                        ),
                         elevation: 0,
                       ),
                       child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text('Continue', style: TextStyle(fontWeight: FontWeight.bold)),
+                          Text(
+                            'Continue',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
                           SizedBox(width: 8),
                           Icon(Icons.arrow_forward, size: 16),
                         ],
@@ -313,7 +325,7 @@ class _YearRolloverPageState extends State<YearRolloverPage> {
     return Container(
       decoration: BoxDecoration(
         color: isLocked ? const Color(0xFFF1F5F9) : Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(3),
         border: Border.all(color: _border),
       ),
       child: Column(
@@ -323,9 +335,18 @@ class _YearRolloverPageState extends State<YearRolloverPage> {
             leading: isLocked ? const Icon(Icons.lock_outline, size: 20) : null,
             title: Text(
               'Select Student Status',
-              style: TextStyle(fontWeight: FontWeight.bold, color: isLocked ? Colors.grey : const Color(0xFF1E293B)),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: isLocked ? Colors.grey : const Color(0xFF1E293B),
+              ),
             ),
-            trailing: isLocked ? null : Icon(isOpen ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down),
+            trailing: isLocked
+                ? null
+                : Icon(
+                    isOpen
+                        ? Icons.keyboard_arrow_up
+                        : Icons.keyboard_arrow_down,
+                  ),
           ),
           if (isOpen)
             Padding(
@@ -334,32 +355,57 @@ class _YearRolloverPageState extends State<YearRolloverPage> {
                 children: [
                   Row(
                     children: [
-                      Text('Students (${_students.length})', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF006064))),
+                      Text(
+                        'Students (${_students.length})',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF006064),
+                        ),
+                      ),
                       const Spacer(),
                       TextButton(
                         onPressed: () {
                           setState(() {
-                            _promotedIds = _students.map((e) => e['studentId']?.toString() ?? '').toSet();
+                            _promotedIds = _students
+                                .map((e) => e['studentId']?.toString() ?? '')
+                                .toSet();
                             _retainedIds = {};
                           });
                         },
-                        child: const Text('All Promote', style: TextStyle(color: Colors.teal, fontWeight: FontWeight.bold)),
+                        child: const Text(
+                          'All Promote',
+                          style: TextStyle(
+                            color: Colors.teal,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                       const Text(' | ', style: TextStyle(color: Colors.grey)),
                       TextButton(
                         onPressed: () {
                           setState(() {
-                            _retainedIds = _students.map((e) => e['studentId']?.toString() ?? '').toSet();
+                            _retainedIds = _students
+                                .map((e) => e['studentId']?.toString() ?? '')
+                                .toSet();
                             _promotedIds = {};
                           });
                         },
-                        child: const Text('All Retain', style: TextStyle(color: Colors.teal, fontWeight: FontWeight.bold)),
+                        child: const Text(
+                          'All Retain',
+                          style: TextStyle(
+                            color: Colors.teal,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ],
                   ),
                   const Divider(),
                   if (_isLoadingStudents)
-                    const Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator())
+                    const Padding(
+                      padding: EdgeInsets.all(20),
+                      child: CircularProgressIndicator(),
+                    )
                   else
                     ListView.separated(
                       shrinkWrap: true,
@@ -380,15 +426,33 @@ class _YearRolloverPageState extends State<YearRolloverPage> {
                               CircleAvatar(
                                 radius: 20,
                                 backgroundColor: Colors.grey[200],
-                                child: Text(name[0], style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                                child: Text(
+                                  name[0],
+                                  style: const TextStyle(
+                                    color: Colors.grey,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                                    Text('Roll No: $roll', style: TextStyle(color: Colors.grey[500], fontSize: 12)),
+                                    Text(
+                                      name,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Roll No: $roll',
+                                      style: TextStyle(
+                                        color: Colors.grey[500],
+                                        fontSize: 12,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -403,16 +467,28 @@ class _YearRolloverPageState extends State<YearRolloverPage> {
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF0FDFA),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(3),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text('${_promotedIds.length} Promote', style: const TextStyle(color: Colors.teal, fontWeight: FontWeight.bold)),
+                        Text(
+                          '${_promotedIds.length} Promote',
+                          style: const TextStyle(
+                            color: Colors.teal,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         const SizedBox(width: 16),
                         const Icon(Icons.circle, size: 4, color: Colors.grey),
                         const SizedBox(width: 16),
-                        Text('${_retainedIds.length} Retain', style: const TextStyle(color: Colors.teal, fontWeight: FontWeight.bold)),
+                        Text(
+                          '${_retainedIds.length} Retain',
+                          style: const TextStyle(
+                            color: Colors.teal,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -425,10 +501,15 @@ class _YearRolloverPageState extends State<YearRolloverPage> {
                         backgroundColor: const Color(0xFF004D40),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(3),
+                        ),
                         elevation: 0,
                       ),
-                      child: const Text('Continue', style: TextStyle(fontWeight: FontWeight.bold)),
+                      child: const Text(
+                        'Continue',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -447,7 +528,7 @@ class _YearRolloverPageState extends State<YearRolloverPage> {
     return Container(
       decoration: BoxDecoration(
         color: isLocked ? const Color(0xFFF1F5F9) : Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(3),
         border: Border.all(color: _border),
       ),
       child: Column(
@@ -457,37 +538,68 @@ class _YearRolloverPageState extends State<YearRolloverPage> {
             leading: isLocked ? const Icon(Icons.lock_outline, size: 20) : null,
             title: Text(
               'Confirm Rollover',
-              style: TextStyle(fontWeight: FontWeight.bold, color: isLocked ? Colors.grey : const Color(0xFF1E293B)),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: isLocked ? Colors.grey : const Color(0xFF1E293B),
+              ),
             ),
-            trailing: isLocked ? null : Icon(isOpen ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down),
+            trailing: isLocked
+                ? null
+                : Icon(
+                    isOpen
+                        ? Icons.keyboard_arrow_up
+                        : Icons.keyboard_arrow_down,
+                  ),
           ),
           if (isOpen)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               child: Column(
                 children: [
-                  _buildInfoRow('Current Class:', '${widget.className} (2024-25)'),
-                  _buildInfoRow('New Class:', '${_newClassNameController.text} (${_academicYearController.text})'),
+                  _buildInfoRow(
+                    'Current Class:',
+                    '${widget.className} (2024-25)',
+                  ),
+                  _buildInfoRow(
+                    'New Class:',
+                    '${_newClassNameController.text} (${_academicYearController.text})',
+                  ),
                   _buildInfoRow('Start Date:', _startDateController.text),
                   const Divider(height: 32),
-                  _buildInfoRow('Promoting:', '${_promotedIds.length} students', isValueBold: true),
-                  _buildInfoRow('Retaining:', '${_retainedIds.length} students', isValueBold: true),
+                  _buildInfoRow(
+                    'Promoting:',
+                    '${_promotedIds.length} students',
+                    isValueBold: true,
+                  ),
+                  _buildInfoRow(
+                    'Retaining:',
+                    '${_retainedIds.length} students',
+                    isValueBold: true,
+                  ),
                   const SizedBox(height: 24),
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: Colors.orange.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(3),
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 16),
+                        const Icon(
+                          Icons.warning_amber_rounded,
+                          color: Colors.orange,
+                          size: 16,
+                        ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             'This action cannot be undone. Retained students will stay in ${widget.className} for the next term.',
-                            style: TextStyle(color: Colors.orange[800], fontSize: 11, height: 1.4),
+                            style: TextStyle(
+                              color: Colors.orange[800],
+                              fontSize: 11,
+                              height: 1.4,
+                            ),
                           ),
                         ),
                       ],
@@ -502,10 +614,15 @@ class _YearRolloverPageState extends State<YearRolloverPage> {
                         backgroundColor: const Color(0xFF548D8B),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(3),
+                        ),
                         elevation: 0,
                       ),
-                      child: const Text('Confirm Year Rollover', style: TextStyle(fontWeight: FontWeight.bold)),
+                      child: const Text(
+                        'Confirm Year Rollover',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
                   ),
                 ],
@@ -519,7 +636,14 @@ class _YearRolloverPageState extends State<YearRolloverPage> {
   Widget _buildLabel(String label) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF64748B))),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+          color: Color(0xFF64748B),
+        ),
+      ),
     );
   }
 
@@ -530,9 +654,18 @@ class _YearRolloverPageState extends State<YearRolloverPage> {
         hintText: hint,
         filled: true,
         fillColor: const Color(0xFFF8FAFC),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: _border)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: _border)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(3),
+          borderSide: BorderSide(color: _border),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(3),
+          borderSide: BorderSide(color: _border),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
       ),
     );
   }
@@ -543,18 +676,34 @@ class _YearRolloverPageState extends State<YearRolloverPage> {
         final now = DateTime.now();
         // Ensure initialDate is at or after firstDate
         final initial = _selectedDate.isBefore(now) ? now : _selectedDate;
-        
+
         final date = await showDatePicker(
           context: context,
           initialDate: initial,
-          firstDate: DateTime(2020), // Allow selection of past dates if needed, or stick to now
+          firstDate: DateTime(
+            2020,
+          ), // Allow selection of past dates if needed, or stick to now
           lastDate: now.add(const Duration(days: 730)),
         );
         if (date != null) {
           setState(() {
             _selectedDate = date;
-            final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            _startDateController.text = '${date.day.toString().padLeft(2, '0')} ${months[date.month - 1]} ${date.year}';
+            final months = [
+              'Jan',
+              'Feb',
+              'Mar',
+              'Apr',
+              'May',
+              'Jun',
+              'Jul',
+              'Aug',
+              'Sep',
+              'Oct',
+              'Nov',
+              'Dec',
+            ];
+            _startDateController.text =
+                '${date.day.toString().padLeft(2, '0')} ${months[date.month - 1]} ${date.year}';
           });
         }
       },
@@ -565,9 +714,18 @@ class _YearRolloverPageState extends State<YearRolloverPage> {
             suffixIcon: const Icon(Icons.calendar_today_outlined, size: 18),
             filled: true,
             fillColor: const Color(0xFFF8FAFC),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: _border)),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: _border)),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(3),
+              borderSide: BorderSide(color: _border),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(3),
+              borderSide: BorderSide(color: _border),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
           ),
         ),
       ),
@@ -588,10 +746,22 @@ class _YearRolloverPageState extends State<YearRolloverPage> {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
               color: isPromoted ? const Color(0xFF006064) : Colors.white,
-              border: Border.all(color: isPromoted ? const Color(0xFF006064) : _border),
-              borderRadius: const BorderRadius.only(topLeft: Radius.circular(4), bottomLeft: Radius.circular(4)),
+              border: Border.all(
+                color: isPromoted ? const Color(0xFF006064) : _border,
+              ),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(3),
+                bottomLeft: Radius.circular(3),
+              ),
             ),
-            child: Text('PROMOTE', style: TextStyle(color: isPromoted ? Colors.white : const Color(0xFF006064), fontSize: 11, fontWeight: FontWeight.bold)),
+            child: Text(
+              'PROMOTE',
+              style: TextStyle(
+                color: isPromoted ? Colors.white : const Color(0xFF006064),
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ),
         GestureDetector(
@@ -605,10 +775,22 @@ class _YearRolloverPageState extends State<YearRolloverPage> {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
               color: !isPromoted ? const Color(0xFF006064) : Colors.white,
-              border: Border.all(color: !isPromoted ? const Color(0xFF006064) : _border),
-              borderRadius: const BorderRadius.only(topRight: Radius.circular(4), bottomRight: Radius.circular(4)),
+              border: Border.all(
+                color: !isPromoted ? const Color(0xFF006064) : _border,
+              ),
+              borderRadius: const BorderRadius.only(
+                topRight: Radius.circular(3),
+                bottomRight: Radius.circular(3),
+              ),
             ),
-            child: Text('RETAIN', style: TextStyle(color: !isPromoted ? Colors.white : const Color(0xFF006064), fontSize: 11, fontWeight: FontWeight.bold)),
+            child: Text(
+              'RETAIN',
+              style: TextStyle(
+                color: !isPromoted ? Colors.white : const Color(0xFF006064),
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ),
       ],
@@ -621,7 +803,10 @@ class _YearRolloverPageState extends State<YearRolloverPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: Color(0xFF64748B), fontSize: 13)),
+          Text(
+            label,
+            style: const TextStyle(color: Color(0xFF64748B), fontSize: 13),
+          ),
           Text(
             value,
             style: TextStyle(
