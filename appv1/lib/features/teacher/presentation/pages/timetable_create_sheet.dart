@@ -1,4 +1,4 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -493,7 +493,7 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _label('ACADEMIC YEAR'),
+                _label('ACADEMIC YEAR', required: true),
                 SizedBox(height: 5),
                 TextField(
                   controller: _yearCtrl,
@@ -574,7 +574,7 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
     );
   }
 
-  // â”€â”€ Slot card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ——— Slot card ——————————————————————————————————————————
 
   Widget _slotCard(BuildContext context, int index) {
     final slot = _daySlots[_activeDay]![index];
@@ -658,6 +658,7 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
                         ctrl: startCtrl,
                         label: 'START',
                         hint: '09:00',
+                        required: true,
                       ),
                     ),
                     Padding(
@@ -679,6 +680,7 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
                         ctrl: endCtrl,
                         label: 'END',
                         hint: '10:00',
+                        required: true,
                       ),
                     ),
                   ],
@@ -686,7 +688,7 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
 
                 if (isClass) ...[
                   SizedBox(height: 10),
-                  _label('SUBJECT'),
+                  _label('SUBJECT', required: true),
                   SizedBox(height: 5),
                   _pickerTile(
                     icon: Icons.menu_book_rounded,
@@ -699,7 +701,7 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
                         : () => _pickSubject(context, index),
                   ),
                   SizedBox(height: 10),
-                  _label('TEACHER'),
+                  _label('TEACHER', required: true),
                   SizedBox(height: 5),
                   _pickerTile(
                     icon: Icons.person_rounded,
@@ -730,7 +732,7 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
     );
   }
 
-  // â”€â”€ Picker tile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ——— Picker tile ————————————————————————————————————————
 
   Widget _pickerTile({
     required IconData icon,
@@ -785,18 +787,19 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
     );
   }
 
-  // â”€â”€ Time field â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ——— Time field —————————————————————————————————————————
 
   Widget _timeField({
     required BuildContext context,
     required TextEditingController ctrl,
     required String label,
     required String hint,
+    bool required = false,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _label(label),
+        _label(label, required: required),
         SizedBox(height: 5),
         GestureDetector(
           onTap: () => _pickTime(context, ctrl),
@@ -847,7 +850,7 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
     );
   }
 
-  // â”€â”€ Type dropdown â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ——— Type dropdown —————————————————————————————————————
 
   Widget _typeDropdown(Map<String, dynamic> slot, Color color) {
     return Container(
@@ -899,16 +902,30 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
     );
   }
 
-  // â”€â”€ Shared helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ——— Shared helpers —————————————————————————————————————
 
-  Widget _label(String text) => Text(
-    text,
-    style: TextStyle(
-      fontSize: 10,
-      fontWeight: FontWeight.w700,
-      color: AppColors.textSecondary,
-      letterSpacing: 0.5,
-    ),
+  Widget _label(String text, {bool required = false}) => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Text(
+        text,
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w700,
+          color: AppColors.textSecondary,
+          letterSpacing: 0.5,
+        ),
+      ),
+      if (required)
+        Text(
+          ' *',
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            color: Colors.red[600],
+          ),
+        ),
+    ],
   );
 
   InputDecoration _fieldDeco({required String hint, required IconData icon}) {

@@ -1,4 +1,4 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -283,16 +283,30 @@ class _TimetableAddSlotSheetState extends State<TimetableAddSlotSheet> {
     }
   }
 
-  Widget _label(String t) => Padding(
+  Widget _label(String t, {bool required = false}) => Padding(
     padding: EdgeInsets.only(bottom: 6),
-    child: Text(
-      t,
-      style: TextStyle(
-        fontSize: 10,
-        fontWeight: FontWeight.w700,
-        color: AppColors.textSecondary,
-        letterSpacing: 0.5,
-      ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          t,
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textSecondary,
+            letterSpacing: 0.5,
+          ),
+        ),
+        if (required)
+          Text(
+            ' *',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: Colors.red[600],
+            ),
+          ),
+      ],
     ),
   );
 
@@ -454,7 +468,7 @@ class _TimetableAddSlotSheetState extends State<TimetableAddSlotSheet> {
                       ),
                       Text(
                         'P${widget.nextPeriodNumber}'
-                        ' â€¢ $_selectedDay',
+                        ' • $_selectedDay',
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.75),
                           fontSize: 11,
@@ -495,7 +509,7 @@ class _TimetableAddSlotSheetState extends State<TimetableAddSlotSheet> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Day selector
-                _label('DAY'),
+                _label('DAY', required: true),
                 SizedBox(
                   height: 38,
                   child: ListView(
@@ -538,7 +552,7 @@ class _TimetableAddSlotSheetState extends State<TimetableAddSlotSheet> {
                 SizedBox(height: 16),
 
                 // Type selector
-                _label('PERIOD TYPE'),
+                _label('PERIOD TYPE', required: true),
                 SizedBox(
                   height: 44,
                   child: ListView(
@@ -595,13 +609,13 @@ class _TimetableAddSlotSheetState extends State<TimetableAddSlotSheet> {
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [_label('START TIME'), _timeTile(_startCtrl)],
+                        children: [_label('START TIME', required: true), _timeTile(_startCtrl)],
                       ),
                     ),
                     Padding(
                       padding: EdgeInsets.fromLTRB(10, 16, 10, 0),
                       child: Text(
-                        'â€“',
+                        '–',
                         style: TextStyle(
                           color: AppColors.textSecondary,
                           fontWeight: FontWeight.bold,
@@ -612,7 +626,7 @@ class _TimetableAddSlotSheetState extends State<TimetableAddSlotSheet> {
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [_label('END TIME'), _timeTile(_endCtrl)],
+                        children: [_label('END TIME', required: true), _timeTile(_endCtrl)],
                       ),
                     ),
                   ],
@@ -620,7 +634,7 @@ class _TimetableAddSlotSheetState extends State<TimetableAddSlotSheet> {
 
                 if (isClass) ...[
                   SizedBox(height: 16),
-                  _label('SUBJECT'),
+                  _label('SUBJECT', required: true),
                   _pickerTile(
                     icon: Icons.menu_book_rounded,
                     placeholder: widget.classSubjects.isEmpty
@@ -630,7 +644,7 @@ class _TimetableAddSlotSheetState extends State<TimetableAddSlotSheet> {
                     onTap: widget.classSubjects.isEmpty ? null : _pickSubject,
                   ),
                   SizedBox(height: 14),
-                  _label('TEACHER'),
+                  _label('TEACHER', required: true),
                   _pickerTile(
                     icon: Icons.person_rounded,
                     placeholder: _loadingTeachers
