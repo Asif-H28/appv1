@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
+import 'year_rollover_page.dart';
 import '../widgets/subject_lessons_tab.dart';
 import '../widgets/classroom_students_tab.dart';
 import '../widgets/classroom_notices_tab.dart';
@@ -79,6 +80,12 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage> {
       'label': 'Class Notes',
       'color': Colors.teal[600],
       'group': 1,
+    },
+    {
+      'icon': Icons.trending_up_rounded,
+      'label': 'Class Promotion',
+      'color': Colors.pink[600],
+      'group': 0,
     },
   ];
 
@@ -347,7 +354,7 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage> {
         children: [
           // ── Grouped Menu Items ──
           _buildGroupTitle('ACADEMIC MANAGEMENT'),
-          _buildMenuGroup([0, 1, 2, 3]),
+          _buildMenuGroup([0, 1, 2, 3, 7]),
 
           const SizedBox(height: 24),
           _buildGroupTitle('COMMUNICATION'),
@@ -503,6 +510,13 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage> {
         return ClassroomRequestsTab(classId: widget.classId);
       case 6: // Notes
         return ClassroomNotesTab(classId: widget.classId);
+      case 7: // Promotion
+        return YearRolloverPage(
+          classId: widget.classId,
+          className: className,
+          orgId: _classroom['orgId']?.toString() ?? '',
+          teacherId: _classroom['teacherId']?.toString() ?? '',
+        );
       default:
         return const SizedBox.shrink();
     }
