@@ -1,4 +1,4 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -385,6 +385,7 @@ class __CreateOrgTabState extends State<_CreateOrgTab> {
   final _emailCtrl = TextEditingController();
   final _orgCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
+  final _licenseCtrl = TextEditingController();
   bool _isLoading = false;
   bool _allFieldsValid = false;
   bool _obscure = true;
@@ -395,6 +396,7 @@ class __CreateOrgTabState extends State<_CreateOrgTab> {
     _emailCtrl.addListener(_checkValid);
     _orgCtrl.addListener(_checkValid);
     _passCtrl.addListener(_checkValid);
+    _licenseCtrl.addListener(_checkValid);
   }
 
   void _checkValid() {
@@ -405,7 +407,8 @@ class __CreateOrgTabState extends State<_CreateOrgTab> {
           _orgCtrl.text.isNotEmpty &&
           isValidOrgName(_orgCtrl.text) &&
           _passCtrl.text.isNotEmpty &&
-          isValidPassword(_passCtrl.text);
+          isValidPassword(_passCtrl.text) &&
+          _licenseCtrl.text.trim().length == 16;
     });
   }
 
@@ -414,6 +417,7 @@ class __CreateOrgTabState extends State<_CreateOrgTab> {
     _emailCtrl.dispose();
     _orgCtrl.dispose();
     _passCtrl.dispose();
+    _licenseCtrl.dispose();
     super.dispose();
   }
 
@@ -426,6 +430,7 @@ class __CreateOrgTabState extends State<_CreateOrgTab> {
         orgName: _orgCtrl.text.trim(),
         adminEmail: _emailCtrl.text.trim(),
         adminPassword: _passCtrl.text,
+        licenseKey: _licenseCtrl.text.trim(),
       );
       if (!mounted) return;
       if (result['success'] == true) {
@@ -593,7 +598,7 @@ class __CreateOrgTabState extends State<_CreateOrgTab> {
                 return null;
               },
               decoration: _fieldDeco(
-                hint: 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
+                hint: '••••••••',
                 icon: Icons.lock_outline_rounded,
                 suffixIcon: IconButton(
                   icon: Icon(
@@ -606,6 +611,25 @@ class __CreateOrgTabState extends State<_CreateOrgTab> {
                   onPressed: () => setState(() => _obscure = !_obscure),
                 ),
               ),
+            ),
+            SizedBox(height: 12),
+
+            _fieldLabel('LICENSE KEY (16 CHARACTERS)'),
+            SizedBox(height: 6),
+            TextFormField(
+              controller: _licenseCtrl,
+              cursorColor: _accent,
+              maxLength: 16,
+              style: TextStyle(fontSize: 13, color: AppColors.textPrimary, letterSpacing: 1.5),
+              decoration: _fieldDeco(
+                hint: 'XXXX-XXXX-XXXX-XXXX',
+                icon: Icons.vpn_key_outlined,
+              ).copyWith(counterText: ''),
+              validator: (v) {
+                if (v == null || v.isEmpty) return 'License key is required';
+                if (v.trim().length != 16) return 'Must be exactly 16 characters';
+                return null;
+              },
             ),
             SizedBox(height: 20),
 

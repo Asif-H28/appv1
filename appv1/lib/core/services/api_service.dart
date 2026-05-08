@@ -10,6 +10,7 @@ class ApiService {
     required String orgName,
     required String adminEmail,
     required String adminPassword,
+    required String licenseKey,
   }) async {
     try {
       final response = await http.post(
@@ -19,6 +20,7 @@ class ApiService {
           'orgName': orgName,
           'adminEmail': adminEmail,
           'adminPassword': adminPassword,
+          'licenseKey': licenseKey,
         }),
       );
 
