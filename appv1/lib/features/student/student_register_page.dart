@@ -1,6 +1,8 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -37,7 +39,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
     try {
       final response = await http.post(
         Uri.parse('${ApiConstants.apiBaseUrl}/student/register'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode({
           'name': _nameCtrl.text.trim(),
           'email': _emailCtrl.text.trim(),
@@ -49,7 +51,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
       debugPrint('STATUS: ${response.statusCode}');
       debugPrint('BODY: ${response.body}');
 
-      // â”€â”€ Guard: widget may have been disposed during await â”€â”€
+      // ── Guard: widget may have been disposed during await ──
       if (!mounted) return;
       setState(() => _isLoading = false);
 
@@ -62,13 +64,13 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
           return;
         }
 
-        // â”€â”€ Extract student data â”€â”€
+        // ── Extract student data ──
         final student =
             (body['student'] as Map<String, dynamic>?) ??
             (body['data'] as Map<String, dynamic>?) ??
             {};
 
-        // â”€â”€ Save to SharedPreferences â”€â”€
+        // ── Save to SharedPreferences ──
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString(
           'studentId',
@@ -85,10 +87,10 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
         await prefs.setString('userRole', 'student');
         await prefs.setBool('isLoggedIn', true);
 
-        // â”€â”€ Final mounted check before navigation â”€â”€
+        // ── Final mounted check before navigation ──
         if (!mounted) return;
 
-        // â”€â”€ Navigate using context directly, no rootNavigator, no delay â”€â”€
+        // ── Navigate using context directly, no rootNavigator, no delay ──
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => StudentJoinOrgPage()),
@@ -144,7 +146,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
       backgroundColor: AppColors.background,
       body: Column(
         children: [
-          // â”€â”€ Header â”€â”€
+          // ── Header ──
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
@@ -195,7 +197,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
                     ),
 
                     SizedBox(height: 14),
-                    // â”€â”€ Flow steps banner â”€â”€
+                    // ── Flow steps banner ──
                     Container(
                       padding: EdgeInsets.symmetric(
                         horizontal: 12,
@@ -222,7 +224,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
             ),
           ),
 
-          // â”€â”€ Form â”€â”€
+          // ── Form ──
           Expanded(
             child: SingleChildScrollView(
               padding: EdgeInsets.fromLTRB(20, 22, 20, 20),

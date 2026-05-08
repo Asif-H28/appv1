@@ -1,6 +1,8 @@
 import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import '../../../../core/constants/app_colors.dart';
 import 'create_ca_sheet.dart';
@@ -54,7 +56,7 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
     try {
       final res2 = await http.get(
         Uri.parse('${ApiConstants.apiBaseUrl}/comprehensive-assessment/list?orgId=${widget.orgId}&classId=${widget.classId}'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
 
       if (!mounted) return;
@@ -95,7 +97,7 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
       print('Delete URL: $url');
       final response = await http.delete(
         Uri.parse(url),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       print('Delete response status: ${response.statusCode}');
       print('Delete response body: ${response.body}');
@@ -247,7 +249,10 @@ class _ClassroomTestsTabState extends State<ClassroomTestsTab> {
       }
 
       final url = Uri.parse('${ApiConstants.apiBaseUrl}/comprehensive-assessment/export/$assessmentId');
-      final response = await http.get(url);
+      final response = await http.get(
+        url,
+        headers: await ApiService.getHeaders(),
+      );
 
       if (response.statusCode == 200) {
         String? selectedPath;

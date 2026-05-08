@@ -1,6 +1,8 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -54,7 +56,7 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
           Uri.parse(
             '${ApiConstants.apiBaseUrl}/classroom/org/$_orgId',
           ),
-          headers: {'Content-Type': 'application/json'},
+          headers: await ApiService.getHeaders(),
         );
         if (!mounted) return;
         if (res.statusCode == 200) {
@@ -73,7 +75,7 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
           Uri.parse(
             '${ApiConstants.apiBaseUrl}/classroom/teacher/$_teacherId',
           ),
-          headers: {'Content-Type': 'application/json'},
+          headers: await ApiService.getHeaders(),
         );
         if (!mounted) return;
         if (res.statusCode == 200) {
@@ -106,7 +108,7 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
     try {
       final response = await http.delete(
         Uri.parse('${ApiConstants.apiBaseUrl}/classroom/$classId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (!mounted) return;
       if (response.statusCode == 200) {
@@ -245,7 +247,7 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
       backgroundColor: AppColors.background,
       body: Column(
         children: [
-          // â”€â”€ Header â”€â”€
+          // ── Header ──
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -374,7 +376,7 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
             ),
           ),
 
-          // â”€â”€ Body â”€â”€
+          // ── Body ──
           Expanded(
             child: Container(
               decoration: BoxDecoration(

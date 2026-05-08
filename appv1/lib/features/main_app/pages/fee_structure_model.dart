@@ -1,11 +1,12 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 // fee_structure_model.dart
 // Data model + API service for Fee Structures
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-// â”€â”€ Model â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Model ────────────────────────────────────────────────
 class BreakdownItem {
   String component;
   double amount;
@@ -73,7 +74,7 @@ class FeeStructure {
   double get breakdownTotal => breakdown.fold(0, (sum, b) => sum + b.amount);
 }
 
-// â”€â”€ API Service â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── API Service ──────────────────────────────────────────
 class FeeStructureService {
   static const _base = '${ApiConstants.apiBaseUrl}/org/school/fee';
 
@@ -81,7 +82,7 @@ class FeeStructureService {
   static Future<List<FeeStructure>> getAll(String orgId) async {
     final res = await http.get(
       Uri.parse('$_base?orgId=$orgId'),
-      headers: {'Content-Type': 'application/json'},
+      headers: await ApiService.getHeaders(),
     );
     if (res.statusCode == 200) {
       final body = jsonDecode(res.body) as Map<String, dynamic>;
@@ -100,7 +101,7 @@ class FeeStructureService {
   static Future<FeeStructure> create(FeeStructure fs) async {
     final res = await http.post(
       Uri.parse(_base),
-      headers: {'Content-Type': 'application/json'},
+      headers: await ApiService.getHeaders(),
       body: jsonEncode(fs.toJson()),
     );
     final body = jsonDecode(res.body) as Map<String, dynamic>;
@@ -114,7 +115,7 @@ class FeeStructureService {
   static Future<FeeStructure> update(String id, FeeStructure fs) async {
     final res = await http.put(
       Uri.parse('$_base/$id'),
-      headers: {'Content-Type': 'application/json'},
+      headers: await ApiService.getHeaders(),
       body: jsonEncode(fs.toJson()),
     );
     final body = jsonDecode(res.body) as Map<String, dynamic>;
@@ -128,7 +129,7 @@ class FeeStructureService {
   static Future<void> delete(String id, String orgId) async {
     final res = await http.delete(
       Uri.parse('$_base/$id?orgId=$orgId'),
-      headers: {'Content-Type': 'application/json'},
+      headers: await ApiService.getHeaders(),
     );
     final body = jsonDecode(res.body) as Map<String, dynamic>;
     if (res.statusCode != 200 || body['success'] != true) {

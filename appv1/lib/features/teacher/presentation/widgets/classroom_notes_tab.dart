@@ -1,6 +1,8 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -49,7 +51,7 @@ class _ClassroomNotesTabState extends State<ClassroomNotesTab> {
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/notes/class/${widget.classId}',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (!mounted) return;
       if (response.statusCode == 200) {
@@ -84,7 +86,7 @@ class _ClassroomNotesTabState extends State<ClassroomNotesTab> {
     try {
       final response = await http.delete(
         Uri.parse('${ApiConstants.apiBaseUrl}/notes/$notesId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (!mounted) return;
       if (response.statusCode == 200) {
@@ -104,7 +106,7 @@ class _ClassroomNotesTabState extends State<ClassroomNotesTab> {
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/notes/class/${widget.classId}/all',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (!mounted) return;
       if (response.statusCode == 200) {
@@ -295,7 +297,7 @@ class _ClassroomNotesTabState extends State<ClassroomNotesTab> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // â”€â”€ Action bar â”€â”€
+        // ── Action bar ──
         Padding(
           padding: EdgeInsets.fromLTRB(14, 14, 14, 0),
           child: Row(
@@ -401,7 +403,7 @@ class _ClassroomNotesTabState extends State<ClassroomNotesTab> {
 
         SizedBox(height: 10),
 
-        // â”€â”€ Body â”€â”€
+        // ── Body ──
         Expanded(
           child: _isLoading
               ? Center(

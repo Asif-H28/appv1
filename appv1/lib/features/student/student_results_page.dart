@@ -1,6 +1,8 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -64,9 +66,8 @@ class _StudentResultsPageState extends State<StudentResultsPage>
       _testsError = false;
     });
     try {
-      final res = await http.get(
-        Uri.parse('${ApiConstants.apiBaseUrl}/test/class/$_classId'),
-        headers: {'Content-Type': 'application/json'},
+      final res = await ApiService.get(
+        '${ApiConstants.apiBaseUrl}/test/class/$_classId',
       );
       if (!mounted) return;
       if (res.statusCode == 200) {
@@ -108,9 +109,8 @@ class _StudentResultsPageState extends State<StudentResultsPage>
       _results = [];
     });
     try {
-      final res = await http.get(
-        Uri.parse('${ApiConstants.apiBaseUrl}/result/test/$testId'),
-        headers: {'Content-Type': 'application/json'},
+      final res = await ApiService.get(
+        '${ApiConstants.apiBaseUrl}/result/test/$testId',
       );
       if (!mounted) return;
       if (res.statusCode == 200) {
@@ -164,7 +164,7 @@ class _StudentResultsPageState extends State<StudentResultsPage>
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // â”€â”€ Top control bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Top control bar ──────────────────────────
         ResultsTopBar(
           tests: _tests,
           selectedTest: _selectedTest,
@@ -174,7 +174,7 @@ class _StudentResultsPageState extends State<StudentResultsPage>
         ),
         const Divider(height: 1, thickness: 1, color: Color(0xFFF0F0F0)),
 
-        // â”€â”€ Content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // ── Content ──────────────────────────────────
         Expanded(
           child: _testsLoading
               ? const ResultsSkeleton()

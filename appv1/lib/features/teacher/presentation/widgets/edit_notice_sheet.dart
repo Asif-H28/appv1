@@ -1,7 +1,9 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
@@ -28,7 +30,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
   final List<File> _newImages = [];
   final List<File> _newPdfs = [];
 
-  // â”€â”€ Existing attachments â€” user can mark for removal â”€â”€
+  // ── Existing attachments — user can mark for removal ──
   late List<Map<String, dynamic>> _existingAttachments;
   final Set<int> _removedIndexes = {};
 
@@ -193,7 +195,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
           widget.notice['_id']?.toString() ??
           '';
 
-      // â”€â”€ Step 1: DELETE each marked attachment via dedicated endpoint â”€â”€
+      // ── Step 1: DELETE each marked attachment via dedicated endpoint ──
       for (final i in _removedIndexes) {
         final att = _existingAttachments[i];
         final publicId = att['publicId']?.toString() ?? '';
@@ -212,7 +214,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
             Uri.parse(
               '${ApiConstants.apiBaseUrl}/notice/$noticeId/attachment',
             ),
-            headers: {'Content-Type': 'application/json'},
+            headers: await ApiService.getHeaders(),
             body: jsonEncode({
               'publicId': publicId,
               'resourceType': resourceType,
@@ -223,7 +225,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
         }
       }
 
-      // â”€â”€ Step 2: PUT to update text fields + upload any new files â”€â”€
+      // ── Step 2: PUT to update text fields + upload any new files ──
       final hasNewFiles = _newImages.isNotEmpty || _newPdfs.isNotEmpty;
       http.Response response;
 
@@ -259,7 +261,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
         final streamed = await request.send();
         response = await http.Response.fromStream(streamed);
       } else {
-        // â”€â”€ Only text fields changed (or only deletions) â”€â”€
+        // ── Only text fields changed (or only deletions) ──
         final body = <String, dynamic>{
           'title': _titleCtrl.text.trim(),
           'description': _descCtrl.text.trim(),
@@ -269,7 +271,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
         }
         response = await http.put(
           Uri.parse('${ApiConstants.apiBaseUrl}/notice/$noticeId'),
-          headers: {'Content-Type': 'application/json'},
+          headers: await ApiService.getHeaders(),
           body: jsonEncode(body),
         );
       }
@@ -279,7 +281,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
 
       if (response.statusCode == 200) {
         Navigator.pop(context);
-        widget.onUpdated(); // â† triggers refresh on parent screen
+        widget.onUpdated(); // ← triggers refresh on parent screen
         _snack('Notice updated!', Colors.green[600]!);
       } else {
         _snack('Failed to update. (${response.statusCode})', Colors.red[600]!);
@@ -330,7 +332,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // â”€â”€ Handle â”€â”€
+            // ── Handle ──
             Center(
               child: Container(
                 width: 36,
@@ -343,7 +345,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
             ),
             SizedBox(height: 16),
 
-            // â”€â”€ Sheet title â”€â”€
+            // ── Sheet title ──
             Row(
               children: [
                 Container(
@@ -367,7 +369,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
             ),
             SizedBox(height: 18),
 
-            // â”€â”€ Title â”€â”€
+            // ── Title ──
             _label('Notice Title *'),
             SizedBox(height: 5),
             _inputField(
@@ -377,7 +379,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
             ),
             SizedBox(height: 13),
 
-            // â”€â”€ Description â”€â”€
+            // ── Description ──
             _label('Description'),
             SizedBox(height: 5),
             _inputField(
@@ -388,13 +390,13 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
             ),
             SizedBox(height: 13),
 
-            // â”€â”€ Expiry â”€â”€
+            // ── Expiry ──
             _label('Expiry Date'),
             SizedBox(height: 5),
             _datePickerTile(),
             SizedBox(height: 16),
 
-            // â”€â”€ Existing attachments with remove option â”€â”€
+            // ── Existing attachments with remove option ──
             if (_existingAttachments.isNotEmpty) ...[
               Row(
                 children: [
@@ -435,7 +437,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
                   ),
                   child: Row(
                     children: [
-                      // â”€â”€ Image thumbnail or file icon â”€â”€
+                      // ── Image thumbnail or file icon ──
                       if (isImg)
                         ClipRRect(
                           borderRadius: BorderRadius.only(
@@ -495,7 +497,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
 
                       SizedBox(width: 8),
 
-                      // â”€â”€ File name â”€â”€
+                      // ── File name ──
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -530,7 +532,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
                         ),
                       ),
 
-                      // â”€â”€ Toggle remove / restore â”€â”€
+                      // ── Toggle remove / restore ──
                       GestureDetector(
                         onTap: () => setState(() {
                           if (isRemoved) {
@@ -590,7 +592,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
               SizedBox(height: 8),
             ],
 
-            // â”€â”€ Append new files â”€â”€
+            // ── Append new files ──
             _label('Append New Files (optional)'),
             SizedBox(height: 8),
             Row(
@@ -621,7 +623,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
               ],
             ),
 
-            // â”€â”€ New image previews â”€â”€
+            // ── New image previews ──
             if (_newImages.isNotEmpty) ...[
               SizedBox(height: 12),
               SizedBox(
@@ -635,7 +637,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
               ),
             ],
 
-            // â”€â”€ New PDF previews â”€â”€
+            // ── New PDF previews ──
             if (_newPdfs.isNotEmpty) ...[
               SizedBox(height: 10),
               ...List.generate(
@@ -646,7 +648,7 @@ class _EditNoticeSheetState extends State<EditNoticeSheet> {
 
             SizedBox(height: 20),
 
-            // â”€â”€ Submit â”€â”€
+            // ── Submit ──
             SizedBox(
               width: double.infinity,
               height: 46,

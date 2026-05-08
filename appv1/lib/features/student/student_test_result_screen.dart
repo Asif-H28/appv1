@@ -1,6 +1,8 @@
 import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -50,7 +52,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
     try {
       final res = await http.get(
         Uri.parse('${ApiConstants.apiBaseUrl}/comprehensive-result/assessment/$_testId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (!mounted) return;
 

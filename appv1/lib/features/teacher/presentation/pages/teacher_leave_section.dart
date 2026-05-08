@@ -1,6 +1,8 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -53,7 +55,7 @@ class _TeacherLeaveSectionState extends State<TeacherLeaveSection> {
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/leave/teacher/$_teacherId',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (!mounted) return;
       if (res.statusCode == 200) {
@@ -85,7 +87,7 @@ class _TeacherLeaveSectionState extends State<TeacherLeaveSection> {
 
       final res = await http.post(
         Uri.parse('${ApiConstants.apiBaseUrl}/leave/teacher/apply'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode({
           'teacherId': _teacherId,
           'orgId': _orgId,
@@ -215,7 +217,7 @@ class _TeacherLeaveSectionState extends State<TeacherLeaveSection> {
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/leave/teacher/$leaveId',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (!mounted) return;
       if (res.statusCode == 200) {
@@ -641,7 +643,7 @@ class _TeacherLeaveSectionState extends State<TeacherLeaveSection> {
   }
 }
 
-// â”€â”€ Leave card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Leave card ───────────────────────────────────────────────────────────────
 
 class _LeaveCard extends StatefulWidget {
   final Map<String, dynamic> leave;
@@ -688,7 +690,7 @@ class _LeaveCardState extends State<_LeaveCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // â”€â”€ Status row â”€â”€
+          // ── Status row ──
           Row(
             children: [
               Container(
@@ -734,7 +736,7 @@ class _LeaveCardState extends State<_LeaveCard> {
                 ),
               ),
               const Spacer(),
-              // â”€â”€ Delete button â€” only for pending â”€â”€
+              // ── Delete button — only for pending ──
               if (isPending)
                 GestureDetector(
                   onTap: _deleting
@@ -789,7 +791,7 @@ class _LeaveCardState extends State<_LeaveCard> {
 
           const SizedBox(height: 10),
 
-          // â”€â”€ Reason â”€â”€
+          // ── Reason ──
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -810,7 +812,7 @@ class _LeaveCardState extends State<_LeaveCard> {
 
           const SizedBox(height: 8),
 
-          // â”€â”€ Date chips â”€â”€
+          // ── Date chips ──
           Wrap(
             spacing: 5,
             runSpacing: 5,
@@ -834,7 +836,7 @@ class _LeaveCardState extends State<_LeaveCard> {
             }).toList(),
           ),
 
-          // â”€â”€ Review note â”€â”€
+          // ── Review note ──
           if (reviewNote.isNotEmpty) ...[
             const SizedBox(height: 10),
             Container(
@@ -869,7 +871,7 @@ class _LeaveCardState extends State<_LeaveCard> {
             ),
           ],
 
-          // â”€â”€ Applied date â”€â”€
+          // ── Applied date ──
           if (createdAt.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(

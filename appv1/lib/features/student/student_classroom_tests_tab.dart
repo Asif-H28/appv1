@@ -1,6 +1,8 @@
 import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -47,7 +49,7 @@ class _StudentClassroomTestsTabState extends State<StudentClassroomTestsTab> {
     try {
       final res = await http.get(
         Uri.parse('${ApiConstants.apiBaseUrl}/comprehensive-assessment/list?orgId=$_orgId&classId=$_classId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (!mounted) return;
 

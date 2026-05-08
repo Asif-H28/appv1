@@ -1,8 +1,10 @@
 import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:appv1/features/main_app/pages/home_widgets2.dart';
 import 'package:appv1/features/main_app/pages/school_page.dart';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'home_widgets.dart';
@@ -84,9 +86,8 @@ class _HomePageState extends State<HomePage> {
 
   Future<Map<String, dynamic>?> _safeGet(String path) async {
     try {
-      final res = await http.get(
-        Uri.parse('${ApiConstants.apiBaseUrl}/$path'),
-        headers: {'Content-Type': 'application/json'},
+      final res = await ApiService.get(
+        '${ApiConstants.apiBaseUrl}/$path',
       );
       if (res.statusCode == 200)
         return jsonDecode(res.body) as Map<String, dynamic>;

@@ -1,4 +1,5 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -24,7 +25,7 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
   final Map<String, bool> _deletingSubject = {};
   final Map<String, bool> _deletingLesson = {};
 
-  // â”€â”€ Track which subjects are expanded â”€â”€
+  // ── Track which subjects are expanded ──
   final Map<String, bool> _expanded = {};
 
   @override
@@ -55,9 +56,9 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
     _expanded.removeWhere((key, _) => !currentNames.contains(key));
   }
 
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─────────────────────────────────────────────
   // API CALLS
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─────────────────────────────────────────────
 
   Future<void> _toggleLesson(
     String subjectName,
@@ -69,7 +70,7 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/classroom/${widget.classId}/lessons/status',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode({
           'subjectName': subjectName,
           'lessonName': lessonName,
@@ -88,7 +89,7 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/classroom/${widget.classId}/subjects/$encoded',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (!mounted) return;
       setState(() => _deletingSubject.remove(subjectName));
@@ -116,7 +117,7 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/classroom/${widget.classId}/lessons/$encodedSub/$encodedLes',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (!mounted) return;
       setState(() => _deletingLesson.remove(key));
@@ -142,7 +143,7 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/classroom/${widget.classId}/subjects',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode({'oldName': oldName, 'newName': newName.trim()}),
       );
       if (!mounted) return;
@@ -170,7 +171,7 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/classroom/${widget.classId}/lessons',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode({
           'subjectName': subjectName,
           'oldLessonName': oldLesson,
@@ -189,9 +190,9 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
     }
   }
 
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─────────────────────────────────────────────
   // DIALOGS & SHEETS
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─────────────────────────────────────────────
 
   void _confirmDeleteSubject(String subjectName) {
     _showConfirmDialog(
@@ -490,7 +491,7 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
                   Uri.parse(
                     '${ApiConstants.apiBaseUrl}/classroom/${widget.classId}/subjects',
                   ),
-                  headers: {'Content-Type': 'application/json'},
+                  headers: await ApiService.getHeaders(),
                   body: jsonEncode({
                     'name': nameCtrl.text.trim(),
                     'lessons': lessonsCtrl
@@ -533,7 +534,7 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
                 Uri.parse(
                   '${ApiConstants.apiBaseUrl}/classroom/${widget.classId}/lessons',
                 ),
-                headers: {'Content-Type': 'application/json'},
+                headers: await ApiService.getHeaders(),
                 body: jsonEncode({
                   'subjectName': subjectName,
                   'lessonName': ctrl.text.trim(),
@@ -547,9 +548,9 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
     );
   }
 
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─────────────────────────────────────────────
   // SHEET HELPERS
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─────────────────────────────────────────────
 
   Widget _buildSheet({
     required BuildContext ctx,
@@ -712,9 +713,9 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
     );
   }
 
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─────────────────────────────────────────────
   // BUILD
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -723,7 +724,7 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
     return ListView(
       padding: EdgeInsets.fromLTRB(12, 12, 12, 80),
       children: [
-        // â”€â”€ Action bar â”€â”€
+        // ── Action bar ──
         Padding(
           padding: EdgeInsets.only(bottom: 10),
           child: Row(
@@ -781,7 +782,7 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
           ),
         ),
 
-        // â”€â”€ Subject cards â”€â”€
+        // ── Subject cards ──
         ...widget.subjects.map((sub) {
           final subName = sub['name']?.toString() ?? 'Subject';
           final lessons = sub['lessons'] as List? ?? [];
@@ -805,8 +806,8 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
                 context,
               ).copyWith(dividerColor: Colors.transparent),
               child: ExpansionTile(
-                // â”€â”€ key fix: named key so Flutter matches widget
-                //    to state across rebuilds â”€â”€
+                // ── key fix: named key so Flutter matches widget
+                //    to state across rebuilds ──
                 key: PageStorageKey(subName),
                 initiallyExpanded: isExpanded,
                 onExpansionChanged: (val) =>

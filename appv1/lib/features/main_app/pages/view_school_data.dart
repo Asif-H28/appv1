@@ -1,11 +1,12 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 // view_school_data.dart
 // Models + service layer for View My School screen
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-// â”€â”€ School basic details â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── School basic details ──────────────────────────────
 class SchoolBasicData {
   final String schoolName;
   final String campusAddress;
@@ -33,7 +34,7 @@ class SchoolBasicData {
   );
 }
 
-// â”€â”€ Fee structure â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Fee structure ─────────────────────────────────────
 class FeeItem {
   final String id;
   final String structureName;
@@ -76,7 +77,7 @@ class FeeItem {
   }
 }
 
-// â”€â”€ Role â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Role ──────────────────────────────────────────────
 class RoleItem {
   final String id;
   final String position;
@@ -91,7 +92,7 @@ class RoleItem {
   );
 }
 
-// â”€â”€ Combined view model â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Combined view model ───────────────────────────────
 class SchoolViewModel {
   final SchoolBasicData basic;
   final List<FeeItem> fees;
@@ -104,7 +105,7 @@ class SchoolViewModel {
   });
 }
 
-// â”€â”€ Service â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Service ───────────────────────────────────────────
 class ViewSchoolService {
   static const _base = '${ApiConstants.apiBaseUrl}/org';
 
@@ -126,7 +127,7 @@ class ViewSchoolService {
     try {
       final res = await http.get(
         Uri.parse('$_base/$orgId/school-details'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (res.statusCode == 200) {
         final body = jsonDecode(res.body) as Map<String, dynamic>;
@@ -141,7 +142,7 @@ class ViewSchoolService {
     try {
       final res = await http.get(
         Uri.parse('$_base/school/fee?orgId=$orgId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (res.statusCode == 200) {
         final body = jsonDecode(res.body) as Map<String, dynamic>;
@@ -159,7 +160,7 @@ class ViewSchoolService {
     try {
       final res = await http.get(
         Uri.parse('$_base/school/roles?orgId=$orgId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (res.statusCode == 200) {
         final body = jsonDecode(res.body) as Map<String, dynamic>;

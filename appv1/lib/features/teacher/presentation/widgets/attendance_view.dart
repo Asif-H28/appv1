@@ -1,9 +1,10 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/services/api_service.dart';
 
 class AttendanceView extends StatefulWidget {
   final String classId;
@@ -46,11 +47,8 @@ class _AttendanceViewState extends State<AttendanceView> {
     });
     final dateStr = _formatDate(_selectedDate);
     try {
-      final response = await http.get(
-        Uri.parse(
-          '${ApiConstants.apiBaseUrl}/attendance/class/${widget.classId}/date/$dateStr',
-        ),
-        headers: {'Content-Type': 'application/json'},
+      final response = await ApiService.get(
+        '${ApiConstants.apiBaseUrl}/attendance/class/${widget.classId}/date/$dateStr',
       );
       if (!mounted) return;
       if (response.statusCode == 200) {
@@ -153,17 +151,13 @@ class _AttendanceViewState extends State<AttendanceView> {
     try {
       http.Response response;
       if (_existingAttendanceId != null) {
-        response = await http.put(
-          Uri.parse(
-            '${ApiConstants.apiBaseUrl}/attendance/$_existingAttendanceId',
-          ),
-          headers: {'Content-Type': 'application/json'},
+        response = await ApiService.put(
+          '${ApiConstants.apiBaseUrl}/attendance/$_existingAttendanceId',
           body: jsonEncode({'students': students}),
         );
       } else {
-        response = await http.post(
-          Uri.parse('${ApiConstants.apiBaseUrl}/attendance/create'),
-          headers: {'Content-Type': 'application/json'},
+        response = await ApiService.post(
+          '${ApiConstants.apiBaseUrl}/attendance/create',
           body: jsonEncode({
             'attendanceDate': dateStr,
             'classId': widget.classId,

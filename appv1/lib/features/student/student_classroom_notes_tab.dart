@@ -1,6 +1,8 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -38,7 +40,7 @@ class _StudentClassroomNotesTabState extends State<StudentClassroomNotesTab> {
     super.dispose();
   }
 
-  // â”€â”€ Fetch â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Fetch ─────────────────────────────────────────────
 
   Future<void> _fetchNotes() async {
     setState(() {
@@ -60,7 +62,7 @@ class _StudentClassroomNotesTabState extends State<StudentClassroomNotesTab> {
     try {
       final res = await http.get(
         Uri.parse('${ApiConstants.apiBaseUrl}/notes/class/$classId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (!mounted) return;
 
@@ -76,7 +78,7 @@ class _StudentClassroomNotesTabState extends State<StudentClassroomNotesTab> {
 
         final notes = raw.map((e) => e as Map<String, dynamic>).toList();
 
-        // â”€â”€ Build unique teacher list â”€â”€
+        // ── Build unique teacher list ──
         final teachers = <String>{};
         for (final n in notes) {
           final t = n['notesSharedBy']?.toString() ?? '';
@@ -103,7 +105,7 @@ class _StudentClassroomNotesTabState extends State<StudentClassroomNotesTab> {
     }
   }
 
-  // â”€â”€ Filtered notes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Filtered notes ────────────────────────────────────
 
   List<Map<String, dynamic>> get _filtered {
     return _notes.where((note) {
@@ -113,7 +115,7 @@ class _StudentClassroomNotesTabState extends State<StudentClassroomNotesTab> {
         if (t != _selectedTeacher) return false;
       }
 
-      // Search filter â€” by title or attachment file name
+      // Search filter — by title or attachment file name
       if (_searchQuery.isNotEmpty) {
         final q = _searchQuery.toLowerCase();
         final title = note['title']?.toString().toLowerCase() ?? '';
@@ -137,7 +139,7 @@ class _StudentClassroomNotesTabState extends State<StudentClassroomNotesTab> {
     }).toList();
   }
 
-  // â”€â”€ Build â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Build ─────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -149,16 +151,16 @@ class _StudentClassroomNotesTabState extends State<StudentClassroomNotesTab> {
 
     return Column(
       children: [
-        // â”€â”€ Top bar: search toggle + result count â”€â”€
+        // ── Top bar: search toggle + result count ──
         _buildTopBar(),
 
-        // â”€â”€ Search field â”€â”€
+        // ── Search field ──
         if (_showSearch) _buildSearchField(),
 
-        // â”€â”€ Teacher filter chips â”€â”€
+        // ── Teacher filter chips ──
         if (_teacherList.isNotEmpty) _buildTeacherChips(),
 
-        // â”€â”€ Notes list â”€â”€
+        // ── Notes list ──
         Expanded(
           child: filtered.isEmpty
               ? _buildNoResults()
@@ -182,7 +184,7 @@ class _StudentClassroomNotesTabState extends State<StudentClassroomNotesTab> {
     );
   }
 
-  // â”€â”€ Top bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Top bar ───────────────────────────────────────────
 
   Widget _buildTopBar() {
     final count = _filtered.length;
@@ -250,7 +252,7 @@ class _StudentClassroomNotesTabState extends State<StudentClassroomNotesTab> {
     );
   }
 
-  // â”€â”€ Search field â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Search field ──────────────────────────────────────
 
   Widget _buildSearchField() {
     return Padding(
@@ -302,7 +304,7 @@ class _StudentClassroomNotesTabState extends State<StudentClassroomNotesTab> {
     );
   }
 
-  // â”€â”€ Teacher filter chips â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Teacher filter chips ──────────────────────────────
 
   Widget _buildTeacherChips() {
     final all = ['All', ..._teacherList];
@@ -374,7 +376,7 @@ class _StudentClassroomNotesTabState extends State<StudentClassroomNotesTab> {
     );
   }
 
-  // â”€â”€ States â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── States ────────────────────────────────────────────
 
   Widget _buildLoader() => Center(
     child: Column(

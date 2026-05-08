@@ -1,6 +1,8 @@
 import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import '../../../../core/constants/app_colors.dart';
 
@@ -157,7 +159,7 @@ class _EnterCaMarksSheetState extends State<EnterCaMarksSheet> {
       final url = '${ApiConstants.apiBaseUrl}/comprehensive-result/assessment/$assessmentId/result';
       final response = await http.post(
         Uri.parse(url),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode(payload),
       );
 

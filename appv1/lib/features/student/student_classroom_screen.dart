@@ -1,6 +1,8 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -40,7 +42,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen>
     super.dispose();
   }
 
-  // â”€â”€ Step 1: load classroom â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Step 1: load classroom ─────────────────────────────
 
   Future<void> _loadClassroom() async {
     final prefs = await SharedPreferences.getInstance();
@@ -55,9 +57,8 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen>
     }
 
     try {
-      final res = await http.get(
-        Uri.parse('${ApiConstants.apiBaseUrl}/classroom/$_classId'),
-        headers: {'Content-Type': 'application/json'},
+      final res = await ApiService.get(
+        '${ApiConstants.apiBaseUrl}/classroom/$_classId',
       );
       if (!mounted) return;
 
@@ -66,7 +67,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen>
         final classroom = body['classroom'] as Map<String, dynamic>? ?? {};
         setState(() => _classroom = classroom);
 
-        // â”€â”€ Step 2: fetch teacher name using teacherId â”€â”€
+        // ── Step 2: fetch teacher name using teacherId ──
         final teacherId = classroom['teacherId']?.toString() ?? '';
         if (teacherId.isNotEmpty) {
           await _loadTeacherName(teacherId);
@@ -88,15 +89,12 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen>
     }
   }
 
-  // â”€â”€ Step 2: fetch teacher by ID â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Step 2: fetch teacher by ID ────────────────────────
 
   Future<void> _loadTeacherName(String teacherId) async {
     try {
-      final res = await http.get(
-        Uri.parse(
-          '${ApiConstants.apiBaseUrl}/teacher/$teacherId/profile',
-        ),
-        headers: {'Content-Type': 'application/json'},
+      final res = await ApiService.get(
+        '${ApiConstants.apiBaseUrl}/teacher/$teacherId/profile',
       );
       if (!mounted) return;
       if (res.statusCode == 200) {
@@ -108,7 +106,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen>
         }
       }
     } catch (_) {
-      // silently fail â€” teacher tag just won't show
+      // silently fail — teacher tag just won't show
     }
   }
 
@@ -125,7 +123,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen>
         ),
         child: Column(
           children: [
-            // â”€â”€ Gradient header â”€â”€
+            // ── Gradient header ──
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -142,7 +140,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen>
                       padding: EdgeInsets.fromLTRB(14, 12, 16, 12),
                       child: Row(
                         children: [
-                          // â”€â”€ Back button â”€â”€
+                          // ── Back button ──
                           GestureDetector(
                             onTap: () => Navigator.pop(context),
                             child: Container(
@@ -161,7 +159,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen>
                           ),
                           SizedBox(width: 10),
 
-                          // â”€â”€ Icon â”€â”€
+                          // ── Icon ──
                           Container(
                             padding: EdgeInsets.all(7),
                             decoration: BoxDecoration(
@@ -179,7 +177,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen>
                           ),
                           SizedBox(width: 10),
 
-                          // â”€â”€ Title + teacher tag â”€â”€
+                          // ── Title + teacher tag ──
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -195,7 +193,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen>
                                 SizedBox(height: 4),
                                 Row(
                                   children: [
-                                    // â”€â”€ Teacher name tag â”€â”€
+                                    // ── Teacher name tag ──
                                     if (_teacherName.isNotEmpty) ...[
                                       Container(
                                         padding: EdgeInsets.symmetric(
@@ -240,7 +238,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen>
                                       SizedBox(width: 6),
                                     ],
 
-                                    // â”€â”€ Subjects count tag â”€â”€
+                                    // ── Subjects count tag ──
                                     if (!_isLoading &&
                                         _classroom['subjects'] != null) ...[
                                       Container(
@@ -275,7 +273,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen>
                       ),
                     ),
 
-                    // â”€â”€ Tab bar â”€â”€
+                    // ── Tab bar ──
                     Container(
                       margin: EdgeInsets.fromLTRB(14, 0, 14, 12),
                       height: 38,
@@ -317,7 +315,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen>
               ),
             ),
 
-            // â”€â”€ Body â”€â”€
+            // ── Body ──
             Expanded(
               child: _isLoading
                   ? _buildLoader()
@@ -338,7 +336,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen>
     );
   }
 
-  // â”€â”€ Loader â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Loader ────────────────────────────────────────────
 
   Widget _buildLoader() => Center(
     child: Column(
@@ -354,7 +352,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen>
     ),
   );
 
-  // â”€â”€ Error â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Error ─────────────────────────────────────────────
 
   Widget _buildError() => Center(
     child: Padding(

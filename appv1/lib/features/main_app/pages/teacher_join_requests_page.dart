@@ -1,6 +1,8 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -58,7 +60,7 @@ class _TeacherJoinRequestsPageState extends State<TeacherJoinRequestsPage>
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/teacher/join-requests/$_orgId',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
 
       if (!mounted) return;
@@ -66,7 +68,7 @@ class _TeacherJoinRequestsPageState extends State<TeacherJoinRequestsPage>
       if (response.statusCode == 200) {
         final body = jsonDecode(response.body) as Map<String, dynamic>;
 
-        // â”€â”€ Flexible parsing â”€â”€
+        // ── Flexible parsing ──
         List<dynamic> rawList = [];
         if (body['requests'] != null) {
           rawList = body['requests'] as List;
@@ -111,7 +113,7 @@ class _TeacherJoinRequestsPageState extends State<TeacherJoinRequestsPage>
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/teacher/join-requests/$requestId/approve',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
 
       if (!mounted) return;
@@ -125,7 +127,7 @@ class _TeacherJoinRequestsPageState extends State<TeacherJoinRequestsPage>
           _resolvedRequests.insert(0, approved);
         });
 
-        _showSnackBar('Teacher approved successfully! âœ…', Colors.green[600]!);
+        _showSnackBar('Teacher approved successfully! ✅', Colors.green[600]!);
       } else {
         _setCardLoading(index, false, isPending: true);
         final body = jsonDecode(response.body);
@@ -149,7 +151,7 @@ class _TeacherJoinRequestsPageState extends State<TeacherJoinRequestsPage>
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/teacher/join-requests/$requestId/reject',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
 
       if (!mounted) return;
@@ -258,7 +260,7 @@ class _TeacherJoinRequestsPageState extends State<TeacherJoinRequestsPage>
       backgroundColor: AppColors.background,
       body: Column(
         children: [
-          // â”€â”€ Gradient Header â”€â”€
+          // ── Gradient Header ──
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -277,7 +279,7 @@ class _TeacherJoinRequestsPageState extends State<TeacherJoinRequestsPage>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // â”€â”€ Top bar â”€â”€
+                    // ── Top bar ──
                     Row(
                       children: [
                         GestureDetector(
@@ -318,7 +320,7 @@ class _TeacherJoinRequestsPageState extends State<TeacherJoinRequestsPage>
                             ],
                           ),
                         ),
-                        // â”€â”€ Pending badge + refresh â”€â”€
+                        // ── Pending badge + refresh ──
                         if (_pendingRequests.isNotEmpty)
                           Container(
                             margin: EdgeInsets.only(right: 8),
@@ -355,7 +357,7 @@ class _TeacherJoinRequestsPageState extends State<TeacherJoinRequestsPage>
                     ),
                     SizedBox(height: 16),
 
-                    // â”€â”€ Tab bar â”€â”€
+                    // ── Tab bar ──
                     Container(
                       height: 46,
                       decoration: BoxDecoration(
@@ -443,7 +445,7 @@ class _TeacherJoinRequestsPageState extends State<TeacherJoinRequestsPage>
             ),
           ),
 
-          // â”€â”€ Body â”€â”€
+          // ── Body ──
           Expanded(
             child: Container(
               decoration: BoxDecoration(
@@ -466,7 +468,7 @@ class _TeacherJoinRequestsPageState extends State<TeacherJoinRequestsPage>
     );
   }
 
-  // â”€â”€ Loading â”€â”€
+  // ── Loading ──
   Widget _buildLoadingState() => Center(
     child: Column(
       mainAxisSize: MainAxisSize.min,
@@ -481,7 +483,7 @@ class _TeacherJoinRequestsPageState extends State<TeacherJoinRequestsPage>
     ),
   );
 
-  // â”€â”€ Error â”€â”€
+  // ── Error ──
   Widget _buildErrorState() => Center(
     child: Padding(
       padding: EdgeInsets.all(32),
@@ -521,7 +523,7 @@ class _TeacherJoinRequestsPageState extends State<TeacherJoinRequestsPage>
     ),
   );
 
-  // â”€â”€ Pending tab â”€â”€
+  // ── Pending tab ──
   Widget _buildPendingTab() {
     if (_pendingRequests.isEmpty) {
       return _buildEmptyState(
@@ -543,7 +545,7 @@ class _TeacherJoinRequestsPageState extends State<TeacherJoinRequestsPage>
     );
   }
 
-  // â”€â”€ History tab â”€â”€
+  // ── History tab ──
   Widget _buildHistoryTab() {
     if (_resolvedRequests.isEmpty) {
       return _buildEmptyState(
@@ -565,7 +567,7 @@ class _TeacherJoinRequestsPageState extends State<TeacherJoinRequestsPage>
     );
   }
 
-  // â”€â”€ Request card â”€â”€
+  // ── Request card ──
   Widget _buildRequestCard({
     required Map<String, dynamic> request,
     required int index,
@@ -620,7 +622,7 @@ class _TeacherJoinRequestsPageState extends State<TeacherJoinRequestsPage>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // â”€â”€ Teacher info row â”€â”€
+            // ── Teacher info row ──
             Row(
               children: [
                 Container(
@@ -695,7 +697,7 @@ class _TeacherJoinRequestsPageState extends State<TeacherJoinRequestsPage>
                     ],
                   ),
                 ),
-                // â”€â”€ Status badge â”€â”€
+                // ── Status badge ──
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(
@@ -722,7 +724,7 @@ class _TeacherJoinRequestsPageState extends State<TeacherJoinRequestsPage>
               ],
             ),
 
-            // â”€â”€ Request ID â”€â”€
+            // ── Request ID ──
             if (requestId.isNotEmpty) ...[
               SizedBox(height: 12),
               Container(
@@ -753,7 +755,7 @@ class _TeacherJoinRequestsPageState extends State<TeacherJoinRequestsPage>
               ),
             ],
 
-            // â”€â”€ Action buttons (only for pending) â”€â”€
+            // ── Action buttons (only for pending) ──
             if (isPending) ...[
               SizedBox(height: 14),
               Row(

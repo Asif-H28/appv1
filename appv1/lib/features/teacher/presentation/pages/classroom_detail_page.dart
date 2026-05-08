@@ -1,7 +1,9 @@
 import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:appv1/features/teacher/presentation/pages/classroom_timetable_tab.dart';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -117,7 +119,7 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage> {
     try {
       final res = await http.get(
         Uri.parse('${ApiConstants.apiBaseUrl}/classroom/${widget.classId}'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (!mounted) return;
       if (res.statusCode == 200) {
@@ -151,7 +153,7 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage> {
     try {
       final res = await http.put(
         Uri.parse('${ApiConstants.apiBaseUrl}/classroom/${widget.classId}'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode({'className': newName}),
       );
       if (!mounted) return;

@@ -1,6 +1,8 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -65,7 +67,7 @@ class _TeacherAchievementsPageState extends State<TeacherAchievementsPage> {
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/achievement/org/$_orgId',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (!mounted) return;
       if (res.statusCode == 200) {
@@ -119,7 +121,7 @@ class _TeacherAchievementsPageState extends State<TeacherAchievementsPage> {
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/achievement/$achId/like',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode({
           'userId': _teacherId,
           'userName': _teacherName,
@@ -248,7 +250,7 @@ class _TeacherAchievementsPageState extends State<TeacherAchievementsPage> {
     try {
       await http.delete(
         Uri.parse('${ApiConstants.apiBaseUrl}/achievement/$achId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (mounted) setState(() => _posts.removeAt(index));
     } catch (_) {}

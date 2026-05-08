@@ -1,6 +1,8 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import '../../../../core/constants/app_colors.dart';
 
@@ -58,7 +60,7 @@ class _StudentLeaveReviewPageState extends State<StudentLeaveReviewPage>
           Uri.parse(
             '${ApiConstants.apiBaseUrl}/leave/student/class/$classId',
           ),
-          headers: {'Content-Type': 'application/json'},
+          headers: await ApiService.getHeaders(),
         );
         if (resAll.statusCode == 200) {
           final body = jsonDecode(resAll.body) as Map;
@@ -73,7 +75,7 @@ class _StudentLeaveReviewPageState extends State<StudentLeaveReviewPage>
           Uri.parse(
             '${ApiConstants.apiBaseUrl}/leave/student/class/$classId/pending',
           ),
-          headers: {'Content-Type': 'application/json'},
+          headers: await ApiService.getHeaders(),
         );
         if (resPending.statusCode == 200) {
           final body = jsonDecode(resPending.body) as Map;
@@ -119,7 +121,7 @@ class _StudentLeaveReviewPageState extends State<StudentLeaveReviewPage>
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/leave/student/$leaveId/review',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode({
           'status': status,
           'reviewedBy': widget.teacherId,
@@ -726,7 +728,7 @@ class _StudentLeaveReviewPageState extends State<StudentLeaveReviewPage>
             ),
           ],
 
-          // Approve / Reject buttons â€” pending only
+          // Approve / Reject buttons — pending only
           if (isPending) ...[
             const SizedBox(height: 12),
             Row(

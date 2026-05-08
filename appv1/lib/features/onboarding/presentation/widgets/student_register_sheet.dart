@@ -1,6 +1,8 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -35,7 +37,7 @@ class _StudentRegisterSheetState extends State<StudentRegisterSheet> {
     super.dispose();
   }
 
-  // â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Helpers ───────────────────────────────────────────
 
   Widget _label(String text) => Text(
     text,
@@ -100,7 +102,7 @@ class _StudentRegisterSheetState extends State<StudentRegisterSheet> {
     );
   }
 
-  // â”€â”€â”€ Register logic â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Register logic ────────────────────────────────────
 
   Future<void> _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
@@ -110,13 +112,13 @@ class _StudentRegisterSheetState extends State<StudentRegisterSheet> {
     try {
       final regRes = await http.post(
         Uri.parse('${ApiConstants.apiBaseUrl}/student/register'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode({
           'name': _nameCtrl.text.trim(),
           'email': _emailCtrl.text.trim(),
           'phone': _phoneCtrl.text.trim(),
           'password': _passCtrl.text,
-          'orgId': widget.orgId, // âœ… now included in register body
+          'orgId': widget.orgId, // ✅ now included in register body
         }),
       );
       if (!mounted) return;
@@ -183,7 +185,7 @@ class _StudentRegisterSheetState extends State<StudentRegisterSheet> {
     }
   }
 
-  // â”€â”€â”€ Build â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Build ─────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -202,7 +204,7 @@ class _StudentRegisterSheetState extends State<StudentRegisterSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // â”€â”€ Drag handle â”€â”€
+              // ── Drag handle ──
               Center(
                 child: Container(
                   width: 36,
@@ -215,7 +217,7 @@ class _StudentRegisterSheetState extends State<StudentRegisterSheet> {
               ),
               SizedBox(height: 16),
 
-              // â”€â”€ Sheet header â”€â”€
+              // ── Sheet header ──
               Row(
                 children: [
                   Container(
@@ -272,7 +274,7 @@ class _StudentRegisterSheetState extends State<StudentRegisterSheet> {
               ),
               SizedBox(height: 10),
 
-              // â”€â”€ Org ID chip â”€â”€
+              // ── Org ID chip ──
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
@@ -298,7 +300,7 @@ class _StudentRegisterSheetState extends State<StudentRegisterSheet> {
               ),
               SizedBox(height: 16),
 
-              // â”€â”€ Full Name â”€â”€
+              // ── Full Name ──
               _label('FULL NAME'),
               SizedBox(height: 6),
               TextFormField(
@@ -318,7 +320,7 @@ class _StudentRegisterSheetState extends State<StudentRegisterSheet> {
               ),
               SizedBox(height: 12),
 
-              // â”€â”€ Email â”€â”€
+              // ── Email ──
               _label('EMAIL ADDRESS'),
               SizedBox(height: 6),
               TextFormField(
@@ -338,7 +340,7 @@ class _StudentRegisterSheetState extends State<StudentRegisterSheet> {
               ),
               SizedBox(height: 12),
 
-              // â”€â”€ Phone â”€â”€
+              // ── Phone ──
               _label('PHONE NUMBER'),
               SizedBox(height: 6),
               TextFormField(
@@ -358,7 +360,7 @@ class _StudentRegisterSheetState extends State<StudentRegisterSheet> {
               ),
               SizedBox(height: 12),
 
-              // â”€â”€ Password â”€â”€
+              // ── Password ──
               _label('CREATE PASSWORD'),
               SizedBox(height: 6),
               TextFormField(
@@ -372,7 +374,7 @@ class _StudentRegisterSheetState extends State<StudentRegisterSheet> {
                   return null;
                 },
                 decoration: _deco(
-                  hint: 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
+                  hint: '••••••••',
                   icon: Icons.lock_outline_rounded,
                   suffixIcon: IconButton(
                     icon: Icon(
@@ -388,7 +390,7 @@ class _StudentRegisterSheetState extends State<StudentRegisterSheet> {
               ),
               SizedBox(height: 20),
 
-              // â”€â”€ Submit button â”€â”€
+              // ── Submit button ──
               Theme(
                 data: ThemeData(
                   colorScheme: ColorScheme.light(
@@ -458,7 +460,7 @@ class _StudentRegisterSheetState extends State<StudentRegisterSheet> {
               ),
               SizedBox(height: 10),
 
-              // â”€â”€ Note â”€â”€
+              // ── Note ──
               Center(
                 child: Text(
                   'After registering, sign in and join a class\nfrom your student dashboard.',

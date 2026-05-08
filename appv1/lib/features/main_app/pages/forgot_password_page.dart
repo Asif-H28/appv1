@@ -1,6 +1,8 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import '../../../../core/constants/app_colors.dart';
 
@@ -58,7 +60,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     try {
       final res = await http.post(
         Uri.parse('$_baseUrl/api/auth/forgot-password'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode({'email': email}),
       );
 
@@ -96,7 +98,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     try {
       final res = await http.post(
         Uri.parse('$_baseUrl/api/auth/verify-otp'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode({'email': email, 'otp': otp}),
       );
 
@@ -142,7 +144,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     try {
       final res = await http.post(
         Uri.parse('$_baseUrl/api/auth/reset-password'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode({
           'email': email,
           'resetToken': _resetToken,
@@ -172,7 +174,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     }
   }
 
-  // â”€â”€ UI Components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── UI Components ─────────────────────────────────────
 
   InputDecoration _inputDeco(String hint, IconData icon) {
     return InputDecoration(

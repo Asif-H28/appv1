@@ -1,6 +1,8 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import '../../../../core/constants/app_colors.dart';
 import 'student_period_card.dart';
@@ -80,7 +82,7 @@ class _StudentTimetablePageState extends State<StudentTimetablePage>
     return days[DateTime.now().weekday];
   }
 
-  // â”€â”€ Fetch full week â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Fetch full week ────────────────────────────────
 
   Future<void> _fetchTimetable() async {
     setState(() {
@@ -88,11 +90,8 @@ class _StudentTimetablePageState extends State<StudentTimetablePage>
       _hasError = false;
     });
     try {
-      final res = await http.get(
-        Uri.parse(
-          '${ApiConstants.apiBaseUrl}/timetable/class/${widget.classId}',
-        ),
-        headers: {'Content-Type': 'application/json'},
+      final res = await ApiService.get(
+        '${ApiConstants.apiBaseUrl}/timetable/class/${widget.classId}',
       );
       if (!mounted) return;
       debugPrint('[StudentTimetable] ${res.statusCode}');
@@ -140,7 +139,7 @@ class _StudentTimetablePageState extends State<StudentTimetablePage>
       ? s['periodNumber'] as int
       : int.tryParse(s['periodNumber']?.toString() ?? '') ?? 0;
 
-  // â”€â”€ Build â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Build ──────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -165,7 +164,7 @@ class _StudentTimetablePageState extends State<StudentTimetablePage>
     );
   }
 
-  // â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Header ─────────────────────────────────────────
 
   Widget _buildHeader() {
     return Container(
@@ -333,7 +332,7 @@ class _StudentTimetablePageState extends State<StudentTimetablePage>
     );
   }
 
-  // â”€â”€ Tab bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Tab bar ────────────────────────────────────────
 
   Widget _buildTabBar() {
     return Container(
@@ -396,7 +395,7 @@ class _StudentTimetablePageState extends State<StudentTimetablePage>
     );
   }
 
-  // â”€â”€ Day tab content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Day tab content ────────────────────────────────
 
   Widget _buildDayTab(String day) {
     final slots = _timetable[day] ?? [];

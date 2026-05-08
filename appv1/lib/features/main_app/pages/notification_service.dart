@@ -1,4 +1,6 @@
 import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:appv1/features/main_app/pages/notification_router.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -125,7 +127,7 @@ class NotificationService {
     try {
       final res = await http.post(
         Uri.parse('$_baseUrl$endpoint'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode(body),
       );
       debugPrint('[FCM] Token saved: ${res.statusCode}');
@@ -148,7 +150,7 @@ class NotificationService {
 
       final res = await http.post(
         Uri.parse('$_baseUrl/api/notification/fcm/admin/save'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode({'orgId': orgId, 'fcmToken': token}),
       );
       debugPrint('[FCM] Admin token saved: ${res.statusCode}');
@@ -164,7 +166,7 @@ class NotificationService {
     try {
       final res = await http.post(
         Uri.parse('$_baseUrl/api/notification/fcm/admin/clear'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode({'orgId': orgId}),
       );
       debugPrint('[FCM] Admin token cleared: ${res.statusCode}');
@@ -290,7 +292,7 @@ class NotificationService {
     try {
       final res = await http.post(
         Uri.parse('$_baseUrl/api/notification/send/class'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode({
           'classId': classId,
           'orgId': orgId,
@@ -322,7 +324,7 @@ class NotificationService {
     try {
       final res = await http.post(
         Uri.parse('$_baseUrl/api/notification/send/student'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode({
           'studentId': studentId,
           'classId': classId,
@@ -354,7 +356,7 @@ class NotificationService {
     try {
       final res = await http.post(
         Uri.parse('$_baseUrl/api/notification/send/org'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode({
           'orgId': orgId,
           'targetRole': targetRole,
@@ -380,7 +382,7 @@ class NotificationService {
     try {
       final res = await http.get(
         Uri.parse('$_baseUrl/api/notification/class/$classId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (res.statusCode == 200) {
         final body = jsonDecode(res.body) as Map<String, dynamic>;
@@ -397,7 +399,7 @@ class NotificationService {
     try {
       final res = await http.get(
         Uri.parse('$_baseUrl/api/notification/org/$orgId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (res.statusCode == 200) {
         final body = jsonDecode(res.body) as Map<String, dynamic>;
@@ -426,7 +428,7 @@ class NotificationService {
     try {
       final res = await http.get(
         Uri.parse(url),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body) as Map<String, dynamic>;
@@ -447,9 +449,8 @@ class NotificationService {
     required String orgId,
   }) async {
     try {
-      await http.put(
-        Uri.parse('$_baseUrl/api/notification/$notificationId/read'),
-        headers: {'Content-Type': 'application/json'},
+      await ApiService.put(
+        '$_baseUrl/api/notification/$notificationId/read',
         body: jsonEncode({'userId': orgId}),
       );
     } catch (_) {}
@@ -460,9 +461,8 @@ class NotificationService {
     required String orgId,
   }) async {
     try {
-      final res = await http.put(
-        Uri.parse('$_baseUrl/api/notification/org/teacher-leave-requests/mark-all-read'),
-        headers: {'Content-Type': 'application/json'},
+      final res = await ApiService.put(
+        '$_baseUrl/api/notification/org/teacher-leave-requests/mark-all-read',
         body: jsonEncode({'orgId': orgId}),
       );
       debugPrint('[LeaveNotif] markAllRead: ${res.statusCode} ${res.body}');
@@ -497,12 +497,8 @@ class NotificationService {
     required String token,
   }) async {
     try {
-      final res = await http.put(
-        Uri.parse('$_baseUrl/api/notification/teacher/admin-leave-reviews/mark-all-read'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
+      final res = await ApiService.put(
+        '$_baseUrl/api/notification/teacher/admin-leave-reviews/mark-all-read',
         body: jsonEncode({'teacherId': teacherId}),
       );
       debugPrint('[AdminReviewNotif] markAllRead: ${res.statusCode}');
@@ -518,12 +514,8 @@ class NotificationService {
     required String token,
   }) async {
     try {
-      await http.put(
-        Uri.parse('$_baseUrl/api/notification/$notificationId/read'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
+      await ApiService.put(
+        '$_baseUrl/api/notification/$notificationId/read',
         body: jsonEncode({'userId': teacherId}),
       );
     } catch (_) {}
@@ -537,12 +529,8 @@ class NotificationService {
     int totalUnread = 0;
     try {
       // 1. Fetch Admin Leave Reviews
-      final resOrg = await http.get(
-        Uri.parse('$_baseUrl/api/notification/teacher/$teacherId/admin-leave-reviews'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
+      final resOrg = await ApiService.get(
+        '$_baseUrl/api/notification/teacher/$teacherId/admin-leave-reviews',
       );
       if (resOrg.statusCode == 200) {
         final body = jsonDecode(resOrg.body) as Map;
@@ -554,12 +542,8 @@ class NotificationService {
       }
 
       // 2. Fetch Student Leave Requests
-      final resStudent = await http.get(
-        Uri.parse('$_baseUrl/api/notification/teacher/$teacherId/student-leave-requests'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
+      final resStudent = await ApiService.get(
+        '$_baseUrl/api/notification/teacher/$teacherId/student-leave-requests',
       );
       if (resStudent.statusCode == 200) {
         final body = jsonDecode(resStudent.body) as Map;

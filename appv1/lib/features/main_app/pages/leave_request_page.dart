@@ -1,4 +1,5 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -59,8 +60,8 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> with SingleTickerPr
     });
 
     try {
-      final res = await http.get(
-        Uri.parse('${ApiConstants.apiBaseUrl}/leave/teacher/org/$_orgId'),
+      final res = await ApiService.get(
+        '${ApiConstants.apiBaseUrl}/leave/teacher/org/$_orgId',
       );
 
       if (res.statusCode == 200) {
@@ -99,7 +100,7 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> with SingleTickerPr
     try {
       final res = await http.put(
         Uri.parse('${ApiConstants.apiBaseUrl}/leave/teacher/$leaveId/review'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode({
           'status': status,
           'reviewedBy': _adminId,

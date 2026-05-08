@@ -1,5 +1,7 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../../../core/constants/app_colors.dart';
@@ -45,7 +47,7 @@ class _ClassroomNoticesTabState extends State<ClassroomNoticesTab> {
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/notice/classroom/${widget.classId}',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (!mounted) return;
       if (response.statusCode == 200) {
@@ -80,7 +82,7 @@ class _ClassroomNoticesTabState extends State<ClassroomNoticesTab> {
     try {
       final response = await http.delete(
         Uri.parse('${ApiConstants.apiBaseUrl}/notice/$noticeId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (!mounted) return;
       if (response.statusCode == 200) {
@@ -100,7 +102,7 @@ class _ClassroomNoticesTabState extends State<ClassroomNoticesTab> {
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/notice/purge/${widget.classId}',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       _fetchNotices();
       _snack('Expired notices cleared.', Colors.teal);
@@ -260,7 +262,7 @@ class _ClassroomNoticesTabState extends State<ClassroomNoticesTab> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // â”€â”€ Action bar â”€â”€
+        // ── Action bar ──
         Padding(
           padding: EdgeInsets.fromLTRB(14, 14, 14, 0),
           child: Row(
@@ -366,7 +368,7 @@ class _ClassroomNoticesTabState extends State<ClassroomNoticesTab> {
 
         SizedBox(height: 10),
 
-        // â”€â”€ Body â”€â”€
+        // ── Body ──
         Expanded(
           child: _isLoading
               ? Center(

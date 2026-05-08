@@ -1,6 +1,8 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import '../../../../../core/constants/app_colors.dart';
 import 'timetable_create_sheet.dart';
@@ -69,7 +71,7 @@ class _ClassroomTimetableTabState extends State<ClassroomTimetableTab>
     super.dispose();
   }
 
-  // â”€â”€ Resolve teacher name â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Resolve teacher name ──────────────────────────────
 
   Future<void> _resolveTeacherName() async {
     try {
@@ -77,7 +79,7 @@ class _ClassroomTimetableTabState extends State<ClassroomTimetableTab>
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/teacher/org/${widget.orgId}',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (!mounted) return;
       if (res.statusCode == 200) {
@@ -107,7 +109,7 @@ class _ClassroomTimetableTabState extends State<ClassroomTimetableTab>
       .where((s) => s.isNotEmpty)
       .toList();
 
-  // â”€â”€ Fetch timetable â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Fetch timetable ───────────────────────────────────
 
   Future<void> _fetchTimetable() async {
     setState(() {
@@ -120,7 +122,7 @@ class _ClassroomTimetableTabState extends State<ClassroomTimetableTab>
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/timetable/class/${widget.classId}',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (!mounted) return;
 
@@ -144,7 +146,7 @@ class _ClassroomTimetableTabState extends State<ClassroomTimetableTab>
           return;
         }
 
-        // Flatten day map â†’ flat slot list
+        // Flatten day map → flat slot list
         final List<dynamic> flatSlots = [];
         dayMap.forEach((day, list) {
           if (list is List) {
@@ -192,7 +194,7 @@ class _ClassroomTimetableTabState extends State<ClassroomTimetableTab>
     }
   }
 
-  // â”€â”€ Slots for day â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Slots for day ─────────────────────────────────────
 
   List<Map<String, dynamic>> _slotsForDay(String day) {
     return _allSlots
@@ -218,7 +220,7 @@ class _ClassroomTimetableTabState extends State<ClassroomTimetableTab>
       });
   }
 
-  // â”€â”€ Open create sheet â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Open create sheet ─────────────────────────────────
 
   void _openCreateSheet() {
     final nameToUse = _resolvedTeacherName.isNotEmpty
@@ -239,7 +241,7 @@ class _ClassroomTimetableTabState extends State<ClassroomTimetableTab>
     );
   }
 
-  // â”€â”€ Open add slot sheet â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Open add slot sheet ───────────────────────────────
 
   void _openAddSlotSheet() {
     if (_timetableId.isEmpty) return;
@@ -275,7 +277,7 @@ class _ClassroomTimetableTabState extends State<ClassroomTimetableTab>
     );
   }
 
-  // â”€â”€ Delete whole timetable â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Delete whole timetable ────────────────────────────
 
   Future<void> _deleteTimetable() async {
     final confirm = await showDialog<bool>(
@@ -311,7 +313,7 @@ class _ClassroomTimetableTabState extends State<ClassroomTimetableTab>
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/timetable/$_timetableId',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       debugPrint('[Timetable] Delete ${res.statusCode} ${res.body}');
       if (!mounted) return;
@@ -326,7 +328,7 @@ class _ClassroomTimetableTabState extends State<ClassroomTimetableTab>
     }
   }
 
-  // â”€â”€ Build â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Build ─────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -359,7 +361,7 @@ class _ClassroomTimetableTabState extends State<ClassroomTimetableTab>
                     SizedBox(height: 2),
                     Text(
                       '${_timetable['academicYear'] ?? ''}'
-                      ' â€¢ ${_allSlots.length} total periods',
+                      ' • ${_allSlots.length} total periods',
                       style: TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 10.5,
@@ -481,8 +483,8 @@ class _ClassroomTimetableTabState extends State<ClassroomTimetableTab>
                     day: day,
                     slots: _slotsForDay(day),
                     timetableId: _timetableId,
-                    orgId: widget.orgId, // â† new
-                    classSubjects: _subjectNames, // â† new
+                    orgId: widget.orgId, // ← new
+                    classSubjects: _subjectNames, // ← new
                     onRefresh: _fetchTimetable,
                   ),
                 )

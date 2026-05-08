@@ -1,6 +1,8 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import '../../../../core/constants/app_colors.dart';
 
@@ -65,36 +67,35 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
         'text': text,
       };
 
-      debugPrint('â”€â”€ [AddComment] POST $url');
-      debugPrint('â”€â”€ [AddComment] Payload: ${jsonEncode(payload)}');
+      debugPrint('── [AddComment] POST $url');
+      debugPrint('── [AddComment] Payload: ${jsonEncode(payload)}');
 
-      final res = await http.post(
-        Uri.parse(url),
-        headers: {'Content-Type': 'application/json'},
+      final res = await ApiService.post(
+        url,
         body: jsonEncode(payload),
       );
 
-      debugPrint('â”€â”€ [AddComment] Status: ${res.statusCode}');
-      debugPrint('â”€â”€ [AddComment] Response body: ${res.body}');
+      debugPrint('── [AddComment] Status: ${res.statusCode}');
+      debugPrint('── [AddComment] Response body: ${res.body}');
 
       if (!mounted) return;
       if (res.statusCode == 200 || res.statusCode == 201) {
         final body = jsonDecode(res.body) as Map;
         final comment = Map<String, dynamic>.from(body['comment'] as Map);
         final count = body['commentCount'] as int? ?? _comments.length + 1;
-        debugPrint('â”€â”€ [AddComment] âœ… Comment added: $comment');
+        debugPrint('── [AddComment] ✅ Comment added: $comment');
         setState(() {
           _comments.insert(0, comment);
           _submitting = false;
         });
         widget.onChanged(List.from(_comments), count);
       } else {
-        debugPrint('â”€â”€ [AddComment] âŒ Failed with status ${res.statusCode}: ${res.body}');
+        debugPrint('── [AddComment] ❌ Failed with status ${res.statusCode}: ${res.body}');
         if (mounted) setState(() => _submitting = false);
       }
     } catch (e, st) {
-      debugPrint('â”€â”€ [AddComment] ðŸ”¥ Exception: $e');
-      debugPrint('â”€â”€ [AddComment] StackTrace: $st');
+      debugPrint('── [AddComment] 🔥 Exception: $e');
+      debugPrint('── [AddComment] StackTrace: $st');
       if (mounted) setState(() => _submitting = false);
     }
   }
@@ -104,12 +105,9 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
     if (commentId.isEmpty) return;
     setState(() => _deletingIdx = index);
     try {
-      await http.delete(
-        Uri.parse(
-          '${ApiConstants.apiBaseUrl}/achievement'
-          '/${widget.achievementId}/comment/$commentId',
-        ),
-        headers: {'Content-Type': 'application/json'},
+      await ApiService.delete(
+        '${ApiConstants.apiBaseUrl}/achievement'
+        '/${widget.achievementId}/comment/$commentId',
       );
       if (!mounted) return;
       setState(() {
@@ -354,7 +352,7 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
                     maxLines: 3,
                     textCapitalization: TextCapitalization.sentences,
                     decoration: InputDecoration(
-                      hintText: 'Add a commentâ€¦',
+                      hintText: 'Add a comment…',
                       hintStyle: TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 13,

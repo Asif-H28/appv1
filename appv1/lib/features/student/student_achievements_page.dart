@@ -1,7 +1,9 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:appv1/features/teacher/presentation/pages/achievement_comments_sheet.dart';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -39,7 +41,7 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
     final studentId = prefs.getString('studentId') ?? '';
     final studentName = prefs.getString('studentName') ?? '';
 
-    // â”€â”€ PRINT every key stored in SharedPrefs â”€â”€
+    // ── PRINT every key stored in SharedPrefs ──
     debugPrint('==== [Achievements] all prefs keys: ${prefs.getKeys()}');
     debugPrint('==== [Achievements] orgId       = "$orgId"');
     debugPrint('==== [Achievements] studentId   = "$studentId"');
@@ -57,7 +59,7 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
 
   Future<void> _fetchFeed() async {
     if (_orgId.isEmpty) {
-      debugPrint('==== [Achievements] SKIPPED fetch â€” orgId is empty');
+      debugPrint('==== [Achievements] SKIPPED fetch — orgId is empty');
       setState(() {
         _loading = false;
       });
@@ -75,7 +77,7 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
     try {
       final res = await http.get(
         Uri.parse(url),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
 
       debugPrint('==== [Achievements] status = ${res.statusCode}');
@@ -86,7 +88,7 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
       if (res.statusCode == 200) {
         final body = jsonDecode(res.body) as Map;
 
-        // â”€â”€ PRINT top-level keys so we know the exact shape â”€â”€
+        // ── PRINT top-level keys so we know the exact shape ──
         debugPrint('==== [Achievements] body keys = ${body.keys.toList()}');
 
         // Try common key names defensively
@@ -151,7 +153,7 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/achievement/$achId/like',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode({
           'userId': _studentId,
           'userName': _studentName,
@@ -246,7 +248,7 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
               'No achievements yet',
               style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
             ),
-            // â”€â”€ shows orgId + post count on screen â”€â”€
+            // ── shows orgId + post count on screen ──
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
               child: Text(
@@ -278,7 +280,7 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
   }
 }
 
-// â”€â”€ Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Card ─────────────────────────────────────────────────────────────────────
 
 class _StudentAchievementCard extends StatefulWidget {
   final Map<String, dynamic> post;
@@ -400,7 +402,7 @@ class _StudentAchievementCardState extends State<_StudentAchievementCard> {
                         ),
                       ),
                       Text(
-                        '${(post['className']?.toString() ?? '').isNotEmpty ? post['className'].toString() : 'Admin'} · '
+                        '${(post['className']?.toString() ?? '').isNotEmpty ? post['className'].toString() : 'Admin'} � '
                         '${_timeAgo(post['createdAt']?.toString() ?? '')}',
                         style: TextStyle(
                           color: AppColors.textSecondary,
@@ -487,7 +489,7 @@ class _StudentAchievementCardState extends State<_StudentAchievementCard> {
                               borderRadius: BorderRadius.circular(3),
                             ),
                             child: Text(
-                              'ðŸ· ${s['studentName']}',
+                              '🏷 ${s['studentName']}',
                               style: const TextStyle(
                                 color: Colors.teal,
                                 fontSize: 11,

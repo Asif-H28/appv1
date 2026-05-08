@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:appv1/core/constants/api_constants.dart';
 import 'package:appv1/features/student/student_main_screen.dart';
 import 'package:appv1/features/student/student_rejected_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -42,7 +44,7 @@ class _StudentPendingScreenState extends State<StudentPendingScreen> {
 
       final res = await http.get(
         Uri.parse('${ApiConstants.apiBaseUrl}/student/profile/$studentId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
 
       if (!mounted) return;

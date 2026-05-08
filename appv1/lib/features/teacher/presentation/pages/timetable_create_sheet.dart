@@ -1,6 +1,8 @@
 import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import '../../../../../core/constants/app_colors.dart';
 
@@ -98,7 +100,7 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/teacher/org/${widget.orgId}',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (!mounted) return;
       debugPrint('[Teachers] status=${res.statusCode}');
@@ -327,7 +329,7 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
     try {
       final res = await http.post(
         Uri.parse('${ApiConstants.apiBaseUrl}/timetable/create'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode(payload),
       );
 

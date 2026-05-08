@@ -1,6 +1,7 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'class_detail_page.dart';
@@ -37,7 +38,7 @@ class _ClassroomsPageState extends State<ClassroomsPage> {
       }
 
       final url = Uri.parse('${ApiConstants.apiBaseUrl}/classroom/org/$orgId');
-      final response = await http.get(url);
+      final response = await ApiService.get(url);
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);

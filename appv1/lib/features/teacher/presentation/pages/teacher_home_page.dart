@@ -1,6 +1,8 @@
 import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -81,9 +83,8 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
       _schedError = false;
     });
     try {
-      final res = await http.get(
-        Uri.parse('${ApiConstants.apiBaseUrl}/timetable/teacher/$_teacherId'),
-        headers: {'Content-Type': 'application/json'},
+      final res = await ApiService.get(
+        '${ApiConstants.apiBaseUrl}/timetable/teacher/$_teacherId',
       );
       if (!mounted) return;
       if (res.statusCode == 200) {
@@ -129,9 +130,8 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
       List<dynamic> raw = [];
 
       if (_teacherId.isNotEmpty) {
-        final res = await http.get(
-          Uri.parse('${ApiConstants.apiBaseUrl}/classroom/teacher/$_teacherId'),
-          headers: {'Content-Type': 'application/json'},
+        final res = await ApiService.get(
+          '${ApiConstants.apiBaseUrl}/classroom/teacher/$_teacherId',
         );
         if (!mounted) return;
         if (res.statusCode == 200) {
@@ -143,9 +143,8 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
       }
 
       if (raw.isEmpty && _orgId.isNotEmpty) {
-        final res = await http.get(
-          Uri.parse('${ApiConstants.apiBaseUrl}/classroom/org/$_orgId'),
-          headers: {'Content-Type': 'application/json'},
+        final res = await ApiService.get(
+          '${ApiConstants.apiBaseUrl}/classroom/org/$_orgId',
         );
         if (!mounted) return;
         if (res.statusCode == 200) {
@@ -180,11 +179,8 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
       for (final cls in _classrooms) {
         final classId = cls['classId']?.toString() ?? '';
         if (classId.isEmpty) continue;
-        final res = await http.get(
-          Uri.parse(
-            '${ApiConstants.apiBaseUrl}/leave/student/class/$classId/pending',
-          ),
-          headers: {'Content-Type': 'application/json'},
+        final res = await ApiService.get(
+          '${ApiConstants.apiBaseUrl}/leave/student/class/$classId/pending',
         );
         if (res.statusCode == 200) {
           final body = jsonDecode(res.body) as Map;
@@ -209,12 +205,8 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
       final prefs = await SharedPreferences.getInstance();
       final authToken = prefs.getString('authToken') ?? '';
 
-      final res = await http.get(
-        Uri.parse('${ApiConstants.apiBaseUrl}/admin-notices/teacher/$_orgId'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $authToken',
-        },
+      final res = await ApiService.get(
+        '${ApiConstants.apiBaseUrl}/admin-notices/teacher/$_orgId',
       );
       if (res.statusCode == 200) {
         final body = jsonDecode(res.body);

@@ -106,7 +106,7 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
       final url = Uri.parse(
         '${ApiConstants.apiBaseUrl}/attendance/class/$classId/week?year=$_selectedYear&month=$_selectedMonth&week=$_selectedWeek',
       );
-      final response = await http.get(url);
+      final response = await ApiService.get(url);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);

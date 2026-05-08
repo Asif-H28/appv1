@@ -1,6 +1,8 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import '../../../../core/constants/app_colors.dart';
 import 'achievement_comments_sheet.dart';
@@ -42,7 +44,7 @@ class _AchievementDetailPageState extends State<AchievementDetailPage> {
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/achievement/${widget.achievementId}',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (!mounted) return;
       if (res.statusCode == 200) {
@@ -84,7 +86,7 @@ class _AchievementDetailPageState extends State<AchievementDetailPage> {
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/achievement/${widget.achievementId}/like',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode({
           'userId': widget.userId,
           'userName': widget.userName,
@@ -156,10 +158,10 @@ class _AchievementDetailPageState extends State<AchievementDetailPage> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: true,
-      // âœ… FIX 1: Never call Navigator.pop inside onPopInvokedWithResult
-      // The pop already happened â€” calling pop again causes _debugLocked crash
+      // ✅ FIX 1: Never call Navigator.pop inside onPopInvokedWithResult
+      // The pop already happened — calling pop again causes _debugLocked crash
       onPopInvokedWithResult: (didPop, result) {
-        // Nothing needed here â€” back button handles passing _changed
+        // Nothing needed here — back button handles passing _changed
       },
       child: Scaffold(
         backgroundColor: AppColors.background,
@@ -202,7 +204,7 @@ class _AchievementDetailPageState extends State<AchievementDetailPage> {
           child: Row(
             children: [
               GestureDetector(
-                // âœ… FIX 1: Use maybePop â€” safe, won't crash if navigator is locked
+                // ✅ FIX 1: Use maybePop — safe, won't crash if navigator is locked
                 onTap: () =>
                     Navigator.of(context).maybePop(_changed ? true : null),
                 child: Container(
@@ -294,7 +296,7 @@ class _AchievementDetailPageState extends State<AchievementDetailPage> {
                       ),
                     ),
                     Text(
-                      '${post['className'] ?? ''} Â· ${_timeAgo(post['createdAt']?.toString() ?? '')}',
+                      '${post['className'] ?? ''} · ${_timeAgo(post['createdAt']?.toString() ?? '')}',
                       style: TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 11,
@@ -362,7 +364,7 @@ class _AchievementDetailPageState extends State<AchievementDetailPage> {
                         borderRadius: BorderRadius.circular(3),
                       ),
                       child: Text(
-                        'ðŸ· ${s['studentName']}',
+                        '🏷 ${s['studentName']}',
                         style: const TextStyle(
                           color: Colors.teal,
                           fontSize: 11,

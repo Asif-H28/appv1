@@ -1,4 +1,5 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -91,10 +92,8 @@ class _NoticePageState extends State<NoticePage> {
       _error = '';
     });
     try {
-      final res = await http.get(
-        Uri.parse(
-          '${ApiConstants.apiBaseUrl}/admin-notices/org/$_orgId',
-        ),
+      final res = await ApiService.get(
+        '${ApiConstants.apiBaseUrl}/admin-notices/org/$_orgId',
       );
       if (res.statusCode == 200) {
         final body = jsonDecode(res.body);
@@ -125,10 +124,8 @@ class _NoticePageState extends State<NoticePage> {
   Future<void> _fetchClassrooms() async {
     if (_orgId.isEmpty) return;
     try {
-      final res = await http.get(
-        Uri.parse(
-          '${ApiConstants.apiBaseUrl}/classroom/org/$_orgId',
-        ),
+      final res = await ApiService.get(
+        '${ApiConstants.apiBaseUrl}/classroom/org/$_orgId',
       );
       if (res.statusCode == 200) {
         final body = jsonDecode(res.body);
@@ -180,10 +177,8 @@ class _NoticePageState extends State<NoticePage> {
     );
     if (ok != true) return;
     try {
-      await http.delete(
-        Uri.parse(
-          '${ApiConstants.apiBaseUrl}/admin-notices/$noticeId',
-        ),
+      await ApiService.delete(
+        '${ApiConstants.apiBaseUrl}/admin-notices/$noticeId',
       );
       _fetchNotices();
       if (mounted) _snack('Notice deleted', _teal);

@@ -1,9 +1,11 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:appv1/features/student/notification/student_notification_screen.dart';
 import 'package:appv1/features/student/student_leave_screen.dart';
 import 'package:appv1/features/student/student_period_card.dart';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -20,13 +22,13 @@ class StudentHomePage extends StatefulWidget {
 }
 
 class _StudentHomePageState extends State<StudentHomePage> {
-  // â”€â”€ Prefs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Prefs ──────────────────────────────────────────
   String _studentName = '';
   String _orgName = '';
   String _className = '';
   String _classId = '';
 
-  // â”€â”€ Today schedule â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Today schedule ─────────────────────────────────
   bool _schedLoading = true;
   bool _schedError = false;
   String _todayLabel = '';
@@ -54,16 +56,15 @@ class _StudentHomePageState extends State<StudentHomePage> {
     }
   }
 
-  // â”€â”€ Today API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Today API ──────────────────────────────────────
   Future<void> _fetchToday() async {
     setState(() {
       _schedLoading = true;
       _schedError = false;
     });
     try {
-      final res = await http.get(
-        Uri.parse('${ApiConstants.apiBaseUrl}/timetable/class/$_classId/today'),
-        headers: {'Content-Type': 'application/json'},
+      final res = await ApiService.get(
+        '${ApiConstants.apiBaseUrl}/timetable/class/$_classId/today',
       );
       if (!mounted) return;
       debugPrint('[StudentToday] ${res.statusCode}');
@@ -99,7 +100,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
     }
   }
 
-  // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Helpers ────────────────────────────────────────
   String _todayKey() {
     const days = [
       '',
@@ -133,12 +134,12 @@ class _StudentHomePageState extends State<StudentHomePage> {
     ),
   );
 
-  // â”€â”€ Build â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Build ──────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      // âœ… SafeArea removed â€” StudentMainScreen header handles it
+      // ✅ SafeArea removed — StudentMainScreen header handles it
       body: RefreshIndicator(
         color: _accent,
         onRefresh: _fetchToday,
@@ -162,7 +163,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
     );
   }
 
-  // â”€â”€ Header â€” bell removed (lives in StudentMainScreen) â”€â”€
+  // ── Header — bell removed (lives in StudentMainScreen) ──
   Widget _buildHeader() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -205,7 +206,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
     );
   }
 
-  // â”€â”€ Banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Banner ─────────────────────────────────────────
   Widget _buildBanner() {
     return Container(
       width: double.infinity,
@@ -296,7 +297,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
     ],
   );
 
-  // â”€â”€ Today's timetable section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Today's timetable section ──────────────────────
   Widget _buildTodaySection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -521,7 +522,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
     );
   }
 
-  // â”€â”€ Quick access section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Quick access section ───────────────────────────
   Widget _buildQuickAccessSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

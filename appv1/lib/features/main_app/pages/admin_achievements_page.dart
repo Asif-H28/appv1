@@ -1,10 +1,12 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 // admin_achievements_page.dart
 import 'dart:convert';
 import 'package:appv1/features/student/achievement_comments_sheet.dart';
 import 'package:appv1/features/teacher/presentation/pages/achievement_create_page.dart';
 import 'package:appv1/features/teacher/presentation/pages/achievement_feed_card.dart';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -66,7 +68,7 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/achievement/org/$_orgId',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (!mounted) return;
       if (res.statusCode == 200) {
@@ -92,13 +94,13 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
     }
   }
 
-  // â”€â”€ Like toggle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Like toggle ───────────────────────────────────────
   Future<void> _toggleLike(int index) async {
     final post = _posts[index];
     final achId = post['achievementId'].toString();
     final likes = List<dynamic>.from(post['likes'] as List? ?? []);
 
-    // Ensure userId/userName are never empty â€” backend rejects empty strings
+    // Ensure userId/userName are never empty — backend rejects empty strings
     final likeUserId = _adminId.isNotEmpty ? _adminId : 'Admin';
     final likeUserName = _adminName.isNotEmpty ? _adminName : 'Admin';
 
@@ -126,7 +128,7 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/achievement/$achId/like',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode({
           'userId': likeUserId,
           'userName': likeUserName,
@@ -136,10 +138,10 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
     } catch (_) {}
   }
 
-  // â”€â”€ Comments â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Comments ──────────────────────────────────────────
   void _openComments(int index) {
     final post = _posts[index];
-    // Ensure userId/userName are never empty â€” backend rejects empty strings
+    // Ensure userId/userName are never empty — backend rejects empty strings
     final commentUserId = _adminId.isNotEmpty ? _adminId : 'Admin';
     final commentUserName = _adminName.isNotEmpty ? _adminName : 'Admin';
     showModalBottomSheet(
@@ -166,7 +168,7 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
     );
   }
 
-  // â”€â”€ Create â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Create ────────────────────────────────────────────
   void _openCreate() async {
     if (_navigating) return;
     setState(() => _navigating = true);
@@ -191,7 +193,7 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
     }
   }
 
-  // â”€â”€ Edit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Edit ──────────────────────────────────────────────
   void _openEdit(int index) async {
     if (_navigating) return;
     setState(() => _navigating = true);
@@ -218,7 +220,7 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
     }
   }
 
-  // â”€â”€ Delete â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Delete ────────────────────────────────────────────
   void _confirmDelete(int index) {
     showDialog(
       context: context,
@@ -265,13 +267,13 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
     try {
       await http.delete(
         Uri.parse('${ApiConstants.apiBaseUrl}/achievement/$achId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (mounted) setState(() => _posts.removeAt(index));
     } catch (_) {}
   }
 
-  // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+  // ════════════════════════════════════════════════════
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -310,7 +312,7 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
     );
   }
 
-  // â”€â”€ Skeleton loader â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Skeleton loader ───────────────────────────────────
   Widget _buildSkeleton() {
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
@@ -326,7 +328,7 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
     );
   }
 
-  // â”€â”€ Error state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Error state ───────────────────────────────────────
   Widget _buildError() {
     return Center(
       child: Column(
@@ -364,7 +366,7 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
     );
   }
 
-  // â”€â”€ Empty state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Empty state ───────────────────────────────────────
   Widget _buildEmpty() {
     return Center(
       child: Column(

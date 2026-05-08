@@ -1,4 +1,5 @@
 import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:appv1/features/main_app/pages/notification_service.dart';
 import 'package:appv1/features/student/notification/student_notification_screen.dart';
@@ -7,10 +8,10 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
-import 'student_home_page.dart';
+import 'package:appv1/features/student/student_home_page.dart';
 
-import 'student_profile_page.dart';
-import 'student_achievements_page.dart';
+import 'package:appv1/features/student/student_profile_page.dart';
+import 'package:appv1/features/student/student_achievements_page.dart';
 
 const Color _accent = Colors.teal;
 
@@ -56,11 +57,8 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
     int total = 0;
     try {
       if (_classId.isNotEmpty) {
-        final r = await http.get(
-          Uri.parse(
-            '${ApiConstants.apiBaseUrl}/notification/class/$_classId/unread/$_studentId',
-          ),
-          headers: {'Content-Type': 'application/json'},
+        final r = await ApiService.get(
+          '${ApiConstants.apiBaseUrl}/notification/class/$_classId/unread/$_studentId',
         );
         if (r.statusCode == 200) {
           final b = jsonDecode(r.body);
@@ -68,11 +66,8 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
         }
       }
       if (_studentId.isNotEmpty) {
-        final r = await http.get(
-          Uri.parse(
-            '${ApiConstants.apiBaseUrl}/notification/student/$_studentId',
-          ),
-          headers: {'Content-Type': 'application/json'},
+        final r = await ApiService.get(
+          '${ApiConstants.apiBaseUrl}/notification/student/$_studentId',
         );
         if (r.statusCode == 200) {
           final b = jsonDecode(r.body);
@@ -100,7 +95,6 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
 
   final List<Widget> _pages = [
     StudentHomePage(),
-
     const StudentAchievementsPage(),
     StudentProfilePage(),
   ];
@@ -294,4 +288,3 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
     );
   }
 }
-

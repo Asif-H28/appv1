@@ -1,7 +1,9 @@
 import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:appv1/features/main_app/pages/notification_service.dart';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -456,7 +458,7 @@ class __AdminLoginTabState extends State<_AdminLoginTab> {
     try {
       final res = await http.post(
         Uri.parse('${ApiConstants.apiBaseUrl}/org/admin/login'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode({
           'adminEmail': _emailCtrl.text.trim(),
           'adminPassword': _passCtrl.text,
@@ -659,7 +661,7 @@ class __TeacherLoginTabState extends State<_TeacherLoginTab> {
     try {
       final res = await http.post(
         Uri.parse('${ApiConstants.apiBaseUrl}/teacher/login'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode({
           'email': _emailCtrl.text.trim(),
           'password': _passCtrl.text,
@@ -887,7 +889,7 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
     try {
       final res = await http.post(
         Uri.parse('${ApiConstants.apiBaseUrl}/student/login'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode({
           'email': _emailCtrl.text.trim(),
           'password': _passCtrl.text.trim(),

@@ -1,6 +1,8 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import '../../../../core/constants/app_colors.dart';
 
@@ -60,7 +62,7 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
           '${ApiConstants.apiBaseUrl}/achievement'
           '/${widget.achievementId}/comment',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode({
           'userId': widget.userId,
           'userName': widget.userName,
@@ -92,7 +94,7 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
           '${ApiConstants.apiBaseUrl}/achievement'
           '/${widget.achievementId}/comment/$commentId',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (!mounted) return;
       setState(() {
@@ -138,7 +140,7 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
   Widget build(BuildContext context) {
     final mq = MediaQuery.of(context);
     final keyboard = mq.viewInsets.bottom;
-    final navBar = mq.padding.bottom; // âœ… system nav buttons height
+    final navBar = mq.padding.bottom; // ✅ system nav buttons height
     final screenH = mq.size.height;
 
     return Container(
@@ -146,10 +148,10 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      // âœ… When keyboard open: pad keyboard height
+      // ✅ When keyboard open: pad keyboard height
       //    When keyboard closed: pad system nav bar so input clears nav buttons
       padding: EdgeInsets.only(bottom: keyboard > 0 ? keyboard : navBar),
-      // âœ… Minimum 55% height so 1 comment doesn't look tiny
+      // ✅ Minimum 55% height so 1 comment doesn't look tiny
       constraints: BoxConstraints(
         minHeight: screenH * 0.55,
         maxHeight: screenH * 0.92,
@@ -157,7 +159,7 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // â”€â”€ Handle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // ── Handle ──────────────────────────────
           const SizedBox(height: 10),
           Container(
             width: 36,
@@ -169,7 +171,7 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
           ),
           const SizedBox(height: 12),
 
-          // â”€â”€ Title â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // ── Title ────────────────────────────────
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
@@ -194,7 +196,7 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
           const SizedBox(height: 10),
           const Divider(height: 1, color: Color(0xFFF0F0F0)),
 
-          // â”€â”€ Comments list â€” Flexible fills minHeight â”€â”€
+          // ── Comments list — Flexible fills minHeight ──
           Flexible(
             child: _comments.isEmpty
                 ? Center(
@@ -331,7 +333,7 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
 
           const Divider(height: 1, color: Color(0xFFF0F0F0)),
 
-          // â”€â”€ Input â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // ── Input ─────────────────────────────────
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
             child: Row(
@@ -344,7 +346,7 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
                     maxLines: 3,
                     textCapitalization: TextCapitalization.sentences,
                     decoration: InputDecoration(
-                      hintText: 'Add a commentâ€¦',
+                      hintText: 'Add a comment…',
                       hintStyle: TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 13,

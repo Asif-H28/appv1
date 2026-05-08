@@ -1,7 +1,9 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
@@ -177,7 +179,7 @@ class _CreateNoticeSheetState extends State<CreateNoticeSheet> {
         }
         response = await http.post(
           Uri.parse('${ApiConstants.apiBaseUrl}/notice/create'),
-          headers: {'Content-Type': 'application/json'},
+          headers: await ApiService.getHeaders(),
           body: jsonEncode(body),
         );
       }
@@ -188,7 +190,7 @@ class _CreateNoticeSheetState extends State<CreateNoticeSheet> {
       if (response.statusCode == 200 || response.statusCode == 201) {
         Navigator.pop(context);
         widget.onCreated();
-        _snack('Notice created! ðŸŽ‰', Colors.green[600]!);
+        _snack('Notice created! 🎉', Colors.green[600]!);
       } else {
         _snack(
           'Failed to create notice. (${response.statusCode})',
@@ -241,7 +243,7 @@ class _CreateNoticeSheetState extends State<CreateNoticeSheet> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // â”€â”€ Handle â”€â”€
+            // ── Handle ──
             Center(
               child: Container(
                 width: 36,
@@ -254,7 +256,7 @@ class _CreateNoticeSheetState extends State<CreateNoticeSheet> {
             ),
             SizedBox(height: 16),
 
-            // â”€â”€ Sheet title â”€â”€
+            // ── Sheet title ──
             Row(
               children: [
                 Container(
@@ -278,7 +280,7 @@ class _CreateNoticeSheetState extends State<CreateNoticeSheet> {
             ),
             SizedBox(height: 18),
 
-            // â”€â”€ Title â”€â”€
+            // ── Title ──
             _label('Notice Title *'),
             SizedBox(height: 5),
             _inputField(
@@ -288,7 +290,7 @@ class _CreateNoticeSheetState extends State<CreateNoticeSheet> {
             ),
             SizedBox(height: 13),
 
-            // â”€â”€ Description â”€â”€
+            // ── Description ──
             _label('Description'),
             SizedBox(height: 5),
             _inputField(
@@ -299,13 +301,13 @@ class _CreateNoticeSheetState extends State<CreateNoticeSheet> {
             ),
             SizedBox(height: 13),
 
-            // â”€â”€ Expiry â”€â”€
+            // ── Expiry ──
             _label('Expiry Date (optional)'),
             SizedBox(height: 5),
             _datePickerTile(),
             SizedBox(height: 16),
 
-            // â”€â”€ Attachment buttons â”€â”€
+            // ── Attachment buttons ──
             _label('Attachments (optional)'),
             SizedBox(height: 8),
             Row(
@@ -336,7 +338,7 @@ class _CreateNoticeSheetState extends State<CreateNoticeSheet> {
               ],
             ),
 
-            // â”€â”€ Image previews â”€â”€
+            // ── Image previews ──
             if (_pickedImages.isNotEmpty) ...[
               SizedBox(height: 12),
               SizedBox(
@@ -350,7 +352,7 @@ class _CreateNoticeSheetState extends State<CreateNoticeSheet> {
               ),
             ],
 
-            // â”€â”€ PDF previews â”€â”€
+            // ── PDF previews ──
             if (_pickedPdfs.isNotEmpty) ...[
               SizedBox(height: 10),
               ...List.generate(
@@ -361,7 +363,7 @@ class _CreateNoticeSheetState extends State<CreateNoticeSheet> {
 
             SizedBox(height: 20),
 
-            // â”€â”€ Submit â”€â”€
+            // ── Submit ──
             SizedBox(
               width: double.infinity,
               height: 46,
@@ -400,7 +402,7 @@ class _CreateNoticeSheetState extends State<CreateNoticeSheet> {
     );
   }
 
-  // â”€â”€ Attachment button â”€â”€
+  // ── Attachment button ──
   Widget _attachBtn({
     required IconData icon,
     required String label,
@@ -432,7 +434,7 @@ class _CreateNoticeSheetState extends State<CreateNoticeSheet> {
     ),
   );
 
-  // â”€â”€ Image thumbnail â”€â”€
+  // ── Image thumbnail ──
   Widget _imageThumb(int index) => Stack(
     children: [
       ClipRRect(
@@ -463,7 +465,7 @@ class _CreateNoticeSheetState extends State<CreateNoticeSheet> {
     ],
   );
 
-  // â”€â”€ PDF tile â”€â”€
+  // ── PDF tile ──
   Widget _pdfTile(File file, int index) => Container(
     margin: EdgeInsets.only(bottom: 6),
     padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -510,7 +512,7 @@ class _CreateNoticeSheetState extends State<CreateNoticeSheet> {
     ),
   );
 
-  // â”€â”€ Date picker tile â”€â”€
+  // ── Date picker tile ──
   Widget _datePickerTile() => GestureDetector(
     onTap: _pickDate,
     child: Container(
@@ -556,7 +558,7 @@ class _CreateNoticeSheetState extends State<CreateNoticeSheet> {
     ),
   );
 
-  // â”€â”€ Label â”€â”€
+  // ── Label ──
   Widget _label(String text) => Text(
     text,
     style: TextStyle(
@@ -567,7 +569,7 @@ class _CreateNoticeSheetState extends State<CreateNoticeSheet> {
     ),
   );
 
-  // â”€â”€ Input field â”€â”€
+  // ── Input field ──
   Widget _inputField({
     required TextEditingController ctrl,
     required String hint,

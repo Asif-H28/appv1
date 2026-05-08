@@ -1,6 +1,8 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -57,7 +59,7 @@ class _TestResultsPageState extends State<TestResultsPage>
     super.dispose();
   }
 
-  // â”€â”€ Load teacher name from SharedPreferences (key = 'teacherName') â”€â”€
+  // ── Load teacher name from SharedPreferences (key = 'teacherName') ──
   Future<void> _loadTeacherName() async {
     if (widget.teacherName.isNotEmpty) {
       setState(() => _resolvedTeacherName = widget.teacherName);
@@ -76,7 +78,7 @@ class _TestResultsPageState extends State<TestResultsPage>
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/join/class/${widget.classId}',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (!mounted) return;
       if (response.statusCode == 200) {
@@ -116,7 +118,7 @@ class _TestResultsPageState extends State<TestResultsPage>
           '';
       final response = await http.get(
         Uri.parse('${ApiConstants.apiBaseUrl}/result/test/$testId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (!mounted) return;
       if (response.statusCode == 200) {
@@ -186,7 +188,7 @@ class _TestResultsPageState extends State<TestResultsPage>
     try {
       final response = await http.delete(
         Uri.parse('${ApiConstants.apiBaseUrl}/result/$resultId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (!mounted) return;
       if (response.statusCode == 200 || response.statusCode == 204) {
@@ -290,7 +292,7 @@ class _TestResultsPageState extends State<TestResultsPage>
       backgroundColor: AppColors.background,
       body: Column(
         children: [
-          // â”€â”€ Gradient Header â”€â”€
+          // ── Gradient Header ──
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -467,7 +469,7 @@ class _TestResultsPageState extends State<TestResultsPage>
             ),
           ),
 
-          // â”€â”€ Body â”€â”€
+          // ── Body ──
           Expanded(
             child: Container(
               decoration: BoxDecoration(
@@ -537,7 +539,7 @@ class _TestResultsPageState extends State<TestResultsPage>
     ),
   );
 
-  // â”€â”€ Tab 1: Students List â”€â”€
+  // ── Tab 1: Students List ──
   Widget _buildStudentsTab() {
     if (_loadingStudents) {
       return Center(
@@ -734,7 +736,7 @@ class _TestResultsPageState extends State<TestResultsPage>
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
-                        '${(existingResult['percentage'] ?? 0).toStringAsFixed(1)}%  â€¢  ${existingResult['grade'] ?? ''}  â€¢  ${(existingResult['overallStatus'] ?? '').toUpperCase()}',
+                        '${(existingResult['percentage'] ?? 0).toStringAsFixed(1)}%  •  ${existingResult['grade'] ?? ''}  •  ${(existingResult['overallStatus'] ?? '').toUpperCase()}',
                         style: TextStyle(
                           color: _gradeColor(
                             existingResult['grade']?.toString() ?? '',
@@ -792,7 +794,7 @@ class _TestResultsPageState extends State<TestResultsPage>
     );
   }
 
-  // â”€â”€ Tab 2: Results â”€â”€
+  // ── Tab 2: Results ──
   Widget _buildResultsTab() {
     if (_loadingResults) {
       return Center(
@@ -1088,7 +1090,7 @@ class _TestResultsPageState extends State<TestResultsPage>
                         SizedBox(width: 6),
                         Flexible(
                           child: Text(
-                            'â€¢ $remarks',
+                            '• $remarks',
                             style: TextStyle(
                               fontSize: 10,
                               color: AppColors.textSecondary,

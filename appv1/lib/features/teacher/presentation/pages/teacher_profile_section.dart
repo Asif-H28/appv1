@@ -1,6 +1,8 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -54,7 +56,7 @@ class _TeacherProfileSectionState extends State<TeacherProfileSection> {
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/teacher/$_teacherId/profile',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (!mounted) return;
       if (res.statusCode == 200) {
@@ -88,7 +90,7 @@ class _TeacherProfileSectionState extends State<TeacherProfileSection> {
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/teacher/$_teacherId/profile',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode(body),
       );
       if (!mounted) return;
@@ -147,7 +149,7 @@ class _TeacherProfileSectionState extends State<TeacherProfileSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // â”€â”€ Profile header card â”€â”€
+          // ── Profile header card ──
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(

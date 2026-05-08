@@ -1,6 +1,8 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -110,7 +112,7 @@ class _CreateTestSheetState extends State<CreateTestSheet> {
     try {
       final response = await http.post(
         Uri.parse('${ApiConstants.apiBaseUrl}/test/create'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode({
           'orgId': orgId,
           'classId': widget.classId,
@@ -189,7 +191,7 @@ class _CreateTestSheetState extends State<CreateTestSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // â”€â”€ Handle â”€â”€
+              // ── Handle ──
               Center(
                 child: Container(
                   width: 36,
@@ -202,7 +204,7 @@ class _CreateTestSheetState extends State<CreateTestSheet> {
               ),
               SizedBox(height: 16),
 
-              // â”€â”€ Header â”€â”€
+              // ── Header ──
               Row(
                 children: [
                   Container(
@@ -256,7 +258,7 @@ class _CreateTestSheetState extends State<CreateTestSheet> {
               ),
               SizedBox(height: 18),
 
-              // â”€â”€ Test Name â”€â”€
+              // ── Test Name ──
               _label('Test Name *'),
               SizedBox(height: 5),
               _inputField(
@@ -269,7 +271,7 @@ class _CreateTestSheetState extends State<CreateTestSheet> {
               ),
               SizedBox(height: 16),
 
-              // â”€â”€ Subjects header â”€â”€
+              // ── Subjects header ──
               Row(
                 children: [
                   _label('Subjects'),
@@ -328,7 +330,7 @@ class _CreateTestSheetState extends State<CreateTestSheet> {
               ...List.generate(_subjectCtrls.length, (i) => _subjectRow(i)),
               SizedBox(height: 20),
 
-              // â”€â”€ Submit â”€â”€
+              // ── Submit ──
               Theme(
                 data: ThemeData(
                   colorScheme: ColorScheme.light(
@@ -414,7 +416,7 @@ class _CreateTestSheetState extends State<CreateTestSheet> {
       ),
       child: Column(
         children: [
-          // â”€â”€ Subject name row â”€â”€
+          // ── Subject name row ──
           Container(
             padding: EdgeInsets.fromLTRB(10, 0, 6, 0),
             decoration: BoxDecoration(
@@ -472,7 +474,7 @@ class _CreateTestSheetState extends State<CreateTestSheet> {
             ),
           ),
 
-          // â”€â”€ Max / Min row â”€â”€
+          // ── Max / Min row ──
           Padding(
             padding: EdgeInsets.fromLTRB(10, 8, 10, 8),
             child: Row(

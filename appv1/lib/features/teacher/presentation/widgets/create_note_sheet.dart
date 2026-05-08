@@ -1,7 +1,9 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
@@ -114,7 +116,7 @@ class _CreateNoteSheetState extends State<CreateNoteSheet> {
       } else {
         response = await http.post(
           Uri.parse('${ApiConstants.apiBaseUrl}/notes/create'),
-          headers: {'Content-Type': 'application/json'},
+          headers: await ApiService.getHeaders(),
           body: jsonEncode({
             'title': _titleCtrl.text.trim(),
             'notesSharedBy': widget.sharedBy,
@@ -130,7 +132,7 @@ class _CreateNoteSheetState extends State<CreateNoteSheet> {
       if (response.statusCode == 200 || response.statusCode == 201) {
         Navigator.pop(context);
         widget.onCreated();
-        _snack('Note created! ðŸŽ‰', Colors.green[600]!);
+        _snack('Note created! 🎉', Colors.green[600]!);
       } else {
         _snack(
           'Failed to create note. (${response.statusCode})',
@@ -183,7 +185,7 @@ class _CreateNoteSheetState extends State<CreateNoteSheet> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // â”€â”€ Handle â”€â”€
+            // ── Handle ──
             Center(
               child: Container(
                 width: 36,
@@ -196,7 +198,7 @@ class _CreateNoteSheetState extends State<CreateNoteSheet> {
             ),
             SizedBox(height: 16),
 
-            // â”€â”€ Header â”€â”€
+            // ── Header ──
             Row(
               children: [
                 Container(
@@ -224,7 +226,7 @@ class _CreateNoteSheetState extends State<CreateNoteSheet> {
             ),
             SizedBox(height: 18),
 
-            // â”€â”€ Title â”€â”€
+            // ── Title ──
             _label('Note Title *'),
             SizedBox(height: 5),
             _inputField(
@@ -234,7 +236,7 @@ class _CreateNoteSheetState extends State<CreateNoteSheet> {
             ),
             SizedBox(height: 16),
 
-            // â”€â”€ Attachments â”€â”€
+            // ── Attachments ──
             _label('Attachments (optional)'),
             SizedBox(height: 8),
             Row(
@@ -265,7 +267,7 @@ class _CreateNoteSheetState extends State<CreateNoteSheet> {
               ],
             ),
 
-            // â”€â”€ Image previews â”€â”€
+            // ── Image previews ──
             if (_images.isNotEmpty) ...[
               SizedBox(height: 10),
               SizedBox(
@@ -282,7 +284,7 @@ class _CreateNoteSheetState extends State<CreateNoteSheet> {
               ),
             ],
 
-            // â”€â”€ PDF previews â”€â”€
+            // ── PDF previews ──
             if (_pdfs.isNotEmpty) ...[
               SizedBox(height: 8),
               ...List.generate(
@@ -294,7 +296,7 @@ class _CreateNoteSheetState extends State<CreateNoteSheet> {
 
             SizedBox(height: 20),
 
-            // â”€â”€ Submit â”€â”€
+            // ── Submit ──
             SizedBox(
               width: double.infinity,
               height: 46,

@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:appv1/core/constants/api_constants.dart';
 import 'package:appv1/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -65,7 +67,7 @@ class _YearRolloverPageState extends State<YearRolloverPage> {
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/student/class/${widget.classId}/names',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (response.statusCode == 200) {
         final body = jsonDecode(response.body);
@@ -114,7 +116,7 @@ class _YearRolloverPageState extends State<YearRolloverPage> {
 
       final response = await http.post(
         Uri.parse(url),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode(body),
       );
 

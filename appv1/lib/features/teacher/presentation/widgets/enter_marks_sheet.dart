@@ -1,6 +1,8 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import '../../../../core/constants/app_colors.dart';
 
@@ -84,7 +86,7 @@ class _EnterMarksSheetState extends State<EnterMarksSheet> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
 
-    // â”€â”€ Resolve all IDs safely â”€â”€
+    // ── Resolve all IDs safely ──
     final testId =
         widget.test['testId']?.toString() ??
         widget.test['_id']?.toString() ??
@@ -94,7 +96,7 @@ class _EnterMarksSheetState extends State<EnterMarksSheet> {
         widget.student['_id']?.toString() ??
         '';
 
-    // â”€â”€ publishedBy: use passed name, never empty â”€â”€
+    // ── publishedBy: use passed name, never empty ──
     final publishedBy = widget.teacherName.isNotEmpty
         ? widget.teacherName
         : 'Teacher';
@@ -144,13 +146,13 @@ class _EnterMarksSheetState extends State<EnterMarksSheet> {
       if (isUpdate) {
         response = await http.put(
           Uri.parse('${ApiConstants.apiBaseUrl}/result/$resultId'),
-          headers: {'Content-Type': 'application/json'},
+          headers: await ApiService.getHeaders(),
           body: jsonEncode(payload),
         );
       } else {
         response = await http.post(
           Uri.parse('${ApiConstants.apiBaseUrl}/result/publish'),
-          headers: {'Content-Type': 'application/json'},
+          headers: await ApiService.getHeaders(),
           body: jsonEncode(payload),
         );
       }
@@ -244,7 +246,7 @@ class _EnterMarksSheetState extends State<EnterMarksSheet> {
               ),
               SizedBox(height: 16),
 
-              // â”€â”€ Header â”€â”€
+              // ── Header ──
               Row(
                 children: [
                   Container(
@@ -335,7 +337,7 @@ class _EnterMarksSheetState extends State<EnterMarksSheet> {
               ),
               SizedBox(height: 20),
 
-              // â”€â”€ Subject rows â”€â”€
+              // ── Subject rows ──
               if (_subjectRows.isEmpty)
                 Container(
                   padding: EdgeInsets.all(16),
@@ -369,7 +371,7 @@ class _EnterMarksSheetState extends State<EnterMarksSheet> {
 
               SizedBox(height: 24),
 
-              // â”€â”€ Submit â”€â”€
+              // ── Submit ──
               SizedBox(
                 width: double.infinity,
                 height: 52,
@@ -530,7 +532,7 @@ class _EnterMarksSheetState extends State<EnterMarksSheet> {
                     decoration: InputDecoration(
                       labelText: 'Scored Marks',
                       labelStyle: TextStyle(color: _accent, fontSize: 12),
-                      hintText: '0â€“$max',
+                      hintText: '0–$max',
                       hintStyle: TextStyle(
                         color: Colors.grey[400],
                         fontSize: 13,

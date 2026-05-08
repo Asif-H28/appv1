@@ -1,7 +1,9 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
@@ -119,7 +121,7 @@ class _EditNoteSheetState extends State<EditNoteSheet> {
           widget.note['_id']?.toString() ??
           '';
 
-      // â”€â”€ Step 1: DELETE removed attachments â”€â”€
+      // ── Step 1: DELETE removed attachments ──
       for (final i in _removedIndexes) {
         final att = _existingAttachments[i];
         final publicId = att['publicId']?.toString() ?? '';
@@ -130,7 +132,7 @@ class _EditNoteSheetState extends State<EditNoteSheet> {
             Uri.parse(
               '${ApiConstants.apiBaseUrl}/notes/$notesId/attachment',
             ),
-            headers: {'Content-Type': 'application/json'},
+            headers: await ApiService.getHeaders(),
             body: jsonEncode({
               'publicId': publicId,
               'resourceType': resourceType,
@@ -139,7 +141,7 @@ class _EditNoteSheetState extends State<EditNoteSheet> {
         } catch (_) {}
       }
 
-      // â”€â”€ Step 2: PUT title + new files â”€â”€
+      // ── Step 2: PUT title + new files ──
       final hasNewFiles = _newImages.isNotEmpty || _newPdfs.isNotEmpty;
       http.Response response;
 
@@ -175,7 +177,7 @@ class _EditNoteSheetState extends State<EditNoteSheet> {
       } else {
         response = await http.put(
           Uri.parse('${ApiConstants.apiBaseUrl}/notes/$notesId'),
-          headers: {'Content-Type': 'application/json'},
+          headers: await ApiService.getHeaders(),
           body: jsonEncode({
             'title': _titleCtrl.text.trim(),
             'notesSharedBy': widget.note['notesSharedBy']?.toString() ?? '',
@@ -239,7 +241,7 @@ class _EditNoteSheetState extends State<EditNoteSheet> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // â”€â”€ Handle â”€â”€
+            // ── Handle ──
             Center(
               child: Container(
                 width: 36,
@@ -252,7 +254,7 @@ class _EditNoteSheetState extends State<EditNoteSheet> {
             ),
             SizedBox(height: 16),
 
-            // â”€â”€ Header â”€â”€
+            // ── Header ──
             Row(
               children: [
                 Container(
@@ -276,13 +278,13 @@ class _EditNoteSheetState extends State<EditNoteSheet> {
             ),
             SizedBox(height: 18),
 
-            // â”€â”€ Title â”€â”€
+            // ── Title ──
             _label('Note Title *'),
             SizedBox(height: 5),
             _inputField(_titleCtrl, 'Note title', Icons.title_rounded),
             SizedBox(height: 16),
 
-            // â”€â”€ Existing attachments with remove/restore â”€â”€
+            // ── Existing attachments with remove/restore ──
             if (_existingAttachments.isNotEmpty) ...[
               Row(
                 children: [
@@ -323,7 +325,7 @@ class _EditNoteSheetState extends State<EditNoteSheet> {
                   ),
                   child: Row(
                     children: [
-                      // â”€â”€ Thumbnail or icon â”€â”€
+                      // ── Thumbnail or icon ──
                       if (isImg)
                         ClipRRect(
                           borderRadius: BorderRadius.only(
@@ -383,7 +385,7 @@ class _EditNoteSheetState extends State<EditNoteSheet> {
 
                       SizedBox(width: 8),
 
-                      // â”€â”€ Label â”€â”€
+                      // ── Label ──
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -418,7 +420,7 @@ class _EditNoteSheetState extends State<EditNoteSheet> {
                         ),
                       ),
 
-                      // â”€â”€ Remove / Restore toggle â”€â”€
+                      // ── Remove / Restore toggle ──
                       GestureDetector(
                         onTap: () => setState(
                           () => isRemoved
@@ -476,7 +478,7 @@ class _EditNoteSheetState extends State<EditNoteSheet> {
               SizedBox(height: 10),
             ],
 
-            // â”€â”€ Append new files â”€â”€
+            // ── Append new files ──
             _label('Append New Files (optional)'),
             SizedBox(height: 8),
             Row(
@@ -507,7 +509,7 @@ class _EditNoteSheetState extends State<EditNoteSheet> {
               ],
             ),
 
-            // â”€â”€ New image previews â”€â”€
+            // ── New image previews ──
             if (_newImages.isNotEmpty) ...[
               SizedBox(height: 10),
               SizedBox(
@@ -524,7 +526,7 @@ class _EditNoteSheetState extends State<EditNoteSheet> {
               ),
             ],
 
-            // â”€â”€ New PDF previews â”€â”€
+            // ── New PDF previews ──
             if (_newPdfs.isNotEmpty) ...[
               SizedBox(height: 8),
               ...List.generate(
@@ -538,7 +540,7 @@ class _EditNoteSheetState extends State<EditNoteSheet> {
 
             SizedBox(height: 20),
 
-            // â”€â”€ Submit â”€â”€
+            // ── Submit ──
             SizedBox(
               width: double.infinity,
               height: 46,

@@ -1,6 +1,8 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import '../../../../core/constants/app_colors.dart';
 
@@ -111,7 +113,7 @@ class _EditTestSheetState extends State<EditTestSheet> {
     try {
       final response = await http.put(
         Uri.parse('${ApiConstants.apiBaseUrl}/test/$testId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode({
           'testModule': _testNameCtrl.text.trim(),
           'subjects': subjects,
@@ -178,7 +180,7 @@ class _EditTestSheetState extends State<EditTestSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // â”€â”€ Handle â”€â”€
+              // ── Handle ──
               Center(
                 child: Container(
                   width: 36,
@@ -191,7 +193,7 @@ class _EditTestSheetState extends State<EditTestSheet> {
               ),
               SizedBox(height: 16),
 
-              // â”€â”€ Header â”€â”€
+              // ── Header ──
               Row(
                 children: [
                   Container(
@@ -232,7 +234,7 @@ class _EditTestSheetState extends State<EditTestSheet> {
               ),
               SizedBox(height: 18),
 
-              // â”€â”€ Test Name â”€â”€
+              // ── Test Name ──
               _label('Test Name *'),
               SizedBox(height: 5),
               _inputField(
@@ -245,7 +247,7 @@ class _EditTestSheetState extends State<EditTestSheet> {
               ),
               SizedBox(height: 16),
 
-              // â”€â”€ Subjects header â”€â”€
+              // ── Subjects header ──
               Row(
                 children: [
                   _label('Subjects'),
@@ -283,7 +285,7 @@ class _EditTestSheetState extends State<EditTestSheet> {
               ...List.generate(_subjectCtrls.length, (i) => _subjectRow(i)),
               SizedBox(height: 20),
 
-              // â”€â”€ Submit â”€â”€
+              // ── Submit ──
               Theme(
                 data: ThemeData(
                   colorScheme: ColorScheme.light(
@@ -369,7 +371,7 @@ class _EditTestSheetState extends State<EditTestSheet> {
       ),
       child: Column(
         children: [
-          // â”€â”€ Subject name â”€â”€
+          // ── Subject name ──
           Container(
             padding: EdgeInsets.fromLTRB(10, 0, 6, 0),
             decoration: BoxDecoration(
@@ -427,7 +429,7 @@ class _EditTestSheetState extends State<EditTestSheet> {
             ),
           ),
 
-          // â”€â”€ Max / Min â”€â”€
+          // ── Max / Min ──
           Padding(
             padding: EdgeInsets.fromLTRB(10, 8, 10, 8),
             child: Row(

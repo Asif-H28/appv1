@@ -1,8 +1,10 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:appv1/features/main_app/pages/teacher_join_requests_page.dart'
     show TeacherJoinRequestsPage;
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/app_colors.dart';
@@ -23,8 +25,8 @@ class _OrganizationPageState extends State<OrganizationPage> {
   final _nonTeachingController = TextEditingController(text: '0');
 
   bool _isSaving = false;
-  bool _isLoading = true; // â† true on first load
-  bool _hasError = false; // â† shows retry UI on fetch failure
+  bool _isLoading = true; // ← true on first load
+  bool _hasError = false; // ← shows retry UI on fetch failure
   bool _showForm = false;
   String _orgId = '';
   Map<String, dynamic> orgData = {};
@@ -74,7 +76,7 @@ class _OrganizationPageState extends State<OrganizationPage> {
     _initPage();
   }
 
-  // â”€â”€â”€ Step 1: Load orgId from prefs, then fetch from API â”€â”€â”€
+  // ─── Step 1: Load orgId from prefs, then fetch from API ───
   Future<void> _initPage() async {
     setState(() {
       _isLoading = true;
@@ -101,7 +103,7 @@ class _OrganizationPageState extends State<OrganizationPage> {
     await _fetchOrgProfile();
   }
 
-  // â”€â”€â”€ GET API: Fetch org profile â”€â”€â”€
+  // ─── GET API: Fetch org profile ───
   Future<void> _fetchOrgProfile() async {
     setState(() {
       _isLoading = true;
@@ -115,7 +117,7 @@ class _OrganizationPageState extends State<OrganizationPage> {
 
       final response = await http.get(
         url,
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
 
       if (!mounted) return;
@@ -123,7 +125,7 @@ class _OrganizationPageState extends State<OrganizationPage> {
       if (response.statusCode == 200) {
         final body = jsonDecode(response.body) as Map<String, dynamic>;
 
-        // â”€â”€ Flexible parsing: handle both flat and nested responses â”€â”€
+        // ── Flexible parsing: handle both flat and nested responses ──
         final data =
             (body['organization'] ?? body['data'] ?? body)
                 as Map<String, dynamic>;
@@ -190,13 +192,13 @@ class _OrganizationPageState extends State<OrganizationPage> {
         _fallbackToLocal();
       }
     } catch (e) {
-      // Network error â†’ fallback to locally cached values
+      // Network error → fallback to locally cached values
       if (!mounted) return;
       _fallbackToLocal();
     }
   }
 
-  // â”€â”€â”€ Fallback: use SharedPreferences cache if API fails â”€â”€â”€
+  // ─── Fallback: use SharedPreferences cache if API fails ───
   Future<void> _fallbackToLocal() async {
     final prefs = await SharedPreferences.getInstance();
     final phone = prefs.getString('orgPhone') ?? '';
@@ -242,7 +244,7 @@ class _OrganizationPageState extends State<OrganizationPage> {
     });
   }
 
-  // â”€â”€â”€ Helper: refresh list tile previews â”€â”€â”€
+  // ─── Helper: refresh list tile previews ───
   void _refreshPreviews(
     String phone,
     String address,
@@ -266,7 +268,7 @@ class _OrganizationPageState extends State<OrganizationPage> {
     _members[5]['preview'] = '$nonTeaching non-teaching staff';
   }
 
-  // â”€â”€â”€ PUT API: Update org profile â”€â”€â”€
+  // ─── PUT API: Update org profile ───
   Future<void> _updateOrgProfile() async {
     if (_orgId.isEmpty)
       throw Exception('Organization ID not found. Please re-login.');
@@ -277,7 +279,7 @@ class _OrganizationPageState extends State<OrganizationPage> {
 
     final response = await http.put(
       url,
-      headers: {'Content-Type': 'application/json'},
+      headers: await ApiService.getHeaders(),
       body: jsonEncode({
         'phone': _phoneController.text.trim(),
         'address': _addressController.text.trim(),
@@ -315,7 +317,7 @@ class _OrganizationPageState extends State<OrganizationPage> {
       backgroundColor: AppColors.primary,
       body: Column(
         children: [
-          // â”€â”€â”€ Gradient Header â”€â”€â”€
+          // ─── Gradient Header ───
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -348,7 +350,7 @@ class _OrganizationPageState extends State<OrganizationPage> {
                         ),
                         Row(
                           children: [
-                            // â”€â”€ Refresh button â”€â”€
+                            // ── Refresh button ──
                             if (!_isLoading)
                               Container(
                                 margin: EdgeInsets.only(right: 8),
@@ -419,7 +421,7 @@ class _OrganizationPageState extends State<OrganizationPage> {
             ),
           ),
 
-          // â”€â”€â”€ White Body â”€â”€â”€
+          // ─── White Body ───
           Expanded(
             child: Container(
               width: double.infinity,
@@ -471,7 +473,7 @@ class _OrganizationPageState extends State<OrganizationPage> {
     );
   }
 
-  // â”€â”€â”€ Loading shimmer-style state â”€â”€â”€
+  // ─── Loading shimmer-style state ───
   Widget _buildLoadingState() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
@@ -502,7 +504,7 @@ class _OrganizationPageState extends State<OrganizationPage> {
     );
   }
 
-  // â”€â”€â”€ Error / retry state â”€â”€â”€
+  // ─── Error / retry state ───
   Widget _buildErrorState() {
     return Center(
       child: Padding(
@@ -550,13 +552,13 @@ class _OrganizationPageState extends State<OrganizationPage> {
     );
   }
 
-  // â”€â”€â”€ Details List View â”€â”€â”€
+  // ─── Details List View ───
   Widget _buildDetailsList() {
     int _pendingCount = 0;
     return ListView(
       padding: EdgeInsets.symmetric(vertical: 12),
       children: [
-        // â”€â”€ Teacher Join Requests entry â”€â”€
+        // ── Teacher Join Requests entry ──
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           child: Container(
@@ -644,7 +646,7 @@ class _OrganizationPageState extends State<OrganizationPage> {
         ),
         SizedBox(height: 4),
 
-        // â”€â”€ Org info tiles â”€â”€
+        // ── Org info tiles ──
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 12),
           child: Container(
@@ -721,7 +723,7 @@ class _OrganizationPageState extends State<OrganizationPage> {
     );
   }
 
-  // â”€â”€â”€ Edit Form â”€â”€â”€
+  // ─── Edit Form ───
   Widget _buildEditForm() {
     return SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(20, 20, 20, 100),

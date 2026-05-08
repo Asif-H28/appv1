@@ -1,6 +1,8 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -156,7 +158,7 @@ class _StudentLeaveScreenState extends State<StudentLeaveScreen>
   }
 }
 
-// â”€â”€ Apply Leave Tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Apply Leave Tab ───────────────────────────────────────────────────────────
 
 class _ApplyLeaveTab extends StatefulWidget {
   final String studentId;
@@ -222,9 +224,8 @@ class _ApplyLeaveTabState extends State<_ApplyLeaveTab> {
           )
           .toList();
 
-      final res = await http.post(
-        Uri.parse('${ApiConstants.apiBaseUrl}/leave/student/apply'),
-        headers: {'Content-Type': 'application/json'},
+      final res = await ApiService.post(
+        '${ApiConstants.apiBaseUrl}/leave/student/apply',
         body: jsonEncode({
           'studentId': widget.studentId,
           'reason': _reasonCtrl.text.trim(),
@@ -493,7 +494,7 @@ class _ApplyLeaveTabState extends State<_ApplyLeaveTab> {
   }
 }
 
-// â”€â”€ My Leaves Tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── My Leaves Tab ─────────────────────────────────────────────────────────────
 
 class _MyLeavesTab extends StatefulWidget {
   final String studentId;
@@ -520,11 +521,8 @@ class _MyLeavesTabState extends State<_MyLeavesTab> {
     }
     setState(() => _loading = true);
     try {
-      final res = await http.get(
-        Uri.parse(
-          '${ApiConstants.apiBaseUrl}/leave/student/${widget.studentId}',
-        ),
-        headers: {'Content-Type': 'application/json'},
+      final res = await ApiService.get(
+        '${ApiConstants.apiBaseUrl}/leave/student/${widget.studentId}',
       );
       if (!mounted) return;
       if (res.statusCode == 200) {
@@ -637,11 +635,8 @@ class _MyLeavesTabState extends State<_MyLeavesTab> {
     if (confirmed != true) return;
 
     try {
-      final res = await http.delete(
-        Uri.parse(
-          '${ApiConstants.apiBaseUrl}/leave/student/$leaveId',
-        ),
-        headers: {'Content-Type': 'application/json'},
+      final res = await ApiService.delete(
+        '${ApiConstants.apiBaseUrl}/leave/student/$leaveId',
       );
       if (!mounted) return;
       if (res.statusCode == 200) {
@@ -794,7 +789,7 @@ class _MyLeavesTabState extends State<_MyLeavesTab> {
   }
 }
 
-// â”€â”€ Leave Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Leave Card ────────────────────────────────────────────────────────────────
 
 class _LeaveCard extends StatefulWidget {
   final Map<String, dynamic> leave;
@@ -887,7 +882,7 @@ class _LeaveCardState extends State<_LeaveCard> {
                 ),
               ),
               const Spacer(),
-              // Delete button â€” pending only
+              // Delete button — pending only
               if (isPending)
                 GestureDetector(
                   onTap: _deleting

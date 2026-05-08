@@ -1,6 +1,8 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/app_colors.dart';
@@ -36,7 +38,7 @@ class _StudentNotificationScreenState extends State<StudentNotificationScreen> {
     await _fetchUnreadCount();
   }
 
-  // â”€â”€ Fetch both APIs and merge into one sorted list â”€â”€â”€â”€
+  // ── Fetch both APIs and merge into one sorted list ────
   Future<void> _fetchAll() async {
     if (!mounted) return;
     setState(() => _loading = true);
@@ -44,13 +46,10 @@ class _StudentNotificationScreenState extends State<StudentNotificationScreen> {
     final List<Map<String, dynamic>> combined = [];
 
     try {
-      // 1ï¸âƒ£ My personal notifications
+      // 1️⃣ My personal notifications
       if (_studentId.isNotEmpty) {
-        final res = await http.get(
-          Uri.parse(
-            '${ApiConstants.apiBaseUrl}/notification/student/$_studentId',
-          ),
-          headers: {'Content-Type': 'application/json'},
+        final res = await ApiService.get(
+          '${ApiConstants.apiBaseUrl}/notification/student/$_studentId',
         );
         if (res.statusCode == 200) {
           final body = jsonDecode(res.body);
@@ -65,13 +64,10 @@ class _StudentNotificationScreenState extends State<StudentNotificationScreen> {
         }
       }
 
-      // 2ï¸âƒ£ Class-wide notifications
+      // 2️⃣ Class-wide notifications
       if (_classId.isNotEmpty) {
-        final res = await http.get(
-          Uri.parse(
-            '${ApiConstants.apiBaseUrl}/notification/class/$_classId',
-          ),
-          headers: {'Content-Type': 'application/json'},
+        final res = await ApiService.get(
+          '${ApiConstants.apiBaseUrl}/notification/class/$_classId',
         );
         if (res.statusCode == 200) {
           final body = jsonDecode(res.body);
@@ -105,15 +101,12 @@ class _StudentNotificationScreenState extends State<StudentNotificationScreen> {
     }
   }
 
-  // â”€â”€ Get unread count from API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Get unread count from API ─────────────────────────
   Future<void> _fetchUnreadCount() async {
     if (_classId.isEmpty || _studentId.isEmpty) return;
     try {
-      final res = await http.get(
-        Uri.parse(
-          '${ApiConstants.apiBaseUrl}/notification/class/$_classId/unread/$_studentId',
-        ),
-        headers: {'Content-Type': 'application/json'},
+      final res = await ApiService.get(
+        '${ApiConstants.apiBaseUrl}/notification/class/$_classId/unread/$_studentId',
       );
       if (res.statusCode == 200 && mounted) {
         final body = jsonDecode(res.body);
@@ -124,15 +117,12 @@ class _StudentNotificationScreenState extends State<StudentNotificationScreen> {
     } catch (_) {}
   }
 
-  // â”€â”€ Mark single notification as read â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Mark single notification as read ─────────────────
   Future<void> _markAsRead(String notifId) async {
     if (_studentId.isEmpty) return;
     try {
-      await http.put(
-        Uri.parse(
-          '${ApiConstants.apiBaseUrl}/notification/$notifId/read',
-        ),
-        headers: {'Content-Type': 'application/json'},
+      await ApiService.put(
+        '${ApiConstants.apiBaseUrl}/notification/$notifId/read',
         body: jsonEncode({'userId': _studentId}),
       );
       // Update local state instantly
@@ -156,15 +146,12 @@ class _StudentNotificationScreenState extends State<StudentNotificationScreen> {
     } catch (_) {}
   }
 
-  // â”€â”€ Mark all as read â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Mark all as read ──────────────────────────────────
   Future<void> _markAllAsRead() async {
     if (_classId.isEmpty || _studentId.isEmpty) return;
     try {
-      await http.put(
-        Uri.parse(
-          '${ApiConstants.apiBaseUrl}/notification/class/$_classId/read-all',
-        ),
-        headers: {'Content-Type': 'application/json'},
+      await ApiService.put(
+        '${ApiConstants.apiBaseUrl}/notification/class/$_classId/read-all',
         body: jsonEncode({'userId': _studentId}),
       );
       // Update all local items instantly
@@ -212,7 +199,7 @@ class _StudentNotificationScreenState extends State<StudentNotificationScreen> {
     );
   }
 
-  // â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Header ────────────────────────────────────────────
   Widget _buildHeader() {
     return Container(
       decoration: const BoxDecoration(
@@ -341,7 +328,7 @@ class _StudentNotificationScreenState extends State<StudentNotificationScreen> {
     );
   }
 
-  // â”€â”€ Notification list â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Notification list ─────────────────────────────────
   Widget _buildList() {
     return RefreshIndicator(
       color: Colors.teal,
@@ -364,7 +351,7 @@ class _StudentNotificationScreenState extends State<StudentNotificationScreen> {
     );
   }
 
-  // â”€â”€ Empty state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Empty state ───────────────────────────────────────
   Widget _buildEmpty() {
     return Center(
       child: Padding(

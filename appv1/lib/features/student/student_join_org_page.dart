@@ -1,8 +1,10 @@
 import 'package:appv1/features/student/student_main_screen.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:appv1/features/student/student_rejected_screen.dart';
 import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -57,7 +59,7 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
 
       final res = await http.get(
         Uri.parse('${ApiConstants.apiBaseUrl}/student/profile/$studentId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
 
       if (!mounted) return;
@@ -140,7 +142,7 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
     try {
       final res = await http.get(
         Uri.parse('${ApiConstants.apiBaseUrl}/org/$_orgId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (!mounted) return;
       if (res.statusCode == 200) {
@@ -174,7 +176,7 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/student/orgs/$_orgId/classes',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (!mounted) return;
       if (res.statusCode == 200) {
@@ -211,7 +213,7 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
           '';
       final res = await http.post(
         Uri.parse('${ApiConstants.apiBaseUrl}/student/join-request'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode({'studentId': _studentId, 'classId': classId}),
       );
       if (!mounted) return;

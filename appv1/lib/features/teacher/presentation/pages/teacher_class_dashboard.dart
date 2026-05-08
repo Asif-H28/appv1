@@ -1,6 +1,8 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 
 const Color _accent = Colors.teal;
@@ -23,12 +25,12 @@ class TeacherClassDashboard extends StatefulWidget {
 class _TeacherClassDashboardState extends State<TeacherClassDashboard> {
   bool _loading = true;
 
-  // Today attendance â€” from attendance.totalPresent / totalAbsent
+  // Today attendance — from attendance.totalPresent / totalAbsent
   int? _todayPresent;
   int? _todayAbsent;
   bool _attNotMarked = false;
 
-  // Overall attendance â€” sum(totalPresent) / sum(totalPresent+totalAbsent)
+  // Overall attendance — sum(totalPresent) / sum(totalPresent+totalAbsent)
   double _overallAttPct = 0;
   int _totalDaysMarked = 0;
 
@@ -66,14 +68,14 @@ class _TeacherClassDashboardState extends State<TeacherClassDashboard> {
     if (mounted) setState(() => _loading = false);
   }
 
-  // â”€â”€ Today: attendance is a single object â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Today: attendance is a single object ──────────
   Future<void> _fetchTodayAtt() async {
     try {
       final res = await http.get(
         Uri.parse(
           '$_base/api/attendance/class/${widget.classId}/date/${_todayStr()}',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (res.statusCode == 200) {
         final b = jsonDecode(res.body) as Map<String, dynamic>;
@@ -94,12 +96,12 @@ class _TeacherClassDashboardState extends State<TeacherClassDashboard> {
     }
   }
 
-  // â”€â”€ History: attendances is a list of objects â”€â”€â”€â”€â”€
+  // ── History: attendances is a list of objects ─────
   Future<void> _fetchHistoryAtt() async {
     try {
       final res = await http.get(
         Uri.parse('$_base/api/attendance/class/${widget.classId}'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (res.statusCode == 200) {
         final b = jsonDecode(res.body) as Map<String, dynamic>;
@@ -122,12 +124,12 @@ class _TeacherClassDashboardState extends State<TeacherClassDashboard> {
     }
   }
 
-  // â”€â”€ Results â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Results ────────────────────────────────────────
   Future<void> _fetchResults() async {
     try {
       final res = await http.get(
         Uri.parse('$_base/api/result/class/${widget.classId}'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (res.statusCode == 200) {
         final b = jsonDecode(res.body) as Map<String, dynamic>;
@@ -167,17 +169,17 @@ class _TeacherClassDashboardState extends State<TeacherClassDashboard> {
     }
   }
 
-  // â”€â”€ Tests cross-reference with results â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Tests cross-reference with results ────────────
   Future<void> _fetchTests() async {
     try {
       final responses = await Future.wait([
         http.get(
           Uri.parse('$_base/api/test/class/${widget.classId}'),
-          headers: {'Content-Type': 'application/json'},
+          headers: await ApiService.getHeaders(),
         ),
         http.get(
           Uri.parse('$_base/api/result/class/${widget.classId}'),
-          headers: {'Content-Type': 'application/json'},
+          headers: await ApiService.getHeaders(),
         ),
       ]);
 
@@ -239,7 +241,7 @@ class _TeacherClassDashboardState extends State<TeacherClassDashboard> {
     );
   }
 
-  // â”€â”€ Today attendance â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Today attendance ───────────────────────────────
   Widget _buildTodayAttendance() {
     final total = (_todayPresent ?? 0) + (_todayAbsent ?? 0);
     return _card(
@@ -306,7 +308,7 @@ class _TeacherClassDashboardState extends State<TeacherClassDashboard> {
     );
   }
 
-  // â”€â”€ Overall attendance + results â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Overall attendance + results ───────────────────
   Widget _buildOverallRow() {
     final attColor = _overallAttPct >= 75 ? Colors.green : Colors.orange;
     return Row(
@@ -381,7 +383,7 @@ class _TeacherClassDashboardState extends State<TeacherClassDashboard> {
     );
   }
 
-  // â”€â”€ Tests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Tests ──────────────────────────────────────────
   Widget _buildTestsCard() {
     return _card(
       child: Column(
@@ -424,7 +426,7 @@ class _TeacherClassDashboardState extends State<TeacherClassDashboard> {
     );
   }
 
-  // â”€â”€ Top performers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Top performers ─────────────────────────────────
   Widget _buildTopPerformers() {
     return _card(
       child: Column(
@@ -438,7 +440,7 @@ class _TeacherClassDashboardState extends State<TeacherClassDashboard> {
             final name = r['studentName']?.toString() ?? 'Student';
             final pct = (r['percentage'] as num?)?.toDouble() ?? 0;
             final grade = r['grade']?.toString() ?? '';
-            final medals = ['ðŸ¥‡', 'ðŸ¥ˆ', 'ðŸ¥‰'];
+            final medals = ['🥇', '🥈', '🥉'];
             return Container(
               margin: const EdgeInsets.only(bottom: 8),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
@@ -504,7 +506,7 @@ class _TeacherClassDashboardState extends State<TeacherClassDashboard> {
     );
   }
 
-  // â”€â”€ Shared widgets â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Shared widgets ─────────────────────────────────
   Widget _card({required Widget child}) => Container(
     width: double.infinity,
     padding: const EdgeInsets.all(12),

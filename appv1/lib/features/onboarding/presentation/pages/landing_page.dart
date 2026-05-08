@@ -1,6 +1,8 @@
 import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -711,7 +713,7 @@ class __JoinOrgTabState extends State<_JoinOrgTab> {
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/org/search?query=${Uri.encodeComponent(query.trim())}',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       if (res.statusCode == 200 ||
           res.statusCode == 404 ||
@@ -1490,7 +1492,7 @@ class __TeacherRegisterSheetState extends State<_TeacherRegisterSheet> {
     try {
       final regRes = await http.post(
         Uri.parse('${ApiConstants.apiBaseUrl}/teacher/register'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode({
           'name': _nameCtrl.text.trim(),
           'email': _emailCtrl.text.trim(),
@@ -1529,7 +1531,7 @@ class __TeacherRegisterSheetState extends State<_TeacherRegisterSheet> {
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/teacher/$teacherId/join-request',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
 
       if (!mounted) return;

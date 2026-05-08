@@ -1,6 +1,8 @@
 import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -58,14 +60,14 @@ class _CaResultsPageState extends State<CaResultsPage> with SingleTickerProvider
       // Fetch students in class using the join/class endpoint (more reliable for student details)
       final res1 = await http.get(
         Uri.parse('${ApiConstants.apiBaseUrl}/join/class/${widget.classId}'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       print('[CaResultsPage] Students API status: ${res1.statusCode}');
       
       // Fetch results for this assessment
       final res2 = await http.get(
         Uri.parse('${ApiConstants.apiBaseUrl}/comprehensive-result/assessment/$assessmentId'),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
       );
       print('[CaResultsPage] Results API status: ${res2.statusCode}');
 

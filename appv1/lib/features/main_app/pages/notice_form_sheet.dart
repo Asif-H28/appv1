@@ -1,6 +1,8 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:file_picker/file_picker.dart';
@@ -189,7 +191,7 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/admin-notices/$noticeId/attachment',
         ),
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode({
           'publicId': att['publicId']?.toString() ?? '',
           'resourceType': att['resourceType']?.toString() ?? 'image',
@@ -262,6 +264,7 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
     );
     if (_newPickedFiles.isNotEmpty) {
       final req = http.MultipartRequest('POST', uri);
+      req.headers.addAll(await ApiService.getHeaders());
       _fillFields(req.fields);
       for (final f in _newPickedFiles) {
         final ext = path.extension(f.path!).toLowerCase().replaceAll('.', '');
@@ -279,7 +282,7 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
     } else {
       await http.post(
         uri,
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode(_buildBody()),
       );
     }
@@ -292,6 +295,7 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
     );
     if (_newPickedFiles.isNotEmpty) {
       final req = http.MultipartRequest('PUT', uri);
+      req.headers.addAll(await ApiService.getHeaders());
       _fillFields(req.fields);
       for (final f in _newPickedFiles) {
         final ext = path.extension(f.path!).toLowerCase().replaceAll('.', '');
@@ -309,7 +313,7 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
     } else {
       await http.put(
         uri,
-        headers: {'Content-Type': 'application/json'},
+        headers: await ApiService.getHeaders(),
         body: jsonEncode(_buildBody()),
       );
     }
@@ -378,7 +382,7 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // â”€â”€ Title & Description Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+              // ── Title & Description Card ─────────────────
               _card(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -416,7 +420,7 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
               ),
               const SizedBox(height: 16),
 
-              // â”€â”€ Upload Attachments Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+              // ── Upload Attachments Card ──────────────────
               _card(
                 child: Column(
                   children: [
@@ -485,7 +489,7 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
               ),
               const SizedBox(height: 16),
 
-              // â”€â”€ Target Audience Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+              // ── Target Audience Card ─────────────────────
               _card(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -515,7 +519,7 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
               ),
               const SizedBox(height: 16),
 
-              // â”€â”€ Distribution Card (only for both) â”€â”€â”€â”€â”€â”€â”€â”€
+              // ── Distribution Card (only for both) ────────
               if (_audienceUI == 'both')
                 _card(
                   child: Column(
@@ -621,7 +625,7 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
                 ),
               if (_audienceUI == 'both') const SizedBox(height: 16),
 
-              // â”€â”€ Expiry Date Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+              // ── Expiry Date Card ─────────────────────────
               _card(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -671,7 +675,7 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
               ),
               const SizedBox(height: 16),
 
-              // â”€â”€ Editor's Tip Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+              // ── Editor's Tip Card ────────────────────────
               ClipRRect(
                 borderRadius: BorderRadius.circular(3),
                 child: Stack(
@@ -742,7 +746,7 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
               ),
               const SizedBox(height: 24),
 
-              // â”€â”€ Publish Button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+              // ── Publish Button ───────────────────────────
               SizedBox(
                 width: double.infinity,
                 height: 52,
@@ -782,7 +786,7 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
     );
   }
 
-  // â”€â”€ Audience row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Audience row ───────────────────────────────────────
 
   Widget _audienceRow({
     required String value,
@@ -848,7 +852,7 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
     );
   }
 
-  // â”€â”€ Class chips â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Class chips ────────────────────────────────────────
 
   Widget _classChips() {
     final names = _selectedClassIds.map((id) {
@@ -926,7 +930,7 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
         ),
       );
 
-  // â”€â”€ Class picker bottom sheet â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Class picker bottom sheet ──────────────────────────
 
   void _openClassPicker() {
     showModalBottomSheet(
@@ -1055,7 +1059,7 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
     );
   }
 
-  // â”€â”€ Existing attachment tile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Existing attachment tile ───────────────────────────
 
   Widget _existingAttTile(int index, Map<String, dynamic> att) {
     final name = att['originalName']?.toString() ?? 'Attachment';
@@ -1122,7 +1126,7 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
     );
   }
 
-  // â”€â”€ New file tile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── New file tile ──────────────────────────────────────
 
   Widget _newFileTile(int index, PlatformFile f) {
     final ext = path.extension(f.name).toLowerCase();
@@ -1173,7 +1177,7 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
     );
   }
 
-  // â”€â”€ Shared helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Shared helpers ─────────────────────────────────────
 
   Widget _card({required Widget child}) => Container(
     width: double.infinity,
@@ -1232,7 +1236,7 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
   );
 }
 
-// â”€â”€ Editor's Tip background painter â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Editor's Tip background painter ───────────────────────
 
 class _TipBgPainter extends CustomPainter {
   @override

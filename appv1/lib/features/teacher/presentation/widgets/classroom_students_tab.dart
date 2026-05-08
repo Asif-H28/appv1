@@ -1,8 +1,9 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/services/api_service.dart';
 import 'students_management_view.dart';
 import 'attendance_view.dart';
 
@@ -54,11 +55,8 @@ class _ClassroomStudentsTabState extends State<ClassroomStudentsTab>
       _hasError = false;
     });
     try {
-      final response = await http.get(
-        Uri.parse(
-          '${ApiConstants.apiBaseUrl}/join/class/${widget.classId}',
-        ),
-        headers: {'Content-Type': 'application/json'},
+      final response = await ApiService.get(
+        '${ApiConstants.apiBaseUrl}/join/class/${widget.classId}',
       );
       if (!mounted) return;
       if (response.statusCode == 200) {
@@ -102,7 +100,7 @@ class _ClassroomStudentsTabState extends State<ClassroomStudentsTab>
 
     return Column(
       children: [
-        // â”€â”€ Inner tab bar â”€â”€
+        // ── Inner tab bar ──
         Container(
           color: Colors.white,
           padding: EdgeInsets.fromLTRB(14, 12, 14, 10),
@@ -225,4 +223,3 @@ class _ClassroomStudentsTabState extends State<ClassroomStudentsTab>
     ),
   );
 }
-
