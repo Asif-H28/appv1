@@ -15,12 +15,14 @@ class ChatSocketService {
   final _onStopTypingController = StreamController<Map<String, dynamic>>.broadcast();
   final _onStatusUpdateController = StreamController<Map<String, dynamic>>.broadcast();
   final _onOnlineStatusController = StreamController<Map<String, dynamic>>.broadcast();
+  final _onRefreshUnreadController = StreamController<void>.broadcast();
 
   Stream<Map<String, dynamic>> get onNewMessage => _onNewMessageController.stream;
   Stream<Map<String, dynamic>> get onTyping => _onTypingController.stream;
   Stream<Map<String, dynamic>> get onStopTyping => _onStopTypingController.stream;
   Stream<Map<String, dynamic>> get onStatusUpdate => _onStatusUpdateController.stream;
   Stream<Map<String, dynamic>> get onOnlineStatus => _onOnlineStatusController.stream;
+  Stream<void> get onRefreshUnread => _onRefreshUnreadController.stream;
 
   String? _currentUserId;
 
@@ -89,6 +91,10 @@ class ChatSocketService {
       'conversationId': conversationId,
       'userId': userId,
     });
+  }
+
+  void triggerUnreadRefresh() {
+    _onRefreshUnreadController.add(null);
   }
 
   void disconnect() {

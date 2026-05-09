@@ -296,6 +296,14 @@ class ApiService {
     }
   }
 
+  static Future<void> markMessagesAsRead(String conversationId) async {
+    try {
+      await ApiService.put('/chat/messages/read/$conversationId', body: '{}');
+    } catch (e) {
+      print('Error marking messages as read: $e');
+    }
+  }
+
   // ─── Dio Instance with Interceptor ─────────────────────
   static final Dio _dio = Dio(BaseOptions(
     baseUrl: ApiConstants.apiBaseUrl,

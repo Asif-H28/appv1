@@ -48,8 +48,10 @@ class _MainAppScreenState extends State<MainAppScreen> {
     // ✅ Listen for incoming FCM leave-request notifications (same pattern as student)
     adminNotifCountNotifier.addListener(_onAdminNotification);
     
-    // Listen for chat messages
+    // Listen for chat messages and status updates (read/delivered)
     ChatSocketService().onNewMessage.listen((_) => _fetchChatUnreadCount());
+    ChatSocketService().onStatusUpdate.listen((_) => _fetchChatUnreadCount());
+    ChatSocketService().onRefreshUnread.listen((_) => _fetchChatUnreadCount());
     _fetchChatUnreadCount();
   }
 

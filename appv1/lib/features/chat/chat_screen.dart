@@ -71,7 +71,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
     await _loadMessages();
     _socketService.joinConversation(widget.conversationId);
-    _socketService.emitRead(widget.conversationId, _currentUserId);
+    ApiService.markMessagesAsRead(widget.conversationId);
+    _socketService.triggerUnreadRefresh();
     
     // Mark undelivered messages as delivered
     for (var msg in _messages) {
@@ -231,6 +232,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void dispose() {
+    ApiService.markMessagesAsRead(widget.conversationId);
+    ChatSocketService().triggerUnreadRefresh();
     _typingTimer?.cancel();
     _messageController.dispose();
     _scrollController.dispose();
