@@ -75,7 +75,14 @@ class NotificationService {
         ),
       ),
       onDidReceiveNotificationResponse: (details) {
-        _routeFromPayload(details.payload);
+        if (details.payload != null) {
+          try {
+            final data = jsonDecode(details.payload!);
+            NotificationRouter.handleData(data);
+          } catch (_) {
+            NotificationRouter.handleRoute(details.payload!);
+          }
+        }
       },
     );
   }
@@ -231,7 +238,7 @@ class NotificationService {
             sound: 'schoolsync.aiff',
           ),
         ),
-        payload: message.data['route'],
+        payload: jsonEncode(message.data),
       );
     });
   }
@@ -259,8 +266,7 @@ class NotificationService {
     BuildContext context,
     Map<String, dynamic> data,
   ) {
-    final route = data['route']?.toString();
-    _routeFromPayload(route, context: context);
+    NotificationRouter.handleData(data);
   }
 
   static void _routeFromPayload(String? route, {BuildContext? context}) {

@@ -304,6 +304,7 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
               ),
             ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'admin_achievement_fab',
         onPressed: _navigating ? null : _openCreate,
         backgroundColor: Colors.teal,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),

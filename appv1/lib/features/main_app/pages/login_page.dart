@@ -17,6 +17,7 @@ import '../../teacher/presentation/pages/teacher_main_screen.dart';
 import '../../teacher/presentation/pages/teacher_pending_screen.dart';
 import 'forgot_password_page.dart';
 import '../main_app_screen.dart';
+import '../../../core/services/chat_socket_service.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -499,6 +500,12 @@ class __AdminLoginTabState extends State<_AdminLoginTab> {
           await NotificationService.saveAdminTokenAfterLogin(orgId: orgId);
         }
 
+        // Connect to Chat Socket
+        final authToken = body['token'] ?? '';
+        if (orgId.isNotEmpty && authToken.isNotEmpty) {
+          ChatSocketService().connect(orgId, authToken);
+        }
+
         // â”€â”€ Init notification listeners â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         NotificationService.initListeners(context);
 
@@ -714,6 +721,11 @@ class __TeacherLoginTabState extends State<_TeacherLoginTab> {
           userId: teacherId,
           role: 'teacher',
         );
+      }
+
+      // Connect to Chat Socket
+      if (teacherId.isNotEmpty && token.isNotEmpty) {
+        ChatSocketService().connect(teacherId, token);
       }
 
       if (!mounted) return;
@@ -1022,6 +1034,12 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
           userId: studentId,
           role: 'student',
         );
+      }
+
+      // Connect to Chat Socket
+      final token = body['token']?.toString() ?? '';
+      if (studentId.isNotEmpty && token.isNotEmpty) {
+        ChatSocketService().connect(studentId, token);
       }
 
       // â”€â”€ LOG 3: Routing decision â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

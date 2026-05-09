@@ -7,6 +7,10 @@ import 'pages/settings_page.dart';
 import 'pages/admin_achievements_page.dart';
 import 'pages/admin_leave_notifications_page.dart';
 import 'pages/notification_service.dart';
+import '../chat/conversation_list_screen.dart';
+import '../../core/services/chat_socket_service.dart';
+import '../../core/services/api_service.dart';
+import 'dart:convert';
 
 const Color _accent = Colors.teal;
 
@@ -25,9 +29,12 @@ class _MainAppScreenState extends State<MainAppScreen> {
 
   final List<Widget> _pages = [
     const HomePage(),
+    const ConversationListScreen(),
     const AdminAchievementsPage(),
     SettingsPage(),
   ];
+
+  final ValueNotifier<int> _unreadChatCount = ValueNotifier<int>(0);
 
   @override
   void initState() {
@@ -40,6 +47,30 @@ class _MainAppScreenState extends State<MainAppScreen> {
     _loadAndFetchCount();
     // ✅ Listen for incoming FCM leave-request notifications (same pattern as student)
     adminNotifCountNotifier.addListener(_onAdminNotification);
+    
+    // Listen for chat messages
+    ChatSocketService().onNewMessage.listen((_) => _fetchChatUnreadCount());
+    _fetchChatUnreadCount();
+  }
+
+  Future<void> _fetchChatUnreadCount() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString('userId') ?? 
+                   prefs.getString('teacherId') ?? 
+                   prefs.getString('studentId') ?? 
+                   prefs.getString('orgId') ?? '';
+    if (userId.isEmpty) return;
+    
+    final response = await ApiService.get('/chat/conversations/$userId');
+    if (response.statusCode == 200) {
+      final List conversations = jsonDecode(response.body);
+      int count = 0;
+      for (var conv in conversations) {
+        final unreadCounts = conv['unreadCounts'] ?? {};
+        count += (unreadCounts[userId] as int? ?? 0);
+      }
+      _unreadChatCount.value = count;
+    }
   }
 
   @override
@@ -229,12 +260,19 @@ class _MainAppScreenState extends State<MainAppScreen> {
               _navItem(0, Icons.home_rounded, Icons.home_outlined, 'Home'),
               _navItem(
                 1,
+                Icons.chat_bubble_rounded,
+                Icons.chat_bubble_outline_rounded,
+                'Chat',
+                badgeCount: _unreadChatCount,
+              ),
+              _navItem(
+                2,
                 Icons.emoji_events_rounded,
                 Icons.emoji_events_outlined,
                 'Achievements',
               ),
               _navItem(
-                2,
+                3,
                 Icons.settings_rounded,
                 Icons.settings_outlined,
                 'Settings',
@@ -246,7 +284,7 @@ class _MainAppScreenState extends State<MainAppScreen> {
     );
   }
 
-  Widget _navItem(int index, IconData active, IconData inactive, String label) {
+  Widget _navItem(int index, IconData active, IconData inactive, String label, {ValueNotifier<int>? badgeCount}) {
     final isActive = _currentIndex == index;
     return Expanded(
       child: GestureDetector(
@@ -255,10 +293,36 @@ class _MainAppScreenState extends State<MainAppScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              isActive ? active : inactive,
-              color: isActive ? _accent : AppColors.textSecondary,
-              size: 22,
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Icon(
+                  isActive ? active : inactive,
+                  color: isActive ? _accent : AppColors.textSecondary,
+                  size: 22,
+                ),
+                if (badgeCount != null)
+                  ValueListenableBuilder<int>(
+                    valueListenable: badgeCount,
+                    builder: (context, count, _) {
+                      if (count == 0) return const SizedBox.shrink();
+                      return Positioned(
+                        right: -5,
+                        top: -5,
+                        child: Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: const BoxDecoration(color: Colors.teal, shape: BoxShape.circle),
+                          constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
+                          child: Text(
+                            count > 9 ? '9+' : '$count',
+                            style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+              ],
             ),
             const SizedBox(height: 3),
             Text(

@@ -238,6 +238,64 @@ class ApiService {
     }
   }
 
+  // Fetch all active teachers in organization
+  static Future<Map<String, dynamic>> fetchTeachers(String orgId) async {
+    try {
+      final url = '$_baseUrl/teacher/list/$orgId';
+      final response = await ApiService.get(url);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return {
+          'success': true,
+          'teachers': data['teachers'] ?? data['data'] ?? [],
+        };
+      }
+      return {'success': false, 'message': 'Failed to load teachers'};
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
+
+  // Fetch all active students in organization
+  static Future<Map<String, dynamic>> fetchStudents(String orgId) async {
+    try {
+      final url = '$_baseUrl/student/list/$orgId';
+      final response = await ApiService.get(url);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return {
+          'success': true,
+          'students': data['students'] ?? data['data'] ?? [],
+        };
+      }
+      return {'success': false, 'message': 'Failed to load students'};
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
+
+  // Create or get existing conversation
+  static Future<Map<String, dynamic>> createConversation(String senderId, String recipientId) async {
+    try {
+      final response = await ApiService.post(
+        '/chat/conversations',
+        body: jsonEncode({
+          'participants': [senderId, recipientId],
+          'recipientId': recipientId,
+        }),
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return {
+          'success': true,
+          'conversation': jsonDecode(response.body),
+        };
+      }
+      return {'success': false, 'message': 'Failed to create conversation'};
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
+
   // ─── Dio Instance with Interceptor ─────────────────────
   static final Dio _dio = Dio(BaseOptions(
     baseUrl: ApiConstants.apiBaseUrl,
@@ -271,7 +329,15 @@ class ApiService {
   static Future<http.Response> get(dynamic url, {Map<String, String>? headers}) async {
     final combinedHeaders = await getHeaders();
     if (headers != null) combinedHeaders.addAll(headers);
-    final uri = (url is String) ? Uri.parse(url) : url as Uri;
+    
+    Uri uri;
+    if (url is String) {
+      final fullUrl = url.startsWith('http') ? url : '$_baseUrl$url';
+      uri = Uri.parse(fullUrl);
+    } else {
+      uri = url as Uri;
+    }
+    
     final res = await http.get(uri, headers: combinedHeaders);
     checkResponse(res);
     return res;
@@ -280,7 +346,15 @@ class ApiService {
   static Future<http.Response> post(dynamic url, {Map<String, String>? headers, Object? body}) async {
     final combinedHeaders = await getHeaders();
     if (headers != null) combinedHeaders.addAll(headers);
-    final uri = (url is String) ? Uri.parse(url) : url as Uri;
+    
+    Uri uri;
+    if (url is String) {
+      final fullUrl = url.startsWith('http') ? url : '$_baseUrl$url';
+      uri = Uri.parse(fullUrl);
+    } else {
+      uri = url as Uri;
+    }
+    
     final res = await http.post(uri, headers: combinedHeaders, body: body);
     checkResponse(res);
     return res;
@@ -289,7 +363,15 @@ class ApiService {
   static Future<http.Response> put(dynamic url, {Map<String, String>? headers, Object? body}) async {
     final combinedHeaders = await getHeaders();
     if (headers != null) combinedHeaders.addAll(headers);
-    final uri = (url is String) ? Uri.parse(url) : url as Uri;
+    
+    Uri uri;
+    if (url is String) {
+      final fullUrl = url.startsWith('http') ? url : '$_baseUrl$url';
+      uri = Uri.parse(fullUrl);
+    } else {
+      uri = url as Uri;
+    }
+    
     final res = await http.put(uri, headers: combinedHeaders, body: body);
     checkResponse(res);
     return res;
@@ -298,7 +380,15 @@ class ApiService {
   static Future<http.Response> delete(dynamic url, {Map<String, String>? headers, Object? body}) async {
     final combinedHeaders = await getHeaders();
     if (headers != null) combinedHeaders.addAll(headers);
-    final uri = (url is String) ? Uri.parse(url) : url as Uri;
+    
+    Uri uri;
+    if (url is String) {
+      final fullUrl = url.startsWith('http') ? url : '$_baseUrl$url';
+      uri = Uri.parse(fullUrl);
+    } else {
+      uri = url as Uri;
+    }
+    
     final res = await http.delete(uri, headers: combinedHeaders, body: body);
     checkResponse(res);
     return res;

@@ -8,6 +8,10 @@ import 'teacher_classroom_page.dart';
 import 'teacher_dashboard_page.dart';
 import 'teacher_settings_page.dart';
 import 'teacher_achievements_page.dart';
+import '../../../chat/conversation_list_screen.dart';
+import '../../../../core/services/chat_socket_service.dart';
+import '../../../../core/services/api_service.dart';
+import 'dart:convert';
 
 const Color _accent = Colors.teal;
 
@@ -23,6 +27,7 @@ class _TeacherMainScreenState extends State<TeacherMainScreen> {
   late int _currentTab;
   String _teacherId = '';
   String _authToken = '';
+  final ValueNotifier<int> _unreadChatCount = ValueNotifier<int>(0);
 
   @override
   void initState() {
@@ -30,6 +35,29 @@ class _TeacherMainScreenState extends State<TeacherMainScreen> {
     _currentTab = widget.initialTab;
     _loadAndFetch();
     teacherNotifCountNotifier.addListener(_onNotifReceived);
+
+    // Listen for chat messages
+    ChatSocketService().onNewMessage.listen((_) => _fetchChatUnreadCount());
+    _fetchChatUnreadCount();
+  }
+
+  Future<void> _fetchChatUnreadCount() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString('userId') ?? 
+                   prefs.getString('teacherId') ?? 
+                   prefs.getString('studentId') ?? 
+                   prefs.getString('orgId') ?? '';
+    if (userId.isEmpty) return;
+    
+    final response = await ApiService.get('/chat/conversations/$userId');
+    if (response.statusCode == 200) {
+      final List conversations = jsonDecode(response.body);
+      int count = 0;
+      for (var conv in conversations) {
+        count += (conv['unreadCount']?[userId] as int? ?? 0);
+      }
+      _unreadChatCount.value = count;
+    }
   }
 
   @override
@@ -66,6 +94,7 @@ class _TeacherMainScreenState extends State<TeacherMainScreen> {
 
   final List<Widget> _pages = [
     TeacherHomePage(),
+    const ConversationListScreen(),
     TeacherClassroomPage(),
     TeacherAchievementsPage(),
     TeacherDashboardPage(),
@@ -104,24 +133,31 @@ class _TeacherMainScreenState extends State<TeacherMainScreen> {
               _navItem(0, Icons.home_rounded, Icons.home_outlined, 'Home'),
               _navItem(
                 1,
+                Icons.chat_bubble_rounded,
+                Icons.chat_bubble_outline_rounded,
+                'Chat',
+                badgeCount: _unreadChatCount,
+              ),
+              _navItem(
+                2,
                 Icons.class_rounded,
                 Icons.class_outlined,
                 'Classroom',
               ),
               _navItem(
-                2,
+                3,
                 Icons.emoji_events_rounded,
                 Icons.emoji_events_outlined,
                 'Achieve',
               ),
               _navItem(
-                3,
+                4,
                 Icons.dashboard_rounded,
                 Icons.dashboard_outlined,
                 'Dashboard',
               ),
               _navItem(
-                4,
+                5,
                 Icons.settings_rounded,
                 Icons.settings_outlined,
                 'Settings',
@@ -133,7 +169,7 @@ class _TeacherMainScreenState extends State<TeacherMainScreen> {
     );
   }
 
-  Widget _navItem(int index, IconData active, IconData inactive, String label) {
+  Widget _navItem(int index, IconData active, IconData inactive, String label, {ValueNotifier<int>? badgeCount}) {
     final isActive = _currentTab == index;
     return Expanded(
       child: GestureDetector(
@@ -142,10 +178,36 @@ class _TeacherMainScreenState extends State<TeacherMainScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              isActive ? active : inactive,
-              color: isActive ? _accent : AppColors.textSecondary,
-              size: 22,
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Icon(
+                  isActive ? active : inactive,
+                  color: isActive ? _accent : AppColors.textSecondary,
+                  size: 22,
+                ),
+                if (badgeCount != null)
+                  ValueListenableBuilder<int>(
+                    valueListenable: badgeCount,
+                    builder: (context, count, _) {
+                      if (count == 0) return const SizedBox.shrink();
+                      return Positioned(
+                        right: -5,
+                        top: -5,
+                        child: Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: const BoxDecoration(color: Colors.teal, shape: BoxShape.circle),
+                          constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
+                          child: Text(
+                            count > 9 ? '9+' : '$count',
+                            style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+              ],
             ),
             const SizedBox(height: 3),
             Text(

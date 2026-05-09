@@ -299,6 +299,7 @@ class _TeacherAchievementsPageState extends State<TeacherAchievementsPage> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'teacher_achievement_fab',
         onPressed: _navigating ? null : _openCreate,
         backgroundColor: Colors.teal,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),

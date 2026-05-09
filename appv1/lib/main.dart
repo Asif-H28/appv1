@@ -15,6 +15,7 @@ import 'features/student/student_pending_screen.dart';
 import 'features/student/student_rejected_screen.dart';
 import 'features/teacher/presentation/pages/teacher_main_screen.dart';
 import 'features/teacher/presentation/pages/teacher_pending_screen.dart';
+import 'core/services/chat_socket_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -166,65 +167,77 @@ class __StartupRouterState extends State<_StartupRouter> {
     if (!isLoggedIn || userRole.isEmpty) {
       await prefs.clear();
       screen = LoginPage();
-    } else if (userRole == 'admin') {
-      // ── Admin ─────────────────────────────────────────
-      final orgId = prefs.getString('orgId') ?? '';
-      if (orgId.isNotEmpty) {
-        await NotificationService.saveAdminTokenAfterLogin(orgId: orgId);
-      }
-      screen = MainAppScreen(initialTab: 0);
-    } else if (userRole == 'teacher') {
-      // ── Teacher ───────────────────────────────────────
-      final isVerified = prefs.getBool('teacherVerified') ?? false;
-      final teacherName = prefs.getString('teacherName') ?? 'Teacher';
-      final teacherId = prefs.getString('teacherId') ?? '';
-      final orgId = prefs.getString('orgId') ?? '';
-
-      if (isVerified) {
-        if (teacherId.isNotEmpty) {
-          await NotificationService.saveTokenAfterLogin(
-            userId: teacherId,
-            role: 'teacher',
-          );
-        }
-        screen = TeacherMainScreen();
-      } else {
-        screen = TeacherPendingScreen(teacherName: teacherName, orgId: orgId);
-      }
-    } else if (userRole == 'student') {
-      // ── Student ───────────────────────────────────────
-      final joinStatus = prefs.getString('joinStatus') ?? 'none';
-      final classId = prefs.getString('classId') ?? '';
-      final studentId = prefs.getString('studentId') ?? '';
-      final studentName = prefs.getString('studentName') ?? 'Student';
-
-      switch (joinStatus) {
-        case 'approved':
-          if (classId.isNotEmpty) {
-            if (studentId.isNotEmpty) {
-              await NotificationService.saveTokenAfterLogin(
-                userId: studentId,
-                role: 'student',
-              );
-            }
-            screen = StudentMainScreen();
-          } else {
-            screen = StudentJoinOrgPage();
-          }
-          break;
-        case 'pending':
-          screen = StudentPendingScreen(studentName: studentName);
-          break;
-        case 'rejected':
-          screen = StudentRejectedScreen(studentName: studentName);
-          break;
-        default:
-          screen = StudentJoinOrgPage();
-      }
     } else {
-      // Unknown role — reset
-      await prefs.clear();
-      screen = LoginPage();
+      // Connect to Chat Socket if logged in
+      final userId = prefs.getString('userId') ?? 
+                     prefs.getString('teacherId') ?? 
+                     prefs.getString('studentId') ?? 
+                     prefs.getString('orgId') ?? '';
+      final token = prefs.getString('authToken') ?? '';
+      if (userId.isNotEmpty && token.isNotEmpty) {
+        ChatSocketService().connect(userId, token);
+      }
+
+      if (userRole == 'admin') {
+        // ── Admin ─────────────────────────────────────────
+        final orgId = prefs.getString('orgId') ?? '';
+        if (orgId.isNotEmpty) {
+          await NotificationService.saveAdminTokenAfterLogin(orgId: orgId);
+        }
+        screen = MainAppScreen(initialTab: 0);
+      } else if (userRole == 'teacher') {
+        // ── Teacher ───────────────────────────────────────
+        final isVerified = prefs.getBool('teacherVerified') ?? false;
+        final teacherName = prefs.getString('teacherName') ?? 'Teacher';
+        final teacherId = prefs.getString('teacherId') ?? '';
+        final orgId = prefs.getString('orgId') ?? '';
+
+        if (isVerified) {
+          if (teacherId.isNotEmpty) {
+            await NotificationService.saveTokenAfterLogin(
+              userId: teacherId,
+              role: 'teacher',
+            );
+          }
+          screen = TeacherMainScreen();
+        } else {
+          screen = TeacherPendingScreen(teacherName: teacherName, orgId: orgId);
+        }
+      } else if (userRole == 'student') {
+        // ── Student ───────────────────────────────────────
+        final joinStatus = prefs.getString('joinStatus') ?? 'none';
+        final classId = prefs.getString('classId') ?? '';
+        final studentId = prefs.getString('studentId') ?? '';
+        final studentName = prefs.getString('studentName') ?? 'Student';
+
+        switch (joinStatus) {
+          case 'approved':
+            if (classId.isNotEmpty) {
+              if (studentId.isNotEmpty) {
+                await NotificationService.saveTokenAfterLogin(
+                  userId: studentId,
+                  role: 'student',
+                );
+              }
+              screen = StudentMainScreen();
+            } else {
+              screen = StudentJoinOrgPage();
+            }
+            break;
+          case 'pending':
+            screen = StudentPendingScreen(studentName: studentName);
+            break;
+          case 'rejected':
+            screen = StudentRejectedScreen(studentName: studentName);
+            break;
+          default:
+            screen = StudentJoinOrgPage();
+        }
+      } else {
+        // Unknown role — reset
+        await prefs.clear();
+        screen = LoginPage();
+      }
     }
 
     setState(() {
