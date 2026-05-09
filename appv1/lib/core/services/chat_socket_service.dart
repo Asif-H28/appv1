@@ -22,8 +22,15 @@ class ChatSocketService {
   Stream<Map<String, dynamic>> get onStatusUpdate => _onStatusUpdateController.stream;
   Stream<Map<String, dynamic>> get onOnlineStatus => _onOnlineStatusController.stream;
 
+  String? _currentUserId;
+
   void connect(String userId, String token) {
-    if (socket?.connected ?? false) return;
+    if (socket?.connected ?? false) {
+      if (_currentUserId == userId) return; // Same user already connected
+      disconnect(); // New user, must disconnect old session
+    }
+
+    _currentUserId = userId;
 
     socket = IO.io(ApiConstants.baseUrl, IO.OptionBuilder()
       .setTransports(['websocket'])

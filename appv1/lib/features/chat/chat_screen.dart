@@ -87,13 +87,19 @@ class _ChatScreenState extends State<ChatScreen> {
         if (mounted) {
           setState(() {
             // Check if already exists (for optimistic UI)
-            final exists = _messages.any((m) => m['tempId'] == data['tempId']);
+            // Check if already exists (for optimistic UI or duplicate prevention)
+            final bool isMyMessage = data['tempId'] != null;
+            final exists = _messages.any((m) => 
+              (isMyMessage && m['tempId'] == data['tempId']) || 
+              (m['_id'] != null && m['_id'] == data['_id'])
+            );
+
             if (!exists) {
               _messages.insert(0, data);
-            } else if (data['tempId'] != null) {
-              // Update optimistic message with real ID and data
+            } else if (isMyMessage) {
+              // Update optimistic message with real ID and data from server
               final index = _messages.indexWhere((m) => m['tempId'] == data['tempId']);
-              _messages[index] = data;
+              if (index != -1) _messages[index] = data;
             }
           });
           if (data['senderId'] != _currentUserId) {
