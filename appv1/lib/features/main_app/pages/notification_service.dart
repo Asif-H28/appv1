@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../core/services/chat_socket_service.dart';
 
 // ── Background handler (must be top-level) ─────────────
 @pragma('vm:entry-point')
@@ -215,6 +216,13 @@ class NotificationService {
 
       // ✅ Signal teachers
       teacherNotifCountNotifier.value += 1;
+
+      // ✅ Check for chat notification and trigger refresh
+      final type = message.data['type']?.toString();
+      final isChat = message.data['chatnotification'] == 'true' || type == 'chat';
+      if (isChat) {
+        ChatSocketService().triggerUnreadRefresh();
+      }
 
       localNotif.show(
         notif.hashCode,
