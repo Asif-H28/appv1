@@ -46,10 +46,9 @@ class _TeacherMainScreenState extends State<TeacherMainScreen> {
       ChatSocketService().onStatusUpdate.listen((_) => _fetchChatUnreadCount()),
     );
     _socketSubscriptions.add(
-      ChatSocketService().onRefreshUnread.listen((_) => _fetchChatUnreadCount()),
-    );
-    _socketSubscriptions.add(
-      ChatSocketService().onConnectStream.listen((_) => _fetchChatUnreadCount()),
+      ChatSocketService().onRefreshUnread.listen(
+        (_) => _fetchChatUnreadCount(),
+      ),
     );
     _fetchChatUnreadCount();
   }

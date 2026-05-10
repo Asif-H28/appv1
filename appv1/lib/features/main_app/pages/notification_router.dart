@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../chat/chat_screen.dart';
-import '../../../core/services/chat_socket_service.dart';
 
 // ── Global navigator key ───────────────────────────────
 // Add this to your MaterialApp: navigatorKey: navigatorKey
@@ -36,17 +35,17 @@ class NotificationRouter {
     debugPrint('[NotifRouter] data: $data');
     final type = data['type']?.toString();
     // Handle Chat Notifications using the new 'chatnotification' key
-    final isChatNotification = data['chatnotification'] == 'true' || type == 'chat';
-    
-    if (isChatNotification) {
-      // Trigger global unread count refresh across the app
-      ChatSocketService().triggerUnreadRefresh();
+    final isChatNotification =
+        data['chatnotification'] == 'true' || type == 'chat';
 
+    if (isChatNotification) {
       final conversationId = data['conversationId']?.toString();
       final senderName = data['senderName']?.toString() ?? 'New Message';
       final senderId = data['senderId']?.toString() ?? '';
-      
-      debugPrint('[ChatNotif] Processing chat notification for $conversationId');
+
+      debugPrint(
+        '[ChatNotif] Processing chat notification for $conversationId',
+      );
 
       if (conversationId != null) {
         // Example Action: Only navigate if we aren't already in THAT specific conversation
