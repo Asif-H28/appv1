@@ -21,6 +21,7 @@ class ChatSocketService {
   final _onOnlineStatusController =
       StreamController<Map<String, dynamic>>.broadcast();
   final _onRefreshUnreadController = StreamController<void>.broadcast();
+  final _onConnectController = StreamController<void>.broadcast();
 
   Stream<Map<String, dynamic>> get onNewMessage =>
       _onNewMessageController.stream;
@@ -32,6 +33,7 @@ class ChatSocketService {
   Stream<Map<String, dynamic>> get onOnlineStatus =>
       _onOnlineStatusController.stream;
   Stream<void> get onRefreshUnread => _onRefreshUnreadController.stream;
+  Stream<void> get onConnectStream => _onConnectController.stream;
 
   String? _currentUserId;
 
@@ -56,6 +58,7 @@ class ChatSocketService {
     socket!.onConnect((_) {
       print('Connected to Chat Socket');
       socket!.emit('user_online', userId);
+      _onConnectController.add(null);
       triggerUnreadRefresh();
     });
 
