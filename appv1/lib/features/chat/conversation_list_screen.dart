@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'dart:async';
 import '../../core/constants/app_colors.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/chat_socket_service.dart';
@@ -20,12 +21,19 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
   bool _isLoading = true;
   String _currentUserId = '';
   final _socketService = ChatSocketService();
+  StreamSubscription? _messageSubscription;
 
   @override
   void initState() {
     super.initState();
     _loadConversations();
-    _socketService.onNewMessage.listen((_) => _loadConversations());
+    _messageSubscription = _socketService.onNewMessage.listen((_) => _loadConversations());
+  }
+
+  @override
+  void dispose() {
+    _messageSubscription?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadConversations() async {

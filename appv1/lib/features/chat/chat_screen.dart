@@ -45,6 +45,13 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _isOnline = false;
   String _lastSeen = '';
 
+  // Stream Subscriptions
+  StreamSubscription? _messageSubscription;
+  StreamSubscription? _typingSubscription;
+  StreamSubscription? _stopTypingSubscription;
+  StreamSubscription? _statusSubscription;
+  StreamSubscription? _onlineSubscription;
+
   @override
   void initState() {
     super.initState();
@@ -83,26 +90,45 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _setupSocketListeners() {
-    _socketService.onNewMessage.listen((data) {
+    _messageSubscription = _socketService.onNewMessage.listen((data) {
       if (data['conversationId'] == widget.conversationId) {
         if (mounted) {
           setState(() {
-            // Check if already exists (for optimistic UI)
-            // Check if already exists (for optimistic UI or duplicate prevention)
-            final bool isMyMessage = data['tempId'] != null;
-            final exists = _messages.any((m) => 
-              (isMyMessage && m['tempId'] == data['tempId']) || 
-              (m['_id'] != null && m['_id'] == data['_id'])
-            );
+            final String? incomingId = data['_id']?.toString();
+            final String? incomingTempId = data['tempId']?.toString();
+            final String incomingSenderId = data['senderId']?.toString() ?? '';
+            final bool isFromMe = incomingSenderId == _currentUserId;
 
-            if (!exists) {
+            // Robust duplicate detection
+            int existingIndex = _messages.indexWhere((m) {
+              final String? localId = m['_id']?.toString();
+              final String? localTempId = m['tempId']?.toString();
+
+              // 1. Match by real ID
+              if (localId != null && incomingId != null && localId == incomingId) return true;
+              
+              // 2. Match by temp ID
+              if (localTempId != null && incomingTempId != null && localTempId == incomingTempId) return true;
+              
+              // 3. Fallback: Match optimistic message by content if ID is missing from local but present in incoming
+              if (isFromMe && localId == null && incomingId != null) {
+                final String incomingContent = (data['content'] ?? data['text'] ?? '').toString().trim();
+                final String localContent = (m['content'] ?? m['text'] ?? '').toString().trim();
+                if (incomingContent == localContent) return true;
+              }
+              
+              return false;
+            });
+
+            if (existingIndex == -1) {
+              // Not found, insert as new message
               _messages.insert(0, data);
-            } else if (isMyMessage) {
-              // Update optimistic message with real ID and data from server
-              final index = _messages.indexWhere((m) => m['tempId'] == data['tempId']);
-              if (index != -1) _messages[index] = data;
+            } else {
+              // Found, update the existing message (replaces optimistic with real server data)
+              _messages[existingIndex] = data;
             }
           });
+
           if (data['senderId'] != _currentUserId) {
             _socketService.emitRead(widget.conversationId, _currentUserId);
             _socketService.emitDelivered(data['_id'], widget.conversationId);
@@ -111,7 +137,7 @@ class _ChatScreenState extends State<ChatScreen> {
       }
     });
 
-    _socketService.onTyping.listen((data) {
+    _typingSubscription = _socketService.onTyping.listen((data) {
       if (data['conversationId'] == widget.conversationId && data['userId'] != _currentUserId) {
         if (mounted) {
           setState(() {
@@ -122,7 +148,7 @@ class _ChatScreenState extends State<ChatScreen> {
       }
     });
 
-    _socketService.onStopTyping.listen((data) {
+    _stopTypingSubscription = _socketService.onStopTyping.listen((data) {
       if (data['conversationId'] == widget.conversationId && data['userId'] != _currentUserId) {
         if (mounted) {
           setState(() {
@@ -132,7 +158,7 @@ class _ChatScreenState extends State<ChatScreen> {
       }
     });
 
-    _socketService.onStatusUpdate.listen((data) {
+    _statusSubscription = _socketService.onStatusUpdate.listen((data) {
       if (data['conversationId'] == widget.conversationId) {
         if (mounted) {
           setState(() {
@@ -145,7 +171,7 @@ class _ChatScreenState extends State<ChatScreen> {
       }
     });
 
-    _socketService.onOnlineStatus.listen((data) {
+    _onlineSubscription = _socketService.onOnlineStatus.listen((data) {
       if (data['userId'] == widget.participantId) {
         if (mounted) {
           setState(() {
@@ -232,6 +258,12 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void dispose() {
+    _messageSubscription?.cancel();
+    _typingSubscription?.cancel();
+    _stopTypingSubscription?.cancel();
+    _statusSubscription?.cancel();
+    _onlineSubscription?.cancel();
+    
     ApiService.markMessagesAsRead(widget.conversationId);
     ChatSocketService().triggerUnreadRefresh();
     _typingTimer?.cancel();
