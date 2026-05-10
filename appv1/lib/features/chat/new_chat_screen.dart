@@ -40,7 +40,7 @@ class _NewChatScreenState extends State<NewChatScreen> {
     if (mounted) {
       setState(() {
         _teachers = teacherRes['success'] ? teacherRes['teachers'] : [];
-        _students = studentRes['success'] ? studentRes['students'] : [];
+        _students = []; // Removed students as chat is only for teachers and admin
         _isLoading = false;
         _filterContacts('');
       });
@@ -115,7 +115,7 @@ class _NewChatScreenState extends State<NewChatScreen> {
             child: TextField(
               onChanged: _filterContacts,
               decoration: InputDecoration(
-                hintText: 'Search teachers or students...',
+                hintText: 'Search teachers...',
                 prefixIcon: const Icon(Icons.search, color: Colors.teal),
                 filled: true,
                 fillColor: Colors.white,
@@ -145,7 +145,6 @@ class _NewChatScreenState extends State<NewChatScreen> {
                               child: Text(name[0].toUpperCase(), style: const TextStyle(color: Colors.white)),
                             ),
                             title: Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                            subtitle: Text('$role • $email'),
                             onTap: () => _startConversation(user),
                           );
                         },
