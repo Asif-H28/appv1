@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
 import '../../../core/constants/app_colors.dart';
 import 'pages/home_page.dart';
 import 'pages/settings_page.dart';
@@ -35,6 +36,7 @@ class _MainAppScreenState extends State<MainAppScreen> {
   ];
 
   final ValueNotifier<int> _unreadChatCount = ValueNotifier<int>(0);
+  final List<StreamSubscription> _socketSubscriptions = [];
 
   @override
   void initState() {
@@ -47,22 +49,33 @@ class _MainAppScreenState extends State<MainAppScreen> {
     _loadAndFetchCount();
     // ✅ Listen for incoming FCM leave-request notifications (same pattern as student)
     adminNotifCountNotifier.addListener(_onAdminNotification);
-    
+
     // Listen for chat messages and status updates (read/delivered)
-    ChatSocketService().onNewMessage.listen((_) => _fetchChatUnreadCount());
-    ChatSocketService().onStatusUpdate.listen((_) => _fetchChatUnreadCount());
-    ChatSocketService().onRefreshUnread.listen((_) => _fetchChatUnreadCount());
+    _socketSubscriptions.add(
+      ChatSocketService().onNewMessage.listen((_) => _fetchChatUnreadCount()),
+    );
+    _socketSubscriptions.add(
+      ChatSocketService().onStatusUpdate.listen((_) => _fetchChatUnreadCount()),
+    );
+    _socketSubscriptions.add(
+      ChatSocketService().onRefreshUnread.listen((_) => _fetchChatUnreadCount()),
+    );
+    _socketSubscriptions.add(
+      ChatSocketService().onConnectStream.listen((_) => _fetchChatUnreadCount()),
+    );
     _fetchChatUnreadCount();
   }
 
   Future<void> _fetchChatUnreadCount() async {
     final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getString('userId') ?? 
-                   prefs.getString('teacherId') ?? 
-                   prefs.getString('studentId') ?? 
-                   prefs.getString('orgId') ?? '';
+    final userId =
+        prefs.getString('userId') ??
+        prefs.getString('teacherId') ??
+        prefs.getString('studentId') ??
+        prefs.getString('orgId') ??
+        '';
     if (userId.isEmpty) return;
-    
+
     final response = await ApiService.get('/chat/conversations/$userId');
     if (response.statusCode == 200) {
       final List conversations = jsonDecode(response.body);
@@ -78,6 +91,9 @@ class _MainAppScreenState extends State<MainAppScreen> {
   @override
   void dispose() {
     adminNotifCountNotifier.removeListener(_onAdminNotification);
+    for (var sub in _socketSubscriptions) {
+      sub.cancel();
+    }
     super.dispose();
   }
 
@@ -93,8 +109,9 @@ class _MainAppScreenState extends State<MainAppScreen> {
   Future<void> _fetchNotificationCount() async {
     if (_orgId.isEmpty) return;
     try {
-      final list =
-          await NotificationService.getTeacherLeaveNotifications(_orgId);
+      final list = await NotificationService.getTeacherLeaveNotifications(
+        _orgId,
+      );
       if (!mounted) return;
       // Count notifications not yet read by this org
       final unread = list.where((n) {
@@ -110,9 +127,7 @@ class _MainAppScreenState extends State<MainAppScreen> {
     setState(() => _notifCount = 0);
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => const AdminLeaveNotificationsPage(),
-      ),
+      MaterialPageRoute(builder: (_) => const AdminLeaveNotificationsPage()),
     ).then((_) {
       // Re-fetch after returning in case there are newer unread ones
       _fetchNotificationCount();
@@ -286,7 +301,13 @@ class _MainAppScreenState extends State<MainAppScreen> {
     );
   }
 
-  Widget _navItem(int index, IconData active, IconData inactive, String label, {ValueNotifier<int>? badgeCount}) {
+  Widget _navItem(
+    int index,
+    IconData active,
+    IconData inactive,
+    String label, {
+    ValueNotifier<int>? badgeCount,
+  }) {
     final isActive = _currentIndex == index;
     return Expanded(
       child: GestureDetector(
@@ -313,11 +334,21 @@ class _MainAppScreenState extends State<MainAppScreen> {
                         top: -5,
                         child: Container(
                           padding: const EdgeInsets.all(2),
-                          decoration: const BoxDecoration(color: Colors.teal, shape: BoxShape.circle),
-                          constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
+                          decoration: const BoxDecoration(
+                            color: Colors.teal,
+                            shape: BoxShape.circle,
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 14,
+                            minHeight: 14,
+                          ),
                           child: Text(
                             count > 9 ? '9+' : '$count',
-                            style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 8,
+                              fontWeight: FontWeight.bold,
+                            ),
                             textAlign: TextAlign.center,
                           ),
                         ),

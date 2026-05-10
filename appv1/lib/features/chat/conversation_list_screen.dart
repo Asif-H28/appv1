@@ -27,7 +27,11 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
   void initState() {
     super.initState();
     _loadConversations();
-    _messageSubscription = _socketService.onNewMessage.listen((_) => _loadConversations());
+    _messageSubscription = _socketService.onNewMessage.listen(
+      (_) => _loadConversations(),
+    );
+    _socketService.onStatusUpdate.listen((_) => _loadConversations());
+    _socketService.onRefreshUnread.listen((_) => _loadConversations());
   }
 
   @override
@@ -38,14 +42,18 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
 
   Future<void> _loadConversations() async {
     final prefs = await SharedPreferences.getInstance();
-    _currentUserId = prefs.getString('userId') ?? 
-                     prefs.getString('teacherId') ?? 
-                     prefs.getString('studentId') ?? 
-                     prefs.getString('orgId') ?? '';
-    
+    _currentUserId =
+        prefs.getString('userId') ??
+        prefs.getString('teacherId') ??
+        prefs.getString('studentId') ??
+        prefs.getString('orgId') ??
+        '';
+
     if (_currentUserId.isEmpty) return;
 
-    final response = await ApiService.get('/chat/conversations/$_currentUserId');
+    final response = await ApiService.get(
+      '/chat/conversations/$_currentUserId',
+    );
     if (response.statusCode == 200) {
       if (mounted) {
         setState(() {
@@ -59,13 +67,14 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
   }
 
   String _getParticipantName(Map<String, dynamic> conversation) {
-    if (conversation['isGroup'] == true) return conversation['groupName'] ?? 'Group Chat';
+    if (conversation['isGroup'] == true)
+      return conversation['groupName'] ?? 'Group Chat';
     final participants = conversation['participants'] as List;
     final other = participants.firstWhere((p) {
       final id = p is Map ? (p['userId'] ?? p['_id']) : p;
       return id != _currentUserId;
     }, orElse: () => participants[0]);
-    
+
     if (other is Map) return other['userName'] ?? other['name'] ?? 'User';
     return 'User';
   }
@@ -77,7 +86,7 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
       final id = p is Map ? (p['userId'] ?? p['_id']) : p;
       return id != _currentUserId;
     }, orElse: () => participants[0]);
-    
+
     return other is Map ? (other['userId'] ?? other['_id']) : other;
   }
 
@@ -86,7 +95,14 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Messages', style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold, fontSize: 18)),
+        title: const Text(
+          'Messages',
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+        ),
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: false,
@@ -94,98 +110,121 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: Colors.teal))
           : _conversations.isEmpty
-              ? _buildEmptyState()
-              : RefreshIndicator(
-                  onRefresh: _loadConversations,
-                  color: Colors.teal,
-                  child: ListView.separated(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    itemCount: _conversations.length,
-                    separatorBuilder: (context, index) => Divider(height: 1, color: Colors.grey[200], indent: 80),
-                    itemBuilder: (context, index) {
-                      final conv = _conversations[index];
-                      final lastMsg = conv['lastMessage']; // This is a String in your backend
-                      final participantName = _getParticipantName(conv);
-                      final participantId = _getParticipantId(conv);
-                      
-                      // Backend uses 'unreadCounts' (plural)
-                      final unreadCounts = conv['unreadCounts'] ?? {};
-                      final unreadCount = unreadCounts[_currentUserId] ?? 0;
-                      
-                      final lastTime = conv['lastMessageAt'] != null 
-                          ? DateTime.parse(conv['lastMessageAt']).toLocal() 
-                          : DateTime.now();
+          ? _buildEmptyState()
+          : RefreshIndicator(
+              onRefresh: _loadConversations,
+              color: Colors.teal,
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                itemCount: _conversations.length,
+                separatorBuilder: (context, index) =>
+                    Divider(height: 1, color: Colors.grey[200], indent: 80),
+                itemBuilder: (context, index) {
+                  final conv = _conversations[index];
+                  final lastMsg =
+                      conv['lastMessage']; // This is a String in your backend
+                  final participantName = _getParticipantName(conv);
+                  final participantId = _getParticipantId(conv);
 
-                      return ListTile(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => ChatScreen(
-                                conversationId: conv['_id'],
-                                participantName: participantName,
-                                participantId: participantId,
-                                isGroup: conv['isGroup'] ?? false,
-                              ),
-                            ),
-                          ).then((_) => _loadConversations());
-                        },
-                        leading: CircleAvatar(
-                          radius: 28,
-                          backgroundColor: Colors.teal.withOpacity(0.1),
-                          child: Text(
-                            participantName.substring(0, 1).toUpperCase(),
-                            style: const TextStyle(color: Colors.teal, fontWeight: FontWeight.bold),
+                  // Backend uses 'unreadCounts' (plural)
+                  final unreadCounts = conv['unreadCounts'] ?? {};
+                  final unreadCount = unreadCounts[_currentUserId] ?? 0;
+
+                  final lastTime = conv['lastMessageAt'] != null
+                      ? DateTime.parse(conv['lastMessageAt']).toLocal()
+                      : DateTime.now();
+
+                  return ListTile(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ChatScreen(
+                            conversationId: conv['_id'],
+                            participantName: participantName,
+                            participantId: participantId,
+                            isGroup: conv['isGroup'] ?? false,
                           ),
                         ),
-                        title: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                participantName,
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textPrimary),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            Text(
-                              _formatTime(lastTime),
-                              style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
-                            ),
-                          ],
-                        ),
-                        subtitle: Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  lastMsg ?? 'No messages yet',
-                                  style: TextStyle(
-                                    color: unreadCount > 0 ? AppColors.textPrimary : AppColors.textSecondary,
-                                    fontWeight: unreadCount > 0 ? FontWeight.bold : FontWeight.normal,
-                                    fontSize: 14,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              if (unreadCount > 0)
-                                Container(
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: const BoxDecoration(color: Colors.teal, shape: BoxShape.circle),
-                                  child: Text(
-                                    unreadCount.toString(),
-                                    style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      );
+                      ).then((_) => _loadConversations());
                     },
-                  ),
-                ),
+                    leading: CircleAvatar(
+                      radius: 28,
+                      backgroundColor: Colors.teal.withOpacity(0.1),
+                      child: Text(
+                        participantName.substring(0, 1).toUpperCase(),
+                        style: const TextStyle(
+                          color: Colors.teal,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    title: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            participantName,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: AppColors.textPrimary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        Text(
+                          _formatTime(lastTime),
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              lastMsg ?? 'No messages yet',
+                              style: TextStyle(
+                                color: unreadCount > 0
+                                    ? AppColors.textPrimary
+                                    : AppColors.textSecondary,
+                                fontWeight: unreadCount > 0
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                                fontSize: 14,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (unreadCount > 0)
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: const BoxDecoration(
+                                color: Colors.teal,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Text(
+                                unreadCount.toString(),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
       floatingActionButton: FloatingActionButton(
         heroTag: 'new_chat_fab',
         onPressed: () {
@@ -205,9 +244,16 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.chat_bubble_outline_rounded, size: 80, color: Colors.grey[300]),
+          Icon(
+            Icons.chat_bubble_outline_rounded,
+            size: 80,
+            color: Colors.grey[300],
+          ),
           const SizedBox(height: 16),
-          Text('No conversations yet', style: TextStyle(color: AppColors.textSecondary, fontSize: 16)),
+          Text(
+            'No conversations yet',
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 16),
+          ),
         ],
       ),
     );
@@ -215,7 +261,9 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
 
   String _formatTime(DateTime time) {
     final now = DateTime.now();
-    if (now.day == time.day && now.month == time.month && now.year == time.year) {
+    if (now.day == time.day &&
+        now.month == time.month &&
+        now.year == time.year) {
       return DateFormat.jm().format(time);
     }
     return DateFormat.yMd().format(time);

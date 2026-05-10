@@ -274,6 +274,22 @@ class ApiService {
     }
   }
 
+  // Fetch user status (online/offline)
+  static Future<Map<String, dynamic>> getUserStatus(String userId) async {
+    try {
+      final response = await ApiService.get('/chat/user-status/$userId');
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'data': jsonDecode(response.body),
+        };
+      }
+      return {'success': false, 'message': 'Failed to load status'};
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
+
   // Create or get existing conversation
   static Future<Map<String, dynamic>> createConversation(String senderId, String recipientId) async {
     try {

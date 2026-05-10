@@ -10,18 +10,27 @@ class ChatSocketService {
   IO.Socket? socket;
 
   // Streams for real-time updates
-  final _onNewMessageController = StreamController<Map<String, dynamic>>.broadcast();
-  final _onTypingController = StreamController<Map<String, dynamic>>.broadcast();
-  final _onStopTypingController = StreamController<Map<String, dynamic>>.broadcast();
-  final _onStatusUpdateController = StreamController<Map<String, dynamic>>.broadcast();
-  final _onOnlineStatusController = StreamController<Map<String, dynamic>>.broadcast();
+  final _onNewMessageController =
+      StreamController<Map<String, dynamic>>.broadcast();
+  final _onTypingController =
+      StreamController<Map<String, dynamic>>.broadcast();
+  final _onStopTypingController =
+      StreamController<Map<String, dynamic>>.broadcast();
+  final _onStatusUpdateController =
+      StreamController<Map<String, dynamic>>.broadcast();
+  final _onOnlineStatusController =
+      StreamController<Map<String, dynamic>>.broadcast();
   final _onRefreshUnreadController = StreamController<void>.broadcast();
 
-  Stream<Map<String, dynamic>> get onNewMessage => _onNewMessageController.stream;
+  Stream<Map<String, dynamic>> get onNewMessage =>
+      _onNewMessageController.stream;
   Stream<Map<String, dynamic>> get onTyping => _onTypingController.stream;
-  Stream<Map<String, dynamic>> get onStopTyping => _onStopTypingController.stream;
-  Stream<Map<String, dynamic>> get onStatusUpdate => _onStatusUpdateController.stream;
-  Stream<Map<String, dynamic>> get onOnlineStatus => _onOnlineStatusController.stream;
+  Stream<Map<String, dynamic>> get onStopTyping =>
+      _onStopTypingController.stream;
+  Stream<Map<String, dynamic>> get onStatusUpdate =>
+      _onStatusUpdateController.stream;
+  Stream<Map<String, dynamic>> get onOnlineStatus =>
+      _onOnlineStatusController.stream;
   Stream<void> get onRefreshUnread => _onRefreshUnreadController.stream;
 
   String? _currentUserId;
@@ -34,23 +43,30 @@ class ChatSocketService {
 
     _currentUserId = userId;
 
-    socket = IO.io(ApiConstants.baseUrl, IO.OptionBuilder()
-      .setTransports(['websocket'])
-      .setAuth({'token': token, 'userId': userId})
-      .enableForceNew()
-      .enableAutoConnect()
-      .build());
+    socket = IO.io(
+      ApiConstants.baseUrl,
+      IO.OptionBuilder()
+          .setTransports(['websocket'])
+          .setAuth({'token': token, 'userId': userId})
+          .enableForceNew()
+          .enableAutoConnect()
+          .build(),
+    );
 
     socket!.onConnect((_) {
       print('Connected to Chat Socket');
       socket!.emit('user_online', userId);
+      triggerUnreadRefresh();
     });
 
     socket!.on('new_message', (data) => _onNewMessageController.add(data));
     socket!.on('typing', (data) => _onTypingController.add(data));
     socket!.on('stop_typing', (data) => _onStopTypingController.add(data));
-    socket!.on('message_status_update', (data) => _onStatusUpdateController.add(data));
-    socket!.on('user_status_change', (data) => _onOnlineStatusController.add(data));
+    socket!.on(
+      'message_status_update',
+      (data) => _onStatusUpdateController.add(data),
+    );
+    socket!.on('online_status', (data) => _onOnlineStatusController.add(data));
 
     socket!.onDisconnect((_) => print('Disconnected from Chat Socket'));
     socket!.connect();

@@ -28,10 +28,12 @@ class _NewChatScreenState extends State<NewChatScreen> {
 
   Future<void> _loadContacts() async {
     final prefs = await SharedPreferences.getInstance();
-    _currentUserId = prefs.getString('userId') ?? 
-                     prefs.getString('teacherId') ?? 
-                     prefs.getString('studentId') ?? 
-                     prefs.getString('orgId') ?? '';
+    _currentUserId =
+        prefs.getString('userId') ??
+        prefs.getString('teacherId') ??
+        prefs.getString('studentId') ??
+        prefs.getString('orgId') ??
+        '';
     _orgId = prefs.getString('orgId') ?? '';
 
     final teacherRes = await ApiService.fetchTeachers(_orgId);
@@ -40,7 +42,8 @@ class _NewChatScreenState extends State<NewChatScreen> {
     if (mounted) {
       setState(() {
         _teachers = teacherRes['success'] ? teacherRes['teachers'] : [];
-        _students = []; // Removed students as chat is only for teachers and admin
+        _students =
+            []; // Removed students as chat is only for teachers and admin
         _isLoading = false;
         _filterContacts('');
       });
@@ -52,27 +55,46 @@ class _NewChatScreenState extends State<NewChatScreen> {
     final all = [..._teachers, ..._students];
     setState(() {
       _filteredItems = all.where((u) {
-        final name = (u['name'] ?? u['teacherName'] ?? u['studentName'] ?? '').toString().toLowerCase();
+        final name = (u['name'] ?? u['teacherName'] ?? u['studentName'] ?? '')
+            .toString()
+            .toLowerCase();
         // Don't show current user in the list
-        final id = (u['userId'] ?? u['teacherId'] ?? u['studentId'] ?? u['_id'] ?? '').toString();
+        final id =
+            (u['userId'] ?? u['teacherId'] ?? u['studentId'] ?? u['_id'] ?? '')
+                .toString();
         return name.contains(query.toLowerCase()) && id != _currentUserId;
       }).toList();
     });
   }
 
   Future<void> _startConversation(dynamic user) async {
-    final participantId = (user['userId'] ?? user['teacherId'] ?? user['studentId'] ?? user['_id'] ?? '').toString();
-    final name = (user['name'] ?? user['teacherName'] ?? user['studentName'] ?? 'Unknown').toString();
+    final participantId =
+        (user['userId'] ??
+                user['teacherId'] ??
+                user['studentId'] ??
+                user['_id'] ??
+                '')
+            .toString();
+    final name =
+        (user['name'] ??
+                user['teacherName'] ??
+                user['studentName'] ??
+                'Unknown')
+            .toString();
 
     // Show loading
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => const Center(child: CircularProgressIndicator(color: Colors.teal)),
+      builder: (_) =>
+          const Center(child: CircularProgressIndicator(color: Colors.teal)),
     );
 
-    final result = await ApiService.createConversation(_currentUserId, participantId);
-    
+    final result = await ApiService.createConversation(
+      _currentUserId,
+      participantId,
+    );
+
     if (mounted) Navigator.pop(context); // Close loading
 
     if (result['success']) {
@@ -103,7 +125,10 @@ class _NewChatScreenState extends State<NewChatScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('New Chat', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'New Chat',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.teal,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -128,27 +153,49 @@ class _NewChatScreenState extends State<NewChatScreen> {
           ),
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: Colors.teal))
+                ? const Center(
+                    child: CircularProgressIndicator(color: Colors.teal),
+                  )
                 : _filteredItems.isEmpty
-                    ? const Center(child: Text('No contacts found'))
-                    : ListView.builder(
-                        itemCount: _filteredItems.length,
-                        itemBuilder: (context, index) {
-                          final user = _filteredItems[index];
-                          final name = (user['name'] ?? user['teacherName'] ?? user['studentName'] ?? 'Unknown').toString();
-                          final email = (user['email'] ?? user['teacherEmail'] ?? user['studentEmail'] ?? '').toString();
-                          final role = user.containsKey('teacherId') ? 'Teacher' : 'Student';
+                ? const Center(child: Text('No contacts found'))
+                : ListView.builder(
+                    itemCount: _filteredItems.length,
+                    itemBuilder: (context, index) {
+                      final user = _filteredItems[index];
+                      final name =
+                          (user['name'] ??
+                                  user['teacherName'] ??
+                                  user['studentName'] ??
+                                  'Unknown')
+                              .toString();
+                      final email =
+                          (user['email'] ??
+                                  user['teacherEmail'] ??
+                                  user['studentEmail'] ??
+                                  '')
+                              .toString();
+                      final role = user.containsKey('teacherId')
+                          ? 'Teacher'
+                          : 'Student';
 
-                          return ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: role == 'Teacher' ? Colors.indigo : Colors.orange,
-                              child: Text(name[0].toUpperCase(), style: const TextStyle(color: Colors.white)),
-                            ),
-                            title: Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                            onTap: () => _startConversation(user),
-                          );
-                        },
-                      ),
+                      return ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: role == 'Teacher'
+                              ? Colors.indigo
+                              : Colors.orange,
+                          child: Text(
+                            name[0].toUpperCase(),
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                        title: Text(
+                          name,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        onTap: () => _startConversation(user),
+                      );
+                    },
+                  ),
           ),
         ],
       ),

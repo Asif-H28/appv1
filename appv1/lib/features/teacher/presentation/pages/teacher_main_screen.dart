@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
 import '../../../../core/constants/app_colors.dart';
 import '../../../main_app/pages/notification_service.dart';
 import 'teacher_home_page.dart';
@@ -28,6 +29,7 @@ class _TeacherMainScreenState extends State<TeacherMainScreen> {
   String _teacherId = '';
   String _authToken = '';
   final ValueNotifier<int> _unreadChatCount = ValueNotifier<int>(0);
+  final List<StreamSubscription> _socketSubscriptions = [];
 
   @override
   void initState() {
@@ -36,25 +38,39 @@ class _TeacherMainScreenState extends State<TeacherMainScreen> {
     _loadAndFetch();
     teacherNotifCountNotifier.addListener(_onNotifReceived);
 
-    // Listen for chat messages
-    ChatSocketService().onNewMessage.listen((_) => _fetchChatUnreadCount());
+    // Listen for chat messages and updates
+    _socketSubscriptions.add(
+      ChatSocketService().onNewMessage.listen((_) => _fetchChatUnreadCount()),
+    );
+    _socketSubscriptions.add(
+      ChatSocketService().onStatusUpdate.listen((_) => _fetchChatUnreadCount()),
+    );
+    _socketSubscriptions.add(
+      ChatSocketService().onRefreshUnread.listen((_) => _fetchChatUnreadCount()),
+    );
+    _socketSubscriptions.add(
+      ChatSocketService().onConnectStream.listen((_) => _fetchChatUnreadCount()),
+    );
     _fetchChatUnreadCount();
   }
 
   Future<void> _fetchChatUnreadCount() async {
     final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getString('userId') ?? 
-                   prefs.getString('teacherId') ?? 
-                   prefs.getString('studentId') ?? 
-                   prefs.getString('orgId') ?? '';
+    final userId =
+        prefs.getString('userId') ??
+        prefs.getString('teacherId') ??
+        prefs.getString('studentId') ??
+        prefs.getString('orgId') ??
+        '';
     if (userId.isEmpty) return;
-    
+
     final response = await ApiService.get('/chat/conversations/$userId');
     if (response.statusCode == 200) {
       final List conversations = jsonDecode(response.body);
       int count = 0;
       for (var conv in conversations) {
-        count += (conv['unreadCount']?[userId] as int? ?? 0);
+        final unreadCounts = conv['unreadCounts'] ?? {};
+        count += (unreadCounts[userId] as int? ?? 0);
       }
       _unreadChatCount.value = count;
     }
@@ -63,6 +79,9 @@ class _TeacherMainScreenState extends State<TeacherMainScreen> {
   @override
   void dispose() {
     teacherNotifCountNotifier.removeListener(_onNotifReceived);
+    for (var sub in _socketSubscriptions) {
+      sub.cancel();
+    }
     super.dispose();
   }
 
@@ -169,7 +188,13 @@ class _TeacherMainScreenState extends State<TeacherMainScreen> {
     );
   }
 
-  Widget _navItem(int index, IconData active, IconData inactive, String label, {ValueNotifier<int>? badgeCount}) {
+  Widget _navItem(
+    int index,
+    IconData active,
+    IconData inactive,
+    String label, {
+    ValueNotifier<int>? badgeCount,
+  }) {
     final isActive = _currentTab == index;
     return Expanded(
       child: GestureDetector(
@@ -196,11 +221,21 @@ class _TeacherMainScreenState extends State<TeacherMainScreen> {
                         top: -5,
                         child: Container(
                           padding: const EdgeInsets.all(2),
-                          decoration: const BoxDecoration(color: Colors.teal, shape: BoxShape.circle),
-                          constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
+                          decoration: const BoxDecoration(
+                            color: Colors.teal,
+                            shape: BoxShape.circle,
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 14,
+                            minHeight: 14,
+                          ),
                           child: Text(
                             count > 9 ? '9+' : '$count',
-                            style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 8,
+                              fontWeight: FontWeight.bold,
+                            ),
                             textAlign: TextAlign.center,
                           ),
                         ),
