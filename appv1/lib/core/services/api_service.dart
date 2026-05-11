@@ -6,11 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:appv1/features/main_app/pages/notification_router.dart';
 import 'package:appv1/features/main_app/pages/deactivated_account_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:appv1/core/services/token_expiration_handler.dart';
 
 class ApiService {
   static const String _baseUrl = '${ApiConstants.apiBaseUrl}';
 
   static void checkResponse(http.Response response) {
+    // Check for deactivated account FIRST (preserve existing behavior)
     if (response.statusCode == 403) {
       try {
         final body = jsonDecode(response.body);
@@ -20,8 +22,15 @@ class ApiService {
             MaterialPageRoute(builder: (_) => const DeactivatedAccountScreen()),
             (route) => false,
           );
+          return; // Exit early - don't check for token expiration
         }
       } catch (_) {}
+    }
+    
+    // Check for token expiration
+    if (TokenExpirationHandler.detectTokenExpiration(response.body)) {
+      final endpoint = response.request?.url.toString() ?? 'unknown';
+      TokenExpirationHandler.handleTokenExpiration(endpoint);
     }
   }
 
@@ -331,7 +340,17 @@ class ApiService {
         options.headers.addAll(headers);
         return handler.next(options);
       },
+      onResponse: (response, handler) {
+        // Check for token expiration in successful responses
+        final responseBody = response.data?.toString() ?? '';
+        if (TokenExpirationHandler.detectTokenExpiration(responseBody)) {
+          final endpoint = response.requestOptions.uri.toString();
+          TokenExpirationHandler.handleTokenExpiration(endpoint);
+        }
+        return handler.next(response);
+      },
       onError: (DioError e, handler) {
+        // Check for deactivated account FIRST (preserve existing behavior)
         if (e.response?.statusCode == 403) {
           final data = e.response?.data;
           final errorMsg = (data is Map) ? (data['error'] ?? data['message'] ?? '') : '';
@@ -340,8 +359,17 @@ class ApiService {
               MaterialPageRoute(builder: (_) => const DeactivatedAccountScreen()),
               (route) => false,
             );
+            return handler.next(e); // Exit early - don't check for token expiration
           }
         }
+        
+        // Check for token expiration after deactivation check
+        final responseBody = e.response?.data?.toString() ?? '';
+        if (TokenExpirationHandler.detectTokenExpiration(responseBody)) {
+          final endpoint = e.requestOptions.uri.toString();
+          TokenExpirationHandler.handleTokenExpiration(endpoint);
+        }
+        
         return handler.next(e);
       },
     ));
