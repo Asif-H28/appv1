@@ -10,6 +10,7 @@ import '../../../../core/constants/app_colors.dart';
 import 'student_classroom_subjects_tab.dart';
 import 'student_classroom_notes_tab.dart';
 import 'student_classroom_tests_tab.dart';
+import '../quiz/student/student_quiz_list_screen.dart';
 
 const Color _accent = Colors.teal;
 
@@ -32,7 +33,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _loadClassroom();
   }
 
@@ -307,6 +308,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen>
                           Tab(text: 'Subjects'),
                           Tab(text: 'Notes'),
                           Tab(text: 'Tests'),
+                          Tab(text: 'Quizzes'),
                         ],
                       ),
                     ),
@@ -327,6 +329,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen>
                         StudentClassroomSubjectsTab(classroom: _classroom),
                         StudentClassroomNotesTab(),
                         StudentClassroomTestsTab(),
+                        const StudentQuizListScreen(),
                       ],
                     ),
             ),

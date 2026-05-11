@@ -14,6 +14,7 @@ import 'package:appv1/features/student/student_profile_page.dart';
 // ✅ Correct — it's in the student folder
 import 'package:appv1/features/student/student_achievements_page.dart';
 
+
 const Color _accent = Colors.teal;
 
 class StudentMainScreen extends StatefulWidget {

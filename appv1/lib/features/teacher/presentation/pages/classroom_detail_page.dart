@@ -1,5 +1,6 @@
 import 'package:appv1/core/constants/api_constants.dart';
 import 'package:appv1/core/services/api_service.dart';
+import 'package:appv1/features/quiz/teacher/teacher_quiz_list_screen.dart';
 import 'dart:convert';
 import 'package:appv1/features/teacher/presentation/pages/classroom_timetable_tab.dart';
 import 'package:flutter/material.dart';
@@ -87,6 +88,12 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage> {
       'icon': Icons.trending_up_rounded,
       'label': 'Class Promotion',
       'color': Colors.pink[600],
+      'group': 0,
+    },
+    {
+      'icon': Icons.assignment_rounded,
+      'label': 'Quizzes',
+      'color': Colors.teal[600],
       'group': 0,
     },
   ];
@@ -356,7 +363,7 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage> {
         children: [
           // ── Grouped Menu Items ──
           _buildGroupTitle('ACADEMIC MANAGEMENT'),
-          _buildMenuGroup([0, 1, 2, 3, 7]),
+          _buildMenuGroup([0, 1, 2, 3, 7, 8]),
 
           const SizedBox(height: 24),
           _buildGroupTitle('COMMUNICATION'),
@@ -518,6 +525,12 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage> {
           className: className,
           orgId: _classroom['orgId']?.toString() ?? '',
           teacherId: _classroom['teacherId']?.toString() ?? '',
+        );
+      case 8: // Quizzes
+        return TeacherQuizListScreen(
+          classId: widget.classId,
+          className: _classroom['className']?.toString(),
+          subjects: _classroom['subjects'] as List?,
         );
       default:
         return const SizedBox.shrink();
