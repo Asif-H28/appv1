@@ -8,33 +8,39 @@ class DifficultyBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Color color;
+    Color bgColor;
     switch (difficulty.toLowerCase()) {
       case 'easy':
-        color = Colors.green;
+        color = Colors.green[700]!;
+        bgColor = Colors.green[50]!;
         break;
       case 'medium':
-        color = Colors.orange;
+        color = const Color(0xFFE65100); // Deep Orange 900
+        bgColor = const Color(0xFFFFF3E0); // Orange 50
         break;
       case 'hard':
-        color = Colors.red;
+        color = Colors.red[700]!;
+        bgColor = Colors.red[50]!;
         break;
       default:
-        color = Colors.grey;
+        color = Colors.grey[700]!;
+        bgColor = Colors.grey[50]!;
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(3),
-        border: Border.all(color: color.withOpacity(0.5)),
+        color: bgColor,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color.withOpacity(0.1)),
       ),
       child: Text(
         difficulty.toUpperCase(),
         style: TextStyle(
           color: color,
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
+          fontSize: 11,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 0.5,
         ),
       ),
     );

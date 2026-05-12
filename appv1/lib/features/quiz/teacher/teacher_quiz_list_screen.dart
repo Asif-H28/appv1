@@ -13,7 +13,7 @@ class TeacherQuizListScreen extends StatefulWidget {
   final List<dynamic>? subjects;
 
   const TeacherQuizListScreen({
-    Key? key, 
+    Key? key,
     this.classId,
     this.className,
     this.subjects,
@@ -49,9 +49,9 @@ class _TeacherQuizListScreenState extends State<TeacherQuizListScreen> {
       final url = widget.classId != null
           ? '${ApiConstants.apiBaseUrl}/quiz/class/${widget.classId}'
           : '${ApiConstants.apiBaseUrl}/quiz/teacher/$_teacherId';
-          
+
       final response = await http.get(Uri.parse(url));
-      
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() {
@@ -63,9 +63,9 @@ class _TeacherQuizListScreenState extends State<TeacherQuizListScreen> {
       }
     } catch (e) {
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error fetching quizzes: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error fetching quizzes: $e')));
     }
   }
 
@@ -76,7 +76,10 @@ class _TeacherQuizListScreenState extends State<TeacherQuizListScreen> {
         title: const Text('Delete Quiz'),
         content: const Text('Are you sure you want to delete this quiz?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Delete', style: TextStyle(color: Colors.red)),
@@ -98,11 +101,16 @@ class _TeacherQuizListScreenState extends State<TeacherQuizListScreen> {
           );
           _fetchQuizzes();
         } else {
-          final error = jsonDecode(response.body)['message'] ?? 'Failed to delete quiz';
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
+          final error =
+              jsonDecode(response.body)['message'] ?? 'Failed to delete quiz';
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(error)));
         }
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
   }
@@ -110,7 +118,7 @@ class _TeacherQuizListScreenState extends State<TeacherQuizListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: const Color(0xFFF5F6FA),
 
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: Colors.teal))
@@ -122,27 +130,46 @@ class _TeacherQuizListScreenState extends State<TeacherQuizListScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.quiz_outlined, size: 80, color: Colors.grey[400]),
+                          Icon(
+                            Icons.quiz_outlined,
+                            size: 80,
+                            color: Colors.grey[400],
+                          ),
                           const SizedBox(height: 16),
-                          Text('No quizzes created yet', style: TextStyle(fontSize: 18, color: Colors.grey[600], fontWeight: FontWeight.w500)),
+                          Text(
+                            'No quizzes created yet',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.grey[600],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
                           const SizedBox(height: 24),
                           ElevatedButton(
                             onPressed: () => Navigator.push(
-                              context, 
+                              context,
                               MaterialPageRoute(
                                 builder: (_) => CreateQuizScreen(
                                   preSelectedClassId: widget.classId,
                                   preSelectedClassName: widget.className,
                                   subjects: widget.subjects,
-                                )
-                              )
+                                ),
+                              ),
                             ).then((_) => _fetchQuizzes()),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.teal,
-                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 12,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(3),
+                              ),
                             ),
-                            child: const Text('Create your first quiz', style: TextStyle(color: Colors.white)),
+                            child: const Text(
+                              'Create your first quiz',
+                              style: TextStyle(color: Colors.white),
+                            ),
                           ),
                         ],
                       ),
@@ -152,64 +179,129 @@ class _TeacherQuizListScreenState extends State<TeacherQuizListScreen> {
                       itemCount: _quizzes.length,
                       itemBuilder: (context, index) {
                         final quiz = _quizzes[index];
-                        final createdAt = DateTime.parse(quiz['createdAt']).toLocal();
-                        final dateStr = "${createdAt.day}/${createdAt.month}/${createdAt.year}";
+                        final createdAt = DateTime.parse(
+                          quiz['createdAt'],
+                        ).toLocal();
+                        final dateStr =
+                            "${createdAt.day}/${createdAt.month}/${createdAt.year}";
 
                         return Card(
-                          elevation: 0,
-                          margin: const EdgeInsets.only(bottom: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+                          color: Colors.white,
+                          elevation: 2,
+                          shadowColor: Colors.black.withOpacity(0.2),
+                          margin: const EdgeInsets.only(bottom: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                           child: Padding(
-                            padding: const EdgeInsets.all(16),
+                            padding: const EdgeInsets.all(20),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Expanded(
-                                      child: Text(
-                                        quiz['title'] ?? 'Untitled Quiz',
-                                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            quiz['title'] ?? 'Untitled Quiz',
+                                            style: const TextStyle(
+                                              fontSize: 22,
+                                              fontWeight: FontWeight.w900,
+                                              color: Color(0xFF2D3436),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            '${quiz['subject']} • ${quiz['lessonName']}',
+                                            style: TextStyle(
+                                              color: Colors.blueGrey[400],
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                     IconButton(
-                                      icon: const Icon(Icons.delete_outline, color: Colors.red),
+                                      icon: const Icon(
+                                        Icons.delete_outline,
+                                        color: Color(0xFFE74C3C),
+                                        size: 28,
+                                      ),
                                       onPressed: () => _deleteQuiz(quiz['_id']),
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 4),
+                                const SizedBox(height: 20),
                                 Row(
                                   children: [
-                                    Text('${quiz['subject']} • ${quiz['lessonName']}', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+                                    DifficultyBadge(
+                                      difficulty:
+                                          quiz['difficulty'] ?? 'medium',
+                                    ),
+                                    const SizedBox(width: 24),
+                                    Text(
+                                      '${quiz['totalQuestions']} Qs',
+                                      style: TextStyle(
+                                        color: Colors.blueGrey[600],
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 24),
+                                    Icon(
+                                      Icons.calendar_today_outlined,
+                                      size: 18,
+                                      color: Colors.blueGrey[300],
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      dateStr,
+                                      style: TextStyle(
+                                        color: Colors.blueGrey[600],
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 15,
+                                      ),
+                                    ),
                                   ],
                                 ),
-                                const SizedBox(height: 12),
-                                Row(
-                                  children: [
-                                    DifficultyBadge(difficulty: quiz['difficulty'] ?? 'medium'),
-                                    const SizedBox(width: 8),
-                                    _infoChip(Icons.help_outline, '${quiz['totalQuestions']} Qs'),
-                                    const SizedBox(width: 8),
-                                    _infoChip(Icons.calendar_today_outlined, dateStr),
-                                  ],
-                                ),
-                                const Divider(height: 24),
+                                const SizedBox(height: 24),
                                 SizedBox(
                                   width: double.infinity,
+                                  height: 52,
                                   child: ElevatedButton(
                                     onPressed: () => Navigator.push(
                                       context,
-                                      MaterialPageRoute(builder: (_) => QuizResultsScreen(quizId: quiz['_id'], quizTitle: quiz['title'])),
+                                      MaterialPageRoute(
+                                        builder: (_) => QuizResultsScreen(
+                                          quizId: quiz['_id'],
+                                          quizTitle: quiz['title'],
+                                        ),
+                                      ),
                                     ),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.teal,
                                       foregroundColor: Colors.white,
                                       elevation: 0,
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
                                     ),
-                                    child: const Text('View Results'),
+                                    child: const Text(
+                                      'View Results',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ],
@@ -221,14 +313,14 @@ class _TeacherQuizListScreenState extends State<TeacherQuizListScreen> {
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.push(
-          context, 
+          context,
           MaterialPageRoute(
             builder: (_) => CreateQuizScreen(
               preSelectedClassId: widget.classId,
               preSelectedClassName: widget.className,
               subjects: widget.subjects,
-            )
-          )
+            ),
+          ),
         ).then((_) => _fetchQuizzes()),
         backgroundColor: Colors.teal,
         child: const Icon(Icons.add, color: Colors.white),
