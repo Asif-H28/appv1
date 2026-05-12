@@ -128,17 +128,16 @@ class _StudentRegisterSheetState extends State<StudentRegisterSheet> {
         regBody = jsonDecode(regRes.body) as Map<String, dynamic>;
       } catch (_) {
         setState(() => _isLoading = false);
-        _showSnack('Unexpected server response.', Colors.red[600]!);
+        _showErrorDialog('Unexpected server response.');
         return;
       }
 
       if (regRes.statusCode != 200 && regRes.statusCode != 201) {
         setState(() => _isLoading = false);
-        _showSnack(
-          regBody['message']?.toString() ??
-              'Registration failed. Please try again.',
-          Colors.red[600]!,
-        );
+        final errorMessage = regBody['error'] ?? regBody['message'] ?? 'Registration failed. Please try again.';
+        final msg = errorMessage.toString();
+        final isRegistered = msg.toLowerCase().contains('email already registered');
+        _showErrorDialog(msg, title: isRegistered ? 'Account Exists' : 'Registration Error');
         return;
       }
 
@@ -176,13 +175,36 @@ class _StudentRegisterSheetState extends State<StudentRegisterSheet> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _isLoading = false);
-      _showSnack(
+      _showErrorDialog(
         e.toString().contains('SocketException')
             ? 'No internet connection.'
             : 'Something went wrong. Please try again.',
-        Colors.red[600]!,
       );
     }
+  }
+
+  void _showErrorDialog(String message, {String? title}) {
+    showDialog(
+      context: context,
+      useRootNavigator: true,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        title: Row(
+          children: [
+            Icon(Icons.error_outline_rounded, color: Colors.red[600]),
+            SizedBox(width: 8),
+            Text(title ?? 'Registration Error', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          ],
+        ),
+        content: Text(message, style: TextStyle(fontSize: 13)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('OK', style: TextStyle(color: _accent, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
   }
 
   // ─── Build ─────────────────────────────────────────────
@@ -196,7 +218,7 @@ class _StudentRegisterSheetState extends State<StudentRegisterSheet> {
         color: AppColors.background,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      padding: EdgeInsets.fromLTRB(16, 10, 16, 20 + bottomInset),
+      padding: EdgeInsets.fromLTRB(16, 10, 16, 32 + bottomInset + MediaQuery.of(context).padding.bottom),
       child: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -374,7 +396,7 @@ class _StudentRegisterSheetState extends State<StudentRegisterSheet> {
                   return null;
                 },
                 decoration: _deco(
-                  hint: '••••••••',
+                  hint: 'At least 6 characters',
                   icon: Icons.lock_outline_rounded,
                   suffixIcon: IconButton(
                     icon: Icon(

@@ -517,7 +517,7 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
             child: Row(
               children: [
                 Text(
-                  '$_activeDay â€” '
+                  '$_activeDay - '
                   '${_daySlots[_activeDay]!.length} periods',
                   style: TextStyle(
                     color: AppColors.textSecondary,
@@ -669,7 +669,7 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
                         vertical: 18,
                       ),
                       child: Text(
-                        'â€“',
+                        '-',
                         style: TextStyle(
                           color: AppColors.textSecondary,
                           fontWeight: FontWeight.bold,
@@ -1135,7 +1135,7 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
   Widget _submitBar() {
     final total = _daySlots.values.fold(0, (s, l) => s + l.length);
     return Container(
-      padding: EdgeInsets.fromLTRB(14, 10, 14, 24),
+      padding: EdgeInsets.fromLTRB(14, 10, 14, 24 + MediaQuery.of(context).padding.bottom),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border(top: BorderSide(color: Colors.grey[200]!)),
@@ -1230,9 +1230,9 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ---------------------------------------------------------
 // SUBJECT PICKER SHEET
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ---------------------------------------------------------
 
 class _SubjectPickerSheet extends StatefulWidget {
   final String current;
@@ -1407,7 +1407,7 @@ class __SubjectPickerSheetState extends State<_SubjectPickerSheet> {
                     ),
                   )
                 : ListView.builder(
-                    padding: EdgeInsets.symmetric(vertical: 6),
+                    padding: EdgeInsets.fromLTRB(0, 6, 0, 16 + MediaQuery.of(context).padding.bottom),
                     itemCount: _filtered.length,
                     itemBuilder: (_, i) {
                       final subj = _filtered[i];
@@ -1676,7 +1676,7 @@ class __TeacherPickerSheetState extends State<_TeacherPickerSheet> {
                     ),
                   )
                 : ListView.builder(
-                    padding: EdgeInsets.symmetric(vertical: 6),
+                    padding: EdgeInsets.fromLTRB(0, 6, 0, 16 + MediaQuery.of(context).padding.bottom),
                     itemCount: _filtered.length,
                     itemBuilder: (_, i) {
                       final t = _filtered[i];

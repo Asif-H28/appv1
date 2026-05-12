@@ -455,23 +455,45 @@ class __CreateOrgTabState extends State<_CreateOrgTab> {
         );
       } else {
         setState(() => _isLoading = false);
-        _snack(
-          context,
-          result['message']?.toString() ?? 'Something went wrong.',
-          Colors.red[600]!,
-        );
+        final msg = result['message']?.toString() ?? 'Something went wrong.';
+        final isRegistered = msg.toLowerCase().contains('email already registered');
+        _showErrorDialog(msg, title: isRegistered ? 'Account Exists' : 'Registration Error');
       }
     } catch (e) {
       if (!mounted) return;
       setState(() => _isLoading = false);
-      _snack(
-        context,
+      _showErrorDialog(
         e.toString().contains('SocketException')
             ? 'No internet connection.'
             : 'Error: ${e.toString().replaceAll('Exception: ', '')}',
-        Colors.red[600]!,
       );
     }
+  }
+
+  void _showErrorDialog(String message, {String? title}) {
+    showDialog(
+      context: context,
+      useRootNavigator: true,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        title: Row(
+          children: [
+            Icon(Icons.error_outline_rounded, color: Colors.red[600]),
+            SizedBox(width: 8),
+            Text(title ?? 'Registration Error',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          ],
+        ),
+        content: Text(message, style: TextStyle(fontSize: 13)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('OK',
+                style: TextStyle(color: Colors.teal, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -600,7 +622,7 @@ class __CreateOrgTabState extends State<_CreateOrgTab> {
                 return null;
               },
               decoration: _fieldDeco(
-                hint: '••••••••',
+                hint: 'At least 6 characters',
                 icon: Icons.lock_outline_rounded,
                 suffixIcon: IconButton(
                   icon: Icon(
@@ -1198,7 +1220,7 @@ class _RoleSelectionSheet extends StatelessWidget {
         color: AppColors.background,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      padding: EdgeInsets.fromLTRB(16, 10, 16, 32),
+      padding: EdgeInsets.fromLTRB(16, 10, 16, 32 + MediaQuery.of(context).padding.bottom),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -1505,12 +1527,10 @@ class __TeacherRegisterSheetState extends State<_TeacherRegisterSheet> {
 
       if (regRes.statusCode != 200 && regRes.statusCode != 201) {
         setState(() => _isLoading = false);
-        _snack(
-          context,
-          regBody['message']?.toString() ??
-              'Registration failed. Please try again.',
-          Colors.red[600]!,
-        );
+        final errorMessage = regBody['error'] ?? regBody['message'] ?? 'Registration failed. Please try again.';
+        final msg = errorMessage.toString();
+        final isRegistered = msg.toLowerCase().contains('email already registered');
+        _showErrorDialog(msg, title: isRegistered ? 'Account Exists' : 'Registration Error');
         return;
       }
 
@@ -1550,14 +1570,36 @@ class __TeacherRegisterSheetState extends State<_TeacherRegisterSheet> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _isLoading = false);
-      _snack(
-        context,
+      _showErrorDialog(
         e.toString().contains('SocketException')
             ? 'No internet connection.'
             : 'Something went wrong. Please try again.',
-        Colors.red[600]!,
       );
     }
+  }
+
+  void _showErrorDialog(String message, {String? title}) {
+    showDialog(
+      context: context,
+      useRootNavigator: true,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        title: Row(
+          children: [
+            Icon(Icons.error_outline_rounded, color: Colors.red[600]),
+            SizedBox(width: 8),
+            Text(title ?? 'Registration Error', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          ],
+        ),
+        content: Text(message, style: TextStyle(fontSize: 13)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('OK', style: TextStyle(color: _accent, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -1569,7 +1611,7 @@ class __TeacherRegisterSheetState extends State<_TeacherRegisterSheet> {
         color: AppColors.background,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      padding: EdgeInsets.fromLTRB(16, 10, 16, 20 + bottomInset),
+      padding: EdgeInsets.fromLTRB(16, 10, 16, 32 + bottomInset + MediaQuery.of(context).padding.bottom),
       child: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -1724,7 +1766,7 @@ class __TeacherRegisterSheetState extends State<_TeacherRegisterSheet> {
                   return null;
                 },
                 decoration: _fieldDeco(
-                  hint: 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢',
+                  hint: 'At least 6 characters',
                   icon: Icons.lock_outline_rounded,
                   suffixIcon: IconButton(
                     icon: Icon(

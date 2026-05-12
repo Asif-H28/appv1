@@ -617,7 +617,7 @@ class _TimetableAddSlotSheetState extends State<TimetableAddSlotSheet> {
                     Padding(
                       padding: EdgeInsets.fromLTRB(10, 16, 10, 0),
                       child: Text(
-                        '–',
+                        '-',
                         style: TextStyle(
                           color: AppColors.textSecondary,
                           fontWeight: FontWeight.bold,
@@ -718,9 +718,9 @@ class _TimetableAddSlotSheetState extends State<TimetableAddSlotSheet> {
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ---------------------------------------------------------
 // SUBJECT PICKER
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ---------------------------------------------------------
 
 class _SubjectPickerSheet extends StatefulWidget {
   final List<String> subjects;

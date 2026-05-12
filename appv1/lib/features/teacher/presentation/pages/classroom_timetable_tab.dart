@@ -657,6 +657,7 @@ class _ClassroomTimetableTabState extends State<ClassroomTimetableTab>
               ),
             ),
           ),
+          SizedBox(height: MediaQuery.of(context).padding.bottom),
         ],
       ),
     ),

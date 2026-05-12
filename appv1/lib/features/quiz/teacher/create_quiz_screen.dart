@@ -94,6 +94,7 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
+      useRootNavigator: true,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
         content: Row(
@@ -157,6 +158,7 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
   void _showLimitReachedDialog(String message) {
     showDialog(
       context: context,
+      useRootNavigator: true,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         title: const Row(

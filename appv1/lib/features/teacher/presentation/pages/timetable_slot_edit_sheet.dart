@@ -80,7 +80,7 @@ class _TimetableSlotEditSheetState extends State<TimetableSlotEditSheet> {
     super.dispose();
   }
 
-  // â”€â”€ Fetch teachers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // --- Fetch teachers -----------------------------------
 
   Future<void> _fetchTeachers() async {
     try {
@@ -602,7 +602,7 @@ class _TimetableSlotEditSheetState extends State<TimetableSlotEditSheet> {
                 ),
                 SizedBox(height: 16),
 
-                // â”€â”€ Times â”€â”€
+                // --- Times ---
                 Row(
                   children: [
                     Expanded(
@@ -637,7 +637,7 @@ class _TimetableSlotEditSheetState extends State<TimetableSlotEditSheet> {
                   ],
                 ),
 
-                // â”€â”€ Subject + Teacher (class/lab only) â”€â”€
+                // --- Subject + Teacher (class/lab only) ---
                 if (isClass) ...[
                   SizedBox(height: 16),
                   _label('SUBJECT', required: true),
@@ -722,9 +722,9 @@ class _TimetableSlotEditSheetState extends State<TimetableSlotEditSheet> {
   }
 }
 
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ---------------------------------------------------------
 // SUBJECT PICKER  (identical to Add sheet)
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ---------------------------------------------------------
 
 class _SubjectPickerSheet extends StatefulWidget {
   final List<String> subjects;

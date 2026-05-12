@@ -83,7 +83,7 @@ class _TeacherSchedulePageState extends State<TeacherSchedulePage>
     return days[DateTime.now().weekday];
   }
 
-  // ── Fetch full week schedule ───────────────────────
+  // --- Fetch full week schedule -----------------------
 
   Future<void> _fetchSchedule() async {
     setState(() {
@@ -141,7 +141,7 @@ class _TeacherSchedulePageState extends State<TeacherSchedulePage>
     }
   }
 
-  // ── Helpers ────────────────────────────────────────
+  // --- Helpers ----------------------------------------
 
   int _periodNum(Map<String, dynamic> s) => s['periodNumber'] is int
       ? s['periodNumber'] as int
@@ -199,7 +199,7 @@ class _TeacherSchedulePageState extends State<TeacherSchedulePage>
     return Colors.teal[600]!;
   }
 
-  // ── Build ──────────────────────────────────────────
+  // --- Build ------------------------------------------
 
   @override
   Widget build(BuildContext context) {
@@ -224,7 +224,7 @@ class _TeacherSchedulePageState extends State<TeacherSchedulePage>
     );
   }
 
-  // ── Header ─────────────────────────────────────────
+  // --- Header -----------------------------------------
 
   Widget _buildHeader() {
     return Container(
@@ -355,7 +355,7 @@ class _TeacherSchedulePageState extends State<TeacherSchedulePage>
     );
   }
 
-  // ── Day tab bar ────────────────────────────────────
+  // --- Day tab bar ------------------------------------
 
   Widget _buildDayTabBar() {
     return Container(
@@ -427,7 +427,7 @@ class _TeacherSchedulePageState extends State<TeacherSchedulePage>
     );
   }
 
-  // ── Day tab content ────────────────────────────────
+  // --- Day tab content --------------------------------
 
   Widget _buildDayTab(String day) {
     final slots = _schedule[day] ?? [];
@@ -549,7 +549,7 @@ class _TeacherSchedulePageState extends State<TeacherSchedulePage>
                         ),
                         SizedBox(width: 4),
                         Text(
-                          '$start – $end',
+                          '$start - $end',
                           style: TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 11,
