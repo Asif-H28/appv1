@@ -14,6 +14,7 @@ import 'notice_page.dart';
 import 'student_leave_review_page.dart';
 import '../widgets/notice_detail_sheet.dart';
 import 'teacher_notification_screen.dart';
+import 'teacher_settings_page.dart';
 import '../../../main_app/pages/notification_service.dart';
 
 const Color _accent = Colors.teal;
@@ -354,7 +355,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
                       height: 38,
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(3),
+                        shape: BoxShape.circle,
                         border: Border.all(color: Colors.white.withOpacity(0.3)),
                       ),
                       child: const Icon(
@@ -394,6 +395,31 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
                       },
                     ),
                   ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => TeacherSettingsPage()),
+                  );
+                },
+                child: Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white.withOpacity(0.3)),
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.person_rounded,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+                  ),
                 ),
               ),
             ],

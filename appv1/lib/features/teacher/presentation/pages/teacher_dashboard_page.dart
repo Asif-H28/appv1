@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
 import 'teacher_notification_screen.dart';
+import 'teacher_settings_page.dart';
 import '../../../main_app/pages/notification_service.dart';
 
 class TeacherDashboardPage extends StatefulWidget {
@@ -176,48 +177,59 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
                 children: [
                   _buildHeader(),
                   Expanded(
-                    child: SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Class Selection Dropdown
-                          _buildClassDropdown(),
-                          const SizedBox(height: 20),
-                          
-                          // Attendance Summary Card
-                          _buildAttendanceCard(),
-                          
-                          const SizedBox(height: 32),
-                          
-                          // Assessments Section Header
-                          Text(
-                            'Assessments for $className',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF1A1A1A),
+                    child: _classrooms.isEmpty
+                        ? _buildEmptyState()
+                        : SingleChildScrollView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                              vertical: 20,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Class Selection Dropdown
+                                _buildClassDropdown(),
+                                const SizedBox(height: 20),
+
+                                // Attendance Summary Card
+                                _buildAttendanceCard(),
+
+                                const SizedBox(height: 32),
+
+                                // Assessments Section Header
+                                Text(
+                                  'Assessments for $className',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF1A1A1A),
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+
+                                // Search Bar
+                                _buildSearchBar(),
+                                const SizedBox(height: 16),
+
+                                // Assessments List
+                                if (_isLoadingAssessments)
+                                  const Center(
+                                    child: CircularProgressIndicator(
+                                      color: Colors.teal,
+                                    ),
+                                  )
+                                else if (_filteredAssessments.isEmpty)
+                                  _buildEmptyAssessments()
+                                else
+                                  ..._filteredAssessments
+                                      .map((a) => _buildAssessmentCard(a))
+                                      .toList(),
+
+                                const SizedBox(height: 24),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 12),
-
-                          // Search Bar
-                          _buildSearchBar(),
-                          const SizedBox(height: 16),
-
-                          // Assessments List
-                          if (_isLoadingAssessments)
-                            const Center(child: CircularProgressIndicator(color: Colors.teal))
-                          else if (_filteredAssessments.isEmpty)
-                            _buildEmptyAssessments()
-                          else
-                            ..._filteredAssessments.map((a) => _buildAssessmentCard(a)).toList(),
-                          
-                          const SizedBox(height: 24),
-                        ],
-                      ),
-                    ),
                   ),
                 ],
               ),
@@ -260,7 +272,7 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Teacher Dashboard',
+                      'Dashboard',
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -285,7 +297,6 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
                     context,
                     MaterialPageRoute(builder: (_) => const TeacherNotificationScreen()),
                   ).then((_) {
-                    // Trigger re-fetch in TeacherMainScreen
                     teacherNotifCountNotifier.value++;
                   });
                 },
@@ -297,7 +308,7 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
                       height: 38,
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(3),
+                        shape: BoxShape.circle,
                         border: Border.all(color: Colors.white.withOpacity(0.3)),
                       ),
                       child: const Icon(
@@ -337,6 +348,31 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
                       },
                     ),
                   ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => TeacherSettingsPage()),
+                  );
+                },
+                child: Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white.withOpacity(0.3)),
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.person_rounded,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -669,6 +705,62 @@ class _TeacherDashboardPageState extends State<TeacherDashboardPage> {
             style: TextStyle(color: Colors.grey[600], fontSize: 14, fontWeight: FontWeight.w500),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.teal.withOpacity(0.05),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.dashboard_customize_outlined,
+                  size: 64,
+                  color: Colors.teal.withOpacity(0.4),
+                ),
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'No Classrooms Found',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2D3142),
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'It looks like there are no classrooms assigned to you yet. Once added, your dashboard stats will appear here.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14, color: Color(0xFF919191), height: 1.5),
+              ),
+              const SizedBox(height: 32),
+              ElevatedButton.icon(
+                onPressed: _fetchClassrooms,
+                icon: const Icon(Icons.refresh_rounded, size: 18),
+                label: const Text('Refresh Now'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.teal,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+                  elevation: 0,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

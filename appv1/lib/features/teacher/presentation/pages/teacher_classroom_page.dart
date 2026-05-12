@@ -9,6 +9,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../widgets/classroom_card.dart';
 import 'classroom_detail_page.dart';
 import 'create_classroom_page.dart';
+import 'teacher_settings_page.dart';
 
 class TeacherClassroomPage extends StatefulWidget {
   @override
@@ -367,6 +368,31 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
                               ),
                             ),
                           ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => TeacherSettingsPage()),
+                        );
+                      },
+                      child: Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white.withOpacity(0.3)),
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.person_rounded,
+                            color: Colors.white,
+                            size: 22,
+                          ),
                         ),
                       ),
                     ),

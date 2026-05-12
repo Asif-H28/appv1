@@ -117,7 +117,6 @@ class _TeacherMainScreenState extends State<TeacherMainScreen> {
     TeacherClassroomPage(),
     TeacherAchievementsPage(),
     TeacherDashboardPage(),
-    TeacherSettingsPage(),
   ];
 
   @override
@@ -174,12 +173,6 @@ class _TeacherMainScreenState extends State<TeacherMainScreen> {
                 Icons.dashboard_rounded,
                 Icons.dashboard_outlined,
                 'Dashboard',
-              ),
-              _navItem(
-                5,
-                Icons.settings_rounded,
-                Icons.settings_outlined,
-                'Settings',
               ),
             ],
           ),

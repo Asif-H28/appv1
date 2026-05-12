@@ -32,7 +32,6 @@ class _MainAppScreenState extends State<MainAppScreen> {
     const HomePage(),
     const ConversationListScreen(),
     const AdminAchievementsPage(),
-    SettingsPage(),
   ];
 
   final ValueNotifier<int> _unreadChatCount = ValueNotifier<int>(0);
@@ -216,7 +215,7 @@ class _MainAppScreenState extends State<MainAppScreen> {
                       height: 38,
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(3),
+                        shape: BoxShape.circle,
                         border: Border.all(
                           color: Colors.white.withOpacity(0.3),
                         ),
@@ -255,6 +254,31 @@ class _MainAppScreenState extends State<MainAppScreen> {
                   ],
                 ),
               ),
+              const SizedBox(width: 10),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const SettingsPage()),
+                  );
+                },
+                child: Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white.withOpacity(0.3)),
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.person_rounded,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -287,12 +311,6 @@ class _MainAppScreenState extends State<MainAppScreen> {
                 Icons.emoji_events_rounded,
                 Icons.emoji_events_outlined,
                 'Achievements',
-              ),
-              _navItem(
-                3,
-                Icons.settings_rounded,
-                Icons.settings_outlined,
-                'Settings',
               ),
             ],
           ),

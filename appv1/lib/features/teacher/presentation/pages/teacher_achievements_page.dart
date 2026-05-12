@@ -9,6 +9,7 @@ import '../../../../core/constants/app_colors.dart';
 import 'achievement_create_page.dart';
 import 'achievement_comments_sheet.dart';
 import 'achievement_feed_card.dart';
+import 'teacher_settings_page.dart';
 
 class TeacherAchievementsPage extends StatefulWidget {
   const TeacherAchievementsPage({super.key});
@@ -354,6 +355,31 @@ class _TeacherAchievementsPageState extends State<TeacherAchievementsPage> {
                       style: TextStyle(color: Colors.white70, fontSize: 10.5),
                     ),
                   ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => TeacherSettingsPage()),
+                  );
+                },
+                child: Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white.withOpacity(0.3)),
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.person_rounded,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+                  ),
                 ),
               ),
             ],
