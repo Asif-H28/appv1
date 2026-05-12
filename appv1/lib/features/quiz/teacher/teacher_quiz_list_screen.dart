@@ -46,16 +46,16 @@ class _TeacherQuizListScreenState extends State<TeacherQuizListScreen> {
     if (_teacherId.isEmpty) return;
     setState(() => _isLoading = true);
     try {
-      final response = await http.get(
-        Uri.parse('${ApiConstants.apiBaseUrl}/quiz/teacher/$_teacherId'),
-      );
+      final url = widget.classId != null
+          ? '${ApiConstants.apiBaseUrl}/quiz/class/${widget.classId}'
+          : '${ApiConstants.apiBaseUrl}/quiz/teacher/$_teacherId';
+          
+      final response = await http.get(Uri.parse(url));
+      
       if (response.statusCode == 200) {
-        List allQuizzes = jsonDecode(response.body);
-        if (widget.classId != null) {
-          allQuizzes = allQuizzes.where((q) => q['classId'] == widget.classId).toList();
-        }
+        final data = jsonDecode(response.body);
         setState(() {
-          _quizzes = allQuizzes;
+          _quizzes = data['quizzes'] ?? [];
           _isLoading = false;
         });
       } else {
@@ -111,11 +111,7 @@ class _TeacherQuizListScreenState extends State<TeacherQuizListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
-      appBar: AppBar(
-        title: const Text('Manage Quizzes', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.teal,
-        elevation: 0,
-      ),
+
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: Colors.teal))
           : RefreshIndicator(

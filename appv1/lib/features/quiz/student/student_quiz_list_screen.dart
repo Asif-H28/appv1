@@ -7,6 +7,8 @@ import '../widgets/difficulty_badge.dart';
 import 'quiz_attempt_screen.dart';
 import 'result_review_screen.dart';
 
+import '../../../core/services/api_service.dart';
+
 class StudentQuizListScreen extends StatefulWidget {
   const StudentQuizListScreen({Key? key}) : super(key: key);
 
@@ -40,18 +42,20 @@ class _StudentQuizListScreenState extends State<StudentQuizListScreen> {
     if (_classId.isEmpty || _studentId.isEmpty) return;
     setState(() => _isLoading = true);
     try {
-      // Fetch available quizzes for class
-      final quizRes = await http.get(Uri.parse('${ApiConstants.apiBaseUrl}/quiz/class/$_classId'));
-      
-      // Fetch student's attempted quizzes
-      final attemptRes = await http.get(Uri.parse('${ApiConstants.apiBaseUrl}/quiz/result/student/$_studentId'));
+      final quizRes = await ApiService.get('${ApiConstants.apiBaseUrl}/quiz/class/$_classId');
+      final attemptRes = await ApiService.get('${ApiConstants.apiBaseUrl}/quiz/result/student/$_studentId');
 
       if (quizRes.statusCode == 200) {
-        final quizzes = jsonDecode(quizRes.body);
+        final data = jsonDecode(quizRes.body);
+        final quizzes = data['quizzes'] ?? [];
+        
         List attemptedIds = [];
         if (attemptRes.statusCode == 200) {
-          final attempts = jsonDecode(attemptRes.body);
-          attemptedIds = attempts.map((a) => a['quizId']).toList();
+          final attemptData = jsonDecode(attemptRes.body);
+          final attempts = attemptData['results'] ?? attemptData['data'] ?? attemptData;
+          if (attempts is List) {
+            attemptedIds = attempts.map((a) => a['quizId'].toString()).toList();
+          }
         }
         
         setState(() {
@@ -64,7 +68,9 @@ class _StudentQuizListScreenState extends State<StudentQuizListScreen> {
       }
     } catch (e) {
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
     }
   }
 
@@ -72,11 +78,7 @@ class _StudentQuizListScreenState extends State<StudentQuizListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
-      appBar: AppBar(
-        title: const Text('Quizzes', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.teal,
-        elevation: 0,
-      ),
+
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: Colors.teal))
           : RefreshIndicator(
@@ -129,25 +131,48 @@ class _StudentQuizListScreenState extends State<StudentQuizListScreen> {
                                 SizedBox(
                                   width: double.infinity,
                                   child: isAttempted
-                                      ? OutlinedButton(
-                                          onPressed: () {
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (_) => ResultReviewScreen(
-                                                  quizId: quiz['_id'],
-                                                  studentId: _studentId,
-                                                ),
+                                    ? Column(
+                                        children: [
+                                          SizedBox(
+                                            width: double.infinity,
+                                            child: OutlinedButton(
+                                              onPressed: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (_) => ResultReviewScreen(
+                                                      quizId: quiz['_id'],
+                                                      studentId: _studentId,
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                              style: OutlinedButton.styleFrom(
+                                                side: const BorderSide(color: Colors.teal),
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
                                               ),
-                                            );
-                                          },
-                                          style: OutlinedButton.styleFrom(
-                                            side: const BorderSide(color: Colors.teal),
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+                                              child: const Text('View Result', style: TextStyle(color: Colors.teal)),
+                                            ),
                                           ),
-                                          child: const Text('View Result', style: TextStyle(color: Colors.teal)),
-                                        )
-                                      : ElevatedButton(
+                                          const SizedBox(height: 8),
+                                          SizedBox(
+                                            width: double.infinity,
+                                            child: ElevatedButton(
+                                              onPressed: null, // Disabled
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.grey[300],
+                                                foregroundColor: Colors.grey[600],
+                                                elevation: 0,
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+                                              ),
+                                              child: const Text('Already Attempted'),
+                                            ),
+                                          ),
+                                        ],
+                                      )
+                                    : SizedBox(
+                                        width: double.infinity,
+                                        child: ElevatedButton(
                                           onPressed: () {
                                             Navigator.push(
                                               context,
@@ -164,6 +189,7 @@ class _StudentQuizListScreenState extends State<StudentQuizListScreen> {
                                           ),
                                           child: const Text('Start Quiz'),
                                         ),
+                                      ),
                                 ),
                               ],
                             ),

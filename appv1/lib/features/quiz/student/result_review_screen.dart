@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import '../../../core/services/api_service.dart';
 import 'dart:convert';
 import '../../../core/constants/api_constants.dart';
 
@@ -36,12 +37,13 @@ class _ResultReviewScreenState extends State<ResultReviewScreen> {
   Future<void> _fetchReview() async {
     setState(() => _isLoading = true);
     try {
-      final response = await http.get(
-        Uri.parse('${ApiConstants.apiBaseUrl}/quiz/result/${widget.quizId}/student/${widget.studentId}'),
+      final response = await ApiService.get(
+        '${ApiConstants.apiBaseUrl}/quiz/result/${widget.quizId}/student/${widget.studentId}',
       );
       if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
         setState(() {
-          _review = jsonDecode(response.body);
+          _review = data['result'] ?? data['data'] ?? data;
           _isLoading = false;
         });
       } else {
@@ -49,7 +51,9 @@ class _ResultReviewScreenState extends State<ResultReviewScreen> {
       }
     } catch (e) {
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
     }
   }
 
@@ -72,7 +76,7 @@ class _ResultReviewScreenState extends State<ResultReviewScreen> {
                     children: [
                       _buildScoreHeader(),
                       const SizedBox(height: 16),
-                      ...(_review!['review'] as List).map((item) => _buildQuestionReviewCard(item)).toList(),
+                      ...((_review!['review'] as List?) ?? []).map((item) => _buildQuestionReviewCard(item)).toList(),
                       const SizedBox(height: 20),
                       SizedBox(
                         width: double.infinity,
@@ -137,7 +141,7 @@ class _ResultReviewScreenState extends State<ResultReviewScreen> {
   }
 
   Widget _buildQuestionReviewCard(dynamic item) {
-    final options = item['options'] as List;
+    final options = (item['options'] as List?) ?? [];
     final String selected = item['selectedAnswer'] ?? '';
     final String correct = item['correctAnswer'] ?? '';
     final bool isCorrect = item['isCorrect'] ?? false;
@@ -156,7 +160,7 @@ class _ResultReviewScreenState extends State<ResultReviewScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    item['questionText'],
+                    item['questionText'] ?? 'Question',
                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -192,7 +196,7 @@ class _ResultReviewScreenState extends State<ResultReviewScreen> {
                 ),
                 child: Row(
                   children: [
-                    Expanded(child: Text(opt, style: TextStyle(color: (opt == correct || (opt == selected && !isCorrect)) ? Colors.black : Colors.grey[700]))),
+                    Expanded(child: Text(opt ?? '', style: TextStyle(color: (opt == correct || (opt == selected && !isCorrect)) ? Colors.black : Colors.grey[700]))),
                     if (trailing != null) trailing,
                   ],
                 ),

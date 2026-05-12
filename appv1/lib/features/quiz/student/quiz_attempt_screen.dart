@@ -64,10 +64,11 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
       final response = await http.get(Uri.parse('${ApiConstants.apiBaseUrl}/quiz/${widget.quizId}'));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        final quizData = data['quiz'] ?? data['data'] ?? data;
         setState(() {
-          _quiz = data;
+          _quiz = quizData;
           _isLoading = false;
-          _secondsRemaining = (data['durationMinutes'] ?? 15) * 60;
+          _secondsRemaining = (quizData['durationMinutes'] ?? 15) * 60;
           _totalDurationSeconds = _secondsRemaining;
         });
         _startTimer();
@@ -206,9 +207,12 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
       return const Scaffold(body: Center(child: CircularProgressIndicator(color: Colors.teal)));
     }
 
-    final questions = _quiz!['questions'] as List;
+    final questions = (_quiz!['questions'] as List?) ?? [];
+    if (questions.isEmpty) {
+      return const Scaffold(body: Center(child: Text('No questions found for this quiz')));
+    }
     final question = questions[_currentIndex];
-    final options = question['options'] as List;
+    final options = (question['options'] as List?) ?? [];
 
     return PopScope(
       canPop: false,

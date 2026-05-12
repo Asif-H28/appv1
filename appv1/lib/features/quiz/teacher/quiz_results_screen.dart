@@ -31,8 +31,10 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
         Uri.parse('${ApiConstants.apiBaseUrl}/quiz/results/${widget.quizId}'),
       );
       if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
         setState(() {
-          _results = jsonDecode(response.body);
+          // Extract data if nested, otherwise use the whole body
+          _results = data['data'] ?? data['results'] ?? data;
           _isLoading = false;
         });
       } else {
@@ -40,7 +42,9 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
       }
     } catch (e) {
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
     }
   }
 
@@ -55,7 +59,7 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: Colors.teal))
-          : _results == null || (_results!['attempts'] as List).isEmpty
+          : _results == null || _results!['attempts'] == null || (_results!['attempts'] as List).isEmpty
               ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -82,9 +86,10 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
                       ListView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        itemCount: (_results!['attempts'] as List).length,
+                        itemCount: (_results!['attempts'] as List?)?.length ?? 0,
                         itemBuilder: (context, index) {
-                          final attempt = _results!['attempts'][index];
+                          final attempts = _results!['attempts'] as List;
+                          final attempt = attempts[index];
                           return _buildStudentResultCard(attempt);
                         },
                       ),
@@ -95,6 +100,7 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
   }
 
   Widget _buildHeaderCard() {
+    final attemptsCount = (_results!['attempts'] as List?)?.length ?? 0;
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
@@ -102,14 +108,11 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            Text(widget.quizTitle, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _statItem('Total Attempts', _results!['totalAttempts'].toString()),
-                _statItem('Average Score', '${_results!['averageScore']}%'),
-              ],
+            Text(widget.quizTitle, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+            const SizedBox(height: 12),
+            Text(
+              "$attemptsCount Students Attended",
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.teal),
             ),
           ],
         ),
@@ -117,17 +120,12 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
     );
   }
 
-  Widget _statItem(String label, String value) {
-    return Column(
-      children: [
-        Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.teal)),
-        Text(label, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
-      ],
-    );
-  }
-
   Widget _buildStudentResultCard(dynamic attempt) {
-    final double percentage = (attempt['percentage'] as num).toDouble();
+    final score = attempt['score'] ?? attempt['total score'] ?? 0;
+    final totalQuestions = attempt['totalQuestions'] ?? attempt['Total Questoins on the quiz'] ?? 10;
+    final int time = attempt['timeTakenSeconds'] ?? attempt['totaltimetaken'] ?? 0;
+    
+    final double percentage = (attempt['percentage'] ?? (totalQuestions > 0 ? (score / totalQuestions * 100) : 0)).toDouble();
     Color scoreColor = Colors.red;
     if (percentage >= 80) {
       scoreColor = Colors.green;
@@ -135,10 +133,10 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
       scoreColor = Colors.orange;
     }
 
-    final int time = attempt['timeTakenSeconds'] ?? 0;
     final int mins = time ~/ 60;
     final int secs = time % 60;
     final String timeStr = "${mins}m ${secs}s";
+    final String studentName = attempt['studentName'] ?? attempt['studentname'] ?? 'Unknown Student';
 
     return Card(
       elevation: 0,
@@ -146,7 +144,14 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        title: Text(attempt['studentName'] ?? 'Unknown Student', style: const TextStyle(fontWeight: FontWeight.bold)),
+        leading: CircleAvatar(
+          backgroundColor: Colors.teal.withOpacity(0.1),
+          child: Text(
+            studentName.isNotEmpty ? studentName[0].toUpperCase() : '?',
+            style: const TextStyle(color: Colors.teal, fontWeight: FontWeight.bold),
+          ),
+        ),
+        title: Text(studentName, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -158,21 +163,10 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Text("${attempt['score']}/${attempt['totalQuestions']}", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: scoreColor)),
+            Text("$score/$totalQuestions", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: scoreColor)),
             Text("${percentage.toStringAsFixed(0)}%", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: scoreColor)),
           ],
         ),
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => ResultReviewScreen(
-                quizId: widget.quizId,
-                studentId: attempt['studentId'],
-              ),
-            ),
-          );
-        },
       ),
     );
   }
