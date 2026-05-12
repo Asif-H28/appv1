@@ -89,7 +89,7 @@ class _QuizResultsScreenState extends State<QuizResultsScreen> {
               ),
             )
           : SingleChildScrollView(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 40),
               child: Column(
                 children: [
                   _buildHeaderCard(),

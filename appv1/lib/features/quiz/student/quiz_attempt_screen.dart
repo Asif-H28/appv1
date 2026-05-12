@@ -275,8 +275,8 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: questions.length,
                 itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                  return SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 80),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [

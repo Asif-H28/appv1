@@ -96,7 +96,7 @@ class _StudentQuizListScreenState extends State<StudentQuizListScreen> {
                       ),
                     )
                   : ListView.builder(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.fromLTRB(12, 12, 12, 80),
                       itemCount: _quizzes.length,
                       itemBuilder: (context, index) {
                         final quiz = _quizzes[index];
