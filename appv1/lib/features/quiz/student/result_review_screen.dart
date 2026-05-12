@@ -60,7 +60,7 @@ class _ResultReviewScreenState extends State<ResultReviewScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: const Color(0xFFF6FAFA),
       appBar: AppBar(
         title: const Text('Quiz Review', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.teal,
@@ -108,8 +108,10 @@ class _ResultReviewScreenState extends State<ResultReviewScreen> {
     final int secs = time % 60;
 
     return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+      color: Colors.white,
+      elevation: 2,
+      shadowColor: Colors.black.withOpacity(0.1),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -147,9 +149,11 @@ class _ResultReviewScreenState extends State<ResultReviewScreen> {
     final bool isCorrect = item['isCorrect'] ?? false;
 
     return Card(
-      elevation: 0,
+      color: Colors.white,
+      elevation: 2,
+      shadowColor: Colors.black.withOpacity(0.1),
       margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

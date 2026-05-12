@@ -134,20 +134,47 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
           const SnackBar(content: Text('Quiz created successfully!'), backgroundColor: Colors.teal),
         );
         Navigator.pop(context);
-      } else if (response.statusCode == 400) {
-        final data = jsonDecode(response.body);
-        if (data['message'] == "Lesson has not been marked as completed yet") {
-          _showErrorBanner("Lesson has not been marked as completed yet");
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(data['message'] ?? 'Error creating quiz')));
-        }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to create quiz')));
+        final data = jsonDecode(response.body);
+        final errorMessage = data['error'] ?? data['message'] ?? 'Failed to create quiz';
+
+        if (errorMessage.toString().contains("Limit reached")) {
+          _showLimitReachedDialog(errorMessage.toString());
+        } else if (errorMessage == "Lesson has not been marked as completed yet") {
+          _showErrorBanner(errorMessage);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(errorMessage)),
+          );
+        }
       }
     } catch (e) {
       if (mounted) Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
     }
+  }
+
+  void _showLimitReachedDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.red),
+            SizedBox(width: 8),
+            Text('Limit reached', style: TextStyle(fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK', style: TextStyle(color: Colors.teal, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showErrorBanner(String message) {

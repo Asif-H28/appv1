@@ -77,7 +77,7 @@ class _StudentQuizListScreenState extends State<StudentQuizListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: const Color(0xFFF6FAFA),
 
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: Colors.teal))
@@ -103,9 +103,11 @@ class _StudentQuizListScreenState extends State<StudentQuizListScreen> {
                         final isAttempted = _attemptedQuizIds.contains(quiz['_id']);
 
                         return Card(
-                          elevation: 0,
-                          margin: const EdgeInsets.only(bottom: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+                          color: Colors.white,
+                          elevation: 2,
+                          shadowColor: Colors.black.withOpacity(0.1),
+                          margin: const EdgeInsets.only(bottom: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           child: Padding(
                             padding: const EdgeInsets.all(16),
                             child: Column(

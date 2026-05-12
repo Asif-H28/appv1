@@ -15,7 +15,7 @@ class QuizAttemptScreen extends StatefulWidget {
   _QuizAttemptScreenState createState() => _QuizAttemptScreenState();
 }
 
-class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
+class _QuizAttemptScreenState extends State<QuizAttemptScreen> with WidgetsBindingObserver {
   Map<String, dynamic>? _quiz;
   bool _isLoading = true;
   int _currentIndex = 0;
@@ -24,6 +24,7 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
   List<Map<String, dynamic>> _answers = [];
   String? _selectedOption;
   bool _isAnswered = false;
+  bool _isSubmitting = false;
 
   Timer? _timer;
   int _secondsRemaining = 0;
@@ -37,15 +38,50 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadUserData();
     _fetchQuiz();
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _timer?.cancel();
     _pageController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused && !_isSubmitting) {
+      _submitQuiz(autoSubmit: true);
+    }
+  }
+
+  Future<void> _handleBackPress() async {
+    final bool? exit = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Exit Quiz?'),
+        content: const Text(
+          'You are not allowed to exit while attending the quiz. If you exit now, your current progress will be automatically submitted.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Exit & Submit', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (exit == true) {
+      _submitQuiz(autoSubmit: true);
+    }
   }
 
   Future<void> _loadUserData() async {
@@ -154,6 +190,7 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
       });
     }
 
+    setState(() => _isSubmitting = true);
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -215,15 +252,13 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
     final options = (question['options'] as List?) ?? [];
 
     return PopScope(
-      canPop: false,
+      canPop: _isSubmitting,
       onPopInvoked: (didPop) {
         if (didPop) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Cannot go back during quiz')),
-        );
+        _handleBackPress();
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFF6FAFA),
         appBar: AppBar(
           automaticallyImplyLeading: false,
           title: Text(_quiz!['title'] ?? 'Quiz', style: const TextStyle(color: Colors.white, fontSize: 16)),
@@ -293,29 +328,30 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> {
                 },
               ),
             ),
-            if (_isAnswered)
-              SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: _nextQuestion,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.teal,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
-                      ),
-                      child: Text(
-                        _currentIndex == questions.length - 1 ? "Submit Quiz" : "Next Question",
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-                      ),
+          ],
+        ),
+        bottomNavigationBar: _isAnswered
+            ? SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: _nextQuestion,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.teal,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+                    ),
+                    child: Text(
+                      _currentIndex == questions.length - 1 ? "Submit Quiz" : "Next Question",
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
                     ),
                   ),
                 ),
               ),
-          ],
-        ),
+            )
+            : null,
       ),
     );
   }
