@@ -69,6 +69,7 @@ class _YearRolloverPageState extends State<YearRolloverPage> {
         ),
         headers: await ApiService.getHeaders(),
       );
+      if (!mounted) return;
       if (response.statusCode == 200) {
         final body = jsonDecode(response.body);
         final List<dynamic> raw = body['students'] ?? [];
@@ -84,7 +85,7 @@ class _YearRolloverPageState extends State<YearRolloverPage> {
         setState(() => _isLoadingStudents = false);
       }
     } catch (_) {
-      setState(() => _isLoadingStudents = false);
+      if (mounted) setState(() => _isLoadingStudents = false);
     }
   }
 
@@ -687,7 +688,7 @@ class _YearRolloverPageState extends State<YearRolloverPage> {
           ), // Allow selection of past dates if needed, or stick to now
           lastDate: now.add(const Duration(days: 730)),
         );
-        if (date != null) {
+        if (date != null && mounted) {
           setState(() {
             _selectedDate = date;
             final months = [
