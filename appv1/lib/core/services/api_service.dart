@@ -17,7 +17,8 @@ class ApiService {
       try {
         final body = jsonDecode(response.body);
         final errorMsg = body['error'] ?? body['message'] ?? '';
-        if (errorMsg == 'Organization Deactivated' || errorMsg.toString().contains('Deactivated')) {
+        if (errorMsg == 'Organization Deactivated' ||
+            errorMsg.toString().contains('Deactivated')) {
           navigatorKey.currentState?.pushAndRemoveUntil(
             MaterialPageRoute(builder: (_) => const DeactivatedAccountScreen()),
             (route) => false,
@@ -26,7 +27,7 @@ class ApiService {
         }
       } catch (_) {}
     }
-    
+
     // Check for token expiration
     if (TokenExpirationHandler.detectTokenExpiration(response.body)) {
       final endpoint = response.request?.url.toString() ?? 'unknown';
@@ -83,12 +84,13 @@ class ApiService {
       return {'success': false, 'message': 'Network error: $e'};
     }
   }
+
   // Fetch Classrooms by Org ID
   static Future<Map<String, dynamic>> fetchClassroomsByOrg(String orgId) async {
     try {
       final url = '$_baseUrl/classroom/list/$orgId';
       print('Fetching classrooms from: $url');
-      
+
       final response = await ApiService.get(url);
 
       print('Classrooms Response Status: ${response.statusCode}');
@@ -97,10 +99,7 @@ class ApiService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return {
-          'success': true,
-          'classrooms': data['classrooms'] ?? [],
-        };
+        return {'success': true, 'classrooms': data['classrooms'] ?? []};
       } else {
         return {
           'success': false,
@@ -128,10 +127,7 @@ class ApiService {
       checkResponse(response);
 
       if (response.statusCode == 200) {
-        return {
-          'success': true,
-          'data': jsonDecode(response.body),
-        };
+        return {'success': true, 'data': jsonDecode(response.body)};
       } else {
         return {
           'success': false,
@@ -144,7 +140,9 @@ class ApiService {
   }
 
   // Fetch Comprehensive Assessments by Class
-  static Future<Map<String, dynamic>> fetchAssessmentsByClass(String classId) async {
+  static Future<Map<String, dynamic>> fetchAssessmentsByClass(
+    String classId,
+  ) async {
     try {
       final url = '$_baseUrl/comprehensive-assessment/class/$classId';
       print('Fetching assessments from: $url');
@@ -156,10 +154,7 @@ class ApiService {
       checkResponse(response);
 
       if (response.statusCode == 200) {
-        return {
-          'success': true,
-          'data': jsonDecode(response.body),
-        };
+        return {'success': true, 'data': jsonDecode(response.body)};
       } else {
         return {
           'success': false,
@@ -170,8 +165,11 @@ class ApiService {
       return {'success': false, 'message': 'Network error: $e'};
     }
   }
+
   // Fetch Comprehensive Assessment Results by Assessment ID
-  static Future<Map<String, dynamic>> fetchAssessmentResults(String assessmentId) async {
+  static Future<Map<String, dynamic>> fetchAssessmentResults(
+    String assessmentId,
+  ) async {
     try {
       final url = '$_baseUrl/comprehensive-result/assessment/$assessmentId';
       print('Fetching assessment results from: $url');
@@ -183,14 +181,12 @@ class ApiService {
       checkResponse(response);
 
       if (response.statusCode == 200) {
-        return {
-          'success': true,
-          'data': jsonDecode(response.body),
-        };
+        return {'success': true, 'data': jsonDecode(response.body)};
       } else {
         return {
           'success': false,
-          'message': 'Failed to load assessment results: ${response.statusCode}',
+          'message':
+              'Failed to load assessment results: ${response.statusCode}',
         };
       }
     } catch (e) {
@@ -199,16 +195,15 @@ class ApiService {
   }
 
   // Fetch Pending Teacher Join Requests
-  static Future<Map<String, dynamic>> fetchTeacherJoinRequests(String orgId) async {
+  static Future<Map<String, dynamic>> fetchTeacherJoinRequests(
+    String orgId,
+  ) async {
     try {
       final url = '$_baseUrl/teacher/join-requests/$orgId';
       final response = await ApiService.get(url);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return {
-          'success': true,
-          'requests': data['requests'] ?? [],
-        };
+        return {'success': true, 'requests': data['requests'] ?? []};
       } else {
         return {'success': false, 'message': 'Failed to load requests'};
       }
@@ -218,7 +213,9 @@ class ApiService {
   }
 
   // Approve Teacher Join Request
-  static Future<Map<String, dynamic>> approveTeacherRequest(String requestId) async {
+  static Future<Map<String, dynamic>> approveTeacherRequest(
+    String requestId,
+  ) async {
     try {
       final url = '$_baseUrl/teacher/join-requests/$requestId/approve';
       final response = await ApiService.put(url);
@@ -233,7 +230,9 @@ class ApiService {
   }
 
   // Reject Teacher Join Request
-  static Future<Map<String, dynamic>> rejectTeacherRequest(String requestId) async {
+  static Future<Map<String, dynamic>> rejectTeacherRequest(
+    String requestId,
+  ) async {
     try {
       final url = '$_baseUrl/teacher/join-requests/$requestId/reject';
       final response = await ApiService.put(url);
@@ -272,10 +271,7 @@ class ApiService {
       final response = await ApiService.get(url);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return {
-          'success': true,
-          'teachers': data['teachers'] ?? [],
-        };
+        return {'success': true, 'teachers': data['teachers'] ?? []};
       }
       return {'success': false, 'message': 'Failed to load teachers'};
     } catch (e) {
@@ -324,10 +320,7 @@ class ApiService {
     try {
       final response = await ApiService.get('/chat/user-status/$userId');
       if (response.statusCode == 200) {
-        return {
-          'success': true,
-          'data': jsonDecode(response.body),
-        };
+        return {'success': true, 'data': jsonDecode(response.body)};
       }
       return {'success': false, 'message': 'Failed to load status'};
     } catch (e) {
@@ -336,7 +329,10 @@ class ApiService {
   }
 
   // Create or get existing conversation
-  static Future<Map<String, dynamic>> createConversation(String senderId, String recipientId) async {
+  static Future<Map<String, dynamic>> createConversation(
+    String senderId,
+    String recipientId,
+  ) async {
     try {
       final response = await ApiService.post(
         '/chat/conversations',
@@ -346,10 +342,7 @@ class ApiService {
         }),
       );
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return {
-          'success': true,
-          'conversation': jsonDecode(response.body),
-        };
+        return {'success': true, 'conversation': jsonDecode(response.body)};
       }
       return {'success': false, 'message': 'Failed to create conversation'};
     } catch (e) {
@@ -373,20 +366,21 @@ class ApiService {
     try {
       final response = await ApiService.post(
         '/transport/coordinators',
-        body: jsonEncode({
-          'teacherId': teacherId,
-          'orgId': orgId,
-        }),
+        body: jsonEncode({'teacherId': teacherId, 'orgId': orgId}),
       );
       if (response.statusCode == 200 || response.statusCode == 201) {
         return {
           'success': true,
-          'message': jsonDecode(response.body)['message'] ?? 'Coordinator appointed successfully',
+          'message':
+              jsonDecode(response.body)['message'] ??
+              'Coordinator appointed successfully',
         };
       }
       return {
         'success': false,
-        'message': jsonDecode(response.body)['message'] ?? 'Failed to appoint coordinator',
+        'message':
+            jsonDecode(response.body)['message'] ??
+            'Failed to appoint coordinator',
       };
     } catch (e) {
       return {'success': false, 'message': 'Network error: $e'};
@@ -400,10 +394,7 @@ class ApiService {
       final response = await ApiService.get(url);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return {
-          'success': true,
-          'vehicles': data['vehicles'] ?? [],
-        };
+        return {'success': true, 'vehicles': data['vehicles'] ?? []};
       }
       return {'success': false, 'message': 'Failed to load vehicles'};
     } catch (e) {
@@ -435,12 +426,15 @@ class ApiService {
       if (response.statusCode == 200 || response.statusCode == 201) {
         return {
           'success': true,
-          'message': jsonDecode(response.body)['message'] ?? 'Vehicle created successfully',
+          'message':
+              jsonDecode(response.body)['message'] ??
+              'Vehicle created successfully',
         };
       }
       return {
         'success': false,
-        'message': jsonDecode(response.body)['message'] ?? 'Failed to create vehicle',
+        'message':
+            jsonDecode(response.body)['message'] ?? 'Failed to create vehicle',
       };
     } catch (e) {
       return {'success': false, 'message': 'Network error: $e'};
@@ -468,12 +462,15 @@ class ApiService {
       if (response.statusCode == 200) {
         return {
           'success': true,
-          'message': jsonDecode(response.body)['message'] ?? 'Vehicle updated successfully',
+          'message':
+              jsonDecode(response.body)['message'] ??
+              'Vehicle updated successfully',
         };
       }
       return {
         'success': false,
-        'message': jsonDecode(response.body)['message'] ?? 'Failed to update vehicle',
+        'message':
+            jsonDecode(response.body)['message'] ?? 'Failed to update vehicle',
       };
     } catch (e) {
       return {'success': false, 'message': 'Network error: $e'};
@@ -489,12 +486,15 @@ class ApiService {
       if (response.statusCode == 200) {
         return {
           'success': true,
-          'message': jsonDecode(response.body)['message'] ?? 'Vehicle deleted successfully',
+          'message':
+              jsonDecode(response.body)['message'] ??
+              'Vehicle deleted successfully',
         };
       }
       return {
         'success': false,
-        'message': jsonDecode(response.body)['message'] ?? 'Failed to delete vehicle',
+        'message':
+            jsonDecode(response.body)['message'] ?? 'Failed to delete vehicle',
       };
     } catch (e) {
       return {'success': false, 'message': 'Network error: $e'};
@@ -509,20 +509,19 @@ class ApiService {
       final response = await http.post(
         Uri.parse('${ApiConstants.apiBaseUrl}/transport/setup-pin'),
         headers: await getHeaders(),
-        body: jsonEncode({
-          'orgId': orgId,
-          'pin': pin,
-        }),
+        body: jsonEncode({'orgId': orgId, 'pin': pin}),
       );
       if (response.statusCode == 200 || response.statusCode == 201) {
         return {
           'success': true,
-          'message': jsonDecode(response.body)['message'] ?? 'PIN setup successful',
+          'message':
+              jsonDecode(response.body)['message'] ?? 'PIN setup successful',
         };
       }
       return {
         'success': false,
-        'message': jsonDecode(response.body)['message'] ?? 'Failed to setup PIN',
+        'message':
+            jsonDecode(response.body)['message'] ?? 'Failed to setup PIN',
       };
     } catch (e) {
       return {'success': false, 'message': 'Network error: $e'};
@@ -537,10 +536,7 @@ class ApiService {
       final response = await http.post(
         Uri.parse('${ApiConstants.apiBaseUrl}/transport/driver/login'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'phoneNumber': phoneNumber,
-          'pin': pin,
-        }),
+        body: jsonEncode({'phoneNumber': phoneNumber, 'pin': pin}),
       );
       final body = jsonDecode(response.body);
       if (response.statusCode == 200) {
@@ -550,9 +546,113 @@ class ApiService {
           'message': body['message'] ?? 'Login successful',
         };
       }
+      return {'success': false, 'message': body['message'] ?? 'Login failed'};
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> updateVehicleLocation({
+    required String vehicleId,
+    required String orgId,
+    required double latitude,
+    required double longitude,
+    required String vehicleName,
+    required String driverName,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiConstants.apiBaseUrl}/transport/location/$vehicleId'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'orgId': orgId,
+          'latitude': latitude,
+          'longitude': longitude,
+          'vehicleName': vehicleName,
+          'driverName': driverName,
+        }),
+      );
+      if (response.statusCode == 200) {
+        return {'success': true, 'message': 'Location updated'};
+      }
+      return {'success': false, 'message': 'Failed to update location'};
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> stopVehicleRoute(String vehicleId) async {
+    try {
+      final response = await http.patch(
+        Uri.parse(
+          '${ApiConstants.apiBaseUrl}/transport/location/$vehicleId/stop',
+        ),
+        headers: {'Content-Type': 'application/json'},
+      );
+      if (response.statusCode == 200) {
+        return {'success': true, 'message': 'Route stopped'};
+      }
+      return {'success': false, 'message': 'Failed to stop route'};
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> getOrgVehiclesLocation(
+    String orgId,
+  ) async {
+    try {
+      final response = await http.get(
+        Uri.parse('${ApiConstants.apiBaseUrl}/transport/location/org/$orgId'),
+        headers: await getHeaders(),
+      );
+      final body = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        return {'success': true, 'vehicles': body['vehicles']};
+      }
       return {
         'success': false,
-        'message': body['message'] ?? 'Login failed',
+        'message': body['message'] ?? 'Failed to fetch vehicles',
+      };
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> getOrgVehicles(String orgId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('${ApiConstants.apiBaseUrl}/transport/vehicles/$orgId'),
+        headers: await getHeaders(),
+      );
+      final body = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        return {'success': true, 'vehicles': body['vehicles']};
+      }
+      return {
+        'success': false,
+        'message': body['message'] ?? 'Failed to fetch vehicles',
+      };
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> getVehicleLocation(
+    String vehicleId,
+  ) async {
+    try {
+      final response = await http.get(
+        Uri.parse('${ApiConstants.apiBaseUrl}/transport/location/$vehicleId'),
+        headers: await getHeaders(),
+      );
+      final body = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        return {'success': true, 'vehicle': body['vehicle']};
+      }
+      return {
+        'success': false,
+        'message': body['message'] ?? 'Failed to fetch vehicle location',
       };
     } catch (e) {
       return {'success': false, 'message': 'Network error: $e'};
@@ -560,58 +660,74 @@ class ApiService {
   }
 
   // ─── Dio Instance with Interceptor ─────────────────────
-  static final Dio _dio = Dio(BaseOptions(
-    baseUrl: ApiConstants.apiBaseUrl,
-    connectTimeout: const Duration(seconds: 15),
-    receiveTimeout: const Duration(seconds: 15),
-  ))..interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        final headers = await getHeaders();
-        options.headers.addAll(headers);
-        return handler.next(options);
-      },
-      onResponse: (response, handler) {
-        // Check for token expiration in successful responses
-        final responseBody = response.data?.toString() ?? '';
-        if (TokenExpirationHandler.detectTokenExpiration(responseBody)) {
-          final endpoint = response.requestOptions.uri.toString();
-          TokenExpirationHandler.handleTokenExpiration(endpoint);
-        }
-        return handler.next(response);
-      },
-      onError: (DioError e, handler) {
-        // Check for deactivated account FIRST (preserve existing behavior)
-        if (e.response?.statusCode == 403) {
-          final data = e.response?.data;
-          final errorMsg = (data is Map) ? (data['error'] ?? data['message'] ?? '') : '';
-          if (errorMsg == 'Organization Deactivated' || errorMsg.toString().contains('Deactivated')) {
-            navigatorKey.currentState?.pushAndRemoveUntil(
-              MaterialPageRoute(builder: (_) => const DeactivatedAccountScreen()),
-              (route) => false,
-            );
-            return handler.next(e); // Exit early - don't check for token expiration
-          }
-        }
-        
-        // Check for token expiration after deactivation check
-        final responseBody = e.response?.data?.toString() ?? '';
-        if (TokenExpirationHandler.detectTokenExpiration(responseBody)) {
-          final endpoint = e.requestOptions.uri.toString();
-          TokenExpirationHandler.handleTokenExpiration(endpoint);
-        }
-        
-        return handler.next(e);
-      },
-    ));
+  static final Dio _dio =
+      Dio(
+          BaseOptions(
+            baseUrl: ApiConstants.apiBaseUrl,
+            connectTimeout: const Duration(seconds: 15),
+            receiveTimeout: const Duration(seconds: 15),
+          ),
+        )
+        ..interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) async {
+              final headers = await getHeaders();
+              options.headers.addAll(headers);
+              return handler.next(options);
+            },
+            onResponse: (response, handler) {
+              // Check for token expiration in successful responses
+              final responseBody = response.data?.toString() ?? '';
+              if (TokenExpirationHandler.detectTokenExpiration(responseBody)) {
+                final endpoint = response.requestOptions.uri.toString();
+                TokenExpirationHandler.handleTokenExpiration(endpoint);
+              }
+              return handler.next(response);
+            },
+            onError: (DioError e, handler) {
+              // Check for deactivated account FIRST (preserve existing behavior)
+              if (e.response?.statusCode == 403) {
+                final data = e.response?.data;
+                final errorMsg = (data is Map)
+                    ? (data['error'] ?? data['message'] ?? '')
+                    : '';
+                if (errorMsg == 'Organization Deactivated' ||
+                    errorMsg.toString().contains('Deactivated')) {
+                  navigatorKey.currentState?.pushAndRemoveUntil(
+                    MaterialPageRoute(
+                      builder: (_) => const DeactivatedAccountScreen(),
+                    ),
+                    (route) => false,
+                  );
+                  return handler.next(
+                    e,
+                  ); // Exit early - don't check for token expiration
+                }
+              }
+
+              // Check for token expiration after deactivation check
+              final responseBody = e.response?.data?.toString() ?? '';
+              if (TokenExpirationHandler.detectTokenExpiration(responseBody)) {
+                final endpoint = e.requestOptions.uri.toString();
+                TokenExpirationHandler.handleTokenExpiration(endpoint);
+              }
+
+              return handler.next(e);
+            },
+          ),
+        );
 
   static Dio get dio => _dio;
 
   // ─── Generic Authenticated Methods (http) ─────────────────────
 
-  static Future<http.Response> get(dynamic url, {Map<String, String>? headers}) async {
+  static Future<http.Response> get(
+    dynamic url, {
+    Map<String, String>? headers,
+  }) async {
     final combinedHeaders = await getHeaders();
     if (headers != null) combinedHeaders.addAll(headers);
-    
+
     Uri uri;
     if (url is String) {
       final fullUrl = url.startsWith('http') ? url : '$_baseUrl$url';
@@ -619,16 +735,20 @@ class ApiService {
     } else {
       uri = url as Uri;
     }
-    
+
     final res = await http.get(uri, headers: combinedHeaders);
     checkResponse(res);
     return res;
   }
 
-  static Future<http.Response> post(dynamic url, {Map<String, String>? headers, Object? body}) async {
+  static Future<http.Response> post(
+    dynamic url, {
+    Map<String, String>? headers,
+    Object? body,
+  }) async {
     final combinedHeaders = await getHeaders();
     if (headers != null) combinedHeaders.addAll(headers);
-    
+
     Uri uri;
     if (url is String) {
       final fullUrl = url.startsWith('http') ? url : '$_baseUrl$url';
@@ -636,16 +756,20 @@ class ApiService {
     } else {
       uri = url as Uri;
     }
-    
+
     final res = await http.post(uri, headers: combinedHeaders, body: body);
     checkResponse(res);
     return res;
   }
 
-  static Future<http.Response> put(dynamic url, {Map<String, String>? headers, Object? body}) async {
+  static Future<http.Response> put(
+    dynamic url, {
+    Map<String, String>? headers,
+    Object? body,
+  }) async {
     final combinedHeaders = await getHeaders();
     if (headers != null) combinedHeaders.addAll(headers);
-    
+
     Uri uri;
     if (url is String) {
       final fullUrl = url.startsWith('http') ? url : '$_baseUrl$url';
@@ -653,16 +777,20 @@ class ApiService {
     } else {
       uri = url as Uri;
     }
-    
+
     final res = await http.put(uri, headers: combinedHeaders, body: body);
     checkResponse(res);
     return res;
   }
 
-  static Future<http.Response> delete(dynamic url, {Map<String, String>? headers, Object? body}) async {
+  static Future<http.Response> delete(
+    dynamic url, {
+    Map<String, String>? headers,
+    Object? body,
+  }) async {
     final combinedHeaders = await getHeaders();
     if (headers != null) combinedHeaders.addAll(headers);
-    
+
     Uri uri;
     if (url is String) {
       final fullUrl = url.startsWith('http') ? url : '$_baseUrl$url';
@@ -670,11 +798,9 @@ class ApiService {
     } else {
       uri = url as Uri;
     }
-    
+
     final res = await http.delete(uri, headers: combinedHeaders, body: body);
     checkResponse(res);
     return res;
   }
 }
-
-

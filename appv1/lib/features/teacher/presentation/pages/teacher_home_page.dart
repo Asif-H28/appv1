@@ -16,6 +16,7 @@ import '../widgets/notice_detail_sheet.dart';
 import 'teacher_notification_screen.dart';
 import 'teacher_settings_page.dart';
 import '../../../main_app/pages/notification_service.dart';
+import 'org_transport_status_page.dart';
 
 const Color _accent = Colors.teal;
 
@@ -275,6 +276,8 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
                     _buildClassroomsSection(),
                     const SizedBox(height: 24),
                     _buildStudentLeaveSection(),
+                    const SizedBox(height: 24),
+                    _buildTransportSection(),
                     const SizedBox(height: 24),
                     _buildNoticeSection(),
                   ],
@@ -674,6 +677,92 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
                     Icons.arrow_forward_ios_rounded,
                     size: 11,
                     color: Colors.teal,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTransportSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const HomeSectionHeader(
+          title: 'Live Transport Monitoring',
+          subtitle: 'Track school vehicles in real-time',
+        ),
+        const SizedBox(height: 10),
+        GestureDetector(
+          onTap: () {
+            if (_orgId.isEmpty) return;
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => OrgTransportStatusPage(orgId: _orgId),
+              ),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(3),
+              border: Border.all(color: Colors.grey[200]!),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  child: const Icon(
+                    Icons.directions_bus_rounded,
+                    color: Colors.orange,
+                    size: 19,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Fleet Status',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'View real-time location of all active buses',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 11.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 26,
+                  height: 26,
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 11,
+                    color: Colors.orange,
                   ),
                 ),
               ],

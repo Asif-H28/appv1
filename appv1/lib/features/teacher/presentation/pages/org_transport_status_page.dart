@@ -1,0 +1,329 @@
+import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:appv1/core/services/api_service.dart';
+import '../../../../core/constants/app_colors.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+
+class OrgTransportStatusPage extends StatefulWidget {
+  final String orgId;
+  const OrgTransportStatusPage({super.key, required this.orgId});
+
+  @override
+  State<OrgTransportStatusPage> createState() => _OrgTransportStatusPageState();
+}
+
+class _OrgTransportStatusPageState extends State<OrgTransportStatusPage> {
+  bool _isLoading = true;
+  List<dynamic> _vehicles = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchVehicles();
+  }
+
+  Future<void> _fetchVehicles() async {
+    setState(() => _isLoading = true);
+    final res = await ApiService.getOrgVehicles(widget.orgId);
+    if (mounted) {
+      setState(() {
+        _vehicles = res['vehicles'] ?? [];
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        title: const Text('Live Transport Status', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+        backgroundColor: const Color(0xFF0D9488),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded, color: Colors.white),
+            onPressed: _fetchVehicles,
+          ),
+        ],
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF0D9488)))
+          : _vehicles.isEmpty
+              ? _buildEmptyState()
+              : _buildVehicleList(),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.directions_bus_outlined, size: 64, color: Colors.grey[300]),
+          const SizedBox(height: 16),
+          Text('No vehicles found in this organization', style: TextStyle(color: Colors.grey[600], fontSize: 14)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVehicleList() {
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: _vehicles.length,
+      itemBuilder: (context, index) {
+        final v = _vehicles[index];
+        final bool isActive = v['isActive'] ?? false;
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 4, offset: const Offset(0, 2)),
+            ],
+          ),
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            leading: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: (isActive ? const Color(0xFF0D9488) : Colors.grey[400])!.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.directions_bus_rounded,
+                color: isActive ? const Color(0xFF0D9488) : Colors.grey[500],
+                size: 24,
+              ),
+            ),
+            title: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    v['vehicleName'] ?? 'Vehicle',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Color(0xFF1E293B)),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: (isActive ? Colors.green : Colors.grey[200])!.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: (isActive ? Colors.green : Colors.grey[300])!.withOpacity(0.3)),
+                  ),
+                  child: Text(
+                    isActive ? 'LIVE' : 'OFFLINE',
+                    style: TextStyle(
+                      color: isActive ? Colors.green[700] : Colors.grey[600],
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 4),
+                Text(
+                  v['vehicleNumber'] ?? '',
+                  style: const TextStyle(fontSize: 12, color: Color(0xFF64748B), fontWeight: FontWeight.w500),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Driver: ${v['driverName'] ?? 'N/A'}',
+                  style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                ),
+              ],
+            ),
+            trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Color(0xFF94A3B8)),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => VehicleMapView(vehicleId: v['vehicleId'].toString()),
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+}
+
+class VehicleMapView extends StatefulWidget {
+  final String vehicleId;
+  const VehicleMapView({super.key, required this.vehicleId});
+
+  @override
+  State<VehicleMapView> createState() => _VehicleMapViewState();
+}
+
+class _VehicleMapViewState extends State<VehicleMapView> {
+  bool _isLoading = true;
+  Map<String, dynamic>? _vehicle;
+  final MapController _mapController = MapController();
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchLocation();
+    // Refresh every 10 seconds
+    _timer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      _fetchLocation();
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _fetchLocation() async {
+    final res = await ApiService.getVehicleLocation(widget.vehicleId);
+    if (mounted && res['success']) {
+      final bool isFirstLoad = _isLoading;
+      setState(() {
+        _vehicle = res['vehicle'];
+        _isLoading = false;
+      });
+
+      if (_vehicle != null && _vehicle!['latitude'] != null) {
+        final lat = double.tryParse(_vehicle!['latitude'].toString()) ?? 0.0;
+        final lng = double.tryParse(_vehicle!['longitude'].toString()) ?? 0.0;
+
+        // Only use .move() for subsequent updates.
+        // For the first load, MapOptions.initialCenter handles the camera.
+        if (!isFirstLoad) {
+          _mapController.move(LatLng(lat, lng), 16.0);
+        }
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final lat = double.tryParse(_vehicle?['latitude']?.toString() ?? '12.9716') ?? 12.9716;
+    final lng = double.tryParse(_vehicle?['longitude']?.toString() ?? '77.5946') ?? 77.5946;
+    final bool isActive = _vehicle?['isActive'] ?? false;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(_vehicle?['vehicleName'] ?? 'Vehicle Map', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+            Text(isActive ? 'Currently Live' : 'Last Known Location', style: const TextStyle(fontSize: 11, color: Colors.white70)),
+          ],
+        ),
+        backgroundColor: const Color(0xFF0D9488),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF0D9488)))
+          : Stack(
+              children: [
+                FlutterMap(
+                  mapController: _mapController,
+                  options: MapOptions(
+                    initialCenter: LatLng(lat, lng),
+                    initialZoom: 16.0,
+                  ),
+                  children: [
+                    TileLayer(
+                      urlTemplate: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+                      subdomains: const ['a', 'b', 'c', 'd'],
+                      userAgentPackageName: 'com.example.appv1',
+                    ),
+                    MarkerLayer(
+                      markers: [
+                        Marker(
+                          point: LatLng(lat, lng),
+                          width: 60,
+                          height: 60,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Container(
+                                width: 45,
+                                height: 45,
+                                decoration: BoxDecoration(
+                                  color: (isActive ? const Color(0xFF0D9488) : Colors.grey)!.withOpacity(0.2),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              Icon(
+                                Icons.directions_bus_rounded,
+                                color: isActive ? const Color(0xFF0D9488) : Colors.grey[700],
+                                size: 36,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                Positioned(
+                  bottom: 24,
+                  left: 16,
+                  right: 16,
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))],
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                _vehicle?['driverName'] ?? 'Unknown Driver',
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF1E293B)),
+                              ),
+                              Text(
+                                _vehicle?['vehicleNumber'] ?? '',
+                                style: const TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0D9488).withOpacity(0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.phone_rounded, color: Color(0xFF0D9488), size: 20),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+}

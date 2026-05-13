@@ -13,6 +13,7 @@ import 'package:appv1/features/student/student_home_page.dart';
 import 'package:appv1/features/student/student_profile_page.dart';
 // ✅ Correct — it's in the student folder
 import 'package:appv1/features/student/student_achievements_page.dart';
+import '../teacher/presentation/pages/org_transport_status_page.dart';
 
 
 const Color _accent = Colors.teal;
@@ -30,6 +31,7 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
   int _notifCount = 0;
   String _studentId = '';
   String _classId = '';
+  String _orgId = '';
 
   @override
   void initState() {
@@ -51,6 +53,7 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
     final prefs = await SharedPreferences.getInstance();
     _studentId = prefs.getString('studentId') ?? '';
     _classId = prefs.getString('classId') ?? '';
+    _orgId = prefs.getString('orgId') ?? '';
     _fetchNotificationCount();
   }
 
@@ -220,6 +223,34 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
                         ),
                       ),
                   ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: () {
+                  if (_orgId.isEmpty) return;
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => OrgTransportStatusPage(orgId: _orgId),
+                    ),
+                  );
+                },
+                child: Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(3),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.3),
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.directions_bus_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
                 ),
               ),
             ],

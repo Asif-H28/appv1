@@ -13,6 +13,7 @@ import 'leave_request_page.dart';
 import 'notice_page.dart';
 import 'teacher_approvals_page.dart';
 import 'teachers_page.dart';
+import '../../teacher/presentation/pages/org_transport_status_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -329,6 +330,19 @@ class _HomePageState extends State<HomePage> {
           context,
           MaterialPageRoute(builder: (_) => const TeachersPage()),
         ),
+      ),
+      _QA(
+        'Transport',
+        Icons.directions_bus_rounded,
+        () {
+          if (_orgId.isEmpty) return;
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => OrgTransportStatusPage(orgId: _orgId),
+            ),
+          );
+        },
       ),
     ];
 
