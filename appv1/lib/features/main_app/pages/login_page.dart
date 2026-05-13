@@ -17,6 +17,7 @@ import '../../teacher/presentation/pages/teacher_main_screen.dart';
 import '../../teacher/presentation/pages/teacher_pending_screen.dart';
 import 'forgot_password_page.dart';
 import '../main_app_screen.dart';
+import 'driver_login_page.dart';
 import '../../../core/services/chat_socket_service.dart';
 
 class LoginPage extends StatefulWidget {
@@ -90,26 +91,49 @@ class _LoginPageState extends State<LoginPage>
                             ),
                           ),
                           SizedBox(width: 10),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'SchoolSync',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 0.4,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'SchoolSync',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.4,
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                'School Management Platform',
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(0.75),
-                                  fontSize: 10.5,
+                                Text(
+                                  'School Management Platform',
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.75),
+                                    fontSize: 10.5,
+                                  ),
                                 ),
+                              ],
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => const DriverLoginPage()),
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(3),
+                                border: Border.all(color: Colors.white.withOpacity(0.3)),
                               ),
-                            ],
+                              child: const Icon(
+                                Icons.directions_bus_rounded,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ),
                           ),
                         ],
                       ),

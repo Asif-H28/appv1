@@ -265,6 +265,42 @@ class ApiService {
     }
   }
 
+  // Fetch teachers by orgId
+  static Future<Map<String, dynamic>> fetchTeachersByOrg(String orgId) async {
+    try {
+      final url = '/teacher/org/$orgId';
+      final response = await ApiService.get(url);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return {
+          'success': true,
+          'teachers': data['teachers'] ?? [],
+        };
+      }
+      return {'success': false, 'message': 'Failed to load teachers'};
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
+
+  // Remove teacher from organization
+  static Future<Map<String, dynamic>> removeTeacher(String teacherId) async {
+    try {
+      final url = '/teacher/$teacherId';
+      final response = await ApiService.delete(url);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return {
+          'success': true,
+          'message': data['message'] ?? 'Teacher removed successfully',
+        };
+      }
+      return {'success': false, 'message': 'Failed to remove teacher'};
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
+
   // Fetch all active students in organization
   static Future<Map<String, dynamic>> fetchStudents(String orgId) async {
     try {
@@ -326,6 +362,200 @@ class ApiService {
       await ApiService.put('/chat/messages/read/$conversationId', body: '{}');
     } catch (e) {
       print('Error marking messages as read: $e');
+    }
+  }
+
+  // Appoint Transport Coordinator
+  static Future<Map<String, dynamic>> appointTransportCoordinator({
+    required String teacherId,
+    required String orgId,
+  }) async {
+    try {
+      final response = await ApiService.post(
+        '/transport/coordinators',
+        body: jsonEncode({
+          'teacherId': teacherId,
+          'orgId': orgId,
+        }),
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return {
+          'success': true,
+          'message': jsonDecode(response.body)['message'] ?? 'Coordinator appointed successfully',
+        };
+      }
+      return {
+        'success': false,
+        'message': jsonDecode(response.body)['message'] ?? 'Failed to appoint coordinator',
+      };
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
+
+  // Fetch all vehicles in organization
+  static Future<Map<String, dynamic>> fetchVehicles(String orgId) async {
+    try {
+      final url = '/transport/vehicles/$orgId';
+      final response = await ApiService.get(url);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return {
+          'success': true,
+          'vehicles': data['vehicles'] ?? [],
+        };
+      }
+      return {'success': false, 'message': 'Failed to load vehicles'};
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
+
+  // Create a new vehicle
+  static Future<Map<String, dynamic>> createVehicle({
+    required String orgId,
+    required String coordinatorId,
+    required String vehicleName,
+    required String vehicleNumber,
+    required String driverName,
+    required String driverPhoneNumber,
+  }) async {
+    try {
+      final response = await ApiService.post(
+        '/transport/vehicles',
+        body: jsonEncode({
+          'orgId': orgId,
+          'coordinatorId': coordinatorId,
+          'vehicleName': vehicleName,
+          'vehicleNumber': vehicleNumber,
+          'driverName': driverName,
+          'driverPhoneNumber': driverPhoneNumber,
+        }),
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return {
+          'success': true,
+          'message': jsonDecode(response.body)['message'] ?? 'Vehicle created successfully',
+        };
+      }
+      return {
+        'success': false,
+        'message': jsonDecode(response.body)['message'] ?? 'Failed to create vehicle',
+      };
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> updateVehicle({
+    required String vehicleId,
+    required String vehicleName,
+    required String vehicleNumber,
+    required String driverName,
+    required String driverPhoneNumber,
+  }) async {
+    try {
+      final response = await http.put(
+        Uri.parse('${ApiConstants.apiBaseUrl}/transport/vehicles/$vehicleId'),
+        headers: await getHeaders(),
+        body: jsonEncode({
+          'vehicleName': vehicleName,
+          'vehicleNumber': vehicleNumber,
+          'driverName': driverName,
+          'driverPhoneNumber': driverPhoneNumber,
+        }),
+      );
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'message': jsonDecode(response.body)['message'] ?? 'Vehicle updated successfully',
+        };
+      }
+      return {
+        'success': false,
+        'message': jsonDecode(response.body)['message'] ?? 'Failed to update vehicle',
+      };
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> deleteVehicle(String vehicleId) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('${ApiConstants.apiBaseUrl}/transport/vehicles/$vehicleId'),
+        headers: await getHeaders(),
+      );
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'message': jsonDecode(response.body)['message'] ?? 'Vehicle deleted successfully',
+        };
+      }
+      return {
+        'success': false,
+        'message': jsonDecode(response.body)['message'] ?? 'Failed to delete vehicle',
+      };
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> setupVehiclePin({
+    required String orgId,
+    required String pin,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiConstants.apiBaseUrl}/transport/setup-pin'),
+        headers: await getHeaders(),
+        body: jsonEncode({
+          'orgId': orgId,
+          'pin': pin,
+        }),
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return {
+          'success': true,
+          'message': jsonDecode(response.body)['message'] ?? 'PIN setup successful',
+        };
+      }
+      return {
+        'success': false,
+        'message': jsonDecode(response.body)['message'] ?? 'Failed to setup PIN',
+      };
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> driverLogin({
+    required String phoneNumber,
+    required String pin,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiConstants.apiBaseUrl}/transport/driver/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'phoneNumber': phoneNumber,
+          'pin': pin,
+        }),
+      );
+      final body = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        return {
+          'success': true,
+          'vehicle': body['vehicle'],
+          'message': body['message'] ?? 'Login successful',
+        };
+      }
+      return {
+        'success': false,
+        'message': body['message'] ?? 'Login failed',
+      };
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
     }
   }
 

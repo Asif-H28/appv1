@@ -1,8 +1,8 @@
 import 'package:appv1/core/constants/api_constants.dart';
 import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
+import 'package:appv1/features/main_app/pages/manage_vehicles_page.dart';
 import 'package:flutter/material.dart';
-import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -17,7 +17,9 @@ class TeacherProfileSection extends StatefulWidget {
 class _TeacherProfileSectionState extends State<TeacherProfileSection> {
   bool _loading = true;
   bool _saving = false;
+  bool _isCoordinator = false;
   String _teacherId = '';
+  String _orgId = '';
 
   final _nameCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
@@ -67,6 +69,8 @@ class _TeacherProfileSectionState extends State<TeacherProfileSection> {
         _dobCtrl.text = (t['dob'] ?? '').toString().split('T').first;
         _email = t['email'] ?? '';
         _gender = _genderOptions.contains(t['gender']) ? t['gender'] : null;
+        _isCoordinator = t['isTransportCoordinator'] ?? false;
+        _orgId = t['orgId'] ?? '';
       }
     } catch (_) {}
     if (mounted) setState(() => _loading = false);
@@ -337,45 +341,48 @@ class _TeacherProfileSectionState extends State<TeacherProfileSection> {
                 const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
-                  height: 40,
+                  height: 44,
                   child: ElevatedButton(
                     onPressed: _saving ? null : _saveProfile,
-                    style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.all(Colors.teal),
-                      foregroundColor: WidgetStateProperty.all(Colors.white),
-                      overlayColor: WidgetStateProperty.all(
-                        Colors.white.withOpacity(0.1),
-                      ),
-                      surfaceTintColor: WidgetStateProperty.all(
-                        Colors.transparent,
-                      ),
-                      elevation: WidgetStateProperty.all(0),
-                      shape: WidgetStateProperty.all(
-                        RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                      ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.teal,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
                     ),
                     child: _saving
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : const Text(
-                            'Save Changes',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              color: Colors
-                                  .white, // explicit here too as final fallback
-                            ),
-                          ),
+                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        : const Text('SAVE CHANGES', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
                   ),
                 ),
+                if (_isCoordinator) ...[
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 44,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ManageVehiclesPage(
+                              orgId: _orgId,
+                              coordinatorId: _teacherId,
+                              coordinatorName: _nameCtrl.text,
+                            ),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.directions_bus_rounded, size: 18),
+                      label: const Text('MANAGE VEHICLES', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.teal,
+                        side: const BorderSide(color: Colors.teal),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

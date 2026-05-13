@@ -12,6 +12,7 @@ import 'classrooms_page.dart';
 import 'leave_request_page.dart';
 import 'notice_page.dart';
 import 'teacher_approvals_page.dart';
+import 'teachers_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -319,6 +320,14 @@ class _HomePageState extends State<HomePage> {
         () => Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const TeacherApprovalsPage()),
+        ),
+      ),
+      _QA(
+        'Teachers',
+        Icons.supervisor_account_rounded,
+        () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const TeachersPage()),
         ),
       ),
     ];
