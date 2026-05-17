@@ -210,16 +210,18 @@ class _TeachersPageState extends State<TeachersPage> {
                     ),
                   ),
                   const SizedBox(width: 10),
-                  const Text(
-                    'ORGANIZATION TEACHERS',
-                    style: TextStyle(
-                      color: Color(0xFF1A202C),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.2,
+                  Expanded(
+                    child: const Text(
+                      'ORGANIZATION TEACHERS',
+                      style: TextStyle(
+                        color: Color(0xFF1A202C),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.2,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const Spacer(),
                   if (!_isLoading)
                     Text(
                       '${_filteredTeachers.length} Members',
@@ -444,14 +446,14 @@ class _TeachersPageState extends State<TeachersPage> {
     final teacher = _selectedTeacher!;
 
     return Drawer(
-      width: MediaQuery.of(context).size.width * 0.85,
+      width: MediaQuery.of(context).size.width,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       child: Column(
         children: [
           _buildDrawerHeader(teacher),
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 140),
               children: _buildProfileDetails(teacher),
             ),
           ),
@@ -519,56 +521,6 @@ class _TeachersPageState extends State<TeachersPage> {
     final name = teacher['name'] ?? 'Unknown';
     final teacherId = teacher['teacherId'] ?? '';
     return [
-      Row(
-        children: [
-          Expanded(
-            child: ElevatedButton.icon(
-              onPressed: () {
-                // Placeholder for Edit Profile
-              },
-              icon: const Icon(Icons.edit_note_rounded, size: 18),
-              label: const Text('Edit Profile'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-            ),
-          ),
-          if (teacher['isTransportCoordinator'] == true) ...[
-            const SizedBox(width: 12),
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ManageVehiclesPage(
-                        orgId: _orgId,
-                        coordinatorId: teacher['teacherId'],
-                        coordinatorName: teacher['name'] ?? 'Coordinator',
-                      ),
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.directions_bus_rounded, size: 18),
-                label: const Text('Vehicles'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.teal,
-                  side: const BorderSide(color: Colors.teal),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
-      const SizedBox(height: 24),
-      const Divider(),
-      const SizedBox(height: 24),
       _detailItem('Full Name', name, Icons.person_outline),
       _detailItem('Email Address', teacher['email'] ?? 'N/A', Icons.email_outlined),
       _detailItem('Phone Number', teacher['phoneNumber'] ?? 'N/A', Icons.phone_outlined),
@@ -576,44 +528,54 @@ class _TeachersPageState extends State<TeachersPage> {
       _detailItem('Date of Birth', teacher['dob'] ?? 'N/A', Icons.cake_outlined),
       _detailItem('Address', teacher['address'] ?? 'N/A', Icons.location_on_outlined),
       _detailItem('Joined On', _formatDate(teacher['createdAt']), Icons.calendar_today_outlined),
-      const SizedBox(height: 32),
+      
+      const SizedBox(height: 24),
       const Text(
         'ROLES & PERMISSIONS',
         style: TextStyle(
           color: Colors.teal,
-          fontSize: 12,
+          fontSize: 11,
           fontWeight: FontWeight.bold,
           letterSpacing: 1.2,
         ),
       ),
-      const SizedBox(height: 16),
-      if (teacher['isTransportCoordinator'] == true)
+      const SizedBox(height: 12),
+      
+      if (teacher['isTransportCoordinator'] == true) ...[
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: Colors.teal.withOpacity(0.05),
+            color: Colors.teal.withOpacity(0.04),
             borderRadius: BorderRadius.circular(3),
             border: Border.all(color: Colors.teal.withOpacity(0.2)),
           ),
           child: Row(
             children: [
-              const Icon(Icons.verified_user_rounded, color: Colors.teal, size: 20),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.teal.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(3),
+                ),
+                child: const Icon(Icons.verified_user_rounded, color: Colors.teal, size: 18),
+              ),
               const SizedBox(width: 12),
               const Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Role',
-                      style: TextStyle(color: Color(0xFF718096), fontSize: 11, fontWeight: FontWeight.w500),
-                    ),
-                    Text(
                       'Transport Coordinator',
                       style: TextStyle(
-                        color: Color(0xFF2D3748),
+                        color: Color(0xFF1A202C),
                         fontWeight: FontWeight.bold,
-                        fontSize: 14,
+                        fontSize: 13,
                       ),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'Manages organization vehicles',
+                      style: TextStyle(color: Color(0xFF718096), fontSize: 11),
                     ),
                   ],
                 ),
@@ -631,44 +593,102 @@ class _TeachersPageState extends State<TeachersPage> {
               ),
             ],
           ),
-        )
-      else
-        ElevatedButton.icon(
-          onPressed: () => _appointCoordinator(teacherId, name),
-          icon: const Icon(Icons.directions_bus_rounded, size: 18),
-          label: const Text('APPOINT AS TRANSPORT COORDINATOR'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.teal,
-            foregroundColor: Colors.white,
-            elevation: 0,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+        ),
+
+      ] else
+        GestureDetector(
+          onTap: () => _appointCoordinator(teacherId, name),
+          child: Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(3),
+              border: Border.all(color: Colors.teal.withOpacity(0.3)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.directions_bus_rounded, color: Colors.teal, size: 18),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Appoint Transport Coordinator',
+                        style: TextStyle(
+                          color: Colors.teal,
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        'Grant permission to manage vehicles',
+                        style: TextStyle(color: Color(0xFF718096), fontSize: 11),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: Colors.teal),
+              ],
+            ),
           ),
         ),
-      const SizedBox(height: 40),
-      const Divider(),
-      const SizedBox(height: 20),
+
+      const SizedBox(height: 32),
       const Text(
         'DANGER ZONE',
         style: TextStyle(
           color: Colors.redAccent,
-          fontSize: 12,
+          fontSize: 11,
           fontWeight: FontWeight.bold,
           letterSpacing: 1.2,
         ),
       ),
-      const SizedBox(height: 16),
-      ElevatedButton.icon(
-        onPressed: () => _removeTeacher(teacherId, name),
-        icon: const Icon(Icons.person_remove_rounded, size: 18),
-        label: const Text('REMOVE FROM ORGANIZATION'),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.redAccent,
-          elevation: 0,
-          side: const BorderSide(color: Colors.redAccent),
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+      const SizedBox(height: 12),
+      GestureDetector(
+        onTap: () => _removeTeacher(teacherId, name),
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.redAccent.withOpacity(0.04),
+            borderRadius: BorderRadius.circular(3),
+            border: Border.all(color: Colors.redAccent.withOpacity(0.2)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.redAccent.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(3),
+                ),
+                child: const Icon(Icons.person_remove_rounded, color: Colors.redAccent, size: 18),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Remove from Organization',
+                      style: TextStyle(
+                        color: Colors.redAccent,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'Revoke access permanently',
+                      style: TextStyle(color: Color(0xFF718096), fontSize: 11),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: Colors.redAccent),
+            ],
+          ),
         ),
       ),
     ];

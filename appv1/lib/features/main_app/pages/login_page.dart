@@ -518,7 +518,7 @@ class __AdminLoginTabState extends State<_AdminLoginTab> {
         );
 
         if (!mounted) return;
-        setState(() => _isLoading = false);
+        // setState delayed to prevent spinner hiding early
 
         // â”€â”€ Save FCM token for admin â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         final orgId = org['orgId']?.toString() ?? '';
@@ -535,6 +535,8 @@ class __AdminLoginTabState extends State<_AdminLoginTab> {
 
         // â”€â”€ Init notification listeners â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         NotificationService.initListeners(context);
+
+        if (mounted) setState(() => _isLoading = false);
 
         _showSnack(context, 'Welcome back, Admin!', Colors.green[600]!);
         Navigator.pushReplacement(
@@ -935,7 +937,7 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
         }),
       );
       if (!mounted) return;
-      setState(() => _isLoading = false);
+      // setState delayed for Student login too
 
       // â”€â”€ LOG 1: Raw HTTP response â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       debugPrint('');
@@ -957,12 +959,14 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
         body = jsonDecode(res.body) as Map<String, dynamic>;
       } catch (_) {
         debugPrint('âŒ JSON decode failed: ${res.body}');
+        setState(() => _isLoading = false);
         _showSnack(context, 'Unexpected server response.', Colors.red[600]!);
         return;
       }
 
       if (res.statusCode != 200 || body['success'] != true) {
         debugPrint('âŒ Login failed: ${body['message'] ?? body['error']}');
+        setState(() => _isLoading = false);
         _showSnack(
           context,
           body['message']?.toString() ??
@@ -1048,6 +1052,7 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
       );
 
       if (!mounted) return;
+      setState(() => _isLoading = false);
 
       final joinStatus = student['joinStatus']?.toString() ?? 'none';
       final classId = student['classId']?.toString() ?? '';

@@ -4,6 +4,7 @@ import 'package:appv1/core/services/api_service.dart';
 import '../../../../core/constants/app_colors.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OrgTransportStatusPage extends StatefulWidget {
   final String orgId;
@@ -76,7 +77,7 @@ class _OrgTransportStatusPageState extends State<OrgTransportStatusPage> {
 
   Widget _buildVehicleList() {
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 140),
       itemCount: _vehicles.length,
       itemBuilder: (context, index) {
         final v = _vehicles[index];
@@ -176,10 +177,17 @@ class _VehicleMapViewState extends State<VehicleMapView> {
   Map<String, dynamic>? _vehicle;
   final MapController _mapController = MapController();
   Timer? _timer;
+  
+  bool _isRefreshDisabled = false;
+  int _cooldownRemaining = 0;
+  Timer? _refreshTimer;
+  static const int _cooldownSeconds = 150; // 2 minutes 30 seconds
+  static const String _prefsKeyPrefix = 'map_refresh_cooldown_';
 
   @override
   void initState() {
     super.initState();
+    _checkRefreshCooldown();
     _fetchLocation();
     // Refresh every 10 seconds
     _timer = Timer.periodic(const Duration(seconds: 10), (timer) {
@@ -187,9 +195,56 @@ class _VehicleMapViewState extends State<VehicleMapView> {
     });
   }
 
+  Future<void> _checkRefreshCooldown() async {
+    final prefs = await SharedPreferences.getInstance();
+    final lastRefreshStr = prefs.getString('$_prefsKeyPrefix${widget.vehicleId}');
+    if (lastRefreshStr != null) {
+      final lastRefresh = DateTime.parse(lastRefreshStr);
+      final difference = DateTime.now().difference(lastRefresh).inSeconds;
+      if (difference < _cooldownSeconds) {
+        final remaining = _cooldownSeconds - difference;
+        _startRefreshTimer(remaining);
+      }
+    }
+  }
+
+  void _startRefreshTimer(int seconds) {
+    _refreshTimer?.cancel();
+    setState(() {
+      _isRefreshDisabled = true;
+      _cooldownRemaining = seconds;
+    });
+    
+    _refreshTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      setState(() {
+        if (_cooldownRemaining > 0) {
+          _cooldownRemaining--;
+        } else {
+          _isRefreshDisabled = false;
+          timer.cancel();
+        }
+      });
+    });
+  }
+
+  Future<void> _handleRefresh() async {
+    if (_isRefreshDisabled) return;
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('$_prefsKeyPrefix${widget.vehicleId}', DateTime.now().toIso8601String());
+    
+    _startRefreshTimer(_cooldownSeconds);
+    _fetchLocation();
+  }
+
   @override
   void dispose() {
     _timer?.cancel();
+    _refreshTimer?.cancel();
     super.dispose();
   }
 
@@ -235,6 +290,25 @@ class _VehicleMapViewState extends State<VehicleMapView> {
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          if (_isRefreshDisabled)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: Text(
+                  '${(_cooldownRemaining ~/ 60).toString().padLeft(2, '0')}:${(_cooldownRemaining % 60).toString().padLeft(2, '0')}',
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                ),
+              ),
+            ),
+          IconButton(
+            icon: Icon(
+              Icons.refresh_rounded, 
+              color: _isRefreshDisabled ? Colors.white38 : Colors.white
+            ),
+            onPressed: _isRefreshDisabled ? null : _handleRefresh,
+          ),
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: Color(0xFF0D9488)))
@@ -280,47 +354,6 @@ class _VehicleMapViewState extends State<VehicleMapView> {
                       ],
                     ),
                   ],
-                ),
-                Positioned(
-                  bottom: 24,
-                  left: 16,
-                  right: 16,
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))],
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                _vehicle?['driverName'] ?? 'Unknown Driver',
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF1E293B)),
-                              ),
-                              Text(
-                                _vehicle?['vehicleNumber'] ?? '',
-                                style: const TextStyle(fontSize: 13, color: Color(0xFF64748B)),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF0D9488).withOpacity(0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.phone_rounded, color: Color(0xFF0D9488), size: 20),
-                        ),
-                      ],
-                    ),
-                  ),
                 ),
               ],
             ),

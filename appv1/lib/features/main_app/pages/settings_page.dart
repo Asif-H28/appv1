@@ -280,12 +280,14 @@ class _SettingsPageState extends State<SettingsPage> {
                 color: _textSecondary,
               ),
               const SizedBox(width: 7),
-              Text(
-                'Renewal Date: $_renewalDate',
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: _textSecondary,
-                  fontWeight: FontWeight.w500,
+              Expanded(
+                child: Text(
+                  'Renewal Date: $_renewalDate',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: _textSecondary,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ],
