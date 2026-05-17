@@ -499,76 +499,13 @@ class __CreateOrgTabState extends State<_CreateOrgTab> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: EdgeInsets.fromLTRB(14, 16, 14, 40),
+      padding: EdgeInsets.fromLTRB(14, 16, 14, 140),
       child: Form(
         key: _formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // â”€â”€ Info banner â”€â”€
-            Container(
-              padding: EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: _accent.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(3),
-                border: Border.all(color: _accent.withOpacity(0.2)),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(7),
-                    decoration: BoxDecoration(
-                      color: _accent.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(3),
-                    ),
-                    child: Icon(
-                      Icons.add_business_rounded,
-                      color: _accent,
-                      size: 16,
-                    ),
-                  ),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'New Organization',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                            color: AppColors.textPrimary,
-                          ),
-                        ),
-                        Text(
-                          'You will be the admin of this org',
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 11,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: _accent.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(3),
-                    ),
-                    child: Text(
-                      'Admin',
-                      style: TextStyle(
-                        color: _accent,
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(height: 16),
+
 
             _fieldLabel('EMAIL ADDRESS'),
             SizedBox(height: 6),
@@ -790,7 +727,7 @@ class __JoinOrgTabState extends State<_JoinOrgTab> {
             onSubmitted: _search,
             onChanged: (v) => setState(() {}),
             decoration: InputDecoration(
-              hintText: 'Search by name, city or phone...',
+              hintText: 'Search by organization name...',
               hintStyle: TextStyle(
                 color: AppColors.textSecondary.withOpacity(0.5),
                 fontSize: 13,
@@ -936,7 +873,7 @@ class __JoinOrgTabState extends State<_JoinOrgTab> {
             ),
             SizedBox(height: 4),
             Text(
-              'Try a different name, city or phone number',
+              'Try a different organization name',
               style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
             ),
           ],
@@ -944,7 +881,7 @@ class __JoinOrgTabState extends State<_JoinOrgTab> {
       );
     }
     return ListView.separated(
-      padding: EdgeInsets.fromLTRB(14, 4, 14, 32),
+      padding: EdgeInsets.fromLTRB(14, 4, 14, 140),
       itemCount: _results.length,
       separatorBuilder: (_, __) => SizedBox(height: 8),
       itemBuilder: (context, i) => _OrgResultCard(org: _results[i]),
@@ -953,7 +890,7 @@ class __JoinOrgTabState extends State<_JoinOrgTab> {
 
   Widget _buildEmptyState() {
     return SingleChildScrollView(
-      padding: EdgeInsets.fromLTRB(14, 8, 14, 32),
+      padding: EdgeInsets.fromLTRB(14, 8, 14, 140),
       child: Column(
         children: [
           // â”€â”€ Illustration card â”€â”€
@@ -986,7 +923,7 @@ class __JoinOrgTabState extends State<_JoinOrgTab> {
                 ),
                 SizedBox(height: 6),
                 Text(
-                  'Search by organization name, city,\nor phone number to find and join.',
+                  'Search by organization name\nto find and join.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: AppColors.textSecondary,
@@ -1005,18 +942,7 @@ class __JoinOrgTabState extends State<_JoinOrgTab> {
             'Search by name',
             'e.g. "St. Mary\'s School"',
           ),
-          SizedBox(height: 8),
-          _searchTip(
-            Icons.location_city_outlined,
-            'Search by city',
-            'e.g. "Bengaluru" or "Mumbai"',
-          ),
-          SizedBox(height: 8),
-          _searchTip(
-            Icons.phone_outlined,
-            'Search by phone',
-            'e.g. "+919876543210"',
-          ),
+
         ],
       ),
     );

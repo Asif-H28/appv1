@@ -228,15 +228,18 @@ class _LoginPageState extends State<LoginPage>
     return Tab(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 13),
-          SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontWeight: active ? FontWeight.bold : FontWeight.w500,
-              fontSize: 12,
+          const SizedBox(width: 4),
+          Flexible(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontWeight: active ? FontWeight.bold : FontWeight.w500,
+                fontSize: 12,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
             ),
           ),
         ],
