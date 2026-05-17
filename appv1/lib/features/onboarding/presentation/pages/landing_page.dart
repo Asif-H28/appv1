@@ -269,8 +269,8 @@ class _LandingPageState extends State<LandingPage>
 
                       Text(
                         _selectedTab == 0
-                            ? 'Create Organization ðŸ«'
-                            : 'Join Organization ðŸ”',
+                            ? 'Create Organization'
+                            : 'Join Organization',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 20,
@@ -456,8 +456,13 @@ class __CreateOrgTabState extends State<_CreateOrgTab> {
       } else {
         setState(() => _isLoading = false);
         final msg = result['message']?.toString() ?? 'Something went wrong.';
-        final isRegistered = msg.toLowerCase().contains('email already registered');
-        _showErrorDialog(msg, title: isRegistered ? 'Account Exists' : 'Registration Error');
+        final isRegistered = msg.toLowerCase().contains(
+          'email already registered',
+        );
+        _showErrorDialog(
+          msg,
+          title: isRegistered ? 'Account Exists' : 'Registration Error',
+        );
       }
     } catch (e) {
       if (!mounted) return;
@@ -480,16 +485,20 @@ class __CreateOrgTabState extends State<_CreateOrgTab> {
           children: [
             Icon(Icons.error_outline_rounded, color: Colors.red[600]),
             SizedBox(width: 8),
-            Text(title ?? 'Registration Error',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            Text(
+              title ?? 'Registration Error',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
           ],
         ),
         content: Text(message, style: TextStyle(fontSize: 13)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('OK',
-                style: TextStyle(color: Colors.teal, fontWeight: FontWeight.bold)),
+            child: Text(
+              'OK',
+              style: TextStyle(color: Colors.teal, fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -505,8 +514,6 @@ class __CreateOrgTabState extends State<_CreateOrgTab> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
-
             _fieldLabel('EMAIL ADDRESS'),
             SizedBox(height: 6),
             TextFormField(
@@ -581,14 +588,19 @@ class __CreateOrgTabState extends State<_CreateOrgTab> {
               controller: _licenseCtrl,
               cursorColor: _accent,
               maxLength: 16,
-              style: TextStyle(fontSize: 13, color: AppColors.textPrimary, letterSpacing: 1.5),
+              style: TextStyle(
+                fontSize: 13,
+                color: AppColors.textPrimary,
+                letterSpacing: 1.5,
+              ),
               decoration: _fieldDeco(
                 hint: 'XXXX-XXXX-XXXX-XXXX',
                 icon: Icons.vpn_key_outlined,
               ).copyWith(counterText: ''),
               validator: (v) {
                 if (v == null || v.isEmpty) return 'License key is required';
-                if (v.trim().length != 16) return 'Must be exactly 16 characters';
+                if (v.trim().length != 16)
+                  return 'Must be exactly 16 characters';
                 return null;
               },
             ),
@@ -942,7 +954,6 @@ class __JoinOrgTabState extends State<_JoinOrgTab> {
             'Search by name',
             'e.g. "St. Mary\'s School"',
           ),
-
         ],
       ),
     );
@@ -1146,7 +1157,12 @@ class _RoleSelectionSheet extends StatelessWidget {
         color: AppColors.background,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      padding: EdgeInsets.fromLTRB(16, 10, 16, 32 + MediaQuery.of(context).padding.bottom),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        10,
+        16,
+        32 + MediaQuery.of(context).padding.bottom,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -1453,10 +1469,18 @@ class __TeacherRegisterSheetState extends State<_TeacherRegisterSheet> {
 
       if (regRes.statusCode != 200 && regRes.statusCode != 201) {
         setState(() => _isLoading = false);
-        final errorMessage = regBody['error'] ?? regBody['message'] ?? 'Registration failed. Please try again.';
+        final errorMessage =
+            regBody['error'] ??
+            regBody['message'] ??
+            'Registration failed. Please try again.';
         final msg = errorMessage.toString();
-        final isRegistered = msg.toLowerCase().contains('email already registered');
-        _showErrorDialog(msg, title: isRegistered ? 'Account Exists' : 'Registration Error');
+        final isRegistered = msg.toLowerCase().contains(
+          'email already registered',
+        );
+        _showErrorDialog(
+          msg,
+          title: isRegistered ? 'Account Exists' : 'Registration Error',
+        );
         return;
       }
 
@@ -1474,9 +1498,7 @@ class __TeacherRegisterSheetState extends State<_TeacherRegisterSheet> {
       }
 
       await http.post(
-        Uri.parse(
-          '${ApiConstants.apiBaseUrl}/teacher/$teacherId/join-request',
-        ),
+        Uri.parse('${ApiConstants.apiBaseUrl}/teacher/$teacherId/join-request'),
         headers: await ApiService.getHeaders(),
       );
 
@@ -1514,14 +1536,20 @@ class __TeacherRegisterSheetState extends State<_TeacherRegisterSheet> {
           children: [
             Icon(Icons.error_outline_rounded, color: Colors.red[600]),
             SizedBox(width: 8),
-            Text(title ?? 'Registration Error', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            Text(
+              title ?? 'Registration Error',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
           ],
         ),
         content: Text(message, style: TextStyle(fontSize: 13)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('OK', style: TextStyle(color: _accent, fontWeight: FontWeight.bold)),
+            child: Text(
+              'OK',
+              style: TextStyle(color: _accent, fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -1537,7 +1565,12 @@ class __TeacherRegisterSheetState extends State<_TeacherRegisterSheet> {
         color: AppColors.background,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      padding: EdgeInsets.fromLTRB(16, 10, 16, 32 + bottomInset + MediaQuery.of(context).padding.bottom),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        10,
+        16,
+        32 + bottomInset + MediaQuery.of(context).padding.bottom,
+      ),
       child: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -1735,4 +1768,3 @@ class __TeacherRegisterSheetState extends State<_TeacherRegisterSheet> {
     );
   }
 }
-
