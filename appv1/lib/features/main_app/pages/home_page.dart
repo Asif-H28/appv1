@@ -354,7 +354,7 @@ class _HomePageState extends State<HomePage> {
         crossAxisCount: 2,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
-        childAspectRatio: 1.55,
+        childAspectRatio: 1.45,
       ),
       itemCount: items.length,
       itemBuilder: (_, i) => QuickBtn(item: items[i]),

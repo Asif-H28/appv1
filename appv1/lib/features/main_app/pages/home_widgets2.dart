@@ -28,14 +28,17 @@ class _QuickBtnState extends State<QuickBtn> {
 
   // Builds the uppercase label with uniform teal color
   Widget _styledLabel(String label) {
-    return Text(
-      label.toUpperCase(),
-      textAlign: TextAlign.center,
-      style: const TextStyle(
-        color: _teal,
-        fontWeight: FontWeight.w800,
-        fontSize: 11,
-        letterSpacing: 1.1,
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Text(
+        label.toUpperCase(),
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          color: _teal,
+          fontWeight: FontWeight.w800,
+          fontSize: 11,
+          letterSpacing: 1.1,
+        ),
       ),
     );
   }
@@ -68,7 +71,7 @@ class _QuickBtnState extends State<QuickBtn> {
               ),
             ],
           ),
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -85,7 +88,7 @@ class _QuickBtnState extends State<QuickBtn> {
                 alignment: Alignment.center,
                 child: CustomPaint(painter: painter, size: const Size(22, 22)),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               // Uppercase teal label with orange accent letter
               _styledLabel(label),
             ],

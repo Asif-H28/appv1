@@ -387,6 +387,34 @@ class ApiService {
     }
   }
 
+  // Remove Transport Coordinator
+  static Future<Map<String, dynamic>> removeTransportCoordinator({
+    required String teacherId,
+    required String orgId,
+  }) async {
+    try {
+      final response = await ApiService.delete(
+        '/transport/coordinators/$orgId/$teacherId',
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return {
+          'success': true,
+          'message':
+              jsonDecode(response.body)['message'] ??
+              'Coordinator removed successfully',
+        };
+      }
+      return {
+        'success': false,
+        'message':
+            jsonDecode(response.body)['message'] ??
+            'Failed to remove coordinator',
+      };
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
+
   // Fetch all vehicles in organization
   static Future<Map<String, dynamic>> fetchVehicles(String orgId) async {
     try {

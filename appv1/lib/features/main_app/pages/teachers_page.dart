@@ -146,9 +146,9 @@ class _TeachersPageState extends State<TeachersPage> {
     }
   }
 
-  Future<void> _appointCoordinator(String teacherId, String name) async {
+  Future<void> _appointCoordinator(BuildContext drawerContext, String teacherId, String name) async {
     showDialog(
-      context: context,
+      context: drawerContext,
       barrierDismissible: false,
       builder: (_) => const Center(child: CircularProgressIndicator(color: Colors.teal)),
     );
@@ -159,19 +159,90 @@ class _TeachersPageState extends State<TeachersPage> {
     );
 
     if (!mounted) return;
-    Navigator.pop(context); // Close loading dialog
+    Navigator.pop(drawerContext); // Close loading dialog
 
     if (result['success']) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(drawerContext).showSnackBar(
         SnackBar(
           content: Text(result['message']),
           backgroundColor: Colors.teal,
           behavior: SnackBarBehavior.floating,
         ),
       );
+      setState(() {
+        if (_selectedTeacher != null && _selectedTeacher!['teacherId'] == teacherId) {
+          _selectedTeacher!['isTransportCoordinator'] = true;
+        }
+      });
       _fetchTeachers(); // Refresh to update isTransportCoordinator status
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
+      ScaffoldMessenger.of(drawerContext).showSnackBar(
+        SnackBar(
+          content: Text(result['message']),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  Future<void> _removeCoordinator(BuildContext drawerContext, String teacherId, String name) async {
+    final confirmed = await showDialog<bool>(
+      context: drawerContext,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+        title: const Text('Remove Coordinator', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: Text('Are you sure you want to remove $name as a Transport Coordinator?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+            ),
+            child: const Text('Remove'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    showDialog(
+      context: drawerContext,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator(color: Colors.teal)),
+    );
+
+    final result = await ApiService.removeTransportCoordinator(
+      teacherId: teacherId,
+      orgId: _orgId,
+    );
+
+    if (!mounted) return;
+    Navigator.pop(drawerContext); // Close loading dialog
+
+    if (result['success']) {
+      ScaffoldMessenger.of(drawerContext).showSnackBar(
+        SnackBar(
+          content: Text(result['message']),
+          backgroundColor: Colors.teal,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      setState(() {
+        if (_selectedTeacher != null && _selectedTeacher!['teacherId'] == teacherId) {
+          _selectedTeacher!['isTransportCoordinator'] = false;
+        }
+      });
+      _fetchTeachers(); // Refresh list
+    } else {
+      ScaffoldMessenger.of(drawerContext).showSnackBar(
         SnackBar(
           content: Text(result['message']),
           backgroundColor: Colors.redAccent,
@@ -448,16 +519,25 @@ class _TeachersPageState extends State<TeachersPage> {
     return Drawer(
       width: MediaQuery.of(context).size.width,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-      child: Column(
-        children: [
-          _buildDrawerHeader(teacher),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 140),
-              children: _buildProfileDetails(teacher),
-            ),
+      child: ScaffoldMessenger(
+        child: Scaffold(
+          backgroundColor: const Color(0xFFF8FAFC),
+          body: Builder(
+            builder: (drawerContext) {
+              return Column(
+                children: [
+                  _buildDrawerHeader(teacher),
+                  Expanded(
+                    child: ListView(
+                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 140),
+                      children: _buildProfileDetails(drawerContext, teacher),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
-        ],
+        ),
       ),
     );
   }
@@ -517,7 +597,7 @@ class _TeachersPageState extends State<TeachersPage> {
     );
   }
 
-  List<Widget> _buildProfileDetails(Map<String, dynamic> teacher) {
+  List<Widget> _buildProfileDetails(BuildContext drawerContext, Map<String, dynamic> teacher) {
     final name = teacher['name'] ?? 'Unknown';
     final teacherId = teacher['teacherId'] ?? '';
     return [
@@ -549,46 +629,71 @@ class _TeachersPageState extends State<TeachersPage> {
             borderRadius: BorderRadius.circular(3),
             border: Border.all(color: Colors.teal.withOpacity(0.2)),
           ),
-          child: Row(
+          child: Column(
             children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.teal.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(3),
-                ),
-                child: const Icon(Icons.verified_user_rounded, color: Colors.teal, size: 18),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.teal.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                    child: const Icon(Icons.verified_user_rounded, color: Colors.teal, size: 18),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Transport Coordinator',
+                          style: TextStyle(
+                            color: Color(0xFF1A202C),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'Manages organization vehicles',
+                          style: TextStyle(color: Color(0xFF718096), fontSize: 11),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.teal,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                    child: const Text(
+                      'ACTIVE',
+                      style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              const SizedBox(height: 12),
+              Divider(height: 1, color: Colors.teal.withOpacity(0.15)),
+              const SizedBox(height: 12),
+              GestureDetector(
+                onTap: () => _removeCoordinator(drawerContext, teacherId, name),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    Icon(Icons.remove_circle_outline_rounded, color: Colors.redAccent[700], size: 16),
+                    const SizedBox(width: 6),
                     Text(
-                      'Transport Coordinator',
+                      'Remove Transport Coordinator',
                       style: TextStyle(
-                        color: Color(0xFF1A202C),
+                        color: Colors.redAccent[700],
                         fontWeight: FontWeight.bold,
-                        fontSize: 13,
+                        fontSize: 12,
                       ),
                     ),
-                    SizedBox(height: 2),
-                    Text(
-                      'Manages organization vehicles',
-                      style: TextStyle(color: Color(0xFF718096), fontSize: 11),
-                    ),
                   ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.teal,
-                  borderRadius: BorderRadius.circular(3),
-                ),
-                child: const Text(
-                  'ACTIVE',
-                  style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -596,44 +701,44 @@ class _TeachersPageState extends State<TeachersPage> {
         ),
 
       ] else
-        GestureDetector(
-          onTap: () => _appointCoordinator(teacherId, name),
-          child: Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(3),
-              border: Border.all(color: Colors.teal.withOpacity(0.3)),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.directions_bus_rounded, color: Colors.teal, size: 18),
-                const SizedBox(width: 12),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Appoint Transport Coordinator',
-                        style: TextStyle(
-                          color: Colors.teal,
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                        ),
+      GestureDetector(
+        onTap: () => _appointCoordinator(drawerContext, teacherId, name),
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(3),
+            border: Border.all(color: Colors.teal.withOpacity(0.3)),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.directions_bus_rounded, color: Colors.teal, size: 18),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Appoint Transport Coordinator',
+                      style: TextStyle(
+                        color: Colors.teal,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
                       ),
-                      SizedBox(height: 2),
-                      Text(
-                        'Grant permission to manage vehicles',
-                        style: TextStyle(color: Color(0xFF718096), fontSize: 11),
-                      ),
-                    ],
-                  ),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'Grant permission to manage vehicles',
+                      style: TextStyle(color: Color(0xFF718096), fontSize: 11),
+                    ),
+                  ],
                 ),
-                const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: Colors.teal),
-              ],
-            ),
+              ),
+              const Icon(Icons.arrow_forward_ios_rounded, size: 12, color: Colors.teal),
+            ],
           ),
         ),
+      ),
 
       const SizedBox(height: 32),
       const Text(
