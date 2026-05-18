@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'core/services/update_service.dart';
 import 'core/theme/app_theme.dart';
+import 'core/network/dio_client.dart';
 
 import 'core/constants/app_colors.dart';
 import 'features/main_app/pages/login_page.dart';
@@ -37,7 +38,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'School Admin',
       theme: appTheme(),
-      navigatorKey: navigatorKey,
+      navigatorKey: DioClient.navigatorKey,
       home: AnnotatedRegion<SystemUiOverlayStyle>(
         value: const SystemUiOverlayStyle(
           // Status bar

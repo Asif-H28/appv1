@@ -2,7 +2,7 @@ import 'package:appv1/core/constants/api_constants.dart';
 import 'package:appv1/core/services/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:appv1/core/services/api_service.dart';
-import 'package:http/http.dart' as http;
+import 'package:appv1/core/network/dio_http_adapter.dart' as http;
 import 'dart:convert';
 import '../../../../core/constants/app_colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';

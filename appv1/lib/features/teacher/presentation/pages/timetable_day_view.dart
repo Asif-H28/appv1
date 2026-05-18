@@ -1,7 +1,7 @@
 import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:appv1/core/network/dio_http_adapter.dart' as http;
 import '../../../../../core/constants/app_colors.dart';
 import 'timetable_slot_edit_sheet.dart';
 

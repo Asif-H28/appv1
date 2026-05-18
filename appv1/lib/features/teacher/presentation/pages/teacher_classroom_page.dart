@@ -3,7 +3,7 @@ import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:appv1/core/services/api_service.dart';
-import 'package:http/http.dart' as http;
+import 'package:appv1/core/network/dio_http_adapter.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../widgets/classroom_card.dart';
@@ -22,6 +22,7 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
   String _orgId = '';
   bool _isLoading = true;
   bool _hasError = false;
+  String _errorDetails = '';
   List<Map<String, dynamic>> _classrooms = [];
 
   @override
@@ -42,12 +43,14 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
       setState(() {
         _isLoading = false;
         _hasError = true;
+        _errorDetails = 'Teacher ID and Org ID are both empty.';
       });
       return;
     }
     setState(() {
       _isLoading = true;
       _hasError = false;
+      _errorDetails = '';
     });
     try {
       List<dynamic> raw = [];
@@ -92,15 +95,17 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
 
       if (!mounted) return;
       setState(() {
-        _classrooms = raw.map((e) => e as Map<String, dynamic>).toList();
+        _classrooms = raw.map((e) => Map<String, dynamic>.from(e as Map)).toList();
         _isLoading = false;
         _hasError = false;
       });
-    } catch (_) {
+    } catch (e, st) {
+      debugPrint('[FetchClassrooms] ❌ EXCEPTION: $e\n$st');
       if (!mounted) return;
       setState(() {
         _isLoading = false;
         _hasError = true;
+        _errorDetails = '$e\n$st';
       });
     }
   }
@@ -468,7 +473,7 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
   );
 
   Widget _buildError() => Center(
-    child: Padding(
+    child: SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -488,6 +493,28 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
             'Check your connection and try again.',
             style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
           ),
+          if (_errorDetails.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Container(
+              constraints: const BoxConstraints(maxHeight: 180),
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.red[50],
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: Colors.red[100]!),
+              ),
+              child: SingleChildScrollView(
+                child: SelectableText(
+                  _errorDetails,
+                  style: TextStyle(
+                    color: Colors.red[700],
+                    fontSize: 10,
+                    fontFamily: 'monospace',
+                  ),
+                ),
+              ),
+            ),
+          ],
           const SizedBox(height: 18),
           SizedBox(
             height: 36,

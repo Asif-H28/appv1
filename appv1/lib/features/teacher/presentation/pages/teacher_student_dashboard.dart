@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:appv1/core/services/api_service.dart';
 import 'package:appv1/core/services/api_service.dart';
-import 'package:http/http.dart' as http;
+import 'package:appv1/core/network/dio_http_adapter.dart' as http;
 
 const Color _accent = Colors.teal;
 const String _base = '${ApiConstants.baseUrl}';

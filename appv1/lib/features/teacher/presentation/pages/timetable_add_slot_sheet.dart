@@ -3,7 +3,7 @@ import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:appv1/core/services/api_service.dart';
-import 'package:http/http.dart' as http;
+import 'package:appv1/core/network/dio_http_adapter.dart' as http;
 import '../../../../../core/constants/app_colors.dart';
 
 const Color _addAccent = Colors.teal;
@@ -415,6 +415,9 @@ class _TimetableAddSlotSheetState extends State<TimetableAddSlotSheet> {
     final color = _typeColor(_selectedType);
 
     return Container(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.9,
+      ),
       padding: EdgeInsets.only(bottom: bottomPad),
       decoration: BoxDecoration(
         color: AppColors.background,
@@ -499,9 +502,10 @@ class _TimetableAddSlotSheetState extends State<TimetableAddSlotSheet> {
           ),
 
           // Body
-          SingleChildScrollView(
-            // After
-            padding: EdgeInsets.fromLTRB(
+          Flexible(
+            child: SingleChildScrollView(
+              // After
+              padding: EdgeInsets.fromLTRB(
               16,
               16,
               16,
@@ -711,6 +715,7 @@ class _TimetableAddSlotSheetState extends State<TimetableAddSlotSheet> {
                 ),
               ],
             ),
+          ),
           ),
         ],
       ),

@@ -5,7 +5,7 @@ import 'dart:convert';
 import 'package:appv1/features/teacher/presentation/pages/classroom_timetable_tab.dart';
 import 'package:flutter/material.dart';
 import 'package:appv1/core/services/api_service.dart';
-import 'package:http/http.dart' as http;
+import 'package:appv1/core/network/dio_http_adapter.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
 import 'year_rollover_page.dart';
@@ -131,9 +131,16 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage> {
       if (!mounted) return;
       if (res.statusCode == 200) {
         final body = jsonDecode(res.body) as Map<String, dynamic>;
-        final data = body['classroom'] ?? body['data'] ?? body;
+        dynamic data;
+        if (body['classroom'] != null) {
+          data = body['classroom'];
+        } else if (body['classrooms'] is List && (body['classrooms'] as List).isNotEmpty) {
+          data = (body['classrooms'] as List).first;
+        } else {
+          data = body['data'] ?? body;
+        }
         setState(() {
-          _classroom = data as Map<String, dynamic>;
+          _classroom = Map<String, dynamic>.from(data as Map);
           _nameController.text =
               _classroom['className']?.toString() ?? widget.className;
           _isLoading = false;
