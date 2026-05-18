@@ -40,9 +40,19 @@ jobs:
         run: flutter pub get
         working-directory: appv1
 
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
+        shell: bash
+        working-directory: appv1
+
       - name: Build APK
         run: flutter build apk --release
         working-directory: appv1
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
       - name: Create or Update Release
         uses: ncipollo/release-action@v1
