@@ -66,14 +66,8 @@ class UpdateService {
   /// Returns the path to the public Downloads directory.
   /// The APK is saved here so it survives app uninstall.
   static Future<String> _getDownloadsApkPath() async {
-    // Android public Downloads directory
-    final downloadsDir = Directory('/storage/emulated/0/Download');
-    if (await downloadsDir.exists()) {
-      return '${downloadsDir.path}/SchoolSync_update.apk';
-    }
-    // Fallback to app cache
     final cacheDir = await getApplicationCacheDirectory();
-    return '${cacheDir.path}/schoolsync_update.apk';
+    return '${cacheDir.path}/SchoolSync_update.apk';
   }
 
   // Download APK and install it
@@ -91,11 +85,7 @@ class UpdateService {
 
       final savePath = await _getDownloadsApkPath();
 
-      // Delete any leftover APK from a previous attempt
       final file = File(savePath);
-      if (await file.exists()) {
-        await file.delete();
-      }
 
       final dio = Dio();
       await dio.download(
@@ -143,11 +133,7 @@ class UpdateService {
     try {
       final savePath = await _getDownloadsApkPath();
 
-      // Delete any leftover APK from a previous attempt
       final file = File(savePath);
-      if (await file.exists()) {
-        await file.delete();
-      }
 
       final dio = Dio();
       await dio.download(
