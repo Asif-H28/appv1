@@ -91,8 +91,10 @@ class __StartupRouterState extends State<_StartupRouter> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setState) => AlertDialog(
+      builder: (ctx) => PopScope(
+        canPop: false,
+        child: StatefulBuilder(
+          builder: (ctx, setState) => AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: const Row(
             children: [
@@ -126,11 +128,6 @@ class __StartupRouterState extends State<_StartupRouter> {
             ],
           ),
           actions: [
-            if (!isDownloading)
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('Later', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
-              ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.teal,
@@ -168,7 +165,7 @@ class __StartupRouterState extends State<_StartupRouter> {
           ],
         ),
       ),
-    );
+    ),);
   }
 
   /// Shown when the installed app has a different signing certificate than the
@@ -181,8 +178,10 @@ class __StartupRouterState extends State<_StartupRouter> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setState) => AlertDialog(
+      builder: (ctx) => PopScope(
+        canPop: false,
+        child: StatefulBuilder(
+          builder: (ctx, setState) => AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: const Row(
             children: [
@@ -294,10 +293,6 @@ class __StartupRouterState extends State<_StartupRouter> {
             ],
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Later', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
-            ),
             if (!downloadDone)
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -347,7 +342,7 @@ class __StartupRouterState extends State<_StartupRouter> {
           ],
         ),
       ),
-    );
+    ),);
   }
 
 
