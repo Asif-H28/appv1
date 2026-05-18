@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
+    <!-- External storage (downloads, etc.) -->
     <external-path name="external_files" path="."/>
+    <!-- App cache dir — used by UpdateService to save APK -->
     <cache-path name="cache_files" path="."/>
+    <!-- App-specific external cache dir -->
+    <external-cache-path name="external_cache" path="."/>
+    <!-- App files dir -->
+    <files-path name="app_files" path="."/>
 </paths>

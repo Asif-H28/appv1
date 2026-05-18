@@ -134,24 +134,86 @@ class __StartupRouterState extends State<_StartupRouter> {
                   ? null
                   : () async {
                       setState(() => isDownloading = true);
-                      try {
-                        await UpdateService.downloadAndInstall(
-                          update['downloadUrl'],
-                          (p) => setState(() => progress = p),
-                        );
-                      } catch (e) {
+                      final error = await UpdateService.downloadAndInstall(
+                        update['downloadUrl'],
+                        (p) => setState(() => progress = p),
+                      );
+                      if (!mounted) return;
+                      if (error != null) {
                         setState(() => isDownloading = false);
-                        if (mounted) {
+                        Navigator.pop(ctx); // close update dialog
+                        if (error == 'SIGNATURE_CONFLICT') {
+                          _showSignatureConflictDialog(update);
+                        } else {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Download failed. Please try again.')),
+                            SnackBar(
+                              content: Text(error),
+                              duration: const Duration(seconds: 5),
+                            ),
                           );
                         }
                       }
+                      // On success the Android installer takes over — no further action needed
                     },
               child: Text(isDownloading ? 'Downloading...' : 'Update Now'),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  /// Shown when the installed app has a different signing certificate than the
+  /// downloaded APK.  This is a one-time step — after the user uninstalls and
+  /// reinstalls via the update, all future OTA updates will work seamlessly.
+  void _showSignatureConflictDialog(Map<String, dynamic> update) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('One-Time Reinstall Required ⚠️'),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Your current app version was installed with a different signature than the new update.',
+              style: TextStyle(fontSize: 14),
+            ),
+            SizedBox(height: 12),
+            Text(
+              'To apply the update:\n'
+              '1. Uninstall SchoolSync from your device.\n'
+              '2. Tap "Download & Install" below to install the latest version.',
+              style: TextStyle(fontSize: 13, color: Colors.black87),
+            ),
+            SizedBox(height: 12),
+            Text(
+              'Your data is saved on our servers — logging back in will restore everything.',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Dismiss', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              // Re-show the update dialog so they can try again after uninstalling
+              _showUpdateDialog(update);
+            },
+            child: const Text('Try Again'),
+          ),
+        ],
       ),
     );
   }

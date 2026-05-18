@@ -6,7 +6,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class UpdateService {
-  // 👇 Replace with your GitHub username and repo name
   static const String githubUser = 'Asif-H28';
   static const String githubRepo = 'appv1';
   static const String apiUrl =
@@ -23,10 +22,9 @@ class UpdateService {
           .replaceAll('v', ''); // e.g., "v1.0.2" → "1.0.2"
 
       final packageInfo = await PackageInfo.fromPlatform();
-      final currentVersion = packageInfo.version; // e.g., "1.0.0"
+      final currentVersion = packageInfo.version;
 
       if (_isNewerVersion(latestVersion, currentVersion)) {
-        // Find the APK download URL from release assets
         final assets = response.data['assets'] as List;
         final apkAsset = assets.firstWhere(
           (a) => a['name'].toString().endsWith('.apk'),
@@ -41,7 +39,7 @@ class UpdateService {
           };
         }
       }
-      return null; // No update available
+      return null;
     } catch (e) {
       return null;
     }
@@ -51,15 +49,9 @@ class UpdateService {
   static bool _isNewerVersion(String latest, String current) {
     final l = latest.split('.').map(int.parse).toList();
     final c = current.split('.').map(int.parse).toList();
-    
-    // Ensure both lists have at least 3 elements
-    while (l.length < 3) {
-      l.add(0);
-    }
-    while (c.length < 3) {
-      c.add(0);
-    }
 
+    while (l.length < 3) l.add(0);
+    while (c.length < 3) c.add(0);
 
     for (int i = 0; i < 3; i++) {
       if (l[i] > c[i]) return true;
@@ -69,37 +61,74 @@ class UpdateService {
   }
 
   // Download APK and install it
-  static Future<void> downloadAndInstall(
+  // Returns null on success, or an error message string on failure.
+  static Future<String?> downloadAndInstall(
     String downloadUrl,
     Function(double) onProgress,
   ) async {
-    // Request install permission
-    final status = await Permission.requestInstallPackages.request();
-    if (!status.isGranted) return;
+    try {
+      // Request install-packages permission (needed on Android 8+)
+      final installStatus = await Permission.requestInstallPackages.request();
+      if (!installStatus.isGranted) {
+        return 'Install permission denied. Please allow "Install unknown apps" in settings.';
+      }
 
-    final dir = await getExternalStorageDirectory();
-    if (dir == null) return;
-    
-    final savePath = '${dir.path}/school_app_update.apk';
+      // ✅ Use app-private cache directory — no storage permission needed,
+      //    works on all Android versions, and FileProvider can share it.
+      final cacheDir = await getApplicationCacheDirectory();
+      final savePath = '${cacheDir.path}/schoolsync_update.apk';
 
-    // Delete existing file if any
-    final file = File(savePath);
-    if (await file.exists()) {
-      await file.delete();
+      // Delete any leftover APK from a previous attempt
+      final file = File(savePath);
+      if (await file.exists()) {
+        await file.delete();
+      }
+
+      final dio = Dio();
+      await dio.download(
+        downloadUrl,
+        savePath,
+        onReceiveProgress: (received, total) {
+          if (total != -1) {
+            onProgress(received / total);
+          }
+        },
+        options: Options(
+          receiveTimeout: const Duration(minutes: 10),
+          headers: {
+            // Accept APK binary
+            HttpHeaders.acceptHeader: 'application/octet-stream',
+          },
+        ),
+      );
+
+      // Verify the file was actually downloaded
+      if (!await file.exists() || await file.length() < 1000) {
+        return 'Download failed or file is corrupt. Please try again.';
+      }
+
+      // ✅ Open the APK — open_file will use FileProvider internally on Android 7+
+      final result = await OpenFile.open(savePath, type: 'application/vnd.android.package-archive');
+
+      if (result.type != ResultType.done) {
+        // Provide a clear message for the signature-conflict case
+        return _friendlyOpenFileError(result.message);
+      }
+
+      return null; // success
+    } catch (e) {
+      return 'An error occurred during download: $e';
     }
+  }
 
-    final dio = Dio();
-    await dio.download(
-      downloadUrl,
-      savePath,
-      onReceiveProgress: (received, total) {
-        if (total != -1) {
-          onProgress(received / total); // 0.0 to 1.0
-        }
-      },
-    );
-
-    // Open APK installer
-    await OpenFile.open(savePath);
+  static String _friendlyOpenFileError(String rawMessage) {
+    final msg = rawMessage.toLowerCase();
+    if (msg.contains('conflict') || msg.contains('signature') || msg.contains('certificates')) {
+      return 'SIGNATURE_CONFLICT';
+    }
+    if (msg.contains('permission')) {
+      return 'Please allow "Install unknown apps" in your device settings, then try again.';
+    }
+    return 'Could not open installer: $rawMessage';
   }
 }
