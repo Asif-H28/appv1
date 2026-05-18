@@ -31,6 +31,7 @@ class _CreateNoticeSheetState extends State<CreateNoticeSheet> {
   final _descCtrl = TextEditingController();
   DateTime? _expiresAt;
   bool _isSaving = false;
+  String? _titleError;
 
   final List<File> _pickedImages = [];
   final List<File> _pickedPdfs = [];
@@ -126,10 +127,16 @@ class _CreateNoticeSheetState extends State<CreateNoticeSheet> {
 
   Future<void> _submit() async {
     if (_titleCtrl.text.trim().isEmpty) {
+      setState(() {
+        _titleError = 'Title is required';
+      });
       _snack('Title is required.', Colors.red[600]!);
       return;
     }
-    setState(() => _isSaving = true);
+    setState(() {
+      _titleError = null;
+      _isSaving = true;
+    });
     try {
       final hasFiles = _pickedImages.isNotEmpty || _pickedPdfs.isNotEmpty;
       http.Response response;
@@ -139,6 +146,7 @@ class _CreateNoticeSheetState extends State<CreateNoticeSheet> {
           'POST',
           Uri.parse('${ApiConstants.apiBaseUrl}/notice/create'),
         );
+        request.headers.addAll(await ApiService.getHeaders());
         request.fields['title'] = _titleCtrl.text.trim();
         request.fields['description'] = _descCtrl.text.trim();
         request.fields['createdBy'] = widget.createdBy;
@@ -210,17 +218,58 @@ class _CreateNoticeSheetState extends State<CreateNoticeSheet> {
   }
 
   void _snack(String msg, Color color) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          msg,
-          style: TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+    final overlay = Overlay.of(context);
+    final entry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: MediaQuery.of(context).padding.top + 20,
+        left: 20,
+        right: 20,
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(4),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.15),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  color == Colors.green[600]
+                      ? Icons.check_circle_outline_rounded
+                      : Icons.error_outline_rounded,
+                  color: Colors.white,
+                  size: 18,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    msg,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-        backgroundColor: color,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
       ),
     );
+
+    overlay.insert(entry);
+    Future.delayed(const Duration(seconds: 3), () {
+      entry.remove();
+    });
   }
 
   @override
@@ -287,6 +336,7 @@ class _CreateNoticeSheetState extends State<CreateNoticeSheet> {
               ctrl: _titleCtrl,
               hint: 'e.g. Holiday Notice',
               icon: Icons.title_rounded,
+              errorText: _titleError,
             ),
             SizedBox(height: 13),
 
@@ -575,35 +625,56 @@ class _CreateNoticeSheetState extends State<CreateNoticeSheet> {
     required String hint,
     required IconData icon,
     int maxLines = 1,
-  }) => Container(
-    decoration: BoxDecoration(
-      color: Colors.grey[50],
-      borderRadius: BorderRadius.circular(3),
-      border: Border.all(color: Colors.grey[200]!),
-    ),
-    child: TextField(
-      controller: ctrl,
-      cursorColor: _accent,
-      maxLines: maxLines,
-      style: TextStyle(fontSize: 13, color: AppColors.textPrimary),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: TextStyle(color: Colors.grey[400], fontSize: 13),
-        prefixIcon: maxLines == 1
-            ? Icon(icon, color: _accent, size: 16)
-            : Padding(
-                padding: EdgeInsets.fromLTRB(12, 12, 0, 0),
-                child: Icon(icon, color: _accent, size: 16),
-              ),
-        prefixIconConstraints: maxLines > 1
-            ? BoxConstraints(minWidth: 40, minHeight: 0)
-            : null,
-        border: InputBorder.none,
-        enabledBorder: InputBorder.none,
-        focusedBorder: InputBorder.none,
-        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+    String? errorText,
+  }) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Container(
+        decoration: BoxDecoration(
+          color: Colors.grey[50],
+          borderRadius: BorderRadius.circular(3),
+          border: Border.all(
+            color: errorText != null ? Colors.red[600]! : Colors.grey[200]!,
+            width: errorText != null ? 1.2 : 1.0,
+          ),
+        ),
+        child: TextField(
+          controller: ctrl,
+          cursorColor: _accent,
+          maxLines: maxLines,
+          style: TextStyle(fontSize: 13, color: AppColors.textPrimary),
+          onChanged: (_) {
+            if (_titleError != null && ctrl == _titleCtrl) {
+              setState(() => _titleError = null);
+            }
+          },
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: TextStyle(color: Colors.grey[400], fontSize: 13),
+            prefixIcon: maxLines == 1
+                ? Icon(icon, color: errorText != null ? Colors.red[600]! : _accent, size: 16)
+                : Padding(
+                    padding: EdgeInsets.fromLTRB(12, 12, 0, 0),
+                    child: Icon(icon, color: errorText != null ? Colors.red[600]! : _accent, size: 16),
+                  ),
+            prefixIconConstraints: maxLines > 1
+                ? BoxConstraints(minWidth: 40, minHeight: 0)
+                : null,
+            border: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+          ),
+        ),
       ),
-    ),
+      if (errorText != null) ...[
+        SizedBox(height: 4),
+        Text(
+          errorText,
+          style: TextStyle(color: Colors.red[600], fontSize: 11, fontWeight: FontWeight.w500),
+        ),
+      ],
+    ],
   );
 }
 

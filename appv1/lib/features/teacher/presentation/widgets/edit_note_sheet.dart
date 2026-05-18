@@ -29,6 +29,7 @@ class _EditNoteSheetState extends State<EditNoteSheet> {
 
   late List<Map<String, dynamic>> _existingAttachments;
   final Set<int> _removedIndexes = {};
+  String? _titleError;
 
   @override
   void initState() {
@@ -110,10 +111,16 @@ class _EditNoteSheetState extends State<EditNoteSheet> {
 
   Future<void> _submit() async {
     if (_titleCtrl.text.trim().isEmpty) {
+      setState(() {
+        _titleError = 'Title is required';
+      });
       _snack('Title is required.', Colors.red[600]!);
       return;
     }
-    setState(() => _isSaving = true);
+    setState(() {
+      _titleError = null;
+      _isSaving = true;
+    });
 
     try {
       final notesId =
@@ -150,6 +157,7 @@ class _EditNoteSheetState extends State<EditNoteSheet> {
           'PUT',
           Uri.parse('${ApiConstants.apiBaseUrl}/notes/$notesId'),
         );
+        request.headers.addAll(await ApiService.getHeaders());
         request.fields['title'] = _titleCtrl.text.trim();
         request.fields['notesSharedBy'] =
             widget.note['notesSharedBy']?.toString() ?? '';
@@ -208,17 +216,58 @@ class _EditNoteSheetState extends State<EditNoteSheet> {
   }
 
   void _snack(String msg, Color color) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          msg,
-          style: TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+    final overlay = Overlay.of(context);
+    final entry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: MediaQuery.of(context).padding.top + 20,
+        left: 20,
+        right: 20,
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(4),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.15),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  color == Colors.green[600]
+                      ? Icons.check_circle_outline_rounded
+                      : Icons.error_outline_rounded,
+                  color: Colors.white,
+                  size: 18,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    msg,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-        backgroundColor: color,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
       ),
     );
+
+    overlay.insert(entry);
+    Future.delayed(const Duration(seconds: 3), () {
+      entry.remove();
+    });
   }
 
   @override
@@ -281,7 +330,12 @@ class _EditNoteSheetState extends State<EditNoteSheet> {
             // ── Title ──
             _label('Note Title *'),
             SizedBox(height: 5),
-            _inputField(_titleCtrl, 'Note title', Icons.title_rounded),
+            _inputField(
+              _titleCtrl,
+              'Note title',
+              Icons.title_rounded,
+              errorText: _titleError,
+            ),
             SizedBox(height: 16),
 
             // ── Existing attachments with remove/restore ──
@@ -691,27 +745,47 @@ class _EditNoteSheetState extends State<EditNoteSheet> {
     ),
   );
 
-  Widget _inputField(TextEditingController ctrl, String hint, IconData icon) =>
-      Container(
-        decoration: BoxDecoration(
-          color: Colors.grey[50],
-          borderRadius: BorderRadius.circular(3),
-          border: Border.all(color: Colors.grey[200]!),
-        ),
-        child: TextField(
-          controller: ctrl,
-          cursorColor: _accent,
-          style: TextStyle(fontSize: 13, color: AppColors.textPrimary),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: TextStyle(color: Colors.grey[400], fontSize: 13),
-            prefixIcon: Icon(icon, color: _accent, size: 16),
-            border: InputBorder.none,
-            enabledBorder: InputBorder.none,
-            focusedBorder: InputBorder.none,
-            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+  Widget _inputField(TextEditingController ctrl, String hint, IconData icon, {String? errorText}) =>
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+              borderRadius: BorderRadius.circular(3),
+              border: Border.all(
+                color: errorText != null ? Colors.red[600]! : Colors.grey[200]!,
+                width: errorText != null ? 1.2 : 1.0,
+              ),
+            ),
+            child: TextField(
+              controller: ctrl,
+              cursorColor: _accent,
+              style: TextStyle(fontSize: 13, color: AppColors.textPrimary),
+              onChanged: (_) {
+                if (_titleError != null) {
+                  setState(() => _titleError = null);
+                }
+              },
+              decoration: InputDecoration(
+                hintText: hint,
+                hintStyle: TextStyle(color: Colors.grey[400], fontSize: 13),
+                prefixIcon: Icon(icon, color: errorText != null ? Colors.red[600]! : _accent, size: 16),
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+              ),
+            ),
           ),
-        ),
+          if (errorText != null) ...[
+            SizedBox(height: 4),
+            Text(
+              errorText,
+              style: TextStyle(color: Colors.red[600], fontSize: 11, fontWeight: FontWeight.w500),
+            ),
+          ],
+        ],
       );
 }
 
