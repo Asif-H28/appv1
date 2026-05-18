@@ -24,6 +24,7 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
   static const Color _accent = Colors.teal;
   final Map<String, bool> _deletingSubject = {};
   final Map<String, bool> _deletingLesson = {};
+  final Map<String, bool> _togglingLesson = {};
 
   // ── Track which subjects are expanded ──
   final Map<String, bool> _expanded = {};
@@ -65,6 +66,8 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
     String lessonName,
     bool current,
   ) async {
+    final key = '$subjectName|$lessonName';
+    setState(() => _togglingLesson[key] = true);
     try {
       await http.put(
         Uri.parse(
@@ -78,7 +81,12 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
         }),
       );
       widget.onRefresh();
-    } catch (_) {}
+    } catch (_) {
+    } finally {
+      if (mounted) {
+        setState(() => _togglingLesson.remove(key));
+      }
+    }
   }
 
   Future<void> _deleteSubject(String subjectName) async {
@@ -913,109 +921,126 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
                     final isDone = lesson['completed'] == true;
                     final lessonKey = '$subName|$lessonName';
                     final isDeletingLes = _deletingLesson[lessonKey] == true;
+                    final isTogglingLes = _togglingLesson[lessonKey] == true;
 
-                    return InkWell(
-                      onTap: () => _toggleLesson(subName, lessonName, isDone),
-                      child: Padding(
-                        padding: EdgeInsets.fromLTRB(12, 8, 8, 8),
-                        child: Row(
-                          children: [
-                            AnimatedContainer(
-                              duration: Duration(milliseconds: 200),
-                              width: 18,
-                              height: 18,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: isDone ? _accent : Colors.transparent,
-                                border: Border.all(
-                                  color: isDone ? _accent : Colors.grey[350]!,
-                                  width: 1.5,
-                                ),
-                              ),
-                              child: isDone
-                                  ? Icon(
-                                      Icons.check_rounded,
-                                      color: Colors.white,
-                                      size: 11,
+                    return Tooltip(
+                      message: isDone
+                          ? 'Mark as incomplete'
+                          : 'Mark as complete',
+                      child: InkWell(
+                        onTap: () => _toggleLesson(subName, lessonName, isDone),
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(12, 8, 8, 8),
+                          child: Row(
+                            children: [
+                              isTogglingLes
+                                  ? SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: _accent,
+                                      ),
                                     )
-                                  : null,
-                            ),
-                            SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                lessonName,
-                                style: TextStyle(
-                                  fontSize: 12.5,
-                                  color: isDone
-                                      ? AppColors.textSecondary
-                                      : AppColors.textPrimary,
-                                  decoration: isDone
-                                      ? TextDecoration.lineThrough
-                                      : null,
-                                  fontWeight: isDone
-                                      ? FontWeight.w400
-                                      : FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                            if (isDone)
-                              Container(
-                                margin: EdgeInsets.only(right: 6),
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 6,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: _accent.withOpacity(0.08),
-                                  borderRadius: BorderRadius.circular(3),
-                                ),
-                                child: Text(
-                                  'Done',
-                                  style: TextStyle(
-                                    color: _accent,
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            isDeletingLes
-                                ? SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.red[400],
-                                      strokeWidth: 2,
+                                  : AnimatedContainer(
+                                      duration: Duration(milliseconds: 200),
+                                      width: 18,
+                                      height: 18,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(4),
+                                        color: isDone
+                                            ? _accent
+                                            : Colors.transparent,
+                                        border: Border.all(
+                                          color: isDone
+                                              ? _accent
+                                              : Colors.grey[400]!,
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                      child: isDone
+                                          ? Icon(
+                                              Icons.check_rounded,
+                                              color: Colors.white,
+                                              size: 13,
+                                            )
+                                          : null,
                                     ),
-                                  )
-                                : Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      _iconBtn(
-                                        Icons.drive_file_rename_outline_rounded,
-                                        _accent,
-                                        () => _showRenameLessonSheet(
-                                          subName,
-                                          lessonName,
-                                        ),
-                                        size: 13,
-                                      ),
-                                      SizedBox(width: 3),
-                                      _iconBtn(
-                                        Icons.delete_outline_rounded,
-                                        Colors.red[400]!,
-                                        () => _confirmDeleteLesson(
-                                          subName,
-                                          lessonName,
-                                        ),
-                                        size: 13,
-                                      ),
-                                    ],
+                              SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  lessonName,
+                                  style: TextStyle(
+                                    fontSize: 12.5,
+                                    color: isDone
+                                        ? AppColors.textSecondary
+                                        : AppColors.textPrimary,
+                                    fontWeight: isDone
+                                        ? FontWeight.w400
+                                        : FontWeight.w500,
                                   ),
-                          ],
+                                ),
+                              ),
+                              if (isDone)
+                                Container(
+                                  margin: EdgeInsets.only(right: 6),
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: _accent.withOpacity(0.08),
+                                    borderRadius: BorderRadius.circular(3),
+                                  ),
+                                  child: Text(
+                                    'Done',
+                                    style: TextStyle(
+                                      color: _accent,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              isDeletingLes
+                                  ? SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.red[400],
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        _iconBtn(
+                                          Icons
+                                              .drive_file_rename_outline_rounded,
+                                          _accent,
+                                          () => _showRenameLessonSheet(
+                                            subName,
+                                            lessonName,
+                                          ),
+                                          size: 13,
+                                        ),
+                                        SizedBox(width: 3),
+                                        _iconBtn(
+                                          Icons.delete_outline_rounded,
+                                          Colors.red[400]!,
+                                          () => _confirmDeleteLesson(
+                                            subName,
+                                            lessonName,
+                                          ),
+                                          size: 13,
+                                        ),
+                                      ],
+                                    ),
+                            ],
+                          ),
                         ),
                       ),
                     );
-                  }).toList(),
+                  }),
 
                   Padding(
                     padding: EdgeInsets.fromLTRB(12, 6, 12, 10),
@@ -1145,4 +1170,3 @@ class _SubjectLessonsTabState extends State<SubjectLessonsTab> {
     ),
   );
 }
-
