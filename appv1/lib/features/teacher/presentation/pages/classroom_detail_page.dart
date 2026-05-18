@@ -357,7 +357,7 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage> {
 
   Widget _buildMainMenu() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 120),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

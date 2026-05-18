@@ -440,40 +440,46 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
                           const SizedBox(height: 16),
                           Row(
                             children: [
-                              _buildDropdown<int>(
-                                value: _selectedYear,
-                                items: _years,
-                                label: 'Y',
-                                onChanged: (v) {
-                                  if (v != null) {
-                                    setState(() => _selectedYear = v);
-                                    _fetchAttendanceData();
-                                  }
-                                },
+                              Expanded(
+                                child: _buildDropdown<int>(
+                                  value: _selectedYear,
+                                  items: _years,
+                                  label: 'Y',
+                                  onChanged: (v) {
+                                    if (v != null) {
+                                      setState(() => _selectedYear = v);
+                                      _fetchAttendanceData();
+                                    }
+                                  },
+                                ),
                               ),
                               const SizedBox(width: 6),
-                              _buildDropdown<int>(
-                                value: _selectedMonth,
-                                items: _months,
-                                label: 'M',
-                                onChanged: (v) {
-                                  if (v != null) {
-                                    setState(() => _selectedMonth = v);
-                                    _fetchAttendanceData();
-                                  }
-                                },
+                              Expanded(
+                                child: _buildDropdown<int>(
+                                  value: _selectedMonth,
+                                  items: _months,
+                                  label: 'M',
+                                  onChanged: (v) {
+                                    if (v != null) {
+                                      setState(() => _selectedMonth = v);
+                                      _fetchAttendanceData();
+                                    }
+                                  },
+                                ),
                               ),
                               const SizedBox(width: 6),
-                              _buildDropdown<int>(
-                                value: _selectedWeek,
-                                items: _weeks,
-                                label: 'W',
-                                onChanged: (v) {
-                                  if (v != null) {
-                                    setState(() => _selectedWeek = v);
-                                    _fetchAttendanceData();
-                                  }
-                                },
+                              Expanded(
+                                child: _buildDropdown<int>(
+                                  value: _selectedWeek,
+                                  items: _weeks,
+                                  label: 'W',
+                                  onChanged: (v) {
+                                    if (v != null) {
+                                      setState(() => _selectedWeek = v);
+                                      _fetchAttendanceData();
+                                    }
+                                  },
+                                ),
                               ),
                             ],
                           ),
@@ -846,7 +852,6 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
   }) {
     return Container(
       height: 28,
-      constraints: const BoxConstraints(maxWidth: 80),
       padding: const EdgeInsets.only(left: 6, right: 2),
       decoration: BoxDecoration(
         color: const Color(0xFFF0F7F6),
@@ -855,6 +860,7 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<T>(
+          isDense: true,
           value: value,
           isExpanded: true,
           icon: const Icon(

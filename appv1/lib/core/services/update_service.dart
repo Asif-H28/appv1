@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:flutter/services.dart';
 import 'package:open_file/open_file.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
@@ -10,6 +11,8 @@ class UpdateService {
   static const String githubRepo = 'appv1';
   static const String apiUrl =
       'https://api.github.com/repos/$githubUser/$githubRepo/releases/latest';
+
+  static const _channel = MethodChannel('com.example.appv1/updater');
 
   // Check if a newer version exists on GitHub
   static Future<Map<String, dynamic>?> checkForUpdate() async {
@@ -60,6 +63,19 @@ class UpdateService {
     return false;
   }
 
+  /// Returns the path to the public Downloads directory.
+  /// The APK is saved here so it survives app uninstall.
+  static Future<String> _getDownloadsApkPath() async {
+    // Android public Downloads directory
+    final downloadsDir = Directory('/storage/emulated/0/Download');
+    if (await downloadsDir.exists()) {
+      return '${downloadsDir.path}/SchoolSync_update.apk';
+    }
+    // Fallback to app cache
+    final cacheDir = await getApplicationCacheDirectory();
+    return '${cacheDir.path}/schoolsync_update.apk';
+  }
+
   // Download APK and install it
   // Returns null on success, or an error message string on failure.
   static Future<String?> downloadAndInstall(
@@ -73,10 +89,7 @@ class UpdateService {
         return 'Install permission denied. Please allow "Install unknown apps" in settings.';
       }
 
-      // ✅ Use app-private cache directory — no storage permission needed,
-      //    works on all Android versions, and FileProvider can share it.
-      final cacheDir = await getApplicationCacheDirectory();
-      final savePath = '${cacheDir.path}/schoolsync_update.apk';
+      final savePath = await _getDownloadsApkPath();
 
       // Delete any leftover APK from a previous attempt
       final file = File(savePath);
@@ -118,6 +131,78 @@ class UpdateService {
       return null; // success
     } catch (e) {
       return 'An error occurred during download: $e';
+    }
+  }
+
+  /// Download APK only (to Downloads folder), without trying to install.
+  /// Used in the "uninstall first" flow so the APK survives app removal.
+  static Future<String?> downloadOnly(
+    String downloadUrl,
+    Function(double) onProgress,
+  ) async {
+    try {
+      final savePath = await _getDownloadsApkPath();
+
+      // Delete any leftover APK from a previous attempt
+      final file = File(savePath);
+      if (await file.exists()) {
+        await file.delete();
+      }
+
+      final dio = Dio();
+      await dio.download(
+        downloadUrl,
+        savePath,
+        onReceiveProgress: (received, total) {
+          if (total != -1) {
+            onProgress(received / total);
+          }
+        },
+        options: Options(
+          receiveTimeout: const Duration(minutes: 10),
+          headers: {
+            HttpHeaders.acceptHeader: 'application/octet-stream',
+          },
+        ),
+      );
+
+      // Verify the file was actually downloaded
+      if (!await file.exists() || await file.length() < 1000) {
+        return null; // download failed
+      }
+
+      return savePath; // return path on success
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Open a previously downloaded APK for installation.
+  static Future<String?> installFromPath(String path) async {
+    try {
+      final installStatus = await Permission.requestInstallPackages.request();
+      if (!installStatus.isGranted) {
+        return 'Install permission denied. Please allow "Install unknown apps" in settings.';
+      }
+
+      final result = await OpenFile.open(path, type: 'application/vnd.android.package-archive');
+      if (result.type != ResultType.done) {
+        return _friendlyOpenFileError(result.message);
+      }
+      return null;
+    } catch (e) {
+      return 'Could not open installer: $e';
+    }
+  }
+
+  /// Trigger the Android uninstall dialog for the app.
+  static Future<void> triggerUninstall() async {
+    try {
+      await _channel.invokeMethod('uninstallApp', {
+        'packageName': 'com.example.appv1',
+      });
+    } catch (e) {
+      // Ignore — the app may be killed during uninstall
     }
   }
 

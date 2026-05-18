@@ -138,7 +138,7 @@ class __StartupRouterState extends State<_StartupRouter> {
                         update['downloadUrl'],
                         (p) => setState(() => progress = p),
                       );
-                      if (!mounted) return;
+                      if (!ctx.mounted) return;
                       if (error != null) {
                         setState(() => isDownloading = false);
                         Navigator.pop(ctx); // close update dialog
@@ -164,56 +164,173 @@ class __StartupRouterState extends State<_StartupRouter> {
   }
 
   /// Shown when the installed app has a different signing certificate than the
-  /// downloaded APK.  This is a one-time step — after the user uninstalls and
-  /// reinstalls via the update, all future OTA updates will work seamlessly.
+  /// downloaded APK.  Guides the user through: download → uninstall old → install new.
   void _showSignatureConflictDialog(Map<String, dynamic> update) {
+    double progress = 0;
+    bool isDownloading = false;
+    bool downloadDone = false;
+
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('One-Time Reinstall Required ⚠️'),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Your current app version was installed with a different signature than the new update.',
-              style: TextStyle(fontSize: 14),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text('One-Time Reinstall ⚠️'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'The update has a different signature than your installed app. '
+                'This is a one-time step — future updates will work normally.',
+                style: TextStyle(fontSize: 13),
+              ),
+              const SizedBox(height: 14),
+              // ── Step 1: Download ──
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: downloadDone ? Colors.green.withOpacity(0.08) : Colors.orange.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      downloadDone ? Icons.check_circle : Icons.download_rounded,
+                      color: downloadDone ? Colors.green : Colors.orange,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        downloadDone
+                            ? 'APK saved to Downloads ✓'
+                            : 'Step 1: Download update to Downloads',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: downloadDone ? Colors.green[800] : Colors.orange[800],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (isDownloading) ...[
+                const SizedBox(height: 8),
+                LinearProgressIndicator(
+                  value: progress,
+                  backgroundColor: Colors.grey[200],
+                  valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${(progress * 100).toStringAsFixed(0)}%',
+                  style: const TextStyle(fontSize: 11, color: Colors.grey),
+                ),
+              ],
+              const SizedBox(height: 8),
+              // ── Step 2: Uninstall ──
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.red.withOpacity(0.06),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.delete_outline, color: Colors.red[400], size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Step 2: Uninstall this old app',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.red[800]),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              // ── Step 3: Install ──
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.06),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.install_mobile, color: Colors.blue[400], size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Step 3: Open Downloads → install SchoolSync_update.apk',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.blue[800]),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Your data is saved on our servers — logging back in will restore everything.',
+                style: TextStyle(fontSize: 11, color: Colors.grey),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Later', style: TextStyle(color: Colors.grey)),
             ),
-            SizedBox(height: 12),
-            Text(
-              'To apply the update:\n'
-              '1. Uninstall SchoolSync from your device.\n'
-              '2. Tap "Download & Install" below to install the latest version.',
-              style: TextStyle(fontSize: 13, color: Colors.black87),
-            ),
-            SizedBox(height: 12),
-            Text(
-              'Your data is saved on our servers — logging back in will restore everything.',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
-            ),
+            if (!downloadDone)
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: isDownloading
+                    ? null
+                    : () async {
+                        setState(() => isDownloading = true);
+                        final path = await UpdateService.downloadOnly(
+                          update['downloadUrl'],
+                          (p) => setState(() => progress = p),
+                        );
+                        if (!mounted) return;
+                        if (path != null) {
+                          setState(() {
+                            isDownloading = false;
+                            downloadDone = true;
+                          });
+                        } else {
+                          setState(() => isDownloading = false);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Download failed. Please try again.')),
+                          );
+                        }
+                      },
+                child: Text(isDownloading ? 'Downloading...' : 'Download APK'),
+              ),
+            if (downloadDone)
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: () async {
+                  // Trigger Android uninstall dialog
+                  await UpdateService.triggerUninstall();
+                  // App may be killed after this — that's expected.
+                  // The APK is in Downloads, user installs from file manager.
+                },
+                child: const Text('Uninstall Old App'),
+              ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Dismiss', style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            onPressed: () {
-              Navigator.pop(ctx);
-              // Re-show the update dialog so they can try again after uninstalling
-              _showUpdateDialog(update);
-            },
-            child: const Text('Try Again'),
-          ),
-        ],
       ),
     );
   }

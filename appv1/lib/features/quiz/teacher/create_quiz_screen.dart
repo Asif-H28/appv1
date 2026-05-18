@@ -210,7 +210,7 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
         child: Form(
           key: _formKey,
           child: Column(
@@ -246,6 +246,7 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
               const SizedBox(height: 16),
               _buildLabel('Subject'),
               DropdownButtonFormField<String>(
+                isExpanded: true,
                 value: _selectedSubject,
                 hint: const Text('Select Subject'),
                 items: subjectsList.map((s) => DropdownMenuItem<String>(
@@ -259,11 +260,15 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
               const SizedBox(height: 16),
               _buildLabel('Lesson Name'),
               DropdownButtonFormField<String>(
+                isExpanded: true,
                 value: _selectedLessonId,
                 hint: const Text('Select Lesson'),
                 items: _availableLessons.map((l) => DropdownMenuItem<String>(
                   value: l['id'].toString(),
-                  child: Text(l['name'].toString()),
+                  child: Text(
+                    l['name'].toString(),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 )).toList(),
                 onChanged: (v) {
                   setState(() {
@@ -283,6 +288,7 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
                       children: [
                         _buildLabel('Total Questions'),
                         DropdownButtonFormField<int>(
+                          isExpanded: true,
                           value: _totalQuestions,
                           items: [5, 10, 15, 20].map((e) => DropdownMenuItem(value: e, child: Text('$e Questions'))).toList(),
                           onChanged: (v) => setState(() => _totalQuestions = v!),
@@ -298,6 +304,7 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
                       children: [
                         _buildLabel('Difficulty'),
                         DropdownButtonFormField<String>(
+                          isExpanded: true,
                           value: _difficulty,
                           items: ['Easy', 'Medium', 'Hard'].map((e) => DropdownMenuItem(value: e.toLowerCase(), child: Text(e))).toList(),
                           onChanged: (v) => setState(() => _difficulty = v!),
@@ -311,6 +318,7 @@ class _CreateQuizScreenState extends State<CreateQuizScreen> {
               const SizedBox(height: 16),
               _buildLabel('Duration (Minutes)'),
               DropdownButtonFormField<int>(
+                isExpanded: true,
                 value: _durationMinutes,
                 items: [10, 15, 20, 30].map((e) => DropdownMenuItem(value: e, child: Text('$e Minutes'))).toList(),
                 onChanged: (v) => setState(() => _durationMinutes = v!),

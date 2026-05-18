@@ -1,4 +1,4 @@
-﻿import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -262,7 +262,7 @@ class TimetableDayView extends StatelessWidget {
     }
 
     return ListView.separated(
-      padding: EdgeInsets.fromLTRB(14, 14, 14, 40),
+      padding: EdgeInsets.fromLTRB(14, 14, 14, 120),
       itemCount: slots.length,
       separatorBuilder: (_, __) => Padding(
         padding: EdgeInsets.only(left: 22),

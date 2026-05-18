@@ -69,6 +69,11 @@
             <action android:name="android.intent.action.VIEW"/>
             <data android:mimeType="image/*"/>
         </intent>
+        <!-- ✅ Allows triggering uninstall intent for update flow -->
+        <intent>
+            <action android:name="android.intent.action.DELETE"/>
+            <data android:scheme="package"/>
+        </intent>
     </queries>
 
 </manifest>
