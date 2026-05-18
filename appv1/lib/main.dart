@@ -93,7 +93,13 @@ class __StartupRouterState extends State<_StartupRouter> {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setState) => AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text('Update Available 🎉'),
+          title: const Row(
+            children: [
+              Icon(Icons.system_update_rounded, color: Colors.teal),
+              SizedBox(width: 8),
+              Text('Update Available', style: TextStyle(color: Colors.teal, fontWeight: FontWeight.bold, fontSize: 18)),
+            ],
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -110,8 +116,8 @@ class __StartupRouterState extends State<_StartupRouter> {
                 const SizedBox(height: 16),
                 LinearProgressIndicator(
                   value: progress,
-                  backgroundColor: Colors.grey[200],
-                  valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                  backgroundColor: Colors.teal.withValues(alpha: 0.1),
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.teal),
                 ),
                 const SizedBox(height: 4),
                 Text('${(progress * 100).toStringAsFixed(0)}%'),
@@ -122,13 +128,14 @@ class __StartupRouterState extends State<_StartupRouter> {
             if (!isDownloading)
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
-                child: const Text('Later', style: TextStyle(color: Colors.grey)),
+                child: const Text('Later', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
               ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
+                backgroundColor: Colors.teal,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                elevation: 0,
               ),
               onPressed: isDownloading
                   ? null
@@ -176,7 +183,13 @@ class __StartupRouterState extends State<_StartupRouter> {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setState) => AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text('One-Time Reinstall ⚠️'),
+          title: const Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Colors.teal),
+              SizedBox(width: 8),
+              Text('One-Time Reinstall', style: TextStyle(color: Colors.teal, fontWeight: FontWeight.bold, fontSize: 18)),
+            ],
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -221,8 +234,8 @@ class __StartupRouterState extends State<_StartupRouter> {
                 const SizedBox(height: 8),
                 LinearProgressIndicator(
                   value: progress,
-                  backgroundColor: Colors.grey[200],
-                  valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                  backgroundColor: Colors.teal.withValues(alpha: 0.1),
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.teal),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -282,14 +295,15 @@ class __StartupRouterState extends State<_StartupRouter> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Later', style: TextStyle(color: Colors.grey)),
+              child: const Text('Later', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
             ),
             if (!downloadDone)
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: Colors.teal,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 0,
                 ),
                 onPressed: isDownloading
                     ? null
