@@ -1,8 +1,8 @@
 import 'package:appv1/core/constants/api_constants.dart';
 import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
+import 'package:appv1/features/main_app/pages/pwa_notification_panel.dart';
 import 'package:flutter/material.dart';
-import 'package:appv1/core/services/api_service.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -277,7 +277,12 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
             _buildAvatarCard(),
             // ✅ Action buttons row
             _buildActionRow(),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 14),
+              child: PwaNotificationPanel(),
+            ),
+            const SizedBox(height: 12),
             // ✅ Content
             Padding(
               padding: const EdgeInsets.fromLTRB(14, 0, 14, 40),

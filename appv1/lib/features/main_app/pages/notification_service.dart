@@ -47,6 +47,11 @@ const AndroidNotificationChannel notifChannel = AndroidNotificationChannel(
 class NotificationService {
   static const String _baseUrl = '${ApiConstants.baseUrl}';
 
+  // ⚠️ Set your Firebase Web Push VAPID Key (Web Push certificate) here.
+  // This is required for Web and iOS Safari PWA Push notifications.
+  static const String? _vapidKey =
+      "BKxSUvduULtJygkqISo88m42X1Pd4gKpTeq7ZklmvoLBmk41oPgu9NIJeWPWkUiK1ADoYVxN47MiMCeS7J82774"; // Example: "BJ1..."
+
   // ── Init (call in main.dart) ─────────────────────────
   static Future<void> initFirebase() async {
     if (kIsWeb) {
@@ -97,14 +102,21 @@ class NotificationService {
   }
 
   // ── Request permission ───────────────────────────────
-  static Future<void> requestPermission() async {
-    final settings = await FirebaseMessaging.instance.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-      provisional: false,
-    );
-    debugPrint('[FCM] Permission: ${settings.authorizationStatus}');
+  static Future<bool> requestPermission() async {
+    try {
+      final settings = await FirebaseMessaging.instance.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+        provisional: false,
+      );
+      debugPrint('[FCM] Permission: ${settings.authorizationStatus}');
+      return settings.authorizationStatus == AuthorizationStatus.authorized ||
+          settings.authorizationStatus == AuthorizationStatus.provisional;
+    } catch (e) {
+      debugPrint('[FCM] Request permission error: $e');
+      return false;
+    }
   }
 
   // ── Save FCM token after login ──────────────────────
@@ -113,8 +125,19 @@ class NotificationService {
     required String role,
   }) async {
     try {
-      final token = await FirebaseMessaging.instance.getToken();
-      if (token == null) return;
+      final key = _vapidKey;
+      if (kIsWeb && (key == null || key.isEmpty)) {
+        debugPrint(
+          '⚠️ [FCM WARNING] _vapidKey is not set. iOS Safari / Web push notifications require a public VAPID key configured in the Firebase Console (Project Settings > Cloud Messaging > Web Push certificates). Please set it in notification_service.dart',
+        );
+      }
+      final token = await FirebaseMessaging.instance.getToken(
+        vapidKey: _vapidKey,
+      );
+      if (token == null) {
+        debugPrint('[FCM] Token is null');
+        return;
+      }
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('fcmToken', token);
@@ -153,12 +176,21 @@ class NotificationService {
   }
 
   // ── Save Admin FCM token after admin login ──────────
-  static Future<void> saveAdminTokenAfterLogin({
-    required String orgId,
-  }) async {
+  static Future<void> saveAdminTokenAfterLogin({required String orgId}) async {
     try {
-      final token = await FirebaseMessaging.instance.getToken();
-      if (token == null) return;
+      final key = _vapidKey;
+      if (kIsWeb && (key == null || key.isEmpty)) {
+        debugPrint(
+          '⚠️ [FCM WARNING] _vapidKey is not set. iOS Safari / Web push notifications require a public VAPID key configured in the Firebase Console (Project Settings > Cloud Messaging > Web Push certificates). Please set it in notification_service.dart',
+        );
+      }
+      final token = await FirebaseMessaging.instance.getToken(
+        vapidKey: _vapidKey,
+      );
+      if (token == null) {
+        debugPrint('[FCM] Admin token is null');
+        return;
+      }
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('fcmToken', token);
@@ -176,9 +208,7 @@ class NotificationService {
   }
 
   // ── Clear Admin FCM token on admin logout ───────────
-  static Future<void> clearAdminToken({
-    required String orgId,
-  }) async {
+  static Future<void> clearAdminToken({required String orgId}) async {
     try {
       final res = await http.post(
         Uri.parse('$_baseUrl/api/notification/fcm/admin/clear'),
@@ -227,7 +257,8 @@ class NotificationService {
 
       // ✅ Check for chat notification and trigger refresh
       final type = message.data['type']?.toString();
-      final isChat = message.data['chatnotification'] == 'true' || type == 'chat';
+      final isChat =
+          message.data['chatnotification'] == 'true' || type == 'chat';
       if (isChat) {
         ChatSocketService().triggerUnreadRefresh();
       }
@@ -502,7 +533,9 @@ class NotificationService {
   }) async {
     try {
       final res = await http.put(
-        Uri.parse('$_baseUrl/api/notification/teacher/student-leave-requests/mark-all-read'),
+        Uri.parse(
+          '$_baseUrl/api/notification/teacher/student-leave-requests/mark-all-read',
+        ),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -579,5 +612,17 @@ class NotificationService {
       }
     } catch (_) {}
     return totalUnread;
+  }
+
+  // ── Check if notifications are enabled ────────────────
+  static Future<bool> isNotificationEnabled() async {
+    try {
+      final settings = await FirebaseMessaging.instance
+          .getNotificationSettings();
+      return settings.authorizationStatus == AuthorizationStatus.authorized ||
+          settings.authorizationStatus == AuthorizationStatus.provisional;
+    } catch (_) {
+      return false;
+    }
   }
 }

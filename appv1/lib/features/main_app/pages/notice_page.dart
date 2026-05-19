@@ -255,10 +255,33 @@ class _NoticePageState extends State<NoticePage> {
   // â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Widget _buildHeader() {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
-      color: Colors.white,
+      padding: const EdgeInsets.fromLTRB(12, 12, 16, 12),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: _border)),
+      ),
       child: Row(
         children: [
+          // Back button
+          GestureDetector(
+            onTap: () => Navigator.maybePop(context),
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF9FAFB),
+                borderRadius: BorderRadius.circular(3),
+                border: Border.all(color: _border),
+              ),
+              child: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                size: 15,
+                color: Color(0xFF1A1A2E),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          // School Icon
           Container(
             padding: const EdgeInsets.all(7),
             decoration: BoxDecoration(
@@ -268,7 +291,8 @@ class _NoticePageState extends State<NoticePage> {
             child: const Icon(Icons.school_rounded, color: _teal, size: 18),
           ),
           const SizedBox(width: 10),
-          Flexible(
+          // Org name
+          Expanded(
             child: Text(
               _orgName,
               overflow: TextOverflow.ellipsis,
@@ -280,8 +304,8 @@ class _NoticePageState extends State<NoticePage> {
               ),
             ),
           ),
-          const SizedBox(width: 10),
-          // â”€â”€ NEW: Create Notice button â”€â”€
+          const SizedBox(width: 16),
+          // Create Notice button
           GestureDetector(
             onTap: () => _openForm(),
             child: Container(

@@ -2,6 +2,7 @@ import 'package:appv1/core/constants/api_constants.dart';
 import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:appv1/features/main_app/pages/manage_vehicles_page.dart';
+import 'package:appv1/features/main_app/pages/pwa_notification_panel.dart';
 import 'package:flutter/material.dart';
 import 'package:appv1/core/network/dio_http_adapter.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -228,6 +229,8 @@ class _TeacherProfileSectionState extends State<TeacherProfileSection> {
           ),
 
           const SizedBox(height: 16),
+          const PwaNotificationPanel(),
+          const SizedBox(height: 24),
 
           Text(
             'EDIT PROFILE',

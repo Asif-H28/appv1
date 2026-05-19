@@ -1,5 +1,6 @@
 import 'package:appv1/features/main_app/pages/login_page.dart';
 import 'package:appv1/features/main_app/pages/notification_service.dart';
+import 'package:appv1/features/main_app/pages/pwa_notification_panel.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -160,7 +161,11 @@ class _SettingsPageState extends State<SettingsPage> {
                   children: [
                     // ── Subscription card ─────────────────
                     _buildSubscriptionCard(),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 18),
+
+                    // ── Push Notification Card ────────────
+                    const PwaNotificationPanel(),
+                    const SizedBox(height: 24),
 
                     // ── Sign Out button ───────────────────
                     _buildSignOutButton(),
