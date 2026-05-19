@@ -1,10 +1,11 @@
 import 'package:appv1/core/constants/api_constants.dart';
 import 'package:appv1/core/services/api_service.dart';
-import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:appv1/features/main_app/pages/notification_router.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:appv1/firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
@@ -48,6 +49,13 @@ class NotificationService {
 
   // ── Init (call in main.dart) ─────────────────────────
   static Future<void> initFirebase() async {
+    if (kIsWeb) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+      return;
+    }
+
     await Firebase.initializeApp();
 
     FirebaseMessaging.onBackgroundMessage(firebaseBackgroundHandler);
@@ -224,30 +232,32 @@ class NotificationService {
         ChatSocketService().triggerUnreadRefresh();
       }
 
-      localNotif.show(
-        notif.hashCode,
-        notif.title,
-        notif.body,
-        NotificationDetails(
-          android: AndroidNotificationDetails(
-            notifChannel.id,
-            notifChannel.name,
-            channelDescription: notifChannel.description,
-            icon: android?.smallIcon ?? '@mipmap/ic_launcher',
-            importance: Importance.max,
-            priority: Priority.high,
-            playSound: true,
-            sound: const RawResourceAndroidNotificationSound('schoolsync'),
+      if (!kIsWeb) {
+        localNotif.show(
+          notif.hashCode,
+          notif.title,
+          notif.body,
+          NotificationDetails(
+            android: AndroidNotificationDetails(
+              notifChannel.id,
+              notifChannel.name,
+              channelDescription: notifChannel.description,
+              icon: android?.smallIcon ?? '@mipmap/ic_launcher',
+              importance: Importance.max,
+              priority: Priority.high,
+              playSound: true,
+              sound: const RawResourceAndroidNotificationSound('schoolsync'),
+            ),
+            iOS: const DarwinNotificationDetails(
+              presentAlert: true,
+              presentBadge: true,
+              presentSound: true,
+              sound: 'schoolsync.aiff',
+            ),
           ),
-          iOS: const DarwinNotificationDetails(
-            presentAlert: true,
-            presentBadge: true,
-            presentSound: true,
-            sound: 'schoolsync.aiff',
-          ),
-        ),
-        payload: jsonEncode(message.data),
-      );
+          payload: jsonEncode(message.data),
+        );
+      }
     });
   }
 

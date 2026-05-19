@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:dio/dio.dart';
 import 'package:flutter/services.dart';
 import 'package:open_file/open_file.dart';
@@ -16,6 +17,7 @@ class UpdateService {
 
   // Check if a newer version exists on GitHub
   static Future<Map<String, dynamic>?> checkForUpdate() async {
+    if (kIsWeb) return null;
     try {
       final dio = Dio();
       final response = await dio.get(apiUrl);
