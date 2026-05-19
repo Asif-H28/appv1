@@ -118,7 +118,9 @@ class _LoginPageState extends State<LoginPage>
                             onTap: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (_) => const DriverLoginPage()),
+                                MaterialPageRoute(
+                                  builder: (_) => const DriverLoginPage(),
+                                ),
                               );
                             },
                             child: Container(
@@ -126,7 +128,9 @@ class _LoginPageState extends State<LoginPage>
                               decoration: BoxDecoration(
                                 color: Colors.white.withOpacity(0.2),
                                 borderRadius: BorderRadius.circular(3),
-                                border: Border.all(color: Colors.white.withOpacity(0.3)),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.3),
+                                ),
                               ),
                               child: const Icon(
                                 Icons.directions_bus_rounded,
@@ -1098,7 +1102,7 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
             NotificationService.initListeners(context);
             _showSnack(
               context,
-              'Welcome back, $studentName! ðŸ‘‹',
+              'Welcome back, $studentName!',
               Colors.green[600]!,
             );
             Navigator.of(context, rootNavigator: true).pushReplacement(

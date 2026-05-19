@@ -31,7 +31,11 @@ class _CreateNoticeSheetState extends State<CreateNoticeSheet> {
   final _descCtrl = TextEditingController();
   DateTime? _expiresAt;
   bool _isSaving = false;
+
   String? _titleError;
+  String? _descError;
+  String? _expiryError;
+  String? _attachmentsError;
 
   final List<File> _pickedImages = [];
   final List<File> _pickedPdfs = [];
@@ -47,9 +51,26 @@ class _CreateNoticeSheetState extends State<CreateNoticeSheet> {
     final picker = ImagePicker();
     final List<XFile> picked = await picker.pickMultiImage(imageQuality: 80);
     if (picked.isNotEmpty) {
-      setState(
-        () => _pickedImages.addAll(picked.map((x) => File(x.path)).toList()),
-      );
+      bool hasLargeFile = false;
+      final List<File> validFiles = [];
+      for (final x in picked) {
+        final file = File(x.path);
+        final sizeInBytes = await file.length();
+        if (sizeInBytes > 5 * 1024 * 1024) {
+          hasLargeFile = true;
+        } else {
+          validFiles.add(file);
+        }
+      }
+      if (hasLargeFile) {
+        _snack('Some images exceed the 5MB size limit and were not added.', Colors.red[600]!);
+      }
+      if (validFiles.isNotEmpty) {
+        setState(() {
+          _pickedImages.addAll(validFiles);
+          _attachmentsError = null;
+        });
+      }
     }
   }
 
@@ -59,7 +80,18 @@ class _CreateNoticeSheetState extends State<CreateNoticeSheet> {
       source: ImageSource.camera,
       imageQuality: 80,
     );
-    if (photo != null) setState(() => _pickedImages.add(File(photo.path)));
+    if (photo != null) {
+      final file = File(photo.path);
+      final sizeInBytes = await file.length();
+      if (sizeInBytes > 5 * 1024 * 1024) {
+        _snack('Image exceeds the 5MB size limit.', Colors.red[600]!);
+      } else {
+        setState(() {
+          _pickedImages.add(file);
+          _attachmentsError = null;
+        });
+      }
+    }
   }
 
   Future<void> _pickPdf() async {
@@ -69,15 +101,43 @@ class _CreateNoticeSheetState extends State<CreateNoticeSheet> {
       allowMultiple: true,
     );
     if (result != null) {
-      setState(
-        () =>
-            _pickedPdfs.addAll(result.files.map((f) => File(f.path!)).toList()),
-      );
+      bool hasLargeFile = false;
+      final List<File> validFiles = [];
+      for (final f in result.files) {
+        if (f.path != null) {
+          final file = File(f.path!);
+          final sizeInBytes = await file.length();
+          if (sizeInBytes > 5 * 1024 * 1024) {
+            hasLargeFile = true;
+          } else {
+            validFiles.add(file);
+          }
+        }
+      }
+      if (hasLargeFile) {
+        _snack('Some PDFs exceed the 5MB size limit and were not added.', Colors.red[600]!);
+      }
+      if (validFiles.isNotEmpty) {
+        setState(() {
+          _pickedPdfs.addAll(validFiles);
+          _attachmentsError = null;
+        });
+      }
     }
   }
 
-  void _removeImage(int i) => setState(() => _pickedImages.removeAt(i));
-  void _removePdf(int i) => setState(() => _pickedPdfs.removeAt(i));
+  void _removeImage(int i) => setState(() {
+        _pickedImages.removeAt(i);
+        if (_pickedImages.isEmpty && _pickedPdfs.isEmpty) {
+          _attachmentsError = 'At least one attachment is required';
+        }
+      });
+  void _removePdf(int i) => setState(() {
+        _pickedPdfs.removeAt(i);
+        if (_pickedImages.isEmpty && _pickedPdfs.isEmpty) {
+          _attachmentsError = 'At least one attachment is required';
+        }
+      });
 
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
@@ -94,13 +154,16 @@ class _CreateNoticeSheetState extends State<CreateNoticeSheet> {
     );
     if (picked != null) {
       setState(
-        () => _expiresAt = DateTime(
-          picked.year,
-          picked.month,
-          picked.day,
-          23,
-          59,
-        ),
+        () {
+          _expiresAt = DateTime(
+            picked.year,
+            picked.month,
+            picked.day,
+            23,
+            59,
+          );
+          _expiryError = null;
+        },
       );
     }
   }
@@ -126,15 +189,58 @@ class _CreateNoticeSheetState extends State<CreateNoticeSheet> {
   String _fileName(File f) => f.path.split('/').last;
 
   Future<void> _submit() async {
+    bool hasError = false;
+
     if (_titleCtrl.text.trim().isEmpty) {
       setState(() {
         _titleError = 'Title is required';
       });
-      _snack('Title is required.', Colors.red[600]!);
+      hasError = true;
+    } else {
+      setState(() {
+        _titleError = null;
+      });
+    }
+
+    if (_descCtrl.text.trim().isEmpty) {
+      setState(() {
+        _descError = 'Description is required';
+      });
+      hasError = true;
+    } else {
+      setState(() {
+        _descError = null;
+      });
+    }
+
+    if (_expiresAt == null) {
+      setState(() {
+        _expiryError = 'Expiry date is required';
+      });
+      hasError = true;
+    } else {
+      setState(() {
+        _expiryError = null;
+      });
+    }
+
+    if (_pickedImages.isEmpty && _pickedPdfs.isEmpty) {
+      setState(() {
+        _attachmentsError = 'At least one attachment is required';
+      });
+      hasError = true;
+    } else {
+      setState(() {
+        _attachmentsError = null;
+      });
+    }
+
+    if (hasError) {
+      _snack('Please fill all required fields.', Colors.red[600]!);
       return;
     }
+
     setState(() {
-      _titleError = null;
       _isSaving = true;
     });
     try {
@@ -274,181 +380,236 @@ class _CreateNoticeSheetState extends State<CreateNoticeSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-      ),
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(
-          16,
-          12,
-          16,
-          MediaQuery.of(context).padding.bottom + 32,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── Handle ──
-            Center(
-              child: Container(
-                width: 36,
-                height: 3,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
+    return Stack(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+          ),
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: SingleChildScrollView(
+            padding: EdgeInsets.fromLTRB(
+              16,
+              12,
+              16,
+              MediaQuery.of(context).padding.bottom + 32,
             ),
-            SizedBox(height: 16),
-
-            // ── Sheet title ──
-            Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: _accent.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(3),
-                  ),
-                  child: Icon(Icons.campaign_rounded, color: _accent, size: 16),
-                ),
-                SizedBox(width: 10),
-                Text(
-                  'Create Notice',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+                // ── Handle ──
+                Center(
+                  child: Container(
+                    width: 36,
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
                 ),
-              ],
-            ),
-            SizedBox(height: 18),
+                SizedBox(height: 16),
 
-            // ── Title ──
-            _label('Notice Title *'),
-            SizedBox(height: 5),
-            _inputField(
-              ctrl: _titleCtrl,
-              hint: 'e.g. Holiday Notice',
-              icon: Icons.title_rounded,
-              errorText: _titleError,
-            ),
-            SizedBox(height: 13),
-
-            // ── Description ──
-            _label('Description'),
-            SizedBox(height: 5),
-            _inputField(
-              ctrl: _descCtrl,
-              hint: 'Write notice details here...',
-              icon: Icons.description_rounded,
-              maxLines: 4,
-            ),
-            SizedBox(height: 13),
-
-            // ── Expiry ──
-            _label('Expiry Date (optional)'),
-            SizedBox(height: 5),
-            _datePickerTile(),
-            SizedBox(height: 16),
-
-            // ── Attachment buttons ──
-            _label('Attachments (optional)'),
-            SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: _attachBtn(
-                    icon: Icons.photo_library_rounded,
-                    label: 'Gallery',
-                    onTap: _pickImages,
-                  ),
-                ),
-                SizedBox(width: 7),
-                Expanded(
-                  child: _attachBtn(
-                    icon: Icons.camera_alt_rounded,
-                    label: 'Camera',
-                    onTap: _pickCamera,
-                  ),
-                ),
-                SizedBox(width: 7),
-                Expanded(
-                  child: _attachBtn(
-                    icon: Icons.picture_as_pdf_rounded,
-                    label: 'PDF',
-                    onTap: _pickPdf,
-                  ),
-                ),
-              ],
-            ),
-
-            // ── Image previews ──
-            if (_pickedImages.isNotEmpty) ...[
-              SizedBox(height: 12),
-              SizedBox(
-                height: 80,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _pickedImages.length,
-                  separatorBuilder: (_, __) => SizedBox(width: 6),
-                  itemBuilder: (_, i) => _imageThumb(i),
-                ),
-              ),
-            ],
-
-            // ── PDF previews ──
-            if (_pickedPdfs.isNotEmpty) ...[
-              SizedBox(height: 10),
-              ...List.generate(
-                _pickedPdfs.length,
-                (i) => _pdfTile(_pickedPdfs[i], i),
-              ),
-            ],
-
-            SizedBox(height: 20),
-
-            // ── Submit ──
-            SizedBox(
-              width: double.infinity,
-              height: 46,
-              child: ElevatedButton(
-                onPressed: _isSaving ? null : _submit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: _accent,
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor: _accent.withOpacity(0.5),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(3),
-                  ),
-                  elevation: 0,
-                ),
-                child: _isSaving
-                    ? SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : Text(
-                        'Create Notice',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                        ),
+                // ── Sheet title ──
+                Row(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: _accent.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(3),
                       ),
+                      child: Icon(Icons.campaign_rounded, color: _accent, size: 16),
+                    ),
+                    SizedBox(width: 10),
+                    Text(
+                      'Create Notice',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 18),
+
+                // ── Title ──
+                _label('Notice Title *'),
+                SizedBox(height: 5),
+                _inputField(
+                  ctrl: _titleCtrl,
+                  hint: 'e.g. Holiday Notice',
+                  icon: Icons.title_rounded,
+                  errorText: _titleError,
+                ),
+                SizedBox(height: 13),
+
+                // ── Description ──
+                _label('Description *'),
+                SizedBox(height: 5),
+                _inputField(
+                  ctrl: _descCtrl,
+                  hint: 'Write notice details here...',
+                  icon: Icons.description_rounded,
+                  maxLines: 4,
+                  errorText: _descError,
+                ),
+                SizedBox(height: 13),
+
+                // ── Expiry ──
+                _label('Expiry Date *'),
+                SizedBox(height: 5),
+                _datePickerTile(),
+                if (_expiryError != null) ...[
+                  SizedBox(height: 4),
+                  Text(
+                    _expiryError!,
+                    style: TextStyle(
+                      color: Colors.red[600],
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+                SizedBox(height: 16),
+
+                // ── Attachment buttons ──
+                _label('Attachments *'),
+                SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _attachBtn(
+                        icon: Icons.photo_library_rounded,
+                        label: 'Gallery',
+                        onTap: _pickImages,
+                      ),
+                    ),
+                    SizedBox(width: 7),
+                    Expanded(
+                      child: _attachBtn(
+                        icon: Icons.camera_alt_rounded,
+                        label: 'Camera',
+                        onTap: _pickCamera,
+                      ),
+                    ),
+                    SizedBox(width: 7),
+                    Expanded(
+                      child: _attachBtn(
+                        icon: Icons.picture_as_pdf_rounded,
+                        label: 'PDF',
+                        onTap: _pickPdf,
+                      ),
+                    ),
+                  ],
+                ),
+                if (_attachmentsError != null) ...[
+                  SizedBox(height: 4),
+                  Text(
+                    _attachmentsError!,
+                    style: TextStyle(
+                      color: Colors.red[600],
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+
+                // ── Image previews ──
+                if (_pickedImages.isNotEmpty) ...[
+                  SizedBox(height: 12),
+                  SizedBox(
+                    height: 80,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _pickedImages.length,
+                      separatorBuilder: (_, __) => SizedBox(width: 6),
+                      itemBuilder: (_, i) => _imageThumb(i),
+                    ),
+                  ),
+                ],
+
+                // ── PDF previews ──
+                if (_pickedPdfs.isNotEmpty) ...[
+                  SizedBox(height: 10),
+                  ...List.generate(
+                    _pickedPdfs.length,
+                    (i) => _pdfTile(_pickedPdfs[i], i),
+                  ),
+                ],
+
+                SizedBox(height: 20),
+
+                // ── Submit ──
+                SizedBox(
+                  width: double.infinity,
+                  height: 46,
+                  child: ElevatedButton(
+                    onPressed: _isSaving ? null : _submit,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _accent,
+                      foregroundColor: Colors.white,
+                      disabledBackgroundColor: _accent.withOpacity(0.5),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: _isSaving
+                        ? SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : Text(
+                            'Create Notice',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (_isSaving)
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.4),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(
+                      color: Colors.white,
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'Uploading notice and attachments...',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ],
-        ),
-      ),
+          ),
+      ],
     );
   }
 
@@ -570,7 +731,10 @@ class _CreateNoticeSheetState extends State<CreateNoticeSheet> {
       decoration: BoxDecoration(
         color: Colors.grey[50],
         borderRadius: BorderRadius.circular(3),
-        border: Border.all(color: Colors.grey[200]!),
+        border: Border.all(
+          color: _expiryError != null ? Colors.red[600]! : Colors.grey[200]!,
+          width: _expiryError != null ? 1.2 : 1.0,
+        ),
       ),
       child: Row(
         children: [
@@ -646,6 +810,9 @@ class _CreateNoticeSheetState extends State<CreateNoticeSheet> {
           onChanged: (_) {
             if (_titleError != null && ctrl == _titleCtrl) {
               setState(() => _titleError = null);
+            }
+            if (_descError != null && ctrl == _descCtrl) {
+              setState(() => _descError = null);
             }
           },
           decoration: InputDecoration(

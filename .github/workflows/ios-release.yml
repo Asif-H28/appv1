@@ -1,0 +1,54 @@
+name: Build and Release iOS (Unsigned)
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and Release iOS (Unsigned)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Get Version from pubspec.yaml
+        id: get_version
+        run: |
+          VERSION=$(grep '^version: ' appv1/pubspec.yaml | cut -d ' ' -f 2 | cut -d '+' -f 1)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "TAG_NAME=v$VERSION" >> $GITHUB_ENV
+
+      - name: Install Dependencies
+        run: flutter pub get
+        working-directory: appv1
+
+      - name: Build iOS (Unsigned)
+        run: flutter build ios --no-codesign --release
+        working-directory: appv1
+
+      - name: Zip Runner.app
+        run: |
+          cd build/ios/iphoneos
+          zip -r ../../../Runner.zip Runner.app
+        working-directory: appv1
+
+      - name: Create or Update Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "appv1/Runner.zip"
+          tag: ${{ env.TAG_NAME }}
+          name: Release ${{ env.TAG_NAME }}
+          body: "Automated iOS build for version ${{ env.VERSION }}. Built on ${{ github.event.head_commit.timestamp }}.\n\nNote: This is an unsigned build. To install on physical devices, it must be signed manually or compiled via TestFlight/App Store Connect."
+          token: ${{ secrets.GITHUB_TOKEN }}
+          allowUpdates: true
+          makeLatest: true

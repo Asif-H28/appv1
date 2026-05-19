@@ -70,9 +70,7 @@ class _TeacherPendingScreenState extends State<TeacherPendingScreen>
       }
 
       final response = await http.get(
-        Uri.parse(
-          '${ApiConstants.apiBaseUrl}/teacher/$teacherId/profile',
-        ),
+        Uri.parse('${ApiConstants.apiBaseUrl}/teacher/$teacherId/profile'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
@@ -97,7 +95,7 @@ class _TeacherPendingScreenState extends State<TeacherPendingScreen>
                 Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
                 SizedBox(width: 8),
                 Text(
-                  'ðŸŽ‰ You have been approved! Welcome aboard.',
+                  'You have been approved! Welcome aboard.',
                   style: TextStyle(fontWeight: FontWeight.w600),
                 ),
               ],
@@ -675,4 +673,3 @@ class _TeacherPendingScreenState extends State<TeacherPendingScreen>
     ),
   );
 }
-
