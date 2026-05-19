@@ -14,11 +14,20 @@ const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
   console.log("Received background message: ", payload);
-  const notificationTitle = payload.notification.title;
+  
+  const title = (payload.notification && payload.notification.title) || 
+                (payload.data && payload.data.title) || 
+                "SchoolSync Notification";
+                
+  const body = (payload.notification && payload.notification.body) || 
+               (payload.data && payload.data.body) || 
+               "You have a new message.";
+
   const notificationOptions = {
-    body: payload.notification.body,
-    icon: "/favicon.png"
+    body: body,
+    icon: "/favicon.png",
+    data: payload.data
   };
 
-  return self.registration.showNotification(notificationTitle, notificationOptions);
+  return self.registration.showNotification(title, notificationOptions);
 });
