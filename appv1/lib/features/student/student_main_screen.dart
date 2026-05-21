@@ -28,74 +28,22 @@ class StudentMainScreen extends StatefulWidget {
 
 class _StudentMainScreenState extends State<StudentMainScreen> {
   late int _currentTab;
-  int _notifCount = 0;
-  String _studentId = '';
-  String _classId = '';
   String _orgId = '';
 
   @override
   void initState() {
     super.initState();
     _currentTab = widget.initialTab;
-    _loadAndFetchCount();
-    notifCountNotifier.addListener(_onNewNotification);
+    _loadData();
   }
 
-  @override
-  void dispose() {
-    notifCountNotifier.removeListener(_onNewNotification);
-    super.dispose();
-  }
-
-  void _onNewNotification() => _fetchNotificationCount();
-
-  Future<void> _loadAndFetchCount() async {
+  Future<void> _loadData() async {
     final prefs = await SharedPreferences.getInstance();
-    _studentId = prefs.getString('studentId') ?? '';
-    _classId = prefs.getString('classId') ?? '';
-    _orgId = prefs.getString('orgId') ?? '';
-    _fetchNotificationCount();
-  }
-
-  Future<void> _fetchNotificationCount() async {
-    if (_studentId.isEmpty) return;
-    int total = 0;
-    try {
-      if (_classId.isNotEmpty) {
-        final r = await ApiService.get(
-          '${ApiConstants.apiBaseUrl}/notification/class/$_classId/unread/$_studentId',
-        );
-        if (r.statusCode == 200) {
-          final b = jsonDecode(r.body);
-          total += (b['unreadCount'] as int? ?? 0);
-        }
-      }
-      if (_studentId.isNotEmpty) {
-        final r = await ApiService.get(
-          '${ApiConstants.apiBaseUrl}/notification/student/$_studentId',
-        );
-        if (r.statusCode == 200) {
-          final b = jsonDecode(r.body);
-          final list = (b['notifications'] as List? ?? []);
-          final unread = list.where((n) {
-            final readBy = List<String>.from(
-              (n as Map)['readBy'] as List? ?? [],
-            );
-            return !readBy.contains(_studentId);
-          }).length;
-          total += unread;
-        }
-      }
-    } catch (_) {}
-    if (mounted) setState(() => _notifCount = total);
-  }
-
-  void _openNotifications() {
-    setState(() => _notifCount = 0);
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const StudentNotificationScreen()),
-    );
+    if (mounted) {
+      setState(() {
+        _orgId = prefs.getString('orgId') ?? '';
+      });
+    }
   }
 
   final List<Widget> _pages = [
@@ -176,56 +124,7 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
                   ],
                 ),
               ),
-              GestureDetector(
-                onTap: _openNotifications,
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Container(
-                      width: 38,
-                      height: 38,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(3),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.3),
-                        ),
-                      ),
-                      child: const Icon(
-                        Icons.notifications_outlined,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ),
-                    if (_notifCount > 0)
-                      Positioned(
-                        top: -5,
-                        right: -5,
-                        child: Container(
-                          padding: const EdgeInsets.all(3),
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFE53935),
-                            shape: BoxShape.circle,
-                          ),
-                          constraints: const BoxConstraints(
-                            minWidth: 18,
-                            minHeight: 18,
-                          ),
-                          child: Text(
-                            _notifCount > 99 ? '99+' : '$_notifCount',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 9,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
+
               AnimatedBuilder(
                 animation: NotificationStudioController(),
                 builder: (context, _) {

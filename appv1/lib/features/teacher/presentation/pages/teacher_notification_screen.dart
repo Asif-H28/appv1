@@ -165,9 +165,7 @@ class _TeacherNotificationScreenState extends State<TeacherNotificationScreen> w
       notificationId: id,
       teacherId: _teacherId,
       token: _authToken,
-    ).then((_) {
-      teacherNotifCountNotifier.value++;
-    });
+    );
 
     // ── Navigate based on notification type ──
     if (isOrg) {
@@ -199,14 +197,14 @@ class _TeacherNotificationScreenState extends State<TeacherNotificationScreen> w
         NotificationService.markAllAdminReviewsRead(
           teacherId: _teacherId,
           token: _authToken,
-        ).then((_) => teacherNotifCountNotifier.value++);
+        );
       }
     } else {
       if (_getUnreadCount(_studentNotifs) > 0) {
         NotificationService.markAllStudentLeavesRead(
           teacherId: _teacherId,
           token: _authToken,
-        ).then((_) => teacherNotifCountNotifier.value++);
+        );
       }
     }
   }

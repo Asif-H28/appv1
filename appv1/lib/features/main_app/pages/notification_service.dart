@@ -25,16 +25,6 @@ Future<void> firebaseBackgroundHandler(RemoteMessage message) async {
 final FlutterLocalNotificationsPlugin localNotif =
     FlutterLocalNotificationsPlugin();
 
-// ✅ ValueNotifier — increments when foreground message arrives
-// StudentMainScreen listens to this and re-fetches badge count
-final ValueNotifier<int> notifCountNotifier = ValueNotifier<int>(0);
-
-// ✅ Admin-specific notifier — fires when a teacher-leave-request FCM arrives
-// MainAppScreen listens to this and re-fetches admin leave badge count
-final ValueNotifier<int> adminNotifCountNotifier = ValueNotifier<int>(0);
-
-// ✅ Teacher-specific notifier — fires for teacher push notifications
-final ValueNotifier<int> teacherNotifCountNotifier = ValueNotifier<int>(0);
 
 // ── Android notification channel ────────────────────────
 const AndroidNotificationChannel notifChannel = AndroidNotificationChannel(
@@ -244,18 +234,6 @@ class NotificationService {
       final android = message.notification?.android;
       if (notif == null) return;
 
-      // ✅ Signal students (StudentMainScreen re-fetches badge)
-      notifCountNotifier.value += 1;
-
-      // ✅ Signal admin when it's a teacher-leave-request notification
-      final route = message.data['route']?.toString() ?? '';
-      if (route == 'teacher-leave-requests') {
-        adminNotifCountNotifier.value += 1;
-        debugPrint('[FCM:FG] Admin leave notifier incremented');
-      }
-
-      // ✅ Signal teachers
-      teacherNotifCountNotifier.value += 1;
 
       // ✅ Check for chat notification and trigger refresh
       final type = message.data['type']?.toString();

@@ -27,8 +27,6 @@ class MainAppScreen extends StatefulWidget {
 
 class _MainAppScreenState extends State<MainAppScreen> {
   int _currentIndex = 0;
-  int _notifCount = 0;
-  String _orgId = '';
 
   final List<Widget> _pages = [
     const HomePage(),
@@ -47,9 +45,6 @@ class _MainAppScreenState extends State<MainAppScreen> {
         setState(() => _currentIndex = widget.initialTab!);
       }
     });
-    _loadAndFetchCount();
-    // ✅ Listen for incoming FCM leave-request notifications (same pattern as student)
-    adminNotifCountNotifier.addListener(_onAdminNotification);
 
     // Listen for chat messages and status updates (read/delivered)
     _socketSubscriptions.add(
@@ -91,48 +86,10 @@ class _MainAppScreenState extends State<MainAppScreen> {
 
   @override
   void dispose() {
-    adminNotifCountNotifier.removeListener(_onAdminNotification);
     for (var sub in _socketSubscriptions) {
       sub.cancel();
     }
     super.dispose();
-  }
-
-  // Called automatically whenever a teacher-leave-request FCM arrives
-  void _onAdminNotification() => _fetchNotificationCount();
-
-  Future<void> _loadAndFetchCount() async {
-    final prefs = await SharedPreferences.getInstance();
-    _orgId = prefs.getString('orgId') ?? '';
-    _fetchNotificationCount();
-  }
-
-  Future<void> _fetchNotificationCount() async {
-    if (_orgId.isEmpty) return;
-    try {
-      final list = await NotificationService.getTeacherLeaveNotifications(
-        _orgId,
-      );
-      if (!mounted) return;
-      // Count notifications not yet read by this org
-      final unread = list.where((n) {
-        final readBy = (n['readBy'] as List? ?? []);
-        return !readBy.any((r) => r.toString() == _orgId);
-      }).length;
-      setState(() => _notifCount = unread);
-    } catch (_) {}
-  }
-
-  void _openNotifications() {
-    // Clear badge immediately for optimistic UX
-    setState(() => _notifCount = 0);
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const AdminLeaveNotificationsPage()),
-    ).then((_) {
-      // Re-fetch after returning in case there are newer unread ones
-      _fetchNotificationCount();
-    });
   }
 
   @override
@@ -207,56 +164,6 @@ class _MainAppScreenState extends State<MainAppScreen> {
                   ],
                 ),
               ),
-              GestureDetector(
-                onTap: _openNotifications,
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Container(
-                      width: 38,
-                      height: 38,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.3),
-                        ),
-                      ),
-                      child: const Icon(
-                        Icons.notifications_outlined,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ),
-                    if (_notifCount > 0)
-                      Positioned(
-                        top: -5,
-                        right: -5,
-                        child: Container(
-                          padding: const EdgeInsets.all(3),
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFE53935),
-                            shape: BoxShape.circle,
-                          ),
-                          constraints: const BoxConstraints(
-                            minWidth: 18,
-                            minHeight: 18,
-                          ),
-                          child: Text(
-                            _notifCount > 99 ? '99+' : '$_notifCount',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 9,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
               AnimatedBuilder(
                 animation: NotificationStudioController(),
                 builder: (context, _) {

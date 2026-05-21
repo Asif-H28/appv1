@@ -27,8 +27,6 @@ class TeacherMainScreen extends StatefulWidget {
 
 class _TeacherMainScreenState extends State<TeacherMainScreen> {
   late int _currentTab;
-  String _teacherId = '';
-  String _authToken = '';
   final ValueNotifier<int> _unreadChatCount = ValueNotifier<int>(0);
   final List<StreamSubscription> _socketSubscriptions = [];
 
@@ -36,8 +34,6 @@ class _TeacherMainScreenState extends State<TeacherMainScreen> {
   void initState() {
     super.initState();
     _currentTab = widget.initialTab;
-    _loadAndFetch();
-    teacherNotifCountNotifier.addListener(_onNotifReceived);
 
     // Listen for chat messages and updates
     _socketSubscriptions.add(
@@ -78,37 +74,10 @@ class _TeacherMainScreenState extends State<TeacherMainScreen> {
 
   @override
   void dispose() {
-    teacherNotifCountNotifier.removeListener(_onNotifReceived);
     for (var sub in _socketSubscriptions) {
       sub.cancel();
     }
     super.dispose();
-  }
-
-  void _onNotifReceived() {
-    // Only fetch if the value was incremented as a signal (e.g. from FCM)
-    // To avoid infinite loop if we update the value here, we should be careful.
-    // However, usually listeners don't trigger when value is set to same thing.
-    _fetchCount();
-  }
-
-  Future<void> _loadAndFetch() async {
-    final prefs = await SharedPreferences.getInstance();
-    _teacherId = prefs.getString('teacherId') ?? '';
-    _authToken = prefs.getString('authToken') ?? '';
-    _fetchCount();
-  }
-
-  Future<void> _fetchCount() async {
-    if (_teacherId.isEmpty || _authToken.isEmpty) return;
-    final count = await NotificationService.getTeacherNotificationCount(
-      teacherId: _teacherId,
-      token: _authToken,
-    );
-    if (mounted) {
-      // Use teacherNotifCountNotifier to store the real count
-      teacherNotifCountNotifier.value = count;
-    }
   }
 
   final List<Widget> _pages = [
