@@ -6,6 +6,7 @@ import 'package:appv1/core/services/api_service.dart';
 import 'package:appv1/core/network/dio_http_adapter.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../notification_studio/controllers/notification_studio_controller.dart';
 import '../../../main_app/pages/login_page.dart';
 import 'package:appv1/features/main_app/pages/manage_vehicles_page.dart';
 import 'teacher_profile_section.dart';
@@ -154,6 +155,7 @@ class _TeacherSettingsPageState extends State<TeacherSettingsPage>
         } catch (_) {}
       }
       await prefs.clear();
+      NotificationStudioController().disconnect();
       if (!mounted) return;
       setState(() => _isLoggingOut = false);
       Navigator.pushAndRemoveUntil(

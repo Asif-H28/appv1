@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:appv1/features/main_app/pages/login_page.dart';
+import 'package:appv1/features/notification_studio/controllers/notification_studio_controller.dart';
 
 class AppInterceptor extends Interceptor {
   final GlobalKey<NavigatorState> navigatorKey;
@@ -52,6 +53,7 @@ class AppInterceptor extends Interceptor {
       if (statusCode == 401) {
         final prefs = await SharedPreferences.getInstance();
         await prefs.clear(); // clear token and session data
+        NotificationStudioController().disconnect();
         _redirectToLogin();
         // Resolve or reject properly to prevent hanging
         handler.reject(err);

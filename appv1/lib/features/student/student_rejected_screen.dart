@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../main_app/pages/login_page.dart';
+import '../notification_studio/controllers/notification_studio_controller.dart';
 
 const Color _accent = Colors.teal;
 
@@ -14,6 +15,7 @@ class StudentRejectedScreen extends StatelessWidget {
   Future<void> _signOut(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
+    NotificationStudioController().disconnect();
     if (!context.mounted) return;
     Navigator.pushAndRemoveUntil(
       context,

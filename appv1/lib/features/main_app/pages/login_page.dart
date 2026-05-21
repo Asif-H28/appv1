@@ -19,6 +19,7 @@ import 'forgot_password_page.dart';
 import '../main_app_screen.dart';
 import 'driver_login_page.dart';
 import '../../../core/services/chat_socket_service.dart';
+import '../../notification_studio/controllers/notification_studio_controller.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -535,6 +536,7 @@ class __AdminLoginTabState extends State<_AdminLoginTab> {
         final authToken = body['token'] ?? '';
         if (orgId.isNotEmpty && authToken.isNotEmpty) {
           ChatSocketService().connect(orgId, authToken);
+          NotificationStudioController().init(authToken);
         }
 
         // â”€â”€ Init notification listeners â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -759,6 +761,7 @@ class __TeacherLoginTabState extends State<_TeacherLoginTab> {
       // Connect to Chat Socket
       if (teacherId.isNotEmpty && token.isNotEmpty) {
         ChatSocketService().connect(teacherId, token);
+        NotificationStudioController().init(token);
       }
 
       if (!mounted) return;
@@ -1076,6 +1079,7 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
       final token = body['token']?.toString() ?? '';
       if (studentId.isNotEmpty && token.isNotEmpty) {
         ChatSocketService().connect(studentId, token);
+        NotificationStudioController().init(token);
       }
 
       // â”€â”€ LOG 3: Routing decision â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

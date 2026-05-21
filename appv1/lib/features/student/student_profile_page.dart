@@ -11,6 +11,7 @@ import '../main_app/pages/login_page.dart';
 import 'student_profile_info_card.dart';
 import 'student_profile_edit_card.dart';
 import 'student_logout_modal.dart';
+import '../notification_studio/controllers/notification_studio_controller.dart';
 
 const Color _accent = Colors.teal;
 
@@ -211,6 +212,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
 
     // ✅ Step 2 — Clear local session
     await prefs.clear();
+    NotificationStudioController().disconnect();
     if (!mounted) return;
 
     // ✅ Step 3 — Navigate to login

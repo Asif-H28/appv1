@@ -3,6 +3,7 @@ import 'package:appv1/features/main_app/pages/notification_service.dart';
 import 'package:appv1/features/main_app/pages/pwa_notification_panel.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../notification_studio/controllers/notification_studio_controller.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -117,6 +118,7 @@ class _SettingsPageState extends State<SettingsPage> {
       await prefs.remove('orgCountry');
       await prefs.remove('orgTeachers');
       await prefs.remove('orgNonTeaching');
+      NotificationStudioController().disconnect();
 
       if (!mounted) return;
       setState(() => _isLoggingOut = false);

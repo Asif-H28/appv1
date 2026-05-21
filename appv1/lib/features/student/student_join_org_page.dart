@@ -10,6 +10,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../main_app/pages/login_page.dart';
+import '../notification_studio/controllers/notification_studio_controller.dart';
+
 
 const Color _accent = Colors.teal;
 
@@ -927,6 +929,8 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
             onTap: () async {
               final prefs = await SharedPreferences.getInstance();
               await prefs.clear();
+              NotificationStudioController().disconnect();
+
               if (mounted) {
                 Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
                   MaterialPageRoute(builder: (_) => LoginPage()),

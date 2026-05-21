@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import 'login_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../notification_studio/controllers/notification_studio_controller.dart';
 
 class DeactivatedAccountScreen extends StatelessWidget {
   const DeactivatedAccountScreen({super.key});
@@ -65,6 +66,7 @@ class DeactivatedAccountScreen extends StatelessWidget {
                   onPressed: () async {
                     final prefs = await SharedPreferences.getInstance();
                     await prefs.clear();
+                    NotificationStudioController().disconnect();
                     if (context.mounted) {
                       Navigator.of(context).pushAndRemoveUntil(
                         MaterialPageRoute(builder: (_) => LoginPage()),

@@ -17,6 +17,7 @@ import 'features/student/student_rejected_screen.dart';
 import 'features/teacher/presentation/pages/teacher_main_screen.dart';
 import 'features/teacher/presentation/pages/teacher_pending_screen.dart';
 import 'core/services/chat_socket_service.dart';
+import 'features/notification_studio/controllers/notification_studio_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -365,6 +366,7 @@ class __StartupRouterState extends State<_StartupRouter> {
       final token = prefs.getString('authToken') ?? '';
       if (userId.isNotEmpty && token.isNotEmpty) {
         ChatSocketService().connect(userId, token);
+        NotificationStudioController().init(token);
       }
 
       if (userRole == 'admin') {
