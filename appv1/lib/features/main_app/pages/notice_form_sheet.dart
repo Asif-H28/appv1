@@ -2,13 +2,13 @@ import 'package:appv1/core/constants/api_constants.dart';
 import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as path;
 
 import '../../teacher/presentation/widgets/pdf_viewer_page.dart';
+import 'admin_image_viewer.dart';
 
 class NoticeFormSheet extends StatefulWidget {
   final String orgId;
@@ -40,7 +40,8 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
   DateTime? _expiresAt;
   List<String> _selectedClassIds = [];
   List<Map<String, dynamic>> _existingAttachments = [];
-  List<PlatformFile> _newPickedFiles = [];
+  final List<PlatformFile> _newPickedFiles = [];
+  OverlayEntry? _currentToast;
 
   bool get _isEdit => widget.notice != null;
 
@@ -79,6 +80,8 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
 
   @override
   void dispose() {
+    _currentToast?.remove();
+    _currentToast = null;
     _titleCtrl.dispose();
     _descCtrl.dispose();
     super.dispose();
@@ -87,24 +90,117 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
   String get _apiAudience =>
       _audienceUI == 'both' ? 'teachers_and_students' : 'teachers_only';
 
+  void _showTopToast(String message) {
+    _currentToast?.remove();
+    _currentToast = null;
+
+    final overlay = Overlay.of(context);
+    final entry = OverlayEntry(
+      builder: (context) {
+        return _TopToastWidget(
+          message: message,
+          onDismiss: () {
+            _currentToast?.remove();
+            _currentToast = null;
+          },
+        );
+      },
+    );
+
+    _currentToast = entry;
+    overlay.insert(entry);
+  }
+
   Future<void> _pickFiles() async {
-    final total = _existingAttachments.length + _newPickedFiles.length;
-    if (total >= 5) {
-      _snack('Max 5 attachments', Colors.orange);
+    final currentTotal = _existingAttachments.length + _newPickedFiles.length;
+    if (currentTotal >= 5) {
+      _showTopToast('Attachment limit reached (max 5 files)');
       return;
     }
+
     final result = await FilePicker.platform.pickFiles(
       allowMultiple: true,
       type: FileType.custom,
       allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
     );
     if (result == null) return;
-    final canAdd = 5 - total;
-    final valid = result.files
-        .where((f) => f.size <= 5 * 1024 * 1024)
-        .take(canAdd)
-        .toList();
-    if (mounted) setState(() => _newPickedFiles.addAll(valid));
+
+    final tooLargeNames = <String>[];
+    final validPicked = <PlatformFile>[];
+
+    for (final f in result.files) {
+      if (f.size > 5 * 1024 * 1024) {
+        tooLargeNames.add(f.name);
+      } else {
+        validPicked.add(f);
+      }
+    }
+
+    if (tooLargeNames.isNotEmpty) {
+      _showTopToast('File(s) too large (limit 5MB): ${tooLargeNames.join(", ")}');
+    }
+
+    if (validPicked.isEmpty) return;
+
+    final remainingSlots = 5 - currentTotal;
+    if (validPicked.length > remainingSlots) {
+      _showTopToast('Only $remainingSlots more attachment(s) could be added (max 5 files)');
+      final accepted = validPicked.take(remainingSlots).toList();
+      if (mounted) {
+        setState(() {
+          _newPickedFiles.addAll(accepted);
+        });
+      }
+    } else {
+      if (mounted) {
+        setState(() {
+          _newPickedFiles.addAll(validPicked);
+        });
+      }
+    }
+  }
+
+  List<AdminImageItem> _getAllImages() {
+    final list = <AdminImageItem>[];
+    for (final att in _existingAttachments) {
+      final name = att['originalName']?.toString() ?? '';
+      final type = att['resourceType']?.toString() ?? 'image';
+      final isPdf = type == 'raw' || name.toLowerCase().endsWith('.pdf');
+      if (!isPdf) {
+        list.add(AdminImageItem(
+          url: att['url']?.toString(),
+          title: name,
+        ));
+      }
+    }
+    for (final f in _newPickedFiles) {
+      final ext = path.extension(f.name).toLowerCase();
+      if (ext != '.pdf') {
+        list.add(AdminImageItem(
+          filePath: f.path,
+          title: f.name,
+        ));
+      }
+    }
+    return list;
+  }
+
+  void _openImageViewer(String? url, String? filePath) {
+    final images = _getAllImages();
+    final idx = images.indexWhere((item) =>
+        (url != null && item.url == url) ||
+        (filePath != null && item.filePath == filePath));
+    if (idx != -1) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => AdminImageViewer(
+            images: images,
+            initialIndex: idx,
+          ),
+        ),
+      );
+    }
   }
 
   Future<void> _pickDate() async {
@@ -122,6 +218,7 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
       ),
     );
     if (picked == null) return;
+    if (!mounted) return;
     final time = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.fromDateTime(
@@ -209,21 +306,22 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_expiresAt == null) {
-      _snack('Please set an expiry date', Colors.orange);
+      _showTopToast('Please set an expiry date');
       return;
     }
     if (!_allClasses && _selectedClassIds.isEmpty) {
-      _snack('Please select at least one class', Colors.orange);
+      _showTopToast('Please select at least one class');
       return;
     }
+    final navigator = Navigator.of(context);
     setState(() => _loading = true);
     try {
       _isEdit ? await _updateNotice() : await _createNotice();
-      if (mounted) Navigator.pop(context, true);
+      if (mounted) navigator.pop(true);
     } catch (_) {
       if (mounted) {
         setState(() => _loading = false);
-        _snack('Something went wrong', Colors.red);
+        _showTopToast('Something went wrong');
       }
     }
   }
@@ -448,7 +546,7 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
                             width: 56,
                             height: 56,
                             decoration: BoxDecoration(
-                              color: _teal.withOpacity(0.10),
+                              color: _teal.withValues(alpha: 0.10),
                               borderRadius: BorderRadius.circular(3),
                             ),
                             child: const Icon(
@@ -605,7 +703,7 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
                             decoration: BoxDecoration(
                               color: _tealLight,
                               borderRadius: BorderRadius.circular(3),
-                              border: Border.all(color: _teal.withOpacity(0.3)),
+                              border: Border.all(color: _teal.withValues(alpha: 0.3)),
                             ),
                             child: const Center(
                               child: Text(
@@ -697,8 +795,8 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [
-                            Colors.black.withOpacity(0.15),
-                            Colors.black.withOpacity(0.55),
+                            Colors.black.withValues(alpha: 0.15),
+                            Colors.black.withValues(alpha: 0.55),
                           ],
                         ),
                       ),
@@ -716,7 +814,7 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.20),
+                              color: Colors.white.withValues(alpha: 0.20),
                               borderRadius: BorderRadius.circular(3),
                             ),
                             child: const Text(
@@ -885,7 +983,7 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
               decoration: BoxDecoration(
                 color: _tealLight,
                 borderRadius: BorderRadius.circular(3),
-                border: Border.all(color: _teal.withOpacity(0.3)),
+                border: Border.all(color: _teal.withValues(alpha: 0.3)),
               ),
               child: Text(
                 '+$extra MORE',
@@ -907,7 +1005,7 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
         decoration: BoxDecoration(
           color: _tealLight,
           borderRadius: BorderRadius.circular(3),
-          border: Border.all(color: _teal.withOpacity(0.3)),
+          border: Border.all(color: _teal.withValues(alpha: 0.3)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -983,10 +1081,11 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
                         onTap: () {
                           setInner(() {});
                           setState(() {
-                            if (active)
+                            if (active) {
                               _selectedClassIds.remove(id);
-                            else
+                            } else {
                               _selectedClassIds.add(id);
+                            }
                           });
                         },
                         leading: AnimatedContainer(
@@ -1069,13 +1168,16 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
 
     return GestureDetector(
       onTap: () {
-        if (isPdf)
+        if (isPdf) {
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (_) => PdfViewerPage(url: url, fileName: name),
             ),
           );
+        } else {
+          _openImageViewer(url, null);
+        }
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 6),
@@ -1110,7 +1212,7 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
               child: Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.08),
+                  color: Colors.red.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(3),
                 ),
                 child: const Icon(
@@ -1131,48 +1233,55 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
   Widget _newFileTile(int index, PlatformFile f) {
     final ext = path.extension(f.name).toLowerCase();
     final isPdf = ext == '.pdf';
-    return Container(
-      margin: const EdgeInsets.only(bottom: 6),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: _tealLight,
-        borderRadius: BorderRadius.circular(3),
-        border: Border.all(color: _teal.withOpacity(0.25)),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            isPdf ? Icons.picture_as_pdf_rounded : Icons.image_rounded,
-            size: 16,
-            color: isPdf ? Colors.red[400] : _teal,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  f.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: _textDark,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                Text(
-                  '${(f.size / 1024).toStringAsFixed(0)} KB',
-                  style: const TextStyle(fontSize: 10, color: _textGrey),
-                ),
-              ],
+    return GestureDetector(
+      onTap: () {
+        if (!isPdf) {
+          _openImageViewer(null, f.path);
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: _tealLight,
+          borderRadius: BorderRadius.circular(3),
+          border: Border.all(color: _teal.withValues(alpha: 0.25)),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              isPdf ? Icons.picture_as_pdf_rounded : Icons.image_rounded,
+              size: 16,
+              color: isPdf ? Colors.red[400] : _teal,
             ),
-          ),
-          GestureDetector(
-            onTap: () => setState(() => _newPickedFiles.removeAt(index)),
-            child: const Icon(Icons.close_rounded, size: 16, color: _textGrey),
-          ),
-        ],
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    f.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: _textDark,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    '${(f.size / 1024).toStringAsFixed(0)} KB',
+                    style: const TextStyle(fontSize: 10, color: _textGrey),
+                  ),
+                ],
+              ),
+            ),
+            GestureDetector(
+              onTap: () => setState(() => _newPickedFiles.removeAt(index)),
+              child: const Icon(Icons.close_rounded, size: 16, color: _textGrey),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1188,7 +1297,7 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
       border: Border.all(color: _border),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.03),
+          color: Colors.black.withValues(alpha: 0.03),
           blurRadius: 6,
           offset: const Offset(0, 2),
         ),
@@ -1244,7 +1353,7 @@ class _TipBgPainter extends CustomPainter {
     final w = size.width, h = size.height;
     // Abstract pen/paper background
     final p = Paint()
-      ..color = const Color(0xFFB0BEC5).withOpacity(0.35)
+      ..color = const Color(0xFFB0BEC5).withValues(alpha: 0.35)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.2;
     // Horizontal ruled lines
@@ -1253,7 +1362,7 @@ class _TipBgPainter extends CustomPainter {
     }
     // Pen illustration
     final penP = Paint()
-      ..color = const Color(0xFF78909C).withOpacity(0.6)
+      ..color = const Color(0xFF78909C).withValues(alpha: 0.6)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.8
       ..strokeCap = StrokeCap.round;
@@ -1267,13 +1376,13 @@ class _TipBgPainter extends CustomPainter {
       pen,
       penP
         ..style = PaintingStyle.fill
-        ..color = const Color(0xFF90A4AE).withOpacity(0.3),
+        ..color = const Color(0xFF90A4AE).withValues(alpha: 0.3),
     );
     canvas.drawPath(
       pen,
       penP
         ..style = PaintingStyle.stroke
-        ..color = const Color(0xFF78909C).withOpacity(0.6),
+        ..color = const Color(0xFF78909C).withValues(alpha: 0.6),
     );
     // Pen body
     final rect = RRect.fromRectAndRadius(
@@ -1291,7 +1400,7 @@ class _TipBgPainter extends CustomPainter {
     canvas.drawRRect(
       rect,
       Paint()
-        ..color = const Color(0xFF78909C).withOpacity(0.25)
+        ..color = const Color(0xFF78909C).withValues(alpha: 0.25)
         ..style = PaintingStyle.fill,
     );
     canvas.restore();
@@ -1299,5 +1408,128 @@ class _TipBgPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_) => false;
+}
+
+class _TopToastWidget extends StatefulWidget {
+  final String message;
+  final VoidCallback onDismiss;
+
+  const _TopToastWidget({required this.message, required this.onDismiss});
+
+  @override
+  State<_TopToastWidget> createState() => _TopToastWidgetState();
+}
+
+class _TopToastWidgetState extends State<_TopToastWidget>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Offset> _offsetAnimation;
+  late Animation<double> _opacityAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 350),
+    );
+    _offsetAnimation = Tween<Offset>(
+      begin: const Offset(0, -1.2),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
+
+    _opacityAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+
+    _controller.forward();
+
+    // Auto dismiss after 4 seconds to give the user enough time to read
+    Future.delayed(const Duration(seconds: 4), () {
+      if (mounted) {
+        _controller.reverse().then((_) {
+          widget.onDismiss();
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      top: MediaQuery.of(context).padding.top + 12,
+      left: 16,
+      right: 16,
+      child: Material(
+        color: Colors.transparent,
+        child: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            return SlideTransition(
+              position: _offsetAnimation,
+              child: Opacity(
+                opacity: _opacityAnimation.value,
+                child: child,
+              ),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B), // Slate-dark background
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.2),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.warning_amber_rounded,
+                  color: Colors.redAccent,
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    widget.message,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    _controller.reverse().then((_) {
+                      widget.onDismiss();
+                    });
+                  },
+                  child: const Icon(
+                    Icons.close_rounded,
+                    color: Colors.white60,
+                    size: 16,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 

@@ -115,20 +115,28 @@ class NoticeCard extends StatelessWidget {
             children: [
               // Row 1: chip + date + menu
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  _audienceChip(audience, expired),
-                  const Spacer(),
-                  Text(
-                    _formatDate(createdAt),
-                    style: const TextStyle(
-                      fontSize: 11.5,
-                      color: Color(0xFF9CA3AF),
-                      fontWeight: FontWeight.w400,
-                    ),
+                  Flexible(
+                    child: _audienceChip(audience, expired),
                   ),
-                  const SizedBox(width: 6),
-                  _moreMenu(),
+                  const SizedBox(width: 8),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _formatDate(createdAt),
+                        style: const TextStyle(
+                          fontSize: 11.5,
+                          color: Color(0xFF9CA3AF),
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      _moreMenu(),
+                    ],
+                  ),
                 ],
               ),
               const SizedBox(height: 10),
@@ -160,37 +168,49 @@ class NoticeCard extends StatelessWidget {
 
               // Bottom row: icons + action
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  ..._bottomIcons(notice).map(
-                    (icon) => Padding(
-                      padding: const EdgeInsets.only(right: 6),
-                      child: Icon(
-                        icon,
-                        size: 16,
-                        color: const Color(0xFF9CA3AF),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: _bottomIcons(notice).map(
+                      (icon) => Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: Icon(
+                          icon,
+                          size: 16,
+                          color: const Color(0xFF9CA3AF),
+                        ),
                       ),
-                    ),
+                    ).toList(),
                   ),
-                  const Spacer(),
-                  GestureDetector(
-                    onTap: onTap,
-                    child: Row(
-                      children: [
-                        Text(
-                          _actionLabel(notice),
-                          style: const TextStyle(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w700,
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: GestureDetector(
+                      onTap: onTap,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              _actionLabel(notice),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w700,
+                                color: _teal,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 3),
+                          const Icon(
+                            Icons.chevron_right_rounded,
+                            size: 16,
                             color: _teal,
                           ),
-                        ),
-                        const SizedBox(width: 3),
-                        const Icon(
-                          Icons.chevron_right_rounded,
-                          size: 16,
-                          color: _teal,
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -221,6 +241,8 @@ class NoticeCard extends StatelessWidget {
       ),
       child: Text(
         expired ? 'EXPIRED' : _audienceChipLabel(audience),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
         style: TextStyle(
           fontSize: 9.5,
           fontWeight: FontWeight.w800,

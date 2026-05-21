@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../teacher/presentation/widgets/pdf_viewer_page.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'admin_image_viewer.dart';
 
 class NoticeDetailPage extends StatelessWidget {
   final Map<String, dynamic> notice;
@@ -50,7 +50,7 @@ class NoticeDetailPage extends StatelessWidget {
           '${d.hour.toString().padLeft(2, '0')}:'
           '${d.minute.toString().padLeft(2, '0')}';
     } catch (_) {
-      return iso ?? '';
+      return iso;
     }
   }
 
@@ -254,7 +254,11 @@ class NoticeDetailPage extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               ...attachments.map(
-                (att) => _AttachmentRow(attachment: att, context: context),
+                (att) => _AttachmentRow(
+                  attachment: att,
+                  allAttachments: attachments,
+                  context: context,
+                ),
               ),
             ],
           ],
@@ -266,9 +270,9 @@ class NoticeDetailPage extends StatelessWidget {
   Widget _chip(String label, Color color) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
     decoration: BoxDecoration(
-      color: color.withOpacity(0.08),
+      color: color.withValues(alpha: 0.08),
       borderRadius: BorderRadius.circular(3),
-      border: Border.all(color: color.withOpacity(0.3)),
+      border: Border.all(color: color.withValues(alpha: 0.3)),
     ),
     child: Text(
       label,
@@ -286,7 +290,7 @@ class NoticeDetailPage extends StatelessWidget {
       Container(
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.08),
+          color: color.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(3),
         ),
         child: Icon(icon, size: 14, color: color),
@@ -317,8 +321,14 @@ class NoticeDetailPage extends StatelessWidget {
 
 class _AttachmentRow extends StatelessWidget {
   final Map<String, dynamic> attachment;
+  final List<Map<String, dynamic>> allAttachments;
   final BuildContext context;
-  const _AttachmentRow({required this.attachment, required this.context});
+
+  const _AttachmentRow({
+    required this.attachment,
+    required this.allAttachments,
+    required this.context,
+  });
 
   @override
   Widget build(BuildContext ctx) {
@@ -337,7 +347,31 @@ class _AttachmentRow extends StatelessWidget {
             ),
           );
         } else {
-          launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+          final imageAttachments = allAttachments.where((att) {
+            final name = att['originalName']?.toString() ?? '';
+            final type = att['resourceType']?.toString() ?? 'image';
+            final isPdf = type == 'raw' || name.toLowerCase().endsWith('.pdf');
+            return !isPdf;
+          }).toList();
+
+          final imageItems = imageAttachments
+              .map((att) => AdminImageItem(
+                    url: att['url']?.toString(),
+                    title: att['originalName']?.toString() ?? 'Attachment',
+                  ))
+              .toList();
+
+          final idx = imageAttachments.indexWhere((att) => att['url'] == url);
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => AdminImageViewer(
+                images: imageItems,
+                initialIndex: idx == -1 ? 0 : idx,
+              ),
+            ),
+          );
         }
       },
       child: Container(
@@ -354,8 +388,8 @@ class _AttachmentRow extends StatelessWidget {
               padding: const EdgeInsets.all(7),
               decoration: BoxDecoration(
                 color: isPdf
-                    ? Colors.red.withOpacity(0.08)
-                    : const Color(0xFF00796B).withOpacity(0.08),
+                    ? Colors.red.withValues(alpha: 0.08)
+                    : const Color(0xFF00796B).withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(3),
               ),
               child: Icon(
