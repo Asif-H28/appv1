@@ -5,10 +5,13 @@ import '../models/notification_model.dart';
 
 class InAppNotificationOverlay {
   static void show(NotificationModel notification) {
-    final context = DioClient.navigatorKey.currentContext;
-    if (context == null) return;
+    debugPrint('InAppNotificationOverlay.show called for: ${notification.title}');
+    final overlayState = DioClient.navigatorKey.currentState?.overlay;
+    if (overlayState == null) {
+      debugPrint('InAppNotificationOverlay: Navigator overlayState is null. Cannot show toast.');
+      return;
+    }
 
-    final overlayState = Overlay.of(context);
     late OverlayEntry overlayEntry;
 
     overlayEntry = OverlayEntry(
@@ -32,11 +35,13 @@ class InAppNotificationOverlay {
     );
 
     overlayState.insert(overlayEntry);
+    debugPrint('InAppNotificationOverlay: Toast entry inserted successfully.');
 
     // Auto dismiss after 4 seconds
     Timer(const Duration(seconds: 4), () {
       if (overlayEntry.mounted) {
         overlayEntry.remove();
+        debugPrint('InAppNotificationOverlay: Toast auto-dismissed.');
       }
     });
   }
