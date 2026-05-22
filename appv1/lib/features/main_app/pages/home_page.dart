@@ -4,8 +4,6 @@ import 'dart:convert';
 import 'package:appv1/features/main_app/pages/home_widgets2.dart';
 import 'package:appv1/features/main_app/pages/school_page.dart';
 import 'package:flutter/material.dart';
-import 'package:appv1/core/services/api_service.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'home_widgets.dart';
 import 'classrooms_page.dart';
@@ -13,6 +11,7 @@ import 'leave_request_page.dart';
 import 'notice_page.dart';
 import 'teacher_approvals_page.dart';
 import 'teachers_page.dart';
+import 'ongoing_classes_page.dart';
 import '../../teacher/presentation/pages/org_transport_status_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -28,7 +27,6 @@ class _HomePageState extends State<HomePage> {
       _totalStudents = 0,
       _totalTeachers = 0,
       _totalAchievements = 0;
-  List<Map<String, dynamic>> _classrooms = [];
   final PageController _kpiCtrl = PageController(viewportFraction: 0.78);
   int _kpiPage = 0;
 
@@ -77,7 +75,6 @@ class _HomePageState extends State<HomePage> {
 
     if (!mounted) return;
     setState(() {
-      _classrooms = classList;
       _totalClasses = classList.length;
       _totalStudents = studentTotal;
       _totalTeachers = countRes?['totalTeachers'] as int? ?? 0;
@@ -343,6 +340,14 @@ class _HomePageState extends State<HomePage> {
             ),
           );
         },
+      ),
+      _QA(
+        'Ongoing Classes',
+        Icons.play_circle_outline_rounded,
+        () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const OngoingClassesPage()),
+        ),
       ),
     ];
 

@@ -1,6 +1,5 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_colors.dart';
 
 // ═══════════════════════════════════════════════════════
 // QuickBtn — 2-column card style matching design screenshot
@@ -24,6 +23,7 @@ class _QuickBtnState extends State<QuickBtn> {
     'Notice': _QANoticePainter(),
     'School': _QASchoolPainter(),
     'Join Requests': _QAJoinRequestPainter(),
+    'Ongoing Classes': _QAOngoingClassesPainter(),
   };
 
   // Builds the uppercase label with uniform teal color
@@ -771,6 +771,60 @@ class _QAJoinRequestPainter extends CustomPainter {
 
     canvas.drawLine(Offset(w * 0.75, h * 0.25), Offset(w * 0.95, h * 0.25), pp);
     canvas.drawLine(Offset(w * 0.85, h * 0.15), Offset(w * 0.85, h * 0.35), pp);
+  }
+
+  @override
+  bool shouldRepaint(_) => false;
+}
+
+class _QAOngoingClassesPainter extends CustomPainter {
+  const _QAOngoingClassesPainter();
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width, h = size.height;
+    final p = Paint()
+      ..color = const Color(0xFF009688)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final pf = Paint()
+      ..color = const Color(0xFF009688).withOpacity(0.12)
+      ..style = PaintingStyle.fill;
+
+    // Draw blackboard frame
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(w * 0.08, h * 0.12, w * 0.84, h * 0.52),
+        const Radius.circular(2),
+      ),
+      pf,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(w * 0.08, h * 0.12, w * 0.84, h * 0.52),
+        const Radius.circular(2),
+      ),
+      p,
+    );
+
+    // Draw easel/board stand
+    canvas.drawLine(Offset(w * 0.35, h * 0.64), Offset(w * 0.25, h * 0.88), p);
+    canvas.drawLine(Offset(w * 0.65, h * 0.64), Offset(w * 0.75, h * 0.88), p);
+    canvas.drawLine(Offset(w * 0.20, h * 0.88), Offset(w * 0.80, h * 0.88), p);
+
+    // Draw a play triangle in the middle representing "live / ongoing" status
+    final playPath = Path()
+      ..moveTo(w * 0.44, h * 0.28)
+      ..lineTo(w * 0.62, h * 0.38)
+      ..lineTo(w * 0.44, h * 0.48)
+      ..close();
+    canvas.drawPath(
+      playPath,
+      Paint()
+        ..color = const Color(0xFF009688)
+        ..style = PaintingStyle.fill,
+    );
   }
 
   @override
