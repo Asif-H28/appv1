@@ -12,7 +12,8 @@ import '../teacher/presentation/pages/teacher_settings_page.dart';
 import 'package:intl/intl.dart';
 
 class ConversationListScreen extends StatefulWidget {
-  const ConversationListScreen({Key? key}) : super(key: key);
+  final bool showAppBar;
+  const ConversationListScreen({Key? key, this.showAppBar = true}) : super(key: key);
 
   @override
   State<ConversationListScreen> createState() => _ConversationListScreenState();
@@ -96,79 +97,79 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        leadingWidth: 56,
-        leading: Builder(
-          builder: (context) {
-            final scaffold = findParentScaffoldWithDrawer(context);
-            if (scaffold != null) {
-              return Center(
-                child: GestureDetector(
-                  onTap: () => scaffold.openDrawer(),
-                  child: Container(
-                    width: 38,
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: Colors.teal.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.teal.withOpacity(0.2)),
-                    ),
-                    child: const Icon(
-                      Icons.menu,
-                      color: Colors.teal,
-                      size: 20,
-                    ),
-                  ),
-                ),
-              );
-            }
-            if (Navigator.of(context).canPop()) {
-              return const BackButton(color: AppColors.textPrimary);
-            }
-            return const SizedBox.shrink();
-          },
-        ),
-        title: const Text(
-          'Messages',
-          style: TextStyle(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: false,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 14),
-            child: GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => TeacherSettingsPage()),
-                );
-              },
-              child: Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: Colors.teal.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.teal.withOpacity(0.2)),
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.person_rounded,
-                    color: Colors.teal,
-                    size: 22,
-                  ),
+      appBar: widget.showAppBar
+          ? AppBar(
+              leadingWidth: 56,
+              leading: Builder(
+                builder: (context) {
+                  final scaffold = findParentScaffoldWithDrawer(context);
+                  if (scaffold != null) {
+                    return Center(
+                      child: GestureDetector(
+                        onTap: () => scaffold.openDrawer(),
+                        child: Container(
+                          width: 38,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.15),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.menu,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+                  if (Navigator.of(context).canPop()) {
+                    return const BackButton(color: Colors.white);
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
+              title: const Text(
+                'Messages',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
                 ),
               ),
-            ),
-          ),
-        ],
-      ),
+              backgroundColor: Colors.teal,
+              elevation: 1,
+              centerTitle: false,
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 14),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => TeacherSettingsPage()),
+                      );
+                    },
+                    child: Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.person_rounded,
+                          color: Colors.white,
+                          size: 22,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            )
+          : null,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: Colors.teal))
           : _conversations.isEmpty

@@ -247,8 +247,8 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage> {
     final subtitle = isDetailView ? className : 'Manage your class activities';
 
     return AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
+      backgroundColor: Colors.teal,
+      elevation: 1,
       centerTitle: false,
       leadingWidth: 56,
       leading: Padding(
@@ -265,12 +265,12 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage> {
             child: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFFF5F6FA),
-                borderRadius: BorderRadius.circular(3),
+                color: Colors.white.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(6),
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.arrow_back_ios_new_rounded,
-                color: AppColors.textPrimary,
+                color: Colors.white,
                 size: 16,
               ),
             ),
@@ -283,33 +283,46 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage> {
           _isEditingName && !isDetailView
               ? SizedBox(
                   height: 24,
-                  child: TextField(
-                    controller: _nameController,
-                    autofocus: true,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                  child: Theme(
+                    data: Theme.of(context).copyWith(
+                      textSelectionTheme: const TextSelectionThemeData(
+                        selectionHandleColor: Colors.white,
+                        selectionColor: Colors.white30,
+                        cursorColor: Colors.white,
+                      ),
                     ),
-                    decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      isDense: true,
+                    child: TextField(
+                      controller: _nameController,
+                      autofocus: true,
+                      cursorColor: Colors.white,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        isDense: true,
+                        filled: false,
+                        fillColor: Colors.transparent,
+                      ),
+                      onSubmitted: (_) => _saveClassName(),
                     ),
-                    onSubmitted: (_) => _saveClassName(),
                   ),
                 )
               : Text(
                   title,
-                  style: TextStyle(
-                    color: AppColors.textPrimary,
+                  style: const TextStyle(
+                    color: Colors.white,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
           Text(
             subtitle,
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+            style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 12),
           ),
         ],
       ),
@@ -319,7 +332,7 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage> {
             _appBarAction(
               _isSavingName ? null : Icons.check_rounded,
               _saveClassName,
-              color: Colors.green[600],
+              color: Colors.tealAccent,
               isLoading: _isSavingName,
             )
           else
@@ -347,16 +360,19 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage> {
           margin: const EdgeInsets.symmetric(horizontal: 4),
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: const Color(0xFFF5F6FA),
-            borderRadius: BorderRadius.circular(3),
+            color: Colors.white.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(6),
           ),
           child: isLoading
               ? const SizedBox(
                   width: 16,
                   height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
                 )
-              : Icon(icon, color: color ?? AppColors.textPrimary, size: 18),
+              : Icon(icon, color: color ?? Colors.white, size: 18),
         ),
       ),
     );

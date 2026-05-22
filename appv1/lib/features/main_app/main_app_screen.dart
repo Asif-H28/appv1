@@ -31,7 +31,7 @@ class _MainAppScreenState extends State<MainAppScreen> {
 
   final List<Widget> _pages = [
     const HomePage(),
-    const ConversationListScreen(),
+    const ConversationListScreen(showAppBar: false),
     const AdminAchievementsPage(),
   ];
 

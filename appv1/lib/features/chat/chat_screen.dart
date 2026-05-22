@@ -359,10 +359,10 @@ class _ChatScreenState extends State<ChatScreen> {
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.teal,
       elevation: 1,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+        icon: const Icon(Icons.arrow_back, color: Colors.white),
         onPressed: () => Navigator.pop(context),
       ),
       titleSpacing: 0,
@@ -370,7 +370,7 @@ class _ChatScreenState extends State<ChatScreen> {
         children: [
           CircleAvatar(
             radius: 18,
-            backgroundColor: Colors.teal.withOpacity(0.1),
+            backgroundColor: Colors.white,
             child: Text(
               widget.participantName.substring(0, 1).toUpperCase(),
               style: const TextStyle(
@@ -388,7 +388,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 Text(
                   widget.participantName,
                   style: const TextStyle(
-                    color: AppColors.textPrimary,
+                    color: Colors.white,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
@@ -401,7 +401,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               ? 'Last seen ${_formatLastSeen(_lastSeen)}'
                               : 'Offline'),
                     style: TextStyle(
-                      color: _isOnline ? Colors.green : AppColors.textSecondary,
+                      color: _isOnline ? Colors.tealAccent : Colors.white.withOpacity(0.7),
                       fontSize: 11,
                     ),
                   ),
