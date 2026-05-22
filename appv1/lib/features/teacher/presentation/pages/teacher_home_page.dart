@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:appv1/core/network/dio_http_adapter.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/utils/drawer_helper.dart';
 import '../widgets/classroom_card.dart';
 import 'classroom_detail_page.dart';
 import 'teacher_schedule_page.dart';
@@ -308,17 +309,25 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
           padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
           child: Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(7),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(3),
-                  border: Border.all(color: Colors.white.withOpacity(0.25)),
-                ),
-                child: const Icon(
-                  Icons.sync_alt,
-                  color: Colors.white,
-                  size: 16,
+              Builder(
+                builder: (context) => GestureDetector(
+                  onTap: () => openParentDrawer(context),
+                  child: Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.3),
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.menu,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(width: 10),

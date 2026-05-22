@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'dart:async';
 import '../../core/constants/app_colors.dart';
+import '../../core/utils/drawer_helper.dart';
 import '../../core/services/api_service.dart';
 import '../../core/services/chat_socket_service.dart';
 import 'chat_screen.dart';
@@ -96,6 +97,37 @@ class _ConversationListScreenState extends State<ConversationListScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        leadingWidth: 56,
+        leading: Builder(
+          builder: (context) {
+            final scaffold = findParentScaffoldWithDrawer(context);
+            if (scaffold != null) {
+              return Center(
+                child: GestureDetector(
+                  onTap: () => scaffold.openDrawer(),
+                  child: Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: Colors.teal.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.teal.withOpacity(0.2)),
+                    ),
+                    child: const Icon(
+                      Icons.menu,
+                      color: Colors.teal,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              );
+            }
+            if (Navigator.of(context).canPop()) {
+              return const BackButton(color: AppColors.textPrimary);
+            }
+            return const SizedBox.shrink();
+          },
+        ),
         title: const Text(
           'Messages',
           style: TextStyle(
