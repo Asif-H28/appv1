@@ -7,6 +7,7 @@ import 'pages/home_page.dart';
 import 'pages/settings_page.dart';
 import 'pages/admin_achievements_page.dart';
 import 'pages/notification_service.dart';
+import 'pages/app_update_page.dart';
 import '../chat/conversation_list_screen.dart';
 import '../../core/services/chat_socket_service.dart';
 import '../../core/services/api_service.dart';
@@ -473,6 +474,20 @@ class _MainAppScreenState extends State<MainAppScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const SettingsPage()),
+                    );
+                  },
+                ),
+                _buildDrawerItem(
+                  icon: Icons.system_update_rounded,
+                  title: 'App Update',
+                  isSelected: false,
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AppUpdatePage(),
+                      ),
                     );
                   },
                 ),

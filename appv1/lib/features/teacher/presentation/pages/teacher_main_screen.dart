@@ -3,10 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/utils/drawer_helper.dart';
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/network/dio_http_adapter.dart' as http;
 import '../../../main_app/pages/notification_service.dart';
 import '../../../main_app/pages/login_page.dart';
+import '../../../main_app/pages/app_update_page.dart';
 import 'teacher_home_page.dart';
 import 'teacher_classroom_page.dart';
 import 'teacher_dashboard_page.dart';
@@ -95,6 +97,7 @@ class _TeacherMainScreenState extends State<TeacherMainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: teacherScaffoldKey,
       drawer: _buildDrawer(),
       backgroundColor: AppColors.background,
       body: AnnotatedRegion<SystemUiOverlayStyle>(
@@ -230,6 +233,20 @@ class _TeacherMainScreenState extends State<TeacherMainScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => TeacherSettingsPage()),
+                    );
+                  },
+                ),
+                _buildDrawerItem(
+                  icon: Icons.system_update_rounded,
+                  title: 'App Update',
+                  isSelected: false,
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AppUpdatePage(),
+                      ),
                     );
                   },
                 ),

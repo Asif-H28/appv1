@@ -12,6 +12,7 @@ import '../teacher/presentation/pages/org_transport_status_page.dart';
 import '../notification_studio/pages/notification_studio_page.dart';
 import '../notification_studio/controllers/notification_studio_controller.dart';
 import '../main_app/pages/login_page.dart';
+import '../main_app/pages/app_update_page.dart';
 import 'student_logout_modal.dart';
 
 
@@ -399,6 +400,20 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
                       );
                     },
                   ),
+                _buildDrawerItem(
+                  icon: Icons.system_update_rounded,
+                  title: 'App Update',
+                  isSelected: false,
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AppUpdatePage(),
+                      ),
+                    );
+                  },
+                ),
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                   child: Divider(height: 1, color: Color(0xFFE2E8F0)),

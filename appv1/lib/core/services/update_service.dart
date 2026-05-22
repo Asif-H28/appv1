@@ -17,7 +17,6 @@ class UpdateService {
 
   // Check if a newer version exists on GitHub
   static Future<Map<String, dynamic>?> checkForUpdate() async {
-    if (kIsWeb) return null;
     try {
       final dio = Dio();
       final response = await dio.get(apiUrl);
@@ -30,6 +29,14 @@ class UpdateService {
       final currentVersion = packageInfo.version;
 
       if (_isNewerVersion(latestVersion, currentVersion)) {
+        if (kIsWeb) {
+          return {
+            'version': latestVersion,
+            'downloadUrl': 'web',
+            'releaseNotes': response.data['body'] ?? 'New version available. Refresh to apply.',
+          };
+        }
+
         final assets = response.data['assets'] as List;
         final apkAsset = assets.firstWhere(
           (a) => a['name'].toString().endsWith('.apk'),
