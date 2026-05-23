@@ -20,7 +20,8 @@ class StudentJoinOrgPage extends StatefulWidget {
   _StudentJoinOrgPageState createState() => _StudentJoinOrgPageState();
 }
 
-class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
+class _StudentJoinOrgPageState extends State<StudentJoinOrgPage>
+    with TickerProviderStateMixin {
   int _step = 1;
 
   List<Map<String, dynamic>> _classes = [];
@@ -35,10 +36,68 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
 
   bool _isCheckingStatus = false;
 
+  // ── Loading animation state ──
+  late AnimationController _pulseController;
+  late AnimationController _fadeController;
+  late Animation<double> _pulseAnim;
+  late Animation<double> _fadeAnim;
+  int _loadingPhase = 0;
+  static const _loadingSteps = [
+    {'icon': Icons.wifi_rounded, 'msg': 'Connecting to your school...'},
+    {'icon': Icons.school_rounded, 'msg': 'Finding classrooms...'},
+    {'icon': Icons.door_front_door_outlined, 'msg': 'Getting into the classroom...'},
+    {'icon': Icons.auto_awesome_rounded, 'msg': 'Almost ready...'},
+  ];
+
   @override
   void initState() {
     super.initState();
+
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    )..repeat(reverse: true);
+    _pulseAnim = Tween<double>(begin: 0.85, end: 1.15).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+    _fadeAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _fadeController, curve: Curves.easeOut),
+    );
+    _fadeController.forward();
+
+    _startLoadingPhases();
     _init();
+  }
+
+  void _startLoadingPhases() {
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (!mounted) return;
+      _advancePhase();
+    });
+  }
+
+  void _advancePhase() async {
+    for (int i = 1; i < _loadingSteps.length; i++) {
+      await Future.delayed(const Duration(milliseconds: 1800));
+      if (!mounted || !_isLoading) return;
+      _fadeController.reverse().then((_) {
+        if (!mounted) return;
+        setState(() => _loadingPhase = i);
+        _fadeController.forward();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    _fadeController.dispose();
+    super.dispose();
   }
 
   Future<void> _checkStatus() async {
@@ -407,24 +466,109 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
                 ),
                 clipBehavior: Clip.antiAlias,
                 child: _isLoading
-                    ? Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            CircularProgressIndicator(
-                              color: _accent,
-                              strokeWidth: 2.5,
+                    ? AnimatedBuilder(
+                        animation: Listenable.merge([_pulseController, _fadeController]),
+                        builder: (context, _) {
+                          final phase = _loadingSteps[_loadingPhase];
+                          final pulseVal = _pulseController.value;
+                          final fadeVal = _fadeAnim.value;
+                          return Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Pulsing glow + icon
+                                Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    Container(
+                                      width: 90 + (pulseVal * 16),
+                                      height: 90 + (pulseVal * 16),
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: _accent.withOpacity(0.04 + pulseVal * 0.03),
+                                      ),
+                                    ),
+                                    Container(
+                                      width: 68 + (pulseVal * 8),
+                                      height: 68 + (pulseVal * 8),
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: _accent.withOpacity(0.06 + pulseVal * 0.04),
+                                      ),
+                                    ),
+                                    Container(
+                                      width: 52,
+                                      height: 52,
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [_accent, _accent.withOpacity(0.7)],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                        borderRadius: BorderRadius.circular(16),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: _accent.withOpacity(0.2 + pulseVal * 0.1),
+                                            blurRadius: 16 + (pulseVal * 8),
+                                            spreadRadius: 1,
+                                            offset: const Offset(0, 4),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Opacity(
+                                        opacity: fadeVal,
+                                        child: Transform.scale(
+                                          scale: 0.8 + (fadeVal * 0.2),
+                                          child: Icon(
+                                            phase['icon'] as IconData,
+                                            color: Colors.white,
+                                            size: 24,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 18),
+                                Opacity(
+                                  opacity: fadeVal,
+                                  child: Text(
+                                    phase['msg'] as String,
+                                    style: TextStyle(
+                                      color: _accent,
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 13,
+                                      letterSpacing: 0.2,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(height: 16),
+                                // Phase dots
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: List.generate(_loadingSteps.length, (i) {
+                                    final isActive = i == _loadingPhase;
+                                    final isDone = i < _loadingPhase;
+                                    return AnimatedContainer(
+                                      duration: const Duration(milliseconds: 300),
+                                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                                      width: isActive ? 16 : 6,
+                                      height: 6,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(3),
+                                        color: isActive
+                                            ? _accent
+                                            : isDone
+                                                ? _accent.withOpacity(0.4)
+                                                : _accent.withOpacity(0.12),
+                                      ),
+                                    );
+                                  }),
+                                ),
+                              ],
                             ),
-                            SizedBox(height: 14),
-                            Text(
-                              'Loading classes...',
-                              style: TextStyle(
-                                color: AppColors.textSecondary,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
-                        ),
+                          );
+                        },
                       )
                     : _step == 1
                     ? _buildClassList()

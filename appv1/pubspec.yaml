@@ -2,7 +2,7 @@ name: appv1
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -16,8 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.25
-
+version: 1.0.26
 
 environment:
   sdk: ^3.11.1
@@ -37,7 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   shared_preferences: ^2.3.2
   socket_io_client: ^2.0.3+1
-  http: ^1.2.2  # ← ADD THIS for API calls! 
+  http: ^1.2.2 # ← ADD THIS for API calls!
   image_picker: ^1.0.7
   file_picker: ^8.0.3
   http_parser: ^4.0.2
@@ -48,7 +47,7 @@ dependencies:
   permission_handler: ^11.3.1
   firebase_core: ^4.6.0
   firebase_messaging: ^16.1.2
-  flutter_local_notifications: ^19.2.1   # ← safe for sdk ^3.11.1
+  flutter_local_notifications: ^19.2.1 # ← safe for sdk ^3.11.1
   fl_chart: ^1.2.0
   path: ^1.9.0
   excel: ^4.0.0
@@ -58,7 +57,6 @@ dependencies:
   flutter_map: ^7.0.1
   latlong2: ^0.9.1
   geolocator: ^13.0.2
-
 
 dev_dependencies:
   flutter_test:
@@ -87,7 +85,6 @@ flutter_launcher_icons:
 
 # The following section is specific to Flutter packages.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
