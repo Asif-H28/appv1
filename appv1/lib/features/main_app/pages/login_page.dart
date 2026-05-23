@@ -1023,7 +1023,7 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
         'joinStatus',
         student['joinStatus']?.toString() ?? 'none',
       );
-      await prefs.setString('orgId', student['orgId'].toString());
+      await prefs.setString('orgId', student['orgId']?.toString() ?? '');
 
       // â”€â”€ Save tempOrg â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       final tempOrg = student['tempOrg'] as Map<String, dynamic>?;

@@ -125,6 +125,7 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
       } catch (_) {}
     }
     if (_orgId.isEmpty) _orgId = prefs.getString('tempOrgId') ?? '';
+    if (_orgId.isEmpty) _orgId = prefs.getString('orgId') ?? '';
 
     // ── Check if orgName already cached ──
     _orgName = prefs.getString('tempOrgName') ?? '';
@@ -143,14 +144,14 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
   Future<void> _fetchOrgName(SharedPreferences prefs) async {
     try {
       final res = await http.get(
-        Uri.parse('${ApiConstants.apiBaseUrl}/org/$_orgId'),
+        Uri.parse('${ApiConstants.apiBaseUrl}/org/$_orgId/profile'),
         headers: await ApiService.getHeaders(),
       );
       if (!mounted) return;
       if (res.statusCode == 200) {
         final body = jsonDecode(res.body) as Map<String, dynamic>;
-        final org = body['org'] as Map<String, dynamic>?;
-        final name = org?['orgName']?.toString() ?? '';
+        final org = body['organization'] as Map<String, dynamic>?;
+        final name = org?['name']?.toString() ?? '';
         if (name.isNotEmpty) {
           _orgName = name;
           // ── Cache it so next time we don't need to fetch ──
@@ -190,8 +191,13 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
           raw = body['classes'] as List;
         else if (body['data'] != null)
           raw = body['data'] as List;
+        final prefs = await SharedPreferences.getInstance();
         setState(() {
           _classes = raw.map((e) => e as Map<String, dynamic>).toList();
+          if (body is Map && body['orgName'] != null) {
+            _orgName = body['orgName'].toString();
+            prefs.setString('tempOrgName', _orgName);
+          }
           _isLoading = false;
         });
       } else {
@@ -812,7 +818,8 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage> {
 
   // ─── Step 3: Done ──────────────────────────────────────
 
-  Widget _buildDone() => Center(
+  Widget _buildDone() => SingleChildScrollView(
+    physics: const BouncingScrollPhysics(),
     child: Padding(
       padding: EdgeInsets.all(24),
       child: Column(
