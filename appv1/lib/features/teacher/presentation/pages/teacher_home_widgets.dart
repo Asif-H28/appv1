@@ -22,6 +22,15 @@ bool isCurrentPeriod(Map<String, dynamic> slot) {
   return nowM >= startM && nowM < endM;
 }
 
+bool isPeriodOver(Map<String, dynamic> slot) {
+  final now = TimeOfDay.now();
+  final end = _parseTime(slot['endTime']?.toString() ?? '');
+  if (end == null) return false;
+  final nowM = now.hour * 60 + now.minute;
+  final endM = end.hour * 60 + end.minute;
+  return nowM >= endM;
+}
+
 TimeOfDay? _parseTime(String t) {
   try {
     final p = t.split(':');
@@ -170,7 +179,13 @@ class HomeScheduleCard extends StatelessWidget {
     final end = slot['endTime']?.toString() ?? '';
     final pNum = periodNum(slot);
     final isCurr = isCurrentPeriod(slot);
-    final color = isCurr ? Colors.teal[700]! : Colors.teal[600]!;
+    final isOver = isPeriodOver(slot);
+    
+    final color = isCurr 
+        ? Colors.teal[700]! 
+        : isOver 
+            ? Colors.grey[500]! 
+            : Colors.teal[600]!;
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12, vertical: 11),
@@ -178,7 +193,11 @@ class HomeScheduleCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(6),
         border: Border.all(
-          color: isCurr ? Colors.teal[400]! : Colors.grey[200]!,
+          color: isCurr 
+              ? Colors.teal[400]! 
+              : isOver 
+                  ? Colors.grey[300]! 
+                  : Colors.grey[200]!,
           width: isCurr ? 1.5 : 1,
         ),
         boxShadow: [
@@ -238,7 +257,7 @@ class HomeScheduleCard extends StatelessWidget {
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
-                          color: AppColors.textPrimary,
+                          color: isOver ? AppColors.textSecondary : AppColors.textPrimary,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -257,6 +276,26 @@ class HomeScheduleCard extends StatelessWidget {
                         ),
                         child: Text(
                           'NOW',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 8,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ] else if (isOver) ...[
+                      SizedBox(width: 6),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[400],
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                        child: Text(
+                          'OVER',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 8,
@@ -298,7 +337,9 @@ class HomeScheduleCard extends StatelessWidget {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.teal.withOpacity(0.07),
+              color: isOver
+                  ? Colors.grey.withOpacity(0.08)
+                  : Colors.teal.withOpacity(0.07),
               borderRadius: BorderRadius.circular(3),
             ),
             child: Column(
@@ -306,7 +347,7 @@ class HomeScheduleCard extends StatelessWidget {
                 Text(
                   start,
                   style: TextStyle(
-                    color: Colors.teal[700],
+                    color: isOver ? Colors.grey[600] : Colors.teal[700],
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
                   ),
@@ -315,11 +356,16 @@ class HomeScheduleCard extends StatelessWidget {
                   height: 1,
                   width: 20,
                   margin: EdgeInsets.symmetric(vertical: 2),
-                  color: Colors.teal.withOpacity(0.25),
+                  color: isOver
+                      ? Colors.grey.withOpacity(0.25)
+                      : Colors.teal.withOpacity(0.25),
                 ),
                 Text(
                   end,
-                  style: TextStyle(color: Colors.teal[400], fontSize: 10),
+                  style: TextStyle(
+                    color: isOver ? Colors.grey[500] : Colors.teal[400], 
+                    fontSize: 10,
+                  ),
                 ),
               ],
             ),
@@ -734,7 +780,7 @@ class HomeNoClassroomsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
         color: Colors.teal[50],
         borderRadius: BorderRadius.circular(6),
@@ -743,7 +789,7 @@ class HomeNoClassroomsCard extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            padding: EdgeInsets.all(8),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: Colors.teal.withOpacity(0.12),
               borderRadius: BorderRadius.circular(3),
@@ -754,13 +800,15 @@ class HomeNoClassroomsCard extends StatelessWidget {
               size: 18,
             ),
           ),
-          SizedBox(width: 12),
-          Text(
-            'No classrooms found',
-            style: TextStyle(
-              color: Colors.teal[700],
-              fontSize: 12.5,
-              fontWeight: FontWeight.w500,
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              "You haven't created any classrooms yet.",
+              style: TextStyle(
+                color: Colors.teal[700],
+                fontSize: 12.5,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],
@@ -799,12 +847,14 @@ class HomeNoNoticesCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          Text(
-            'No announcements found',
-            style: TextStyle(
-              color: Colors.teal[700],
-              fontSize: 12.5,
-              fontWeight: FontWeight.w500,
+          Expanded(
+            child: Text(
+              'No announcements found',
+              style: TextStyle(
+                color: Colors.teal[700],
+                fontSize: 12.5,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],

@@ -146,19 +146,6 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
         }
       }
 
-      if (raw.isEmpty && _orgId.isNotEmpty) {
-        final res = await ApiService.get(
-          '${ApiConstants.apiBaseUrl}/classroom/org/$_orgId',
-        );
-        if (!mounted) return;
-        if (res.statusCode == 200) {
-          final body = jsonDecode(res.body);
-          raw = body is List
-              ? body
-              : (body['classrooms'] ?? body['data'] ?? []) as List;
-        }
-      }
-
       if (!mounted) return;
       setState(() {
         _classrooms = raw.map((e) => Map<String, dynamic>.from(e as Map)).toList();
