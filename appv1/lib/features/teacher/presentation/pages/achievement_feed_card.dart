@@ -1,6 +1,7 @@
 // achievement_feed_card.dart
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/utils/share_helper.dart';
 
 class AchievementFeedCard extends StatefulWidget {
   final Map<String, dynamic> post;
@@ -330,6 +331,25 @@ class _AchievementFeedCardState extends State<AchievementFeedCard> {
                   activeBg: Colors.transparent,
                   activeBorder: Colors.transparent,
                   onTap: widget.onComment,
+                ),
+                const SizedBox(width: 8),
+                _ActionChip(
+                  icon: Icons.share_outlined,
+                  label: 'Share',
+                  active: false,
+                  activeColor: Colors.teal,
+                  activeBg: Colors.transparent,
+                  activeBorder: Colors.transparent,
+                  onTap: () {
+                    final displayAuthor = isAdminPost ? 'Admin' : authorName;
+                    ShareHelper.shareAchievement(
+                      context: context,
+                      imageUrls: images,
+                      caption: post['caption']?.toString() ?? '',
+                      authorName: displayAuthor,
+                      className: subLine,
+                    );
+                  },
                 ),
               ],
             ),

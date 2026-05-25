@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/utils/share_helper.dart';
 
 class AchievementCard extends StatefulWidget {
   final Map<String, dynamic> post;
@@ -267,6 +268,21 @@ class _AchievementCardState extends State<AchievementCard> {
                         label: '$commentCount',
                         color: AppColors.textSecondary,
                         onTap: widget.onTap,
+                      ),
+                      const SizedBox(width: 16),
+                      _ActionBtn(
+                        icon: Icons.share_outlined,
+                        label: 'Share',
+                        color: AppColors.textSecondary,
+                        onTap: () {
+                          ShareHelper.shareAchievement(
+                            context: context,
+                            imageUrls: images,
+                            caption: caption,
+                            authorName: teacherName,
+                            className: className,
+                          );
+                        },
                       ),
                     ],
                   ),

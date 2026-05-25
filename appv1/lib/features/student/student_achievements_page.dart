@@ -2,6 +2,7 @@ import 'package:appv1/core/constants/api_constants.dart';
 import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:appv1/features/teacher/presentation/pages/achievement_comments_sheet.dart';
+import 'package:appv1/core/utils/share_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
@@ -636,6 +637,28 @@ class _StudentAchievementCardState extends State<_StudentAchievementCard> {
                   activeBg: Colors.transparent,
                   activeBorder: Colors.transparent,
                   onTap: widget.onComment,
+                ),
+                const SizedBox(width: 8),
+                _ActionBtn(
+                  icon: Icons.share_outlined,
+                  label: 'Share',
+                  active: false,
+                  activeColor: Colors.teal,
+                  activeBg: Colors.transparent,
+                  activeBorder: Colors.transparent,
+                  onTap: () {
+                    final authorName = (post['teacherName']?.toString() ?? '').isNotEmpty
+                        ? post['teacherName'].toString()
+                        : post['orgName']?.toString() ?? 'Admin';
+                    final className = post['className']?.toString() ?? '';
+                    ShareHelper.shareAchievement(
+                      context: context,
+                      imageUrls: images,
+                      caption: post['caption']?.toString() ?? '',
+                      authorName: authorName,
+                      className: className,
+                    );
+                  },
                 ),
               ],
             ),
