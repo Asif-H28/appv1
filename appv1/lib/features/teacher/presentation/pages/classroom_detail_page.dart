@@ -15,6 +15,7 @@ import '../widgets/classroom_notices_tab.dart';
 import '../widgets/classroom_notes_tab.dart';
 import '../widgets/classroom_requests_tab.dart';
 import '../widgets/classroom_tests_tab.dart';
+import '../widgets/classroom_homework_tab.dart';
 
 class ClassroomDetailPage extends StatefulWidget {
   final String classId;
@@ -95,6 +96,12 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage> {
       'label': 'Quizzes',
       'color': Colors.teal[600],
       'group': 0,
+    },
+    {
+      'icon': Icons.home_work_rounded,
+      'label': 'Homework',
+      'color': Colors.orange[700],
+      'group': 1,
     },
   ];
 
@@ -390,7 +397,7 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage> {
 
           const SizedBox(height: 24),
           _buildGroupTitle('COMMUNICATION'),
-          _buildMenuGroup([4, 5, 6]),
+          _buildMenuGroup([4, 5, 6, 9]),
         ],
       ),
     );
@@ -554,6 +561,13 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage> {
           classId: widget.classId,
           className: _classroom['className']?.toString(),
           subjects: _classroom['subjects'] as List?,
+        );
+      case 9: // Homework
+        return ClassroomHomeworkTab(
+          classId: widget.classId,
+          className: className,
+          orgId: _classroom['orgId']?.toString() ?? '',
+          subjects: typedSubjects,
         );
       default:
         return const SizedBox.shrink();
