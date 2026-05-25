@@ -30,10 +30,29 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
 
   List<Map<String, dynamic>> _posts = [];
 
+  int _currentPage = 1;
+  bool _hasMore = false;
+  bool _loadingMore = false;
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     _init();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      _loadMore();
+    }
   }
 
   Future<void> _init() async {
@@ -62,21 +81,27 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
     setState(() {
       _loading = true;
       _error = false;
+      _currentPage = 1;
     });
     try {
       final res = await http.get(
         Uri.parse(
-          '${ApiConstants.apiBaseUrl}/achievement/org/$_orgId',
+          '${ApiConstants.apiBaseUrl}/achievement/org/$_orgId?page=1&limit=3',
         ),
         headers: await ApiService.getHeaders(),
       );
       if (!mounted) return;
       if (res.statusCode == 200) {
         final body = jsonDecode(res.body) as Map<String, dynamic>;
+        final list = (body['achievements'] as List? ?? []);
+        final pagination = body['pagination'] as Map?;
+        final totalPages = pagination?['pages'] as int? ?? 1;
+
         setState(() {
-          _posts = (body['achievements'] as List? ?? [])
+          _posts = list
               .map((e) => Map<String, dynamic>.from(e as Map))
               .toList();
+          _hasMore = _currentPage < totalPages;
           _loading = false;
         });
       } else {
@@ -91,6 +116,52 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
           _error = true;
           _loading = false;
         });
+    }
+  }
+
+  Future<void> _loadMore() async {
+    if (_loading || _loadingMore || !_hasMore) return;
+
+    setState(() {
+      _loadingMore = true;
+    });
+
+    final nextPage = _currentPage + 1;
+    final url = '${ApiConstants.apiBaseUrl}/achievement/org/$_orgId?page=$nextPage&limit=3';
+
+    try {
+      final res = await http.get(
+        Uri.parse(url),
+        headers: await ApiService.getHeaders(),
+      );
+
+      if (!mounted) return;
+
+      if (res.statusCode == 200) {
+        final body = jsonDecode(res.body) as Map<String, dynamic>;
+        final list = (body['achievements'] as List? ?? []);
+        final pagination = body['pagination'] as Map?;
+        final totalPages = pagination?['pages'] as int? ?? 1;
+
+        setState(() {
+          _currentPage = nextPage;
+          _posts.addAll(
+            list.map((e) => Map<String, dynamic>.from(e as Map)).toList()
+          );
+          _hasMore = _currentPage < totalPages;
+          _loadingMore = false;
+        });
+      } else {
+        setState(() {
+          _loadingMore = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _loadingMore = false;
+        });
+      }
     }
   }
 
@@ -288,19 +359,30 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
               color: Colors.teal,
               onRefresh: _fetchFeed,
               child: ListView.builder(
+                controller: _scrollController,
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-                itemCount: _posts.length,
-                itemBuilder: (_, i) => Padding(
-                  padding: const EdgeInsets.only(bottom: 14),
-                  child: AchievementFeedCard(
-                    post: _posts[i],
-                    teacherId: _posts[i]['teacherId']?.toString() ?? '',
-                    onLike: () => _toggleLike(i),
-                    onComment: () => _openComments(i),
-                    onEdit: () => _openEdit(i),
-                    onDelete: () => _confirmDelete(i),
-                  ),
-                ),
+                itemCount: _posts.length + (_hasMore ? 1 : 0),
+                itemBuilder: (_, i) {
+                  if (i == _posts.length) {
+                    return const Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        child: CircularProgressIndicator(color: Colors.teal, strokeWidth: 2),
+                      ),
+                    );
+                  }
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 14),
+                    child: AchievementFeedCard(
+                      post: _posts[i],
+                      teacherId: _posts[i]['teacherId']?.toString() ?? '',
+                      onLike: () => _toggleLike(i),
+                      onComment: () => _openComments(i),
+                      onEdit: () => _openEdit(i),
+                      onDelete: () => _confirmDelete(i),
+                    ),
+                  );
+                },
               ),
             ),
       floatingActionButton: FloatingActionButton(

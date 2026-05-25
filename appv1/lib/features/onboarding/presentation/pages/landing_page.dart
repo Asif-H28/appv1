@@ -1107,6 +1107,26 @@ class _OrgResultCard extends StatelessWidget {
                   ),
                 ),
 
+                GestureDetector(
+                  onTap: () => _showPublicDetailsDrawer(context, name, orgId),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(3),
+                      border: Border.all(color: Colors.grey[300]!),
+                    ),
+                    child: Text(
+                      'View',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 11.5,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 6),
                 Container(
                   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(
@@ -1137,6 +1157,15 @@ class _OrgResultCard extends StatelessWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => _RoleSelectionSheet(orgName: orgName, orgId: orgId),
+    );
+  }
+
+  void _showPublicDetailsDrawer(BuildContext context, String orgName, String orgId) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _PublicDetailsSheet(orgName: orgName, orgId: orgId),
     );
   }
 }
@@ -1763,6 +1792,566 @@ class __TeacherRegisterSheetState extends State<_TeacherRegisterSheet> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// PUBLIC SCHOOL DETAILS BOTTOM SHEET
+// ─────────────────────────────────────────────────────────────
+
+class _PublicDetailsSheet extends StatefulWidget {
+  final String orgName;
+  final String orgId;
+
+  const _PublicDetailsSheet({required this.orgName, required this.orgId});
+
+  @override
+  State<_PublicDetailsSheet> createState() => _PublicDetailsSheetState();
+}
+
+class _PublicDetailsSheetState extends State<_PublicDetailsSheet> {
+  bool _isLoading = true;
+  String? _errorMsg;
+  Map<String, dynamic>? _publicData;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchPublicDetails();
+  }
+
+  Future<void> _fetchPublicDetails() async {
+    setState(() {
+      _isLoading = true;
+      _errorMsg = null;
+    });
+
+    try {
+      final res = await http.get(
+        Uri.parse('${ApiConstants.apiBaseUrl}/org/school/${widget.orgId}/public'),
+        headers: await ApiService.getHeaders(),
+      );
+
+      if (!mounted) return;
+
+      if (res.statusCode == 200) {
+        final body = jsonDecode(res.body);
+        if (body['success'] == true) {
+          setState(() {
+            _publicData = body['data'] as Map<String, dynamic>;
+            _isLoading = false;
+          });
+        } else {
+          setState(() {
+            _errorMsg = body['message']?.toString() ?? 'Failed to load details.';
+            _isLoading = false;
+          });
+        }
+      } else {
+        setState(() {
+          _errorMsg = 'Server returned error status: ${res.statusCode}';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _errorMsg = e.toString().contains('SocketException')
+            ? 'No internet connection. Please verify your connection.'
+            : 'An unexpected error occurred.';
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      padding: EdgeInsets.fromLTRB(16, 10, 16, 24 + bottomPadding),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.85,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          SizedBox(height: 12),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  'School Information',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  padding: EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  child: Icon(
+                    Icons.close_rounded,
+                    color: AppColors.textSecondary,
+                    size: 16,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 14),
+
+          Expanded(
+            child: SingleChildScrollView(
+              physics: BouncingScrollPhysics(),
+              child: _buildContent(),
+            ),
+          ),
+          
+          if (!_isLoading && _errorMsg == null && _publicData != null) ...[
+            SizedBox(height: 16),
+            _primaryBtn(
+              label: 'Join Organization',
+              isLoading: false,
+              loadingLabel: '',
+              icon: Icons.group_add_rounded,
+              onTap: () {
+                Navigator.pop(context);
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (_) => _RoleSelectionSheet(
+                    orgName: widget.orgName,
+                    orgId: widget.orgId,
+                  ),
+                );
+              },
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContent() {
+    if (_isLoading) {
+      return Container(
+        height: 200,
+        alignment: Alignment.center,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(
+              color: _accent,
+              strokeWidth: 3,
+            ),
+            SizedBox(height: 14),
+            Text(
+              'Fetching public details...',
+              style: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 13,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_errorMsg != null) {
+      return Container(
+        height: 200,
+        alignment: Alignment.center,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline_rounded, color: Colors.red[400], size: 44),
+            SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Text(
+                _errorMsg!,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 12.5,
+                ),
+              ),
+            ),
+            SizedBox(height: 16),
+            GestureDetector(
+              onTap: _fetchPublicDetails,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: _accent.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(3),
+                  border: Border.all(color: _accent.withOpacity(0.3)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.refresh_rounded, color: _accent, size: 14),
+                    SizedBox(width: 5),
+                    Text(
+                      'Retry',
+                      style: TextStyle(
+                        color: _accent,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_publicData == null) {
+      return Container(
+        height: 200,
+        alignment: Alignment.center,
+        child: Text(
+          'No details found.',
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+        ),
+      );
+    }
+
+    final data = _publicData!;
+    final name = data['schoolName']?.toString() ?? widget.orgName;
+    final address = data['address']?.toString() ?? '';
+    final rolesRaw = data['roles'] as List? ?? [];
+    final feeRaw = data['feeStructures'] as List? ?? [];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(3),
+            border: Border.all(color: _accent.withOpacity(0.15)),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: _accent.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(3),
+                  border: Border.all(color: _accent.withOpacity(0.2)),
+                ),
+                child: Icon(Icons.school_rounded, color: _accent, size: 24),
+              ),
+              SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14.5,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    if (address.isNotEmpty) ...[
+                      SizedBox(height: 4),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.location_on_outlined,
+                            size: 13,
+                            color: AppColors.textSecondary,
+                          ),
+                          SizedBox(width: 3),
+                          Expanded(
+                            child: Text(
+                              address,
+                              style: TextStyle(
+                                color: AppColors.textSecondary,
+                                fontSize: 11.5,
+                                height: 1.3,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: 20),
+
+        _sectionHeader('KEY STAFF & CONTACTS'),
+        SizedBox(height: 6),
+        if (rolesRaw.isEmpty)
+          _emptySection('No administrative staff listed.')
+        else
+          ListView.separated(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            itemCount: rolesRaw.length,
+            separatorBuilder: (_, __) => SizedBox(height: 8),
+            itemBuilder: (context, idx) {
+              final r = rolesRaw[idx] as Map<String, dynamic>;
+              final pos = r['position']?.toString() ?? 'Staff';
+              final person = r['assignedTo']?.toString() ?? 'Unassigned';
+              return Container(
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(3),
+                  border: Border.all(color: Colors.grey[200]!),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: _accent.withOpacity(0.06),
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                      child: Icon(
+                        Icons.person_rounded,
+                        color: _accent,
+                        size: 16,
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            pos,
+                            style: TextStyle(
+                              color: _accent,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 11.5,
+                            ),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            person,
+                            style: TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        SizedBox(height: 20),
+
+        _sectionHeader('FEE STRUCTURES'),
+        SizedBox(height: 6),
+        if (feeRaw.isEmpty)
+          _emptySection('No fee structures published.')
+        else
+          ListView.separated(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            itemCount: feeRaw.length,
+            separatorBuilder: (_, __) => SizedBox(height: 10),
+            itemBuilder: (context, idx) {
+              final fee = feeRaw[idx] as Map<String, dynamic>;
+              final title = fee['structureName']?.toString() ?? 'Fee Details';
+              final gradeFrom = fee['gradeFrom'];
+              final gradeTo = fee['gradeTo'];
+              final amount = fee['feeAmount'] ?? 0;
+              final hasBreakdown = fee['hasBreakdown'] == true;
+              final breakdownList = fee['breakdown'] as List? ?? [];
+
+              return Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(3),
+                  border: Border.all(color: _accent.withOpacity(0.15)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  title,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                                SizedBox(height: 3),
+                                Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey[100],
+                                    borderRadius: BorderRadius.circular(3),
+                                  ),
+                                  child: Text(
+                                    'Grades $gradeFrom - $gradeTo',
+                                    style: TextStyle(
+                                      color: AppColors.textSecondary,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Text(
+                            '₹$amount',
+                            style: TextStyle(
+                              color: _accent,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (hasBreakdown && breakdownList.isNotEmpty) ...[
+                      Divider(height: 1, color: Colors.grey[100]),
+                      Container(
+                        width: double.infinity,
+                        color: Colors.grey[50]!.withOpacity(0.5),
+                        padding: EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'BREAKDOWN',
+                              style: TextStyle(
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textSecondary,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            SizedBox(height: 6),
+                            ...breakdownList.map((item) {
+                              final comp = (item as Map<String, dynamic>)['component']?.toString() ?? 'Component';
+                              final amt = item['amount'] ?? 0;
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 4),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      comp,
+                                      style: TextStyle(
+                                        color: AppColors.textSecondary,
+                                        fontSize: 11.5,
+                                      ),
+                                    ),
+                                    Text(
+                                      '₹$amt',
+                                      style: TextStyle(
+                                        color: AppColors.textPrimary,
+                                        fontSize: 11.5,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              );
+            },
+          ),
+      ],
+    );
+  }
+
+  Widget _sectionHeader(String label) {
+    return Text(
+      label,
+      style: TextStyle(
+        fontSize: 10.5,
+        fontWeight: FontWeight.w700,
+        color: AppColors.textSecondary,
+        letterSpacing: 0.5,
+      ),
+    );
+  }
+
+  Widget _emptySection(String message) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(vertical: 16),
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(3),
+        border: Border.all(color: Colors.grey[100]!),
+      ),
+      child: Text(
+        message,
+        style: TextStyle(
+          color: AppColors.textSecondary,
+          fontSize: 12,
         ),
       ),
     );

@@ -25,13 +25,32 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
   bool _error = false;
   List<Map<String, dynamic>> _posts = [];
 
+  int _currentPage = 1;
+  bool _hasMore = false;
+  bool _loadingMore = false;
+  final ScrollController _scrollController = ScrollController();
+
   // shows on-screen in empty/error states
   String _debugInfo = '';
 
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     _init();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      _loadMore();
+    }
   }
 
   Future<void> _init() async {
@@ -69,9 +88,10 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
     setState(() {
       _loading = true;
       _error = false;
+      _currentPage = 1;
     });
 
-    final url = '${ApiConstants.apiBaseUrl}/achievement/org/$_orgId';
+    final url = '${ApiConstants.apiBaseUrl}/achievement/org/$_orgId?page=1&limit=3';
     debugPrint('==== [Achievements] GET $url');
 
     try {
@@ -98,14 +118,18 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
             (body['posts'] as List?) ??
             [];
 
+        final pagination = body['pagination'] as Map?;
+        final totalPages = pagination?['pages'] as int? ?? 1;
+
         debugPrint('==== [Achievements] list length = ${list.length}');
 
         setState(() {
           _posts = list
               .map((e) => Map<String, dynamic>.from(e as Map))
               .toList();
+          _hasMore = _currentPage < totalPages;
           _loading = false;
-          _debugInfo += ' | posts=${_posts.length}';
+          _debugInfo = 'orgId="$_orgId" | posts=${_posts.length}';
         });
       } else {
         setState(() {
@@ -121,6 +145,59 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
           _error = true;
           _loading = false;
         });
+    }
+  }
+
+  Future<void> _loadMore() async {
+    if (_loading || _loadingMore || !_hasMore) return;
+
+    setState(() {
+      _loadingMore = true;
+    });
+
+    final nextPage = _currentPage + 1;
+    final url = '${ApiConstants.apiBaseUrl}/achievement/org/$_orgId?page=$nextPage&limit=3';
+    debugPrint('==== [Achievements] LOAD MORE GET $url');
+
+    try {
+      final res = await http.get(
+        Uri.parse(url),
+        headers: await ApiService.getHeaders(),
+      );
+
+      if (!mounted) return;
+
+      if (res.statusCode == 200) {
+        final body = jsonDecode(res.body) as Map;
+        final list = (body['achievements'] as List?) ??
+            (body['data'] as List?) ??
+            (body['posts'] as List?) ??
+            [];
+
+        final pagination = body['pagination'] as Map?;
+        final totalPages = pagination?['pages'] as int? ?? 1;
+
+        setState(() {
+          _currentPage = nextPage;
+          _posts.addAll(
+            list.map((e) => Map<String, dynamic>.from(e as Map)).toList()
+          );
+          _hasMore = _currentPage < totalPages;
+          _loadingMore = false;
+          _debugInfo = 'orgId="$_orgId" | posts=${_posts.length}';
+        });
+      } else {
+        setState(() {
+          _loadingMore = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('==== [Achievements] LOAD MORE ERROR: $e');
+      if (mounted) {
+        setState(() {
+          _loadingMore = false;
+        });
+      }
     }
   }
 
@@ -264,15 +341,26 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
       color: Colors.teal,
       onRefresh: _fetchFeed,
       child: ListView.separated(
+        controller: _scrollController,
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-        itemCount: _posts.length,
+        itemCount: _posts.length + (_hasMore ? 1 : 0),
         separatorBuilder: (_, __) => const SizedBox(height: 14),
-        itemBuilder: (_, i) => _StudentAchievementCard(
-          post: _posts[i],
-          studentId: _studentId,
-          onLike: () => _toggleLike(i),
-          onComment: () => _openComments(i),
-        ),
+        itemBuilder: (_, i) {
+          if (i == _posts.length) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: CircularProgressIndicator(color: Colors.teal, strokeWidth: 2),
+              ),
+            );
+          }
+          return _StudentAchievementCard(
+            post: _posts[i],
+            studentId: _studentId,
+            onLike: () => _toggleLike(i),
+            onComment: () => _openComments(i),
+          );
+        },
       ),
     );
   }

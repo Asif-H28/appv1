@@ -78,7 +78,9 @@ class _HomePageState extends State<HomePage> {
       _totalClasses = classList.length;
       _totalStudents = studentTotal;
       _totalTeachers = countRes?['totalTeachers'] as int? ?? 0;
-      _totalAchievements = achList.length;
+      _totalAchievements = (achRes?['pagination']?['total'] as int?) ??
+          (achRes?['count'] as int?) ??
+          achList.length;
       _loading = false;
     });
   }
