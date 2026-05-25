@@ -19,14 +19,6 @@ class ShareHelper {
     final String shareText = _buildShareText(caption, authorName, className);
     try {
       await Clipboard.setData(ClipboardData(text: shareText));
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Caption copied to clipboard! (You can paste it directly in Instagram)'),
-            duration: Duration(seconds: 3),
-          ),
-        );
-      }
     } catch (e) {
       debugPrint('[ShareHelper] clipboard copy failed: $e');
     }
@@ -123,15 +115,6 @@ class ShareHelper {
   }
 
   static String _buildShareText(String caption, String? authorName, String? className) {
-    final buffer = StringBuffer();
-    if (authorName != null && authorName.isNotEmpty) {
-      buffer.write('Achievement by $authorName');
-      if (className != null && className.isNotEmpty) {
-        buffer.write(' ($className)');
-      }
-      buffer.write('\n\n');
-    }
-    buffer.write(caption);
-    return buffer.toString();
+    return caption;
   }
 }
