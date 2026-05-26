@@ -680,7 +680,7 @@ class ApiService {
       }
       return {
         'success': false,
-        'message': body['message'] ?? 'Failed to fetch vehicle location',
+        'message': body['error'] ?? body['message'] ?? 'Failed to fetch vehicle location',
       };
     } catch (e) {
       return {'success': false, 'message': 'Network error: $e'};

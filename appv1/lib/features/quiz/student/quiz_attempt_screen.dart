@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/constants/api_constants.dart';
+import '../../../core/services/api_service.dart';
 import 'result_review_screen.dart';
 
 class QuizAttemptScreen extends StatefulWidget {
@@ -97,7 +98,7 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> with WidgetsBindi
   Future<void> _fetchQuiz() async {
     setState(() => _isLoading = true);
     try {
-      final response = await http.get(Uri.parse('${ApiConstants.apiBaseUrl}/quiz/${widget.quizId}'));
+      final response = await ApiService.get('${ApiConstants.apiBaseUrl}/quiz/${widget.quizId}');
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final quizData = data['quiz'] ?? data['data'] ?? data;
@@ -209,9 +210,8 @@ class _QuizAttemptScreenState extends State<QuizAttemptScreen> with WidgetsBindi
         'timeTakenSeconds': timeTakenSeconds,
       };
 
-      final response = await http.post(
-        Uri.parse('${ApiConstants.apiBaseUrl}/quiz/submit'),
-        headers: {'Content-Type': 'application/json'},
+      final response = await ApiService.post(
+        '${ApiConstants.apiBaseUrl}/quiz/submit',
         body: jsonEncode(body),
       );
 

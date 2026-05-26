@@ -174,6 +174,7 @@ class VehicleMapView extends StatefulWidget {
 
 class _VehicleMapViewState extends State<VehicleMapView> {
   bool _isLoading = true;
+  String? _errorMessage;
   Map<String, dynamic>? _vehicle;
   final MapController _mapController = MapController();
   Timer? _timer;
@@ -250,22 +251,34 @@ class _VehicleMapViewState extends State<VehicleMapView> {
 
   Future<void> _fetchLocation() async {
     final res = await ApiService.getVehicleLocation(widget.vehicleId);
-    if (mounted && res['success']) {
-      final bool isFirstLoad = _isLoading;
-      setState(() {
-        _vehicle = res['vehicle'];
-        _isLoading = false;
-      });
+    if (mounted) {
+      if (res['success'] == true) {
+        final bool isFirstLoad = _isLoading;
+        setState(() {
+          _vehicle = res['vehicle'];
+          _isLoading = false;
+          _errorMessage = null;
+        });
 
-      if (_vehicle != null && _vehicle!['latitude'] != null) {
-        final lat = double.tryParse(_vehicle!['latitude'].toString()) ?? 0.0;
-        final lng = double.tryParse(_vehicle!['longitude'].toString()) ?? 0.0;
+        if (_vehicle != null && _vehicle!['latitude'] != null) {
+          final lat = double.tryParse(_vehicle!['latitude'].toString()) ?? 0.0;
+          final lng = double.tryParse(_vehicle!['longitude'].toString()) ?? 0.0;
 
-        // Only use .move() for subsequent updates.
-        // For the first load, MapOptions.initialCenter handles the camera.
-        if (!isFirstLoad) {
-          _mapController.move(LatLng(lat, lng), 16.0);
+          // Only use .move() for subsequent updates.
+          // For the first load, MapOptions.initialCenter handles the camera.
+          if (!isFirstLoad) {
+            _mapController.move(LatLng(lat, lng), 16.0);
+          }
         }
+      } else {
+        setState(() {
+          _isLoading = false;
+          if (res['message'] == 'Vehicle location not found') {
+            _errorMessage = 'Driver has not started the trip yet.';
+          } else {
+            _errorMessage = res['message'] ?? 'Failed to get location';
+          }
+        });
       }
     }
   }
@@ -312,51 +325,69 @@ class _VehicleMapViewState extends State<VehicleMapView> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: Color(0xFF0D9488)))
-          : Stack(
-              children: [
-                FlutterMap(
-                  mapController: _mapController,
-                  options: MapOptions(
-                    initialCenter: LatLng(lat, lng),
-                    initialZoom: 16.0,
-                  ),
-                  children: [
-                    TileLayer(
-                      urlTemplate: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-                      subdomains: const ['a', 'b', 'c', 'd'],
-                      userAgentPackageName: 'com.example.appv1',
+          : _errorMessage != null
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.location_off_rounded, size: 64, color: Colors.grey[400]),
+                        const SizedBox(height: 16),
+                        Text(
+                          _errorMessage!,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.grey[600], fontSize: 16, fontWeight: FontWeight.w500),
+                        ),
+                      ],
                     ),
-                    MarkerLayer(
-                      markers: [
-                        Marker(
-                          point: LatLng(lat, lng),
-                          width: 60,
-                          height: 60,
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Container(
-                                width: 45,
-                                height: 45,
-                                decoration: BoxDecoration(
-                                  color: (isActive ? const Color(0xFF0D9488) : Colors.grey)!.withOpacity(0.2),
-                                  shape: BoxShape.circle,
-                                ),
+                  ),
+                )
+              : Stack(
+                  children: [
+                    FlutterMap(
+                      mapController: _mapController,
+                      options: MapOptions(
+                        initialCenter: LatLng(lat, lng),
+                        initialZoom: 16.0,
+                      ),
+                      children: [
+                        TileLayer(
+                          urlTemplate: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+                          subdomains: const ['a', 'b', 'c', 'd'],
+                          userAgentPackageName: 'com.example.appv1',
+                        ),
+                        MarkerLayer(
+                          markers: [
+                            Marker(
+                              point: LatLng(lat, lng),
+                              width: 60,
+                              height: 60,
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  Container(
+                                    width: 45,
+                                    height: 45,
+                                    decoration: BoxDecoration(
+                                      color: (isActive ? const Color(0xFF0D9488) : Colors.grey)!.withOpacity(0.2),
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.directions_bus_rounded,
+                                    color: isActive ? const Color(0xFF0D9488) : Colors.grey[700],
+                                    size: 36,
+                                  ),
+                                ],
                               ),
-                              Icon(
-                                Icons.directions_bus_rounded,
-                                color: isActive ? const Color(0xFF0D9488) : Colors.grey[700],
-                                size: 36,
-                              ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ],
                 ),
-              ],
-            ),
     );
   }
 }
