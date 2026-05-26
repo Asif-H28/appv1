@@ -2,14 +2,11 @@ import 'package:appv1/core/constants/api_constants.dart';
 import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:appv1/core/services/api_service.dart';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
 import '../../../../core/constants/app_colors.dart';
-import 'student_header.dart';
 import 'student_attendance_summary_card.dart';
-import 'student_attendance_chart.dart';
 import 'student_attendance_records_list.dart';
 
 const Color _accent = Colors.teal;
@@ -20,10 +17,7 @@ class StudentAttendanceScreen extends StatefulWidget {
       _StudentAttendanceScreenState();
 }
 
-class _StudentAttendanceScreenState extends State<StudentAttendanceScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-
+class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
   bool _isLoading = true;
   String _error = '';
 
@@ -33,17 +27,12 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen>
   double _percentage = 0;
   List<Map<String, dynamic>> _records = [];
 
+  DateTime _selectedDate = DateTime.now();
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
     _fetchSummary();
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
   }
 
   Future<void> _fetchSummary() async {
@@ -66,7 +55,7 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen>
 
     try {
       final res = await ApiService.get(
-        '${ApiConstants.apiBaseUrl}/attendance/summary/$classId/$studentId',
+        '${ApiConstants.apiBaseUrl}/attendance/summary/$classId/$studentId?month=${_selectedDate.month}&year=${_selectedDate.year}',
       );
       if (!mounted) return;
 
@@ -135,7 +124,7 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen>
         ),
         child: Column(
           children: [
-            // ── Header with embedded tab bar ──
+            // ── Header ──
             _buildHeader(),
 
             // ── Body ──
@@ -144,54 +133,164 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen>
                   ? _buildLoader()
                   : _error.isNotEmpty
                   ? _buildError()
-                  : TabBarView(
-                      controller: _tabController,
-                      children: [
-                        // ── Tab 1: Daily Records ──
-                        RefreshIndicator(
-                          color: _accent,
-                          onRefresh: _fetchSummary,
-                          child: SingleChildScrollView(
-                            physics: AlwaysScrollableScrollPhysics(),
-                            padding: EdgeInsets.fromLTRB(14, 16, 14, 40),
-                            child: Column(
-                              children: [
-                                StudentAttendanceSummaryCard(
-                                  totalDays: _totalDays,
-                                  totalPresent: _totalPresent,
-                                  totalAbsent: _totalAbsent,
-                                  percentage: _percentage,
-                                  statusColor: _statusColor,
-                                  statusLabel: _statusLabel,
-                                ),
-                                SizedBox(height: 16),
-                                StudentAttendanceRecordsList(records: _records),
-                              ],
-                            ),
-                          ),
-                        ),
-
-                        // ── Tab 2: Insights ──
-                        RefreshIndicator(
-                          color: _accent,
-                          onRefresh: _fetchSummary,
-                          child: SingleChildScrollView(
-                            physics: AlwaysScrollableScrollPhysics(),
-                            padding: EdgeInsets.fromLTRB(14, 16, 14, 40),
-                            child: StudentAttendanceChart(
+                  : RefreshIndicator(
+                      color: _accent,
+                      onRefresh: _fetchSummary,
+                      child: SingleChildScrollView(
+                        physics: AlwaysScrollableScrollPhysics(),
+                        padding: EdgeInsets.fromLTRB(14, 16, 14, 40),
+                        child: Column(
+                          children: [
+                            _buildCalendar(),
+                            StudentAttendanceSummaryCard(
+                              totalDays: _totalDays,
                               totalPresent: _totalPresent,
                               totalAbsent: _totalAbsent,
                               percentage: _percentage,
                               statusColor: _statusColor,
-                              records: _records,
+                              statusLabel: _statusLabel,
                             ),
-                          ),
+                            SizedBox(height: 16),
+                            StudentAttendanceRecordsList(records: _records),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildCalendar() {
+    final year = _selectedDate.year;
+    final month = _selectedDate.month;
+    final daysInMonth = DateUtils.getDaysInMonth(year, month);
+    final firstDay = DateTime(year, month, 1);
+    final firstWeekday = firstDay.weekday; // 1=Mon, 7=Sun
+    final emptyDays = firstWeekday % 7; // Sunday=0, Monday=1, ..., Saturday=6
+    
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    
+    final attendanceMap = <int, String>{};
+    for (var record in _records) {
+      final dateStr = record['date']?.toString() ?? '';
+      final dt = DateTime.tryParse(dateStr);
+      if (dt != null && dt.year == year && dt.month == month) {
+        attendanceMap[dt.day] = record['attendance']?.toString().toLowerCase() ?? '';
+      }
+    }
+
+    return Container(
+      padding: EdgeInsets.all(16),
+      margin: EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey[200]!),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Month / Year selector
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                icon: Icon(Icons.chevron_left, color: _accent),
+                onPressed: () {
+                  setState(() {
+                    _selectedDate = DateTime(year, month - 1);
+                    _fetchSummary();
+                  });
+                },
+              ),
+              Text(
+                DateFormat('MMMM yyyy').format(_selectedDate),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textPrimary),
+              ),
+              IconButton(
+                icon: Icon(Icons.chevron_right, color: _accent),
+                onPressed: () {
+                  setState(() {
+                    _selectedDate = DateTime(year, month + 1);
+                    _fetchSummary();
+                  });
+                },
+              ),
+            ],
+          ),
+          SizedBox(height: 16),
+          // Days of week header
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+                .map((d) => Expanded(
+                      child: Center(
+                        child: Text(d, style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, fontSize: 12)),
+                      ),
+                    ))
+                .toList(),
+          ),
+          SizedBox(height: 8),
+          // Grid of days
+          GridView.builder(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 7,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+            ),
+            itemCount: emptyDays + daysInMonth,
+            itemBuilder: (context, index) {
+              if (index < emptyDays) {
+                return SizedBox(); // empty day slot
+              }
+              final day = index - emptyDays + 1;
+              final currentDayDate = DateTime(year, month, day);
+              
+              final isFuture = currentDayDate.isAfter(today);
+              final status = attendanceMap[day];
+              
+              Color bgColor = Colors.transparent;
+              Color textColor = AppColors.textPrimary;
+              
+              if (isFuture) {
+                textColor = Colors.grey[400]!;
+              } else if (status == 'present') {
+                bgColor = Colors.green[100]!;
+                textColor = Colors.green[800]!;
+              } else if (status == 'absent') {
+                bgColor = Colors.red[100]!;
+                textColor = Colors.red[800]!;
+              } else if (currentDayDate == today) {
+                bgColor = Colors.blue[50]!;
+                textColor = Colors.blue[800]!;
+              }
+
+              return Container(
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: bgColor,
+                  shape: BoxShape.circle,
+                ),
+                child: Text(
+                  '$day',
+                  style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 13),
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -303,59 +402,6 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen>
                               ),
                             ],
                           ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // ── Tab bar ──
-            Container(
-              margin: EdgeInsets.fromLTRB(14, 0, 14, 12),
-              height: 38,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(3),
-                border: Border.all(color: Colors.white.withOpacity(0.2)),
-              ),
-              child: TabBar(
-                controller: _tabController,
-                indicator: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(3),
-                ),
-                indicatorSize: TabBarIndicatorSize.tab,
-                labelColor: _accent,
-                unselectedLabelColor: Colors.white.withOpacity(0.85),
-                labelStyle: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                ),
-                unselectedLabelStyle: TextStyle(
-                  fontWeight: FontWeight.w500,
-                  fontSize: 12,
-                ),
-                padding: EdgeInsets.all(3),
-                dividerColor: Colors.transparent,
-                tabs: [
-                  Tab(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.list_alt_rounded, size: 14),
-                        SizedBox(width: 5),
-                        Text('Daily Records'),
-                      ],
-                    ),
-                  ),
-                  Tab(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.insights_rounded, size: 14),
-                        SizedBox(width: 5),
-                        Text('Insights'),
                       ],
                     ),
                   ),

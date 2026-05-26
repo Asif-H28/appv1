@@ -118,6 +118,8 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
   String _studentName = '';
   String _className = '';
   String _orgName = '';
+  String _orgId = '';
+  String _orgAddress = '';
   String _studentEmail = '';
 
   String get _testId =>
@@ -138,8 +140,28 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
     _studentName = prefs.getString('name') ?? '';
     _className = prefs.getString('className') ?? '';
     _orgName = prefs.getString('orgName') ?? '';
+    _orgId = prefs.getString('orgId') ?? '';
     _studentEmail = prefs.getString('email') ?? '';
+    await _fetchOrgDetails();
     await Future.wait([_fetchResult(), _fetchSummary()]);
+  }
+
+  Future<void> _fetchOrgDetails() async {
+    if (_orgId.isEmpty) return;
+    try {
+      final res = await http.get(
+        Uri.parse('${ApiConstants.apiBaseUrl}/org/school/$_orgId/public'),
+      );
+      if (res.statusCode == 200) {
+        final body = jsonDecode(res.body);
+        if (body['success'] == true && body['data'] != null) {
+          setState(() {
+            _orgName = body['data']['schoolName']?.toString() ?? _orgName;
+            _orgAddress = body['data']['address']?.toString() ?? '';
+          });
+        }
+      }
+    } catch (_) {}
   }
 
   // ── Fetch result ───────────────────────────────────────
@@ -379,10 +401,9 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
             // ── School header ──
             pw.Container(
               width: double.infinity,
-              padding: const pw.EdgeInsets.all(16),
+              padding: const pw.EdgeInsets.only(bottom: 12),
               decoration: pw.BoxDecoration(
-                color: teal,
-                borderRadius: pw.BorderRadius.circular(8),
+                border: pw.Border(bottom: pw.BorderSide(color: black, width: 2)),
               ),
               child: pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.center,
@@ -391,18 +412,31 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                     _orgName.isNotEmpty ? _orgName : 'School Name',
                     style: pw.TextStyle(
                       font: bold,
-                      fontSize: 18,
-                      color: white,
+                      fontSize: 22,
+                      color: black,
                     ),
                     textAlign: pw.TextAlign.center,
                   ),
-                  pw.SizedBox(height: 4),
+                  if (_orgAddress.isNotEmpty) ...[
+                    pw.SizedBox(height: 4),
+                    pw.Text(
+                      _orgAddress,
+                      style: pw.TextStyle(
+                        font: regular,
+                        fontSize: 11,
+                        color: grey600,
+                      ),
+                      textAlign: pw.TextAlign.center,
+                    ),
+                  ],
+                  pw.SizedBox(height: 12),
                   pw.Text(
-                    'Comprehensive Assessment Report',
+                    'COMPREHENSIVE ASSESSMENT REPORT',
                     style: pw.TextStyle(
-                      font: regular,
-                      fontSize: 11,
-                      color: white,
+                      font: bold,
+                      fontSize: 12,
+                      color: black,
+                      letterSpacing: 1.2,
                     ),
                     textAlign: pw.TextAlign.center,
                   ),
@@ -416,9 +450,9 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
               width: double.infinity,
               padding: const pw.EdgeInsets.all(12),
               decoration: pw.BoxDecoration(
-                color: lightTeal,
-                borderRadius: pw.BorderRadius.circular(6),
-                border: pw.Border.all(color: teal, width: 0.5),
+                color: grey50,
+                borderRadius: pw.BorderRadius.circular(4),
+                border: pw.Border.all(color: grey200, width: 1),
               ),
               child: pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
@@ -440,7 +474,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                     crossAxisAlignment: pw.CrossAxisAlignment.end,
                     children: [
                       _pdfKV(
-                          'Assessment', _title, bold, regular, darkTeal),
+                          'Assessment', _title, bold, regular, black),
                       pw.SizedBox(height: 4),
                       _pdfKV('Date', dateNow(), bold, regular, grey600),
                       pw.SizedBox(height: 4),
@@ -449,7 +483,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                           '${totalScored.toStringAsFixed(0)} / ${totalMax.toStringAsFixed(0)}',
                           bold,
                           bold,
-                          teal),
+                          black),
                     ],
                   ),
                 ],
@@ -461,20 +495,20 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
         build: (ctx) => [
           // ── Scholastic ──
           if (scholastic.isNotEmpty) ...[
-            _pdfSectionLabel('SCHOLASTIC AREAS', bold, teal),
+            _pdfSectionLabel('SCHOLASTIC AREAS', bold, black),
             pw.SizedBox(height: 6),
             pw.Table(
-              border: pw.TableBorder.all(color: grey200, width: 0.5),
+              border: pw.TableBorder.all(color: grey200, width: 1),
               children: [
                 // Header row
                 pw.TableRow(
-                  decoration: pw.BoxDecoration(color: teal),
+                  decoration: pw.BoxDecoration(color: grey200),
                   children: [
-                    _pdfCell('Subject', bold, white, isHeader: true),
-                    _pdfCell('Internal', bold, white, isHeader: true),
-                    _pdfCell('External', bold, white, isHeader: true),
-                    _pdfCell('Total', bold, white, isHeader: true),
-                    _pdfCell('Grade', bold, white, isHeader: true),
+                    _pdfCell('Subject', bold, black, isHeader: true),
+                    _pdfCell('Internal', bold, black, isHeader: true),
+                    _pdfCell('External', bold, black, isHeader: true),
+                    _pdfCell('Total', bold, black, isHeader: true),
+                    _pdfCell('Grade', bold, black, isHeader: true),
                   ],
                 ),
                 // Subject rows
@@ -501,24 +535,24 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                           align: pw.TextAlign.center),
                       _pdfCell(external, regular, black,
                           align: pw.TextAlign.center),
-                      _pdfCell(scored, bold, teal,
+                      _pdfCell(scored, bold, black,
                           align: pw.TextAlign.center),
-                      _pdfCell(grade, bold, darkTeal,
+                      _pdfCell(grade, bold, black,
                           align: pw.TextAlign.center),
                     ],
                   );
                 }),
                 // Total row
                 pw.TableRow(
-                  decoration: pw.BoxDecoration(color: lightTeal),
+                  decoration: pw.BoxDecoration(color: grey200),
                   children: [
-                    _pdfCell('TOTAL', bold, darkTeal),
+                    _pdfCell('TOTAL', bold, black),
                     _pdfCell('', regular, black),
                     _pdfCell('', regular, black),
                     _pdfCell(
                         '${totalScored.toStringAsFixed(0)} / ${totalMax.toStringAsFixed(0)}',
                         bold,
-                        darkTeal,
+                        black,
                         align: pw.TextAlign.center),
                     _pdfCell('', regular, black),
                   ],
@@ -530,16 +564,16 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
 
           // ── Co-scholastic ──
           if (coScholastic.isNotEmpty) ...[
-            _pdfSectionLabel('CO-SCHOLASTIC ACTIVITIES', bold, teal),
+            _pdfSectionLabel('CO-SCHOLASTIC ACTIVITIES', bold, black),
             pw.SizedBox(height: 6),
             pw.Table(
-              border: pw.TableBorder.all(color: grey200, width: 0.5),
+              border: pw.TableBorder.all(color: grey200, width: 1),
               children: [
                 pw.TableRow(
-                  decoration: pw.BoxDecoration(color: teal),
+                  decoration: pw.BoxDecoration(color: grey200),
                   children: [
-                    _pdfCell('Activity', bold, white, isHeader: true),
-                    _pdfCell('Grade', bold, white, isHeader: true),
+                    _pdfCell('Activity', bold, black, isHeader: true),
+                    _pdfCell('Grade', bold, black, isHeader: true),
                   ],
                 ),
                 ...coScholastic.asMap().entries.map((e) {
@@ -552,7 +586,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                     decoration: pw.BoxDecoration(color: bg),
                     children: [
                       _pdfCell(name, bold, black),
-                      _pdfCell(grade, bold, teal,
+                      _pdfCell(grade, bold, black,
                           align: pw.TextAlign.center),
                     ],
                   );
@@ -564,10 +598,10 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
 
           // ── AI Summary ──
           if (_summary != null) ...[
-            _pdfSectionLabel('AI PERFORMANCE SUMMARY', bold, teal),
+            _pdfSectionLabel('AI PERFORMANCE SUMMARY', bold, black),
             pw.SizedBox(height: 8),
-            _buildPdfSummarySection(_summary!, bold, regular, black, teal,
-                darkTeal, lightTeal, grey50),
+            _buildPdfSummarySection(_summary!, bold, regular, black, black,
+                black, grey50, grey50),
           ],
 
           // ── Footer note ──
@@ -650,17 +684,19 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
             width: double.infinity,
             padding: const pw.EdgeInsets.all(12),
             decoration: pw.BoxDecoration(
-              color: PdfColor.fromHex('#0D47A1'),
-              borderRadius: pw.BorderRadius.circular(6),
+              color: PdfColor.fromHex('#FAFAFA'),
+              borderRadius: pw.BorderRadius.circular(4),
+              border: pw.Border.all(color: PdfColor.fromHex('#EEEEEE'), width: 1),
             ),
             child: pw.Text(
               '"$motivationalNote"',
               style: pw.TextStyle(
                 font: regular,
                 fontSize: 10,
-                color: PdfColors.white,
+                color: PdfColors.black,
                 fontStyle: pw.FontStyle.italic,
               ),
+              textAlign: pw.TextAlign.center,
             ),
           ),
         ],
@@ -673,33 +709,35 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
     String text,
     pw.Font bold,
     pw.Font regular,
-    PdfColor teal,
-    PdfColor lightTeal, {
+    PdfColor borderColor,
+    PdfColor bgColor, {
     bool isBullet = true,
     List<String> bullets = const [],
   }) {
     return pw.Container(
       width: double.infinity,
       decoration: pw.BoxDecoration(
-        color: lightTeal,
-        borderRadius: pw.BorderRadius.circular(6),
-        border: pw.Border.all(color: teal, width: 0.3),
+        color: PdfColors.white,
+        borderRadius: pw.BorderRadius.circular(4),
+        border: pw.Border.all(color: PdfColor.fromHex('#EEEEEE'), width: 1),
       ),
       child: pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         children: [
           pw.Container(
+            decoration: pw.BoxDecoration(color: PdfColor.fromHex('#FAFAFA')),
             padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            width: double.infinity,
             child: pw.Text(
               title.toUpperCase(),
               style: pw.TextStyle(
                 font: bold,
-                fontSize: 9,
-                color: teal,
+                fontSize: 10,
+                color: PdfColors.black,
               ),
             ),
           ),
-          pw.Container(height: 0.5, color: teal),
+          pw.Container(height: 1, color: PdfColor.fromHex('#EEEEEE')),
           pw.Padding(
             padding: const pw.EdgeInsets.all(10),
             child: bullets.isNotEmpty
@@ -717,7 +755,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                                       style: pw.TextStyle(
                                           font: bold,
                                           fontSize: 10,
-                                          color: teal)),
+                                          color: PdfColors.black)),
                                   pw.Expanded(
                                     child: pw.Text(b,
                                         style: pw.TextStyle(

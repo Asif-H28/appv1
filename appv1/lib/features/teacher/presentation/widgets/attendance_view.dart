@@ -396,7 +396,7 @@ class _AttendanceViewState extends State<AttendanceView> {
   // â”€â”€ Sticky save button â”€â”€
   Widget _buildSaveBar() {
     return Container(
-      padding: EdgeInsets.fromLTRB(14, 10, 14, 14),
+      padding: EdgeInsets.fromLTRB(14, 10, 14, 50),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border(top: BorderSide(color: Colors.grey[100]!)),
