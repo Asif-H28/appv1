@@ -241,13 +241,15 @@ class _TeacherQuizListScreenState extends State<TeacherQuizListScreen> {
                                   ],
                                 ),
                                 const SizedBox(height: 20),
-                                Row(
+                                Wrap(
+                                  spacing: 16,
+                                  runSpacing: 8,
+                                  crossAxisAlignment: WrapCrossAlignment.center,
                                   children: [
                                     DifficultyBadge(
                                       difficulty:
                                           quiz['difficulty'] ?? 'medium',
                                     ),
-                                    const SizedBox(width: 24),
                                     Text(
                                       '${quiz['totalQuestions']} Qs',
                                       style: TextStyle(
@@ -256,20 +258,24 @@ class _TeacherQuizListScreenState extends State<TeacherQuizListScreen> {
                                         fontSize: 15,
                                       ),
                                     ),
-                                    const SizedBox(width: 24),
-                                    Icon(
-                                      Icons.calendar_today_outlined,
-                                      size: 18,
-                                      color: Colors.blueGrey[300],
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      dateStr,
-                                      style: TextStyle(
-                                        color: Colors.blueGrey[600],
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 15,
-                                      ),
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.calendar_today_outlined,
+                                          size: 18,
+                                          color: Colors.blueGrey[300],
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          dateStr,
+                                          style: TextStyle(
+                                            color: Colors.blueGrey[600],
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),

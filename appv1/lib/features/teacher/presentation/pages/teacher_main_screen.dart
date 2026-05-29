@@ -14,6 +14,7 @@ import 'teacher_classroom_page.dart';
 import 'teacher_dashboard_page.dart';
 import 'teacher_settings_page.dart';
 import 'teacher_achievements_page.dart';
+import 'teacher_attendance_page.dart';
 import '../../../chat/conversation_list_screen.dart';
 import '../../../../core/services/chat_socket_service.dart';
 import '../../../../core/services/api_service.dart';
@@ -222,6 +223,20 @@ class _TeacherMainScreenState extends State<TeacherMainScreen> {
                   onTap: () {
                     Navigator.pop(context);
                     setState(() => _currentTab = 4);
+                  },
+                ),
+                _buildDrawerItem(
+                  icon: Icons.how_to_reg_rounded,
+                  title: 'My Attendance',
+                  isSelected: false,
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const TeacherAttendancePage(),
+                      ),
+                    );
                   },
                 ),
                 _buildDrawerItem(

@@ -6,6 +6,7 @@ import '../../../core/constants/app_colors.dart';
 import 'pages/home_page.dart';
 import 'pages/settings_page.dart';
 import 'pages/admin_achievements_page.dart';
+import 'pages/admin_attendance_page.dart';
 import 'pages/notification_service.dart';
 import 'pages/app_update_page.dart';
 import '../chat/conversation_list_screen.dart';
@@ -463,6 +464,20 @@ class _MainAppScreenState extends State<MainAppScreen> {
                   onTap: () {
                     Navigator.pop(context);
                     setState(() => _currentIndex = 2);
+                  },
+                ),
+                _buildDrawerItem(
+                  icon: Icons.fact_check_rounded,
+                  title: 'Attendance',
+                  isSelected: false,
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AdminAttendancePage(),
+                      ),
+                    );
                   },
                 ),
                 _buildDrawerItem(
