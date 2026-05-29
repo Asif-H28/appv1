@@ -7,6 +7,7 @@ import 'pages/home_page.dart';
 import 'pages/settings_page.dart';
 import 'pages/admin_achievements_page.dart';
 import 'pages/admin_attendance_page.dart';
+import '../support/presentation/pages/support_page.dart';
 import 'pages/notification_service.dart';
 import 'pages/app_update_page.dart';
 import '../chat/conversation_list_screen.dart';
@@ -476,6 +477,20 @@ class _MainAppScreenState extends State<MainAppScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (_) => const AdminAttendancePage(),
+                      ),
+                    );
+                  },
+                ),
+                _buildDrawerItem(
+                  icon: Icons.help_outline_rounded,
+                  title: 'Help',
+                  isSelected: false,
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const SupportPage(),
                       ),
                     );
                   },

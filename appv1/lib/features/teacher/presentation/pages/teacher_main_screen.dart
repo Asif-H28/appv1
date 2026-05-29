@@ -15,6 +15,7 @@ import 'teacher_dashboard_page.dart';
 import 'teacher_settings_page.dart';
 import 'teacher_achievements_page.dart';
 import 'teacher_attendance_page.dart';
+import '../../../support/presentation/pages/support_page.dart';
 import '../../../chat/conversation_list_screen.dart';
 import '../../../../core/services/chat_socket_service.dart';
 import '../../../../core/services/api_service.dart';
@@ -235,6 +236,20 @@ class _TeacherMainScreenState extends State<TeacherMainScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (_) => const TeacherAttendancePage(),
+                      ),
+                    );
+                  },
+                ),
+                _buildDrawerItem(
+                  icon: Icons.help_outline_rounded,
+                  title: 'Help',
+                  isSelected: false,
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const SupportPage(),
                       ),
                     );
                   },

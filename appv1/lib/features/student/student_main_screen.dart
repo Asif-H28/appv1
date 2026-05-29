@@ -14,6 +14,7 @@ import '../notification_studio/controllers/notification_studio_controller.dart';
 import '../main_app/pages/login_page.dart';
 import '../main_app/pages/app_update_page.dart';
 import 'student_logout_modal.dart';
+import '../support/presentation/pages/support_page.dart';
 
 
 const Color _accent = Colors.teal;
@@ -400,6 +401,20 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
                       );
                     },
                   ),
+                _buildDrawerItem(
+                  icon: Icons.help_outline_rounded,
+                  title: 'Help',
+                  isSelected: false,
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const SupportPage(),
+                      ),
+                    );
+                  },
+                ),
                 _buildDrawerItem(
                   icon: Icons.system_update_rounded,
                   title: 'App Update',
