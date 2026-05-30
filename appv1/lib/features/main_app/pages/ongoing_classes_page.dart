@@ -95,7 +95,8 @@ class _OngoingClassesPageState extends State<OngoingClassesPage> with SingleTick
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
           setState(() {
-            _allClasses = data['classrooms'] ?? data['classes'] ?? [];
+            final rawClasses = data['classrooms'] ?? data['classes'] ?? [];
+            _allClasses = (rawClasses as List).where((c) => c['ongoingPeriod'] != null).toList();
             _filteredClasses = List.from(_allClasses);
             _isLoading = false;
           });
