@@ -189,7 +189,6 @@ class _TeacherDrawerState extends State<TeacherDrawer> {
                   iconColor: Colors.red[600],
                   textColor: Colors.red[600],
                   onTap: () {
-                    Navigator.pop(context);
                     _logout(context);
                   },
                 ),
