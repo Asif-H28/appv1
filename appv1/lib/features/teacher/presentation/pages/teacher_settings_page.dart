@@ -1,331 +1,260 @@
+import 'package:flutter/material.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../widgets/teacher_drawer.dart';
+import 'teacher_basic_details_page.dart';
+import 'teacher_additional_details_page.dart';
+import 'teacher_leave_page.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:appv1/core/constants/api_constants.dart';
 import 'package:appv1/core/services/api_service.dart';
-import 'dart:convert';
-import 'package:flutter/material.dart';
-import 'package:appv1/core/services/api_service.dart';
 import 'package:appv1/core/network/dio_http_adapter.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
-import '../../../../core/constants/app_colors.dart';
-import '../../../notification_studio/controllers/notification_studio_controller.dart';
-import '../../../main_app/pages/login_page.dart';
 import 'package:appv1/features/main_app/pages/manage_vehicles_page.dart';
-import 'teacher_profile_section.dart';
-import 'teacher_leave_section.dart';
 
 class TeacherSettingsPage extends StatefulWidget {
   @override
   _TeacherSettingsPageState createState() => _TeacherSettingsPageState();
 }
 
-class _TeacherSettingsPageState extends State<TeacherSettingsPage>
-    with SingleTickerProviderStateMixin {
-  bool _isLoggingOut = false;
-  late TabController _tabController;
+class _TeacherSettingsPageState extends State<TeacherSettingsPage> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  
+  bool _isCoordinator = false;
+  String _orgId = '';
+  String _teacherId = '';
+  String _teacherName = '';
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _loadProfile();
   }
 
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  void _confirmLogout() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
-        titlePadding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-        contentPadding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-        actionsPadding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(3),
-              ),
-              child: Icon(
-                Icons.logout_rounded,
-                color: Colors.red[600],
-                size: 15,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Text(
-              'Logout',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-                color: AppColors.textPrimary,
-              ),
-            ),
-          ],
-        ),
-        content: Text(
-          'Are you sure you want to sign out of your account?',
-          style: TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 12,
-            height: 1.5,
-          ),
-        ),
-        actions: [
-          Row(
-            children: [
-              Expanded(
-                child: SizedBox(
-                  height: 36,
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.textSecondary,
-                      side: BorderSide(color: Colors.grey[300]!),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                    ),
-                    child: Text(
-                      'Cancel',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: SizedBox(
-                  height: 36,
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.pop(ctx);
-                      _performLogout();
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.red[600],
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                      alignment: Alignment.center,
-                      child: const Text(
-                        'Logout',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _performLogout() async {
-    setState(() => _isLoggingOut = true);
+  Future<void> _loadProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    _teacherId = prefs.getString('teacherId') ?? '';
+    if (_teacherId.isEmpty) return;
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final teacherId = prefs.getString('teacherId') ?? '';
-      if (teacherId.isNotEmpty) {
-        try {
-          await http.post(
-            Uri.parse(
-              '${ApiConstants.apiBaseUrl}/notification/fcm/teacher/clear',
-            ),
-            headers: await ApiService.getHeaders(),
-            body: jsonEncode({'teacherId': teacherId}),
-          );
-        } catch (_) {}
+      final res = await http.get(
+        Uri.parse('${ApiConstants.apiBaseUrl}/teacher/$_teacherId/profile'),
+        headers: await ApiService.getHeaders(),
+      );
+      if (!mounted) return;
+      if (res.statusCode == 200) {
+        final t = (jsonDecode(res.body) as Map)['teacher'] as Map;
+        setState(() {
+          _isCoordinator = t['isTransportCoordinator'] ?? false;
+          _orgId = t['orgId'] ?? '';
+          _teacherName = t['name'] ?? '';
+        });
       }
-      await prefs.clear();
-      NotificationStudioController().disconnect();
-      if (!mounted) return;
-      setState(() => _isLoggingOut = false);
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => LoginPage()),
-        (route) => false,
-      );
-    } catch (_) {
-      if (!mounted) return;
-      setState(() => _isLoggingOut = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Logout failed. Please try again.'),
-          backgroundColor: Colors.red[600],
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
-        ),
-      );
-    }
+    } catch (_) {}
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Column(
-        children: [
-          _buildHeader(),
-          Container(
-            color: Colors.white,
-            child: TabBar(
-              controller: _tabController,
-              labelColor: Colors.teal,
-              unselectedLabelColor: AppColors.textSecondary,
-              indicatorColor: Colors.teal,
-              indicatorWeight: 2,
-              labelStyle: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
+      key: _scaffoldKey,
+      backgroundColor: const Color(0xFFF5F6FA),
+      drawer: const TeacherDrawer(currentRoute: TeacherDrawerRoute.settings),
+      appBar: _buildAppBar(),
+      body: _buildMainMenu(),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      backgroundColor: Colors.teal,
+      elevation: 1,
+      centerTitle: false,
+      leadingWidth: 56,
+      leading: Padding(
+        padding: const EdgeInsets.only(left: 12),
+        child: Center(
+          child: GestureDetector(
+            onTap: () {
+              _scaffoldKey.currentState?.openDrawer();
+            },
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(6),
               ),
-              unselectedLabelStyle: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
+              child: const Icon(
+                Icons.menu_rounded,
+                color: Colors.white,
+                size: 20,
               ),
-              tabs: const [
-                Tab(text: 'Profile'),
-                Tab(text: 'Leave'),
-              ],
             ),
           ),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
-                  child: const TeacherProfileSection(),
-                ),
-                const TeacherLeaveSection(),
-              ],
+        ),
+      ),
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Settings',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
             ),
+          ),
+          Text(
+            'Teacher Portal',
+            style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 12),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildHeader() {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.teal, Color(0xFF00897B)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(7),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(3),
-                  border: Border.all(color: Colors.white.withOpacity(0.25)),
-                ),
-                child: const Icon(
-                  Icons.sync_alt,
-                  color: Colors.white,
-                  size: 16,
-                ),
-              ),
-              const SizedBox(width: 10),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'SchoolSync',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
+  Widget _buildMainMenu() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 120),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildGroupTitle('PROFILE SETTINGS'),
+          _buildMenuGroup([
+            {
+              'icon': Icons.person_outline_rounded,
+              'label': 'Basic Details',
+              'color': Colors.blue[600]!,
+              'onTap': () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TeacherBasicDetailsPage())),
+            },
+            {
+              'icon': Icons.more_horiz_rounded,
+              'label': 'Additional Details',
+              'color': Colors.purple[600]!,
+              'onTap': () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TeacherAdditionalDetailsPage())),
+            },
+          ]),
+          const SizedBox(height: 24),
+          _buildGroupTitle('LEAVE MANAGEMENT'),
+          _buildMenuGroup([
+            {
+              'icon': Icons.event_busy_rounded,
+              'label': 'Leaves',
+              'color': Colors.orange[600]!,
+              'onTap': () => Navigator.push(context, MaterialPageRoute(builder: (_) => const TeacherLeavePage())),
+            },
+            if (_isCoordinator)
+              {
+                'icon': Icons.directions_bus_rounded,
+                'label': 'Manage Vehicles',
+                'color': Colors.teal[600]!,
+                'onTap': () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ManageVehiclesPage(
+                          orgId: _orgId,
+                          coordinatorId: _teacherId,
+                          coordinatorName: _teacherName,
+                        ),
                       ),
                     ),
-                    Text(
-                      'Teacher Portal',
-                      style: TextStyle(color: Colors.white70, fontSize: 10.5),
-                    ),
-                  ],
-                ),
+              },
+          ]),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGroupTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 10),
+      child: Text(
+        title,
+        style: TextStyle(
+          color: AppColors.textSecondary,
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.8,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMenuGroup(List<Map<String, dynamic>> items) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(3),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: List.generate(items.length, (i) {
+          final item = items[i];
+          final isLast = i == items.length - 1;
+
+          return Column(
+            children: [
+              _buildMenuItem(
+                icon: item['icon'] as IconData,
+                label: item['label'] as String,
+                color: item['color'] as Color,
+                onTap: item['onTap'] as VoidCallback,
               ),
-              if (_isLoggingOut)
-                const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    color: Colors.white,
-                    strokeWidth: 2,
-                  ),
-                )
-              else
-                GestureDetector(
-                  onTap: _confirmLogout,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 11,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.red[600]!.withOpacity(0.9),
-                      borderRadius: BorderRadius.circular(3),
-                      border: Border.all(color: Colors.white.withOpacity(0.3)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: const [
-                        Icon(
-                          Icons.logout_rounded,
-                          color: Colors.white,
-                          size: 13,
-                        ),
-                        SizedBox(width: 5),
-                        Text(
-                          'Logout',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+              if (!isLast)
+                Padding(
+                  padding: const EdgeInsets.only(left: 60),
+                  child: Divider(height: 1, color: Colors.grey[100]),
                 ),
             ],
-          ),
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _buildMenuItem({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(3),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.12),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 20),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: Colors.grey[300],
+              size: 14,
+            ),
+          ],
         ),
       ),
     );
   }
 }
-

@@ -64,13 +64,6 @@ class NotificationService {
         >()
         ?.createNotificationChannel(notifChannel);
 
-    // ✅ Android 13+ — request POST_NOTIFICATIONS permission
-    await localNotif
-        .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin
-        >()
-        ?.requestNotificationsPermission();
-
     await localNotif.initialize(
       const InitializationSettings(
         android: AndroidInitializationSettings('@mipmap/ic_launcher'),
@@ -96,6 +89,15 @@ class NotificationService {
   // ── Request permission ───────────────────────────────
   static Future<bool> requestPermission() async {
     try {
+      // ✅ Android 13+ — request POST_NOTIFICATIONS permission
+      if (!kIsWeb) {
+        await localNotif
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >()
+            ?.requestNotificationsPermission();
+      }
+
       final settings = await FirebaseMessaging.instance.requestPermission(
         alert: true,
         badge: true,

@@ -7,14 +7,14 @@ import 'package:appv1/core/network/dio_http_adapter.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
 
-class TeacherLeaveSection extends StatefulWidget {
-  const TeacherLeaveSection({super.key});
+class TeacherLeavePage extends StatefulWidget {
+  const TeacherLeavePage({super.key});
 
   @override
-  State<TeacherLeaveSection> createState() => _TeacherLeaveSectionState();
+  State<TeacherLeavePage> createState() => _TeacherLeavePageState();
 }
 
-class _TeacherLeaveSectionState extends State<TeacherLeaveSection> {
+class _TeacherLeavePageState extends State<TeacherLeavePage> {
   String _teacherId = '';
   String _orgId = '';
 
@@ -319,19 +319,35 @@ class _TeacherLeaveSectionState extends State<TeacherLeaveSection> {
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      color: Colors.teal,
-      onRefresh: _fetchLeaves,
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildApplyForm(),
-            const SizedBox(height: 24),
-            _buildLeaveHistory(),
-          ],
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F6FA),
+      appBar: AppBar(
+        backgroundColor: Colors.teal,
+        elevation: 1,
+        title: const Text(
+          'Leave Management',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
+      body: RefreshIndicator(
+        color: Colors.teal,
+        onRefresh: _fetchLeaves,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildApplyForm(),
+              const SizedBox(height: 24),
+              _buildLeaveHistory(),
+            ],
+          ),
         ),
       ),
     );

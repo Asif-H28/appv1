@@ -1,5 +1,6 @@
 import 'package:appv1/core/services/api_service.dart';
 import 'package:appv1/features/main_app/pages/manage_vehicles_page.dart';
+import 'package:appv1/features/main_app/pages/admin_teacher_additional_details_page.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -601,15 +602,95 @@ class _TeachersPageState extends State<TeachersPage> {
     final name = teacher['name'] ?? 'Unknown';
     final teacherId = teacher['teacherId'] ?? '';
     return [
-      _detailItem('Full Name', name, Icons.person_outline),
-      _detailItem('Email Address', teacher['email'] ?? 'N/A', Icons.email_outlined),
-      _detailItem('Phone Number', teacher['phoneNumber'] ?? 'N/A', Icons.phone_outlined),
-      _detailItem('Gender', teacher['gender'] ?? 'N/A', Icons.wc_outlined),
-      _detailItem('Date of Birth', teacher['dob'] ?? 'N/A', Icons.cake_outlined),
-      _detailItem('Address', teacher['address'] ?? 'N/A', Icons.location_on_outlined),
-      _detailItem('Joined On', _formatDate(teacher['createdAt']), Icons.calendar_today_outlined),
+      Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey[200]!),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            _detailItem('Full Name', name, Icons.person_outline),
+            _detailItem('Email Address', teacher['email'] ?? 'N/A', Icons.email_outlined),
+            _detailItem('Phone Number', teacher['phoneNumber'] ?? 'N/A', Icons.phone_outlined),
+            _detailItem('Gender', teacher['gender'] ?? 'N/A', Icons.wc_outlined),
+            _detailItem('Date of Birth', teacher['dob'] ?? 'N/A', Icons.cake_outlined),
+            _detailItem('Address', teacher['address'] ?? 'N/A', Icons.location_on_outlined),
+            _detailItem('Joined On', _formatDate(teacher['createdAt']), Icons.calendar_today_outlined, isLast: true),
+          ],
+        ),
+      ),
       
-      const SizedBox(height: 24),
+      const SizedBox(height: 16),
+      
+      GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => AdminTeacherAdditionalDetailsPage(
+                teacherId: teacherId,
+                teacherName: name,
+              ),
+            ),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+          decoration: BoxDecoration(
+            color: Colors.teal.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.teal.withOpacity(0.3)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.teal.withOpacity(0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.assignment_ind_outlined, color: Colors.teal, size: 20),
+              ),
+              const SizedBox(width: 16),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'View Additional Details',
+                      style: TextStyle(
+                        color: Colors.teal,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'Education, certifications, and more',
+                      style: TextStyle(
+                        color: Colors.teal,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.arrow_forward_ios_rounded, color: Colors.teal, size: 14),
+            ],
+          ),
+        ),
+      ),
+      
+      const SizedBox(height: 32),
       const Text(
         'ROLES & PERMISSIONS',
         style: TextStyle(
@@ -626,7 +707,7 @@ class _TeachersPageState extends State<TeachersPage> {
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: Colors.teal.withOpacity(0.04),
-            borderRadius: BorderRadius.circular(3),
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(color: Colors.teal.withOpacity(0.2)),
           ),
           child: Column(
@@ -707,7 +788,7 @@ class _TeachersPageState extends State<TeachersPage> {
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(3),
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(color: Colors.teal.withOpacity(0.3)),
           ),
           child: Row(
@@ -757,7 +838,7 @@ class _TeachersPageState extends State<TeachersPage> {
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: Colors.redAccent.withOpacity(0.04),
-            borderRadius: BorderRadius.circular(3),
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(color: Colors.redAccent.withOpacity(0.2)),
           ),
           child: Row(
@@ -799,32 +880,47 @@ class _TeachersPageState extends State<TeachersPage> {
     ];
   }
 
-  Widget _detailItem(String label, String value, IconData icon) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 20, color: Colors.teal),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: const TextStyle(fontSize: 12, color: Color(0xFF718096), fontWeight: FontWeight.w500),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  value,
-                  style: const TextStyle(fontSize: 15, color: Color(0xFF2D3748), fontWeight: FontWeight.bold),
-                ),
-              ],
+  Widget _detailItem(String label, String value, IconData icon, {bool isLast = false}) {
+    return Column(
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.grey[50],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, size: 18, color: Colors.teal[600]),
             ),
-          ),
-        ],
-      ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label.toUpperCase(),
+                    style: const TextStyle(fontSize: 10, color: Color(0xFF718096), fontWeight: FontWeight.bold, letterSpacing: 0.5),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    value,
+                    style: const TextStyle(fontSize: 14, color: Color(0xFF2D3748), fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        if (!isLast)
+          Padding(
+            padding: const EdgeInsets.only(left: 50, top: 12, bottom: 12),
+            child: Divider(height: 1, color: Colors.grey[100]),
+          )
+        else
+          const SizedBox(height: 4),
+      ],
     );
   }
 
