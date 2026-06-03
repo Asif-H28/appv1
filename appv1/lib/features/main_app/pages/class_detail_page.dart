@@ -1,6 +1,7 @@
 import 'package:appv1/core/constants/api_constants.dart';
 import 'package:appv1/core/services/api_service.dart';
 import 'package:appv1/features/teacher/presentation/pages/assessment_results_page.dart';
+import 'package:appv1/features/learning_resources/screens/learning_resources_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:http/http.dart' as http;

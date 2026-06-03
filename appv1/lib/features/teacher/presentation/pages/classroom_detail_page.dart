@@ -16,6 +16,7 @@ import '../widgets/classroom_notes_tab.dart';
 import '../widgets/classroom_requests_tab.dart';
 import '../widgets/classroom_tests_tab.dart';
 import '../widgets/classroom_homework_tab.dart';
+import 'package:appv1/features/learning_resources/screens/learning_resources_screen.dart';
 
 class ClassroomDetailPage extends StatefulWidget {
   final String classId;
@@ -102,6 +103,12 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage> {
       'label': 'Homework',
       'color': Colors.orange[700],
       'group': 1,
+    },
+    {
+      'icon': Icons.video_library_rounded,
+      'label': 'Learning Resources',
+      'color': Colors.red[600],
+      'group': 0,
     },
   ];
 
@@ -393,7 +400,7 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage> {
         children: [
           // ── Grouped Menu Items ──
           _buildGroupTitle('ACADEMIC MANAGEMENT'),
-          _buildMenuGroup([0, 1, 2, 3, 7, 8]),
+          _buildMenuGroup([0, 1, 2, 3, 7, 8, 10]),
 
           const SizedBox(height: 24),
           _buildGroupTitle('COMMUNICATION'),
@@ -568,6 +575,10 @@ class _ClassroomDetailPageState extends State<ClassroomDetailPage> {
           className: className,
           orgId: _classroom['orgId']?.toString() ?? '',
           subjects: typedSubjects,
+        );
+      case 10: // Learning Resources
+        return LearningResourcesScreen(
+          classData: {..._classroom, 'classId': widget.classId},
         );
       default:
         return const SizedBox.shrink();

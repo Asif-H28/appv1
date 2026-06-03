@@ -10,6 +10,7 @@ import 'student_classroom_notes_tab.dart';
 import 'student_classroom_tests_tab.dart';
 import '../quiz/student/student_quiz_list_screen.dart';
 import 'student_classroom_homework_tab.dart';
+import 'package:appv1/features/learning_resources/screens/learning_resources_screen.dart';
 
 const Color _accent = Colors.teal;
 
@@ -332,6 +333,13 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen> {
         iconColor: const Color(0xFFE53935),
         bgColor: const Color(0xFFFFEBEE),
         page: StudentClassroomHomeworkTab(classroom: _classroom),
+      ),
+      _MenuItem(
+        label: 'Learning Resources',
+        icon: Icons.video_library_rounded,
+        iconColor: const Color(0xFFE53935),
+        bgColor: const Color(0xFFFFEBEE),
+        page: LearningResourcesScreen(classData: {..._classroom, 'classId': _classId}),
       ),
     ];
 
