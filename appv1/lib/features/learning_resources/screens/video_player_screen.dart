@@ -41,8 +41,20 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   @override
   void dispose() {
     _controller?.dispose();
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    _restoreSystemUI();
     super.dispose();
+  }
+
+  void _restoreSystemUI() {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    // In Release mode, transitions can be too fast and get overridden by the player's native exit.
+    // A slight delay ensures our command runs last.
+    Future.delayed(const Duration(milliseconds: 400), () {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+          overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom]);
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    });
   }
 
   @override
@@ -104,7 +116,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
 
     return YoutubePlayerBuilder(
       onExitFullScreen: () {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+        _restoreSystemUI();
       },
       player: YoutubePlayer(
         controller: _controller!,
