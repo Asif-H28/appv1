@@ -26,6 +26,7 @@ class _LearningResourcesScreenState extends State<LearningResourcesScreen> {
   String _teacherId = '';
   String _teacherName = '';
 
+  bool _showMenu = true;
   String _videoType = 'lesson'; // 'lesson' or 'general'
   String? _selectedSubjectId;
   String? _selectedLessonId;
@@ -49,9 +50,8 @@ class _LearningResourcesScreenState extends State<LearningResourcesScreen> {
       _orgId = prefs.getString('orgId') ?? '';
       _teacherId = prefs.getString('teacherId') ?? '';
       _teacherName = prefs.getString('teacherName') ?? 'Teacher';
+      _isLoading = false;
     });
-
-    _fetchVideos();
   }
 
   Future<void> _fetchVideos() async {
@@ -154,6 +154,13 @@ class _LearningResourcesScreenState extends State<LearningResourcesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_showMenu) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF0F7F6),
+        body: _buildMenu(),
+      );
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFF0F7F6),
       floatingActionButton: _isTeacher
@@ -167,75 +174,25 @@ class _LearningResourcesScreenState extends State<LearningResourcesScreen> {
         children: [
           Container(
             color: Colors.white,
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () {
-                          if (_videoType != 'lesson') {
-                            setState(() {
-                              _videoType = 'lesson';
-                              _selectedSubjectId = null;
-                              _selectedLessonId = null;
-                            });
-                            _fetchVideos();
-                          }
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          decoration: BoxDecoration(
-                            color: _videoType == 'lesson'
-                                ? const Color(0xFF009688)
-                                : Colors.grey[200],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            'Lesson Videos',
-                            style: TextStyle(
-                              color: _videoType == 'lesson'
-                                  ? Colors.white
-                                  : Colors.grey[700],
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
+                    InkWell(
+                      onTap: () => setState(() => _showMenu = true),
+                      child: const Padding(
+                        padding: EdgeInsets.only(right: 12),
+                        child: Icon(Icons.arrow_back, color: Color(0xFF009688)),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () {
-                          if (_videoType != 'general') {
-                            setState(() {
-                              _videoType = 'general';
-                            });
-                            _fetchVideos();
-                          }
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          decoration: BoxDecoration(
-                            color: _videoType == 'general'
-                                ? const Color(0xFF009688)
-                                : Colors.grey[200],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            'General Videos',
-                            style: TextStyle(
-                              color: _videoType == 'general'
-                                  ? Colors.white
-                                  : Colors.grey[700],
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
+                    Text(
+                      _videoType == 'lesson' ? 'Lesson Videos' : 'General Videos',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2D3748),
                       ),
                     ),
                   ],
@@ -346,7 +303,7 @@ class _LearningResourcesScreenState extends State<LearningResourcesScreen> {
                             ),
                           )
                         : ListView.builder(
-                            padding: const EdgeInsets.all(16),
+                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
                             itemCount: _videos.length,
                             itemBuilder: (context, index) {
                               final video = _videos[index];
@@ -361,6 +318,113 @@ class _LearningResourcesScreenState extends State<LearningResourcesScreen> {
                           ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildMenu() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 120),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 4, bottom: 10),
+            child: Text(
+              'VIDEO CATEGORIES',
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.8,
+              ),
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(3),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.03),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                _buildMenuItem(
+                  icon: Icons.play_lesson,
+                  label: 'Lesson Videos',
+                  color: const Color(0xFF009688),
+                  onTap: () {
+                    setState(() {
+                      _videoType = 'lesson';
+                      _showMenu = false;
+                    });
+                    _fetchVideos();
+                  },
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 60),
+                  child: Divider(height: 1, color: Colors.grey[100]),
+                ),
+                _buildMenuItem(
+                  icon: Icons.video_library,
+                  label: 'General Videos',
+                  color: const Color(0xFF009688),
+                  onTap: () {
+                    setState(() {
+                      _videoType = 'general';
+                      _showMenu = false;
+                    });
+                    _fetchVideos();
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMenuItem({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(3),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, color: color, size: 18),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF2D3748),
+                ),
+              ),
+            ),
+            const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
+          ],
+        ),
       ),
     );
   }

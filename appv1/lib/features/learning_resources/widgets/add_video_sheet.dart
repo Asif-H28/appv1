@@ -133,7 +133,7 @@ class _AddVideoSheetState extends State<AddVideoSheet> {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
+        bottom: MediaQuery.of(context).viewInsets.bottom + MediaQuery.of(context).padding.bottom + 20,
         left: 20,
         right: 20,
         top: 20,
