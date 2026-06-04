@@ -19,6 +19,7 @@ import '../notification_studio/pages/notification_studio_page.dart';
 import '../notification_studio/controllers/notification_studio_controller.dart';
 import 'pages/login_page.dart';
 import 'package:appv1/features/tuition_session/admin/admin_session_dashboard_screen.dart';
+import 'package:appv1/core/services/feature_flag_service.dart';
 
 const Color _accent = Colors.teal;
 
@@ -65,6 +66,15 @@ class _MainAppScreenState extends State<MainAppScreen> {
       ChatSocketService().onConnectStream.listen((_) => _fetchChatUnreadCount()),
     );
     _fetchChatUnreadCount();
+    _initFeatureFlags();
+  }
+
+  Future<void> _initFeatureFlags() async {
+    final prefs = await SharedPreferences.getInstance();
+    final orgId = prefs.getString('orgId') ?? '';
+    if (orgId.isNotEmpty) {
+      FeatureFlagService.instance.fetchAndCacheFlags(orgId);
+    }
   }
 
   Future<void> _fetchChatUnreadCount() async {
@@ -483,17 +493,23 @@ class _MainAppScreenState extends State<MainAppScreen> {
                     );
                   },
                 ),
-                _buildDrawerItem(
-                  icon: Icons.qr_code_scanner_rounded,
-                  title: 'Tuition Sessions',
-                  isSelected: false,
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const AdminSessionDashboardScreen(),
-                      ),
+                ValueListenableBuilder<bool>(
+                  valueListenable: FeatureFlagService.instance.tuitionFeatureEnabled,
+                  builder: (context, isTuitionEnabled, child) {
+                    if (!isTuitionEnabled) return const SizedBox.shrink();
+                    return _buildDrawerItem(
+                      icon: Icons.qr_code_scanner_rounded,
+                      title: 'Tuition Sessions',
+                      isSelected: false,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const AdminSessionDashboardScreen(),
+                          ),
+                        );
+                      },
                     );
                   },
                 ),

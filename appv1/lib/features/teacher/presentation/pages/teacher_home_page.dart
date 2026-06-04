@@ -20,6 +20,7 @@ import 'org_transport_status_page.dart';
 import '../../../notification_studio/pages/notification_studio_page.dart';
 import '../../../notification_studio/controllers/notification_studio_controller.dart';
 import 'package:appv1/features/tuition_session/teacher/teacher_today_sessions_screen.dart';
+import 'package:appv1/core/services/feature_flag_service.dart';
 
 const Color _accent = Colors.teal;
 
@@ -69,6 +70,11 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
       _teacherId = prefs.getString('teacherId') ?? '';
       _orgId = prefs.getString('orgId') ?? '';
     });
+
+    if (_orgId.isNotEmpty) {
+      FeatureFlagService.instance.fetchAndCacheFlags(_orgId);
+    }
+
     await Future.wait([
       if (_teacherId.isNotEmpty)
         _fetchTodaySchedule()
@@ -269,8 +275,18 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
                     const SizedBox(height: 24),
                     _buildTransportSection(),
                     const SizedBox(height: 24),
-                    _buildTuitionSessionsSection(),
-                    const SizedBox(height: 24),
+                    ValueListenableBuilder<bool>(
+                      valueListenable: FeatureFlagService.instance.tuitionFeatureEnabled,
+                      builder: (context, isEnabled, child) {
+                        if (!isEnabled) return const SizedBox.shrink();
+                        return Column(
+                          children: [
+                            _buildTuitionSessionsSection(),
+                            const SizedBox(height: 24),
+                          ],
+                        );
+                      },
+                    ),
                     _buildNoticeSection(),
                   ],
                 ),

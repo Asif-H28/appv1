@@ -12,6 +12,7 @@ import '../quiz/student/student_quiz_list_screen.dart';
 import 'student_classroom_homework_tab.dart';
 import 'package:appv1/features/learning_resources/screens/learning_resources_screen.dart';
 import 'package:appv1/features/tuition_session/student/student_session_generator_screen.dart';
+import 'package:appv1/core/services/feature_flag_service.dart';
 
 const Color _accent = Colors.teal;
 
@@ -39,6 +40,11 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen> {
   Future<void> _loadClassroom() async {
     final prefs = await SharedPreferences.getInstance();
     _classId = prefs.getString('classId') ?? '';
+    final orgId = prefs.getString('orgId') ?? '';
+
+    if (orgId.isNotEmpty) {
+      FeatureFlagService.instance.fetchAndCacheFlags(orgId);
+    }
 
     if (_classId.isEmpty) {
       setState(() {
@@ -369,25 +375,34 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen> {
         ),
 
         // White card containing the list
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.06),
-                blurRadius: 12,
-                offset: const Offset(0, 3),
+        ValueListenableBuilder<bool>(
+          valueListenable: FeatureFlagService.instance.tuitionFeatureEnabled,
+          builder: (context, isTuitionEnabled, child) {
+            final activeItems = List<_MenuItem>.from(items);
+            if (!isTuitionEnabled) {
+              activeItems.removeWhere((item) => item.label == 'Generate Session QR');
+            }
+            return Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.06),
+                    blurRadius: 12,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
-            ],
-          ),
-          child: Column(
-            children: List.generate(items.length, (index) {
-              final item = items[index];
-              final isLast = index == items.length - 1;
-              return _buildMenuItem(item, isLast: isLast, onTap: () => _navigateTo(item.page, item.label));
-            }),
-          ),
+              child: Column(
+                children: List.generate(activeItems.length, (index) {
+                  final item = activeItems[index];
+                  final isLast = index == activeItems.length - 1;
+                  return _buildMenuItem(item, isLast: isLast, onTap: () => _navigateTo(item.page, item.label));
+                }),
+              ),
+            );
+          },
         ),
       ],
     );
