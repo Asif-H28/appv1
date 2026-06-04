@@ -831,4 +831,25 @@ class ApiService {
     checkResponse(res);
     return res;
   }
+
+  static Future<http.Response> patch(
+    dynamic url, {
+    Map<String, String>? headers,
+    Object? body,
+  }) async {
+    final combinedHeaders = await getHeaders();
+    if (headers != null) combinedHeaders.addAll(headers);
+
+    Uri uri;
+    if (url is String) {
+      final fullUrl = url.startsWith('http') ? url : '$_baseUrl$url';
+      uri = Uri.parse(fullUrl);
+    } else {
+      uri = url as Uri;
+    }
+
+    final res = await http.patch(uri, headers: combinedHeaders, body: body);
+    checkResponse(res);
+    return res;
+  }
 }

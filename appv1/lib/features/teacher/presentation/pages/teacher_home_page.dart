@@ -19,6 +19,7 @@ import '../../../main_app/pages/notification_service.dart';
 import 'org_transport_status_page.dart';
 import '../../../notification_studio/pages/notification_studio_page.dart';
 import '../../../notification_studio/controllers/notification_studio_controller.dart';
+import 'package:appv1/features/tuition_session/teacher/teacher_today_sessions_screen.dart';
 
 const Color _accent = Colors.teal;
 
@@ -267,6 +268,8 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
                     _buildStudentLeaveSection(),
                     const SizedBox(height: 24),
                     _buildTransportSection(),
+                    const SizedBox(height: 24),
+                    _buildTuitionSessionsSection(),
                     const SizedBox(height: 24),
                     _buildNoticeSection(),
                   ],
@@ -762,6 +765,91 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
                     Icons.arrow_forward_ios_rounded,
                     size: 11,
                     color: Colors.orange,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTuitionSessionsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const HomeSectionHeader(
+          title: 'Tuition Sessions',
+          subtitle: 'Manage today\'s sessions and check-ins',
+        ),
+        const SizedBox(height: 10),
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const TeacherTodaySessionsScreen(),
+              ),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(3),
+              border: Border.all(color: Colors.grey[200]!),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: Colors.teal.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  child: const Icon(
+                    Icons.qr_code_scanner_rounded,
+                    color: Colors.teal,
+                    size: 19,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Today\'s Sessions',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        'View sessions, scan QR, and log activities',
+                        style: TextStyle(
+                          color: Colors.black54,
+                          fontSize: 11.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 26,
+                  height: 26,
+                  decoration: BoxDecoration(
+                    color: Colors.teal.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 11,
+                    color: Colors.teal,
                   ),
                 ),
               ],

@@ -18,6 +18,7 @@ import 'dart:convert';
 import '../notification_studio/pages/notification_studio_page.dart';
 import '../notification_studio/controllers/notification_studio_controller.dart';
 import 'pages/login_page.dart';
+import 'package:appv1/features/tuition_session/admin/admin_session_dashboard_screen.dart';
 
 const Color _accent = Colors.teal;
 
@@ -478,6 +479,20 @@ class _MainAppScreenState extends State<MainAppScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (_) => const AdminAttendancePage(),
+                      ),
+                    );
+                  },
+                ),
+                _buildDrawerItem(
+                  icon: Icons.qr_code_scanner_rounded,
+                  title: 'Tuition Sessions',
+                  isSelected: false,
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AdminSessionDashboardScreen(),
                       ),
                     );
                   },

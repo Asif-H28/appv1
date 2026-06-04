@@ -493,7 +493,7 @@ class __StartupRouterState extends State<_StartupRouter>
         screen = LoginPage();
       }
     }
-
+    if (!mounted) return;
     setState(() {
       _startScreen = screen;
       _isChecking = false;

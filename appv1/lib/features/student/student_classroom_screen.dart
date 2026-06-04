@@ -11,6 +11,7 @@ import 'student_classroom_tests_tab.dart';
 import '../quiz/student/student_quiz_list_screen.dart';
 import 'student_classroom_homework_tab.dart';
 import 'package:appv1/features/learning_resources/screens/learning_resources_screen.dart';
+import 'package:appv1/features/tuition_session/student/student_session_generator_screen.dart';
 
 const Color _accent = Colors.teal;
 
@@ -340,6 +341,13 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen> {
         iconColor: const Color(0xFFE53935),
         bgColor: const Color(0xFFFFEBEE),
         page: LearningResourcesScreen(classData: {..._classroom, 'classId': _classId}),
+      ),
+      _MenuItem(
+        label: 'Generate Session QR',
+        icon: Icons.qr_code_2_rounded,
+        iconColor: const Color(0xFF009688),
+        bgColor: const Color(0xFFE0F2F1),
+        page: StudentSessionGeneratorScreen(classId: _classId),
       ),
     ];
 
