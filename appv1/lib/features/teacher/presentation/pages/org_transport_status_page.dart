@@ -2,8 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:appv1/core/services/api_service.dart';
 import '../../../../core/constants/app_colors.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class OrgTransportStatusPage extends StatefulWidget {
@@ -176,7 +175,7 @@ class _VehicleMapViewState extends State<VehicleMapView> {
   bool _isLoading = true;
   String? _errorMessage;
   Map<String, dynamic>? _vehicle;
-  final MapController _mapController = MapController();
+  late final WebViewController _webViewController;
   Timer? _timer;
   
   bool _isRefreshDisabled = false;
@@ -188,6 +187,10 @@ class _VehicleMapViewState extends State<VehicleMapView> {
   @override
   void initState() {
     super.initState();
+    _webViewController = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(const Color(0x00000000));
+      
     _checkRefreshCooldown();
     _fetchLocation();
     // Refresh every 10 seconds
@@ -264,11 +267,23 @@ class _VehicleMapViewState extends State<VehicleMapView> {
           final lat = double.tryParse(_vehicle!['latitude'].toString()) ?? 0.0;
           final lng = double.tryParse(_vehicle!['longitude'].toString()) ?? 0.0;
 
-          // Only use .move() for subsequent updates.
-          // For the first load, MapOptions.initialCenter handles the camera.
-          if (!isFirstLoad) {
-            _mapController.move(LatLng(lat, lng), 16.0);
-          }
+          final url = 'https://maps.google.com/maps?q=$lat,$lng&z=16&output=embed';
+          final htmlString = '''
+            <!DOCTYPE html>
+            <html>
+              <head>
+                <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+                <style>
+                  body, html { margin: 0; padding: 0; height: 100%; width: 100%; }
+                  iframe { border: 0; width: 100%; height: 100%; }
+                </style>
+              </head>
+              <body>
+                <iframe src="$url" allowfullscreen></iframe>
+              </body>
+            </html>
+          ''';
+          _webViewController.loadHtmlString(htmlString);
         }
       } else {
         setState(() {
@@ -343,51 +358,7 @@ class _VehicleMapViewState extends State<VehicleMapView> {
                     ),
                   ),
                 )
-              : Stack(
-                  children: [
-                    FlutterMap(
-                      mapController: _mapController,
-                      options: MapOptions(
-                        initialCenter: LatLng(lat, lng),
-                        initialZoom: 16.0,
-                      ),
-                      children: [
-                        TileLayer(
-                          urlTemplate: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-                          subdomains: const ['a', 'b', 'c', 'd'],
-                          userAgentPackageName: 'com.example.appv1',
-                        ),
-                        MarkerLayer(
-                          markers: [
-                            Marker(
-                              point: LatLng(lat, lng),
-                              width: 60,
-                              height: 60,
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  Container(
-                                    width: 45,
-                                    height: 45,
-                                    decoration: BoxDecoration(
-                                      color: (isActive ? const Color(0xFF0D9488) : Colors.grey)!.withOpacity(0.2),
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                  Icon(
-                                    Icons.directions_bus_rounded,
-                                    color: isActive ? const Color(0xFF0D9488) : Colors.grey[700],
-                                    size: 36,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+              : WebViewWidget(controller: _webViewController),
     );
   }
 }

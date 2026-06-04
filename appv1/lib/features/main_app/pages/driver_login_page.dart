@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:appv1/core/services/api_service.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class DriverLoginPage extends StatefulWidget {
   const DriverLoginPage({super.key});
@@ -24,12 +23,36 @@ class _DriverLoginPageState extends State<DriverLoginPage> {
   // ── Tracking State ────────────────────────────────
   StreamSubscription<Position>? _positionStream;
   bool _isTracking = false;
-  LatLng _currentLocation = const LatLng(12.9716, 77.5946);
-  final MapController _mapController = MapController();
+  double _currentLat = 12.9716;
+  double _currentLng = 77.5946;
+  late final WebViewController _webViewController;
 
   @override
   void initState() {
     super.initState();
+    _webViewController = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(const Color(0x00000000));
+  }
+
+  void _loadMap(double lat, double lng) {
+    final url = 'https://maps.google.com/maps?q=$lat,$lng&z=16&output=embed';
+    final htmlString = '''
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+          <style>
+            body, html { margin: 0; padding: 0; height: 100%; width: 100%; }
+            iframe { border: 0; width: 100%; height: 100%; }
+          </style>
+        </head>
+        <body>
+          <iframe src="$url" allowfullscreen></iframe>
+        </body>
+      </html>
+    ''';
+    _webViewController.loadHtmlString(htmlString);
   }
 
   @override
@@ -75,11 +98,11 @@ class _DriverLoginPageState extends State<DriverLoginPage> {
       locationSettings: const LocationSettings(accuracy: LocationAccuracy.best, distanceFilter: 5),
     ).listen((Position position) {
       if (!mounted) return;
-      final newLatLng = LatLng(position.latitude, position.longitude);
       setState(() {
-        _currentLocation = newLatLng;
+        _currentLat = position.latitude;
+        _currentLng = position.longitude;
       });
-      _mapController.move(newLatLng, 17.0);
+      _loadMap(position.latitude, position.longitude);
       _updateLocationOnServer(position);
     });
   }
@@ -155,9 +178,10 @@ class _DriverLoginPageState extends State<DriverLoginPage> {
         );
         if (!mounted) return;
         setState(() {
-          _currentLocation = LatLng(position.latitude, position.longitude);
+          _currentLat = position.latitude;
+          _currentLng = position.longitude;
         });
-        _mapController.move(_currentLocation, 17.0);
+        _loadMap(position.latitude, position.longitude);
         _updateLocationOnServer(position);
       }
     } catch (e) {
@@ -274,53 +298,13 @@ class _DriverLoginPageState extends State<DriverLoginPage> {
           flex: 4,
           child: Stack(
             children: [
-              FlutterMap(
-                mapController: _mapController,
-                options: MapOptions(
-                  initialCenter: _currentLocation,
-                  initialZoom: 17.0,
-                ),
-                children: [
-                  TileLayer(
-                    urlTemplate: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-                    subdomains: const ['a', 'b', 'c', 'd'],
-                    userAgentPackageName: 'com.example.appv1',
-                  ),
-                  MarkerLayer(
-                    markers: [
-                      Marker(
-                        point: _currentLocation,
-                        width: 50,
-                        height: 50,
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF0D9488).withOpacity(0.2),
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                            const Icon(
-                              Icons.directions_bus_rounded,
-                              color: Color(0xFF0D9488),
-                              size: 32,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+              WebViewWidget(controller: _webViewController),
               Positioned(
                 bottom: 16,
                 right: 16,
                 child: FloatingActionButton.small(
                   onPressed: () {
-                    _mapController.move(_currentLocation, 17.0);
+                    _loadMap(_currentLat, _currentLng);
                   },
                   backgroundColor: Colors.white,
                   child: const Icon(Icons.my_location_rounded, color: Color(0xFF0D9488)),
