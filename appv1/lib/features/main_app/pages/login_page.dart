@@ -551,9 +551,13 @@ class __AdminLoginTabState extends State<_AdminLoginTab> {
         );
       } else {
         setState(() => _isLoading = false);
+        String errorMsg = body['message']?.toString() ?? body['error']?.toString() ?? 'Login failed.';
+        if (errorMsg.toLowerCase() == 'invalid credentials') {
+          errorMsg = 'Username or password is wrong.';
+        }
         _showSnack(
           context,
-          body['message']?.toString() ?? 'Login failed.',
+          errorMsg,
           Colors.red[600]!,
         );
       }
@@ -714,9 +718,13 @@ class __TeacherLoginTabState extends State<_TeacherLoginTab> {
 
       if (res.statusCode != 200 || body['success'] != true) {
         setState(() => _isLoading = false);
+        String errorMsg = body['message']?.toString() ?? body['error']?.toString() ?? 'Login failed.';
+        if (errorMsg.toLowerCase() == 'invalid credentials') {
+          errorMsg = 'Username or password is wrong.';
+        }
         _showSnack(
           context,
-          body['message']?.toString() ?? 'Login failed.',
+          errorMsg,
           Colors.red[600]!,
         );
         return;
@@ -974,11 +982,13 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
       if (res.statusCode != 200 || body['success'] != true) {
         debugPrint('âŒ Login failed: ${body['message'] ?? body['error']}');
         setState(() => _isLoading = false);
+        String errorMsg = body['message']?.toString() ?? body['error']?.toString() ?? 'Login failed.';
+        if (errorMsg.toLowerCase() == 'invalid credentials') {
+          errorMsg = 'Username or password is wrong.';
+        }
         _showSnack(
           context,
-          body['message']?.toString() ??
-              body['error']?.toString() ??
-              'Login failed.',
+          errorMsg,
           Colors.red[600]!,
         );
         return;

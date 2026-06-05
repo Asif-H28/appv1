@@ -14,7 +14,10 @@ class DriverLoginPage extends StatefulWidget {
 
 class _DriverLoginPageState extends State<DriverLoginPage> {
   final _phoneCtrl = TextEditingController();
-  final List<TextEditingController> _pinControllers = List.generate(4, (_) => TextEditingController());
+  final List<TextEditingController> _pinControllers = List.generate(
+    4,
+    (_) => TextEditingController(),
+  );
   final List<FocusNode> _pinFocusNodes = List.generate(4, (_) => FocusNode());
 
   bool _isLoading = false;
@@ -37,7 +40,8 @@ class _DriverLoginPageState extends State<DriverLoginPage> {
 
   void _loadMap(double lat, double lng) {
     final url = 'https://maps.google.com/maps?q=$lat,$lng&z=16&output=embed';
-    final htmlString = '''
+    final htmlString =
+        '''
       <!DOCTYPE html>
       <html>
         <head>
@@ -64,7 +68,10 @@ class _DriverLoginPageState extends State<DriverLoginPage> {
     for (var f in _pinFocusNodes) {
       f.dispose();
     }
-    _stopTracking();
+    _positionStream?.cancel();
+    if (_vehicle != null) {
+      ApiService.stopVehicleRoute(_vehicle!['vehicleId'].toString());
+    }
     super.dispose();
   }
 
@@ -74,7 +81,9 @@ class _DriverLoginPageState extends State<DriverLoginPage> {
 
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Location services are disabled.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Location services are disabled.')),
+      );
       return;
     }
 
@@ -82,29 +91,39 @@ class _DriverLoginPageState extends State<DriverLoginPage> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Location permissions are denied.')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Location permissions are denied.')),
+        );
         return;
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Location permissions are permanently denied.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Location permissions are permanently denied.'),
+        ),
+      );
       return;
     }
 
     setState(() => _isTracking = true);
 
-    _positionStream = Geolocator.getPositionStream(
-      locationSettings: const LocationSettings(accuracy: LocationAccuracy.best, distanceFilter: 5),
-    ).listen((Position position) {
-      if (!mounted) return;
-      setState(() {
-        _currentLat = position.latitude;
-        _currentLng = position.longitude;
-      });
-      _loadMap(position.latitude, position.longitude);
-      _updateLocationOnServer(position);
-    });
+    _positionStream =
+        Geolocator.getPositionStream(
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.best,
+            distanceFilter: 5,
+          ),
+        ).listen((Position position) {
+          if (!mounted) return;
+          setState(() {
+            _currentLat = position.latitude;
+            _currentLng = position.longitude;
+          });
+          _loadMap(position.latitude, position.longitude);
+          _updateLocationOnServer(position);
+        });
   }
 
   void _stopTracking() {
@@ -134,11 +153,15 @@ class _DriverLoginPageState extends State<DriverLoginPage> {
 
   Future<void> _login() async {
     if (_phoneCtrl.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter phone number')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter phone number')),
+      );
       return;
     }
     if (_pin.length < 4) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter 4-digit PIN')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please enter 4-digit PIN')));
       return;
     }
 
@@ -159,7 +182,11 @@ class _DriverLoginPageState extends State<DriverLoginPage> {
       _initializeRealLocation();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(res['message']), backgroundColor: Colors.redAccent, behavior: SnackBarBehavior.floating),
+        SnackBar(
+          content: Text(res['message']),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+        ),
       );
     }
   }
@@ -170,8 +197,9 @@ class _DriverLoginPageState extends State<DriverLoginPage> {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
       }
-      
-      if (permission == LocationPermission.always || permission == LocationPermission.whileInUse) {
+
+      if (permission == LocationPermission.always ||
+          permission == LocationPermission.whileInUse) {
         Position position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.best,
           forceAndroidLocationManager: true,
@@ -194,11 +222,22 @@ class _DriverLoginPageState extends State<DriverLoginPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text('Driver Access', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+        title: const Text(
+          'Driver Access',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+        ),
         backgroundColor: const Color(0xFF0D9488),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.white,
+            size: 20,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -216,11 +255,22 @@ class _DriverLoginPageState extends State<DriverLoginPage> {
             child: CircleAvatar(
               radius: 40,
               backgroundColor: Color(0xFFCCFBF1),
-              child: Icon(Icons.directions_bus_rounded, color: Color(0xFF0D9488), size: 40),
+              child: Icon(
+                Icons.directions_bus_rounded,
+                color: Color(0xFF0D9488),
+                size: 40,
+              ),
             ),
           ),
           const SizedBox(height: 32),
-          const Text('Driver Phone Number', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF4A5568))),
+          const Text(
+            'Driver Phone Number',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF4A5568),
+            ),
+          ),
           const SizedBox(height: 8),
           TextField(
             controller: _phoneCtrl,
@@ -229,14 +279,36 @@ class _DriverLoginPageState extends State<DriverLoginPage> {
               hintText: 'e.g. 9848012345',
               filled: true,
               fillColor: Colors.white,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0D9488), width: 2)),
-              prefixIcon: const Icon(Icons.phone_android_rounded, color: Color(0xFF94A3B8)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(
+                  color: Color(0xFF0D9488),
+                  width: 2,
+                ),
+              ),
+              prefixIcon: const Icon(
+                Icons.phone_android_rounded,
+                color: Color(0xFF94A3B8),
+              ),
             ),
           ),
           const SizedBox(height: 24),
-          const Text('Security PIN', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF4A5568))),
+          const Text(
+            'Security PIN',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF4A5568),
+            ),
+          ),
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -250,13 +322,26 @@ class _DriverLoginPageState extends State<DriverLoginPage> {
                   keyboardType: TextInputType.number,
                   obscureText: true,
                   maxLength: 1,
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF0D9488)),
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF0D9488),
+                  ),
                   decoration: InputDecoration(
                     counterText: '',
                     filled: true,
                     fillColor: Colors.white,
-                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
-                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0D9488), width: 2)),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(
+                        color: Color(0xFF0D9488),
+                        width: 2,
+                      ),
+                    ),
                   ),
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   onChanged: (value) {
@@ -278,12 +363,21 @@ class _DriverLoginPageState extends State<DriverLoginPage> {
               onPressed: _isLoading ? null : _login,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF0D9488),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 elevation: 0,
               ),
               child: _isLoading
                   ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text('VIEW VEHICLE STATUS', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 1.1)),
+                  : const Text(
+                      'Log In',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.1,
+                      ),
+                    ),
             ),
           ),
         ],
@@ -307,7 +401,10 @@ class _DriverLoginPageState extends State<DriverLoginPage> {
                     _loadMap(_currentLat, _currentLng);
                   },
                   backgroundColor: Colors.white,
-                  child: const Icon(Icons.my_location_rounded, color: Color(0xFF0D9488)),
+                  child: const Icon(
+                    Icons.my_location_rounded,
+                    color: Color(0xFF0D9488),
+                  ),
                 ),
               ),
               Positioned(
@@ -315,11 +412,19 @@ class _DriverLoginPageState extends State<DriverLoginPage> {
                 left: 16,
                 right: 16,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
-                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10)],
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 10,
+                      ),
+                    ],
                   ),
                   child: Row(
                     children: [
@@ -337,7 +442,9 @@ class _DriverLoginPageState extends State<DriverLoginPage> {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
-                          color: _isTracking ? Colors.green[700] : Colors.red[700],
+                          color: _isTracking
+                              ? Colors.green[700]
+                              : Colors.red[700],
                         ),
                       ),
                     ],
@@ -353,7 +460,13 @@ class _DriverLoginPageState extends State<DriverLoginPage> {
             decoration: const BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 15, offset: Offset(0, -5))],
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 15,
+                  offset: Offset(0, -5),
+                ),
+              ],
             ),
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24.0),
@@ -367,11 +480,20 @@ class _DriverLoginPageState extends State<DriverLoginPage> {
                         children: [
                           Text(
                             _vehicle?['vehicleName'] ?? 'Vehicle',
-                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1E293B),
+                            ),
                           ),
                           Text(
                             _vehicle?['vehicleNumber'] ?? '',
-                            style: const TextStyle(fontSize: 16, color: Color(0xFF0D9488), fontWeight: FontWeight.bold, letterSpacing: 1.2),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Color(0xFF0D9488),
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.2,
+                            ),
                           ),
                         ],
                       ),
@@ -380,16 +502,34 @@ class _DriverLoginPageState extends State<DriverLoginPage> {
                           _stopTracking();
                           setState(() => _vehicle = null);
                         },
-                        icon: const Icon(Icons.logout_rounded, color: Color(0xFF64748B)),
+                        icon: const Icon(
+                          Icons.logout_rounded,
+                          color: Color(0xFF64748B),
+                        ),
                       ),
                     ],
                   ),
-                  const Padding(padding: EdgeInsets.symmetric(vertical: 20), child: Divider()),
-                  _buildInfoRow(Icons.person_rounded, 'Driver Name', _vehicle?['driverName'] ?? 'N/A'),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 20),
+                    child: Divider(),
+                  ),
+                  _buildInfoRow(
+                    Icons.person_rounded,
+                    'Driver Name',
+                    _vehicle?['driverName'] ?? 'N/A',
+                  ),
                   const SizedBox(height: 16),
-                  _buildInfoRow(Icons.phone_rounded, 'Phone', _vehicle?['driverPhoneNumber'] ?? 'N/A'),
+                  _buildInfoRow(
+                    Icons.phone_rounded,
+                    'Phone',
+                    _vehicle?['driverPhoneNumber'] ?? 'N/A',
+                  ),
                   const SizedBox(height: 16),
-                  _buildInfoRow(Icons.supervisor_account_rounded, 'Coordinator', _vehicle?['coordinatorName'] ?? 'N/A'),
+                  _buildInfoRow(
+                    Icons.supervisor_account_rounded,
+                    'Coordinator',
+                    _vehicle?['coordinatorName'] ?? 'N/A',
+                  ),
                   const SizedBox(height: 32),
                   SizedBox(
                     width: double.infinity,
@@ -397,18 +537,31 @@ class _DriverLoginPageState extends State<DriverLoginPage> {
                     child: ElevatedButton(
                       onPressed: _isTracking ? _stopTracking : _startTracking,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _isTracking ? Colors.redAccent : const Color(0xFF0D9488),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        backgroundColor: _isTracking
+                            ? Colors.redAccent
+                            : const Color(0xFF0D9488),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                         elevation: 0,
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(_isTracking ? Icons.stop_rounded : Icons.play_arrow_rounded, color: Colors.white),
+                          Icon(
+                            _isTracking
+                                ? Icons.stop_rounded
+                                : Icons.play_arrow_rounded,
+                            color: Colors.white,
+                          ),
                           const SizedBox(width: 8),
                           Text(
                             _isTracking ? 'STOP ROUTE' : 'START ROUTE',
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
                           ),
                         ],
                       ),
@@ -428,15 +581,32 @@ class _DriverLoginPageState extends State<DriverLoginPage> {
       children: [
         Container(
           padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(10)),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF1F5F9),
+            borderRadius: BorderRadius.circular(10),
+          ),
           child: Icon(icon, color: const Color(0xFF64748B), size: 20),
         ),
         const SizedBox(width: 16),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8), fontWeight: FontWeight.w500)),
-            Text(value, style: const TextStyle(fontSize: 15, color: Color(0xFF334155), fontWeight: FontWeight.w600)),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Color(0xFF94A3B8),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 15,
+                color: Color(0xFF334155),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
         ),
       ],
