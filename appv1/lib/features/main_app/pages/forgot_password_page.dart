@@ -251,7 +251,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         ),
         const SizedBox(height: 6),
         const Text(
-          'Enter your email address and we will send you an OTP to reset your password.',
+          'Enter your Registered email address and we will send you an OTP to reset your password.',
           style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
         ),
         const SizedBox(height: 24),
@@ -409,4 +409,3 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     );
   }
 }
-

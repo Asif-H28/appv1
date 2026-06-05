@@ -1,37 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:flutter_cached_pdfview/flutter_cached_pdfview.dart';
 
-class PdfViewerPage extends StatefulWidget {
+class PdfViewerPage extends StatelessWidget {
   final String url;
   final String fileName;
 
   const PdfViewerPage({required this.url, required this.fileName});
-
-  @override
-  State<PdfViewerPage> createState() => _PdfViewerPageState();
-}
-
-class _PdfViewerPageState extends State<PdfViewerPage> {
-  late final WebViewController _controller;
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    // Use Google Docs viewer to render PDF in WebView
-    final viewerUrl =
-        'https://docs.google.com/gview?embedded=true&url=${Uri.encodeComponent(widget.url)}';
-
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageFinished: (_) => setState(() => _isLoading = false),
-          onWebResourceError: (_) => setState(() => _isLoading = false),
-        ),
-      )
-      ..loadRequest(Uri.parse(viewerUrl));
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +35,7 @@ class _PdfViewerPageState extends State<PdfViewerPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              widget.fileName,
+              fileName,
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
@@ -79,60 +53,53 @@ class _PdfViewerPageState extends State<PdfViewerPage> {
             ),
           ],
         ),
-        actions: [
-          // Reload button in case Google Docs viewer fails
-          GestureDetector(
-            onTap: () {
-              setState(() => _isLoading = true);
-              final viewerUrl =
-                  'https://docs.google.com/gview?embedded=true&url=${Uri.encodeComponent(widget.url)}';
-              _controller.loadRequest(Uri.parse(viewerUrl));
-            },
-            child: Container(
-              margin: EdgeInsets.only(right: 12),
-              padding: EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(3),
-              ),
-              child: Icon(Icons.refresh_rounded, color: Colors.white, size: 16),
-            ),
-          ),
-        ],
       ),
-      body: Stack(
-        children: [
-          WebViewWidget(controller: _controller),
-          if (_isLoading)
-            Container(
-              color: Colors.grey[100],
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CircularProgressIndicator(
-                      color: Colors.teal,
-                      strokeWidth: 2.5,
-                    ),
-                    SizedBox(height: 14),
-                    Text(
-                      'Loading PDF...',
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    SizedBox(height: 6),
-                    Text(
-                      'Using Google Docs viewer',
-                      style: TextStyle(color: Colors.grey[400], fontSize: 11),
-                    ),
-                  ],
+      body: const PDF(
+        enableSwipe: true,
+        swipeHorizontal: false,
+        autoSpacing: true,
+        pageFling: true,
+        fitEachPage: true,
+      ).cachedFromUrl(
+        url,
+        placeholder: (progress) => Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(
+                value: progress / 100,
+                color: Colors.teal,
+                strokeWidth: 2.5,
+              ),
+              SizedBox(height: 14),
+              Text(
+                'Loading PDF ($progress%)...',
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-            ),
-        ],
+            ],
+          ),
+        ),
+        errorWidget: (error) => Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.error_outline_rounded, color: Colors.red, size: 40),
+              SizedBox(height: 12),
+              Text(
+                'Failed to load PDF',
+                style: TextStyle(
+                  color: Colors.grey[800],
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
