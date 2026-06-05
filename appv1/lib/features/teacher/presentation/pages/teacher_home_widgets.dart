@@ -40,6 +40,17 @@ TimeOfDay? _parseTime(String t) {
   }
 }
 
+String _formatTime12(BuildContext context, String t) {
+  if (t.isEmpty) return t;
+  try {
+    final parts = t.split(':');
+    final tod = TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+    return tod.format(context);
+  } catch (_) {
+    return t;
+  }
+}
+
 Color subjectColor(String? subject) => Colors.teal[600]!;
 
 // ─────────────────────────────────────────────────────
@@ -175,8 +186,10 @@ class HomeScheduleCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final subject = slot['subjectName']?.toString() ?? '';
     final className = slot['className']?.toString() ?? '';
-    final start = slot['startTime']?.toString() ?? '';
-    final end = slot['endTime']?.toString() ?? '';
+    final startRaw = slot['startTime']?.toString() ?? '';
+    final endRaw = slot['endTime']?.toString() ?? '';
+    final start = _formatTime12(context, startRaw);
+    final end = _formatTime12(context, endRaw);
     final pNum = periodNum(slot);
     final isCurr = isCurrentPeriod(slot);
     final isOver = isPeriodOver(slot);

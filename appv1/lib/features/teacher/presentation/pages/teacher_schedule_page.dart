@@ -168,6 +168,17 @@ class _TeacherSchedulePageState extends State<TeacherSchedulePage>
     }
   }
 
+  String _formatTime12(BuildContext context, String t) {
+    if (t.isEmpty) return t;
+    try {
+      final parts = t.split(':');
+      final tod = TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+      return tod.format(context);
+    } catch (_) {
+      return t;
+    }
+  }
+
   String _duration(String start, String end) {
     final s = _parseTime(start);
     final e = _parseTime(end);
@@ -448,12 +459,14 @@ class _TeacherSchedulePageState extends State<TeacherSchedulePage>
     final subject = slot['subjectName']?.toString() ?? '';
     final className = slot['className']?.toString() ?? '';
     final classId = slot['classId']?.toString() ?? '';
-    final start = slot['startTime']?.toString() ?? '';
-    final end = slot['endTime']?.toString() ?? '';
+    final startRaw = slot['startTime']?.toString() ?? '';
+    final endRaw = slot['endTime']?.toString() ?? '';
+    final start = _formatTime12(context, startRaw);
+    final end = _formatTime12(context, endRaw);
     final pNum = _periodNum(slot);
     final color = _subjectColor(subject);
     final isCurr = _isCurrentPeriod(slot, day);
-    final dur = _duration(start, end);
+    final dur = _duration(startRaw, endRaw);
 
     return Container(
       decoration: BoxDecoration(

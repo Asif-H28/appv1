@@ -177,15 +177,18 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
     final picked = await showTimePicker(
       context: context,
       initialTime: initial,
-      builder: (ctx, child) => Theme(
-        data: Theme.of(ctx).copyWith(
-          colorScheme: ColorScheme.light(
-            primary: _accent,
-            onPrimary: Colors.white,
-            surface: Colors.white,
+      builder: (ctx, child) => MediaQuery(
+        data: MediaQuery.of(ctx).copyWith(alwaysUse24HourFormat: false),
+        child: Theme(
+          data: Theme.of(ctx).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: _accent,
+              onPrimary: Colors.white,
+              surface: Colors.white,
+            ),
           ),
+          child: child!,
         ),
-        child: child!,
       ),
     );
     if (picked != null) {
@@ -809,6 +812,15 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
             valueListenable: ctrl,
             builder: (_, val, __) {
               final hasVal = val.text.isNotEmpty;
+              String displayTime = hint;
+              if (hasVal) {
+                try {
+                  final p = val.text.split(':');
+                  displayTime = TimeOfDay(hour: int.parse(p[0]), minute: int.parse(p[1])).format(context);
+                } catch (_) {
+                  displayTime = val.text;
+                }
+              }
               return Container(
                 padding: EdgeInsets.symmetric(horizontal: 12, vertical: 11),
                 decoration: BoxDecoration(
@@ -831,7 +843,7 @@ class _TimetableCreateSheetState extends State<TimetableCreateSheet> {
                     ),
                     SizedBox(width: 6),
                     Text(
-                      hasVal ? val.text : hint,
+                      displayTime,
                       style: TextStyle(
                         fontSize: 13,
                         color: hasVal

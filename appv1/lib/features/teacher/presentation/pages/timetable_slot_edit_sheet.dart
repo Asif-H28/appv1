@@ -118,15 +118,18 @@ class _TimetableSlotEditSheetState extends State<TimetableSlotEditSheet> {
     final picked = await showTimePicker(
       context: context,
       initialTime: initial,
-      builder: (ctx, child) => Theme(
-        data: Theme.of(ctx).copyWith(
-          colorScheme: ColorScheme.light(
-            primary: _editAccent,
-            onPrimary: Colors.white,
-            surface: Colors.white,
+      builder: (ctx, child) => MediaQuery(
+        data: MediaQuery.of(ctx).copyWith(alwaysUse24HourFormat: false),
+        child: Theme(
+          data: Theme.of(ctx).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: _editAccent,
+              onPrimary: Colors.white,
+              surface: Colors.white,
+            ),
           ),
+          child: child!,
         ),
-        child: child!,
       ),
     );
     if (picked != null) {
@@ -333,6 +336,15 @@ class _TimetableSlotEditSheetState extends State<TimetableSlotEditSheet> {
         valueListenable: ctrl,
         builder: (_, val, __) {
           final has = val.text.isNotEmpty;
+          String displayTime = '--:--';
+          if (has) {
+            try {
+              final p = val.text.split(':');
+              displayTime = TimeOfDay(hour: int.parse(p[0]), minute: int.parse(p[1])).format(context);
+            } catch (_) {
+              displayTime = val.text;
+            }
+          }
           return GestureDetector(
             onTap: () => _pickTime(ctrl),
             child: Container(
@@ -357,7 +369,7 @@ class _TimetableSlotEditSheetState extends State<TimetableSlotEditSheet> {
                   ),
                   SizedBox(width: 6),
                   Text(
-                    has ? val.text : '--:--',
+                    displayTime,
                     style: TextStyle(
                       fontSize: 13,
                       color: has

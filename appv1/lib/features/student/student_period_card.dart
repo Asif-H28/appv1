@@ -58,6 +58,17 @@ class StudentPeriodCard extends StatelessWidget {
     }
   }
 
+  String _formatTime12(BuildContext context, String t) {
+    if (t.isEmpty) return t;
+    try {
+      final parts = t.split(':');
+      final tod = TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+      return tod.format(context);
+    } catch (_) {
+      return t;
+    }
+  }
+
   int get _pNum => slot['periodNumber'] is int
       ? slot['periodNumber'] as int
       : int.tryParse(slot['periodNumber']?.toString() ?? '') ?? 0;
@@ -79,8 +90,10 @@ class StudentPeriodCard extends StatelessWidget {
     final type = slot['type']?.toString() ?? 'class';
     final subject = slot['subjectName']?.toString() ?? '';
     final teacher = slot['teacherName']?.toString() ?? '';
-    final start = slot['startTime']?.toString() ?? '';
-    final end = slot['endTime']?.toString() ?? '';
+    final startRaw = slot['startTime']?.toString() ?? '';
+    final endRaw = slot['endTime']?.toString() ?? '';
+    final start = _formatTime12(context, startRaw);
+    final end = _formatTime12(context, endRaw);
     final cfg = _cfg(type);
     final isCurr = _isCurrentPeriod();
     final isClass = type == 'class' || type == 'lab';

@@ -99,6 +99,17 @@ class TimetableDayView extends StatelessWidget {
     }
   }
 
+  String _formatTime12(BuildContext context, String t) {
+    if (t.isEmpty) return t;
+    try {
+      final parts = t.split(':');
+      final tod = TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+      return tod.format(context);
+    } catch (_) {
+      return t;
+    }
+  }
+
   String _duration(String start, String end) {
     final s = _parseTime(start);
     final e = _parseTime(end);
@@ -280,11 +291,13 @@ class TimetableDayView extends StatelessWidget {
     final color = _typeColor(type);
     final isClass = type == 'class' || type == 'lab';
 
-    final startTime = slot['startTime']?.toString() ?? '';
-    final endTime = slot['endTime']?.toString() ?? '';
+    final startTimeRaw = slot['startTime']?.toString() ?? '';
+    final endTimeRaw = slot['endTime']?.toString() ?? '';
+    final startTime = _formatTime12(context, startTimeRaw);
+    final endTime = _formatTime12(context, endTimeRaw);
     final subject = slot['subjectName']?.toString() ?? '';
     final teacher = slot['teacherName']?.toString() ?? '';
-    final dur = _duration(startTime, endTime);
+    final dur = _duration(startTimeRaw, endTimeRaw);
 
     final periodNum = slot['periodNumber'] is int
         ? slot['periodNumber'] as int

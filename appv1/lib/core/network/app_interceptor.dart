@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:appv1/features/main_app/pages/login_page.dart';
 import 'package:appv1/features/notification_studio/controllers/notification_studio_controller.dart';
+import 'package:appv1/features/main_app/pages/deactivated_account_screen.dart';
 
 class AppInterceptor extends Interceptor {
   final GlobalKey<NavigatorState> navigatorKey;
@@ -58,6 +59,24 @@ class AppInterceptor extends Interceptor {
         // Resolve or reject properly to prevent hanging
         handler.reject(err);
         return;
+      }
+
+      // 403 — Organization Deactivated
+      if (statusCode == 403) {
+        final data = err.response?.data;
+        if (data is Map) {
+          final errorMsg = data['error']?.toString() ?? data['message']?.toString() ?? '';
+          if (errorMsg == 'Organization Deactivated' || errorMsg.contains('Deactivated')) {
+            if (navigatorKey.currentState != null) {
+              navigatorKey.currentState?.pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const DeactivatedAccountScreen()),
+                (route) => false,
+              );
+            }
+            handler.reject(err);
+            return;
+          }
+        }
       }
 
       handler.next(err);
