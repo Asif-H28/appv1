@@ -450,7 +450,7 @@ class _MainAppScreenState extends State<MainAppScreen> {
           const SizedBox(height: 12),
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
+              padding: EdgeInsets.only(left: 12, right: 12, bottom: MediaQuery.of(context).padding.bottom + 64),
               children: [
                 _buildDrawerItem(
                   icon: Icons.home_rounded,

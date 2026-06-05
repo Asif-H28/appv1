@@ -15,7 +15,7 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   // ── Colours matching the screenshot ───────────────────
   static const _teal = Color(0xFF00796B);
-  static const _signOutBg = Color(0xFF8B3A1E); // deep burnt-sienna/brown
+  static const _signOutBg = Colors.red; // Red color for logout
   static const _textPrimary = Color(0xFF111827);
   static const _textSecondary = Color(0xFF6B7280);
   static const _cardBg = Color(0xFFF9FAFB);
@@ -23,7 +23,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
   String _orgName = '';
   String _adminEmail = '';
-  String _renewalDate = 'September 24, 2025';
   bool _isLoggingOut = false;
 
   @override
@@ -163,10 +162,6 @@ class _SettingsPageState extends State<SettingsPage> {
                   children: [
                     // ── Subscription card ─────────────────
                     _buildSubscriptionCard(),
-                    const SizedBox(height: 18),
-
-                    // ── Push Notification Card ────────────
-                    const PwaNotificationPanel(),
                     const SizedBox(height: 24),
 
                     // ── Sign Out button ───────────────────
@@ -225,79 +220,32 @@ class _SettingsPageState extends State<SettingsPage> {
         borderRadius: BorderRadius.circular(3),
         border: Border.all(color: _borderColor),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Label + icon row
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'CURRENT TIER',
-                      style: TextStyle(
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w800,
-                        color: _teal,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    const Text(
-                      'Subscription\nActive',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        color: _textPrimary,
-                        height: 1.2,
-                      ),
-                    ),
-                  ],
-                ),
+          const Expanded(
+            child: Text(
+              'Active Subscription',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                color: _textPrimary,
+                height: 1.2,
               ),
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: _teal.withOpacity(0.07),
-                  borderRadius: BorderRadius.circular(3),
-                  border: Border.all(color: _teal.withOpacity(0.2)),
-                ),
-                child: const Icon(
-                  Icons.verified_rounded,
-                  color: _teal,
-                  size: 24,
-                ),
-              ),
-            ],
+            ),
           ),
-
-          const SizedBox(height: 16),
-          Container(height: 1, color: _borderColor),
-          const SizedBox(height: 14),
-
-          // Renewal date
-          Row(
-            children: [
-              Icon(
-                Icons.calendar_today_rounded,
-                size: 14,
-                color: _textSecondary,
-              ),
-              const SizedBox(width: 7),
-              Expanded(
-                child: Text(
-                  'Renewal Date: $_renewalDate',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: _textSecondary,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: _teal.withOpacity(0.07),
+              borderRadius: BorderRadius.circular(3),
+              border: Border.all(color: _teal.withOpacity(0.2)),
+            ),
+            child: const Icon(
+              Icons.verified_rounded,
+              color: _teal,
+              size: 24,
+            ),
           ),
         ],
       ),

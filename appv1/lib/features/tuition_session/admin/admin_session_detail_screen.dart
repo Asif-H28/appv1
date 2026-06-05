@@ -103,6 +103,13 @@ class _AdminSessionDetailScreenState extends State<AdminSessionDetailScreen> {
     );
   }
 
+  String _formatSectionName(String section) {
+    if (section == 'homeworkProvided') return 'Homework Provided';
+    if (section == 'studentCompletedHomework') return 'Student Completed Homework';
+    if (section == 'testGiven') return 'Test Given';
+    return section;
+  }
+
   Widget _buildAttachmentsSection(List<dynamic>? attachments) {
     if (attachments == null || attachments.isEmpty) return const SizedBox.shrink();
     
@@ -111,7 +118,7 @@ class _AdminSessionDetailScreenState extends State<AdminSessionDetailScreen> {
       children: [
         const SizedBox(height: 16),
         const Text('Attachments', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.teal)),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         Column(
           children: attachments.map((att) {
             final type = att['type']?.toString() ?? 'unknown';
@@ -119,46 +126,100 @@ class _AdminSessionDetailScreenState extends State<AdminSessionDetailScreen> {
             final name = att['filename']?.toString() ?? 'Attachment';
             final section = att['section']?.toString() ?? 'File';
 
-            IconData icon = Icons.insert_drive_file;
-            if (type == 'image') icon = Icons.image;
-            if (type == 'pdf') icon = Icons.picture_as_pdf;
+            IconData icon = Icons.insert_drive_file_rounded;
+            if (type == 'image') icon = Icons.image_rounded;
+            if (type == 'pdf') icon = Icons.picture_as_pdf_rounded;
 
-            return Card(
-              margin: const EdgeInsets.only(bottom: 8),
-              color: Colors.teal.shade50,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(3),
-                side: BorderSide(color: Colors.teal.shade200),
-              ),
-              child: ListTile(
-                onTap: () {
-                  if (url.isEmpty) return;
-                  
-                  final lowerUrl = url.toLowerCase();
-                  final isPdf = lowerUrl.contains('.pdf') || type == 'pdf';
-                  final isImage = lowerUrl.contains('.jpg') || lowerUrl.contains('.png') || lowerUrl.contains('.jpeg') || lowerUrl.contains('.webp') || type == 'image';
-
-                  if (isPdf) {
-                    _openPdf(url, name);
-                  } else if (isImage) {
-                    _openImage(url, name);
-                  } else {
-                    // Fallback
-                    launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-                  }
-                },
-                leading: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.teal.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(3),
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade200),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.03),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
-                  child: Icon(icon, color: Colors.teal),
+                ],
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: () {
+                    if (url.isEmpty) return;
+                    
+                    final lowerUrl = url.toLowerCase();
+                    final isPdf = lowerUrl.contains('.pdf') || type == 'pdf';
+                    final isImage = lowerUrl.contains('.jpg') || lowerUrl.contains('.png') || lowerUrl.contains('.jpeg') || lowerUrl.contains('.webp') || type == 'image';
+
+                    if (isPdf) {
+                      _openPdf(url, name);
+                    } else if (isImage) {
+                      _openImage(url, name);
+                    } else {
+                      // Fallback
+                      launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+                    }
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.teal.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(icon, color: Colors.teal, size: 24),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                name,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF1E293B),
+                                  fontSize: 14,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                _formatSectionName(section),
+                                style: const TextStyle(
+                                  color: Color(0xFF64748B),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.teal.withOpacity(0.05),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            color: Colors.teal,
+                            size: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                title: Text(name, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.teal, fontSize: 14)),
-                subtitle: Text(section, style: TextStyle(color: Colors.teal.shade700, fontSize: 12)),
-                trailing: const Icon(Icons.chevron_right, color: Colors.teal),
               ),
             );
           }).toList(),

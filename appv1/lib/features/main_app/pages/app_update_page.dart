@@ -200,236 +200,194 @@ class _AppUpdatePageState extends State<AppUpdatePage> {
     final hasUpdate = _latestVersion.isNotEmpty && _latestVersion != _currentVersion;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('App Update', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white)),
-        backgroundColor: Colors.teal,
-        elevation: 0,
-        centerTitle: true,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.teal.withOpacity(0.02), Colors.teal.withOpacity(0.08)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 500),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-              child: Card(
-                elevation: 4,
-                shadowColor: Colors.black12,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 36),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _buildStatusIcon(hasUpdate),
-                      const SizedBox(height: 24),
-                      Text(
-                        hasUpdate ? 'New Update Available!' : 'Your App is Up to Date',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1E293B),
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        hasUpdate
-                            ? 'A new version of SchoolSync is ready for download.'
-                            : 'You are running the latest features and security updates.',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: Color(0xFF64748B),
-                          height: 1.4,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 32),
-                      _buildVersionDetailsCard(),
-                      const SizedBox(height: 24),
-                      if (hasUpdate && _releaseNotes.isNotEmpty) _buildReleaseNotesCard(),
-                      const SizedBox(height: 32),
-                      if (_isDownloading)
-                        _buildDownloadProgressIndicator()
-                      else if (_isLoading)
-                        const CircularProgressIndicator(color: Colors.teal)
-                      else ...[
-                        if (hasUpdate)
-                          SizedBox(
-                            width: double.infinity,
-                            height: 48,
-                            child: ElevatedButton(
-                              onPressed: _handleUpdate,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.teal,
-                                foregroundColor: Colors.white,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              ),
-                              child: Text(
-                                kIsWeb ? 'Update & Refresh (PWA)' : 'Update Now',
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                              ),
-                            ),
-                          )
-                        else
-                          SizedBox(
-                            width: double.infinity,
-                            height: 48,
-                            child: OutlinedButton(
-                              onPressed: _initAndCheck,
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: Colors.teal,
-                                side: const BorderSide(color: Colors.teal, width: 1.5),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              ),
-                              child: const Text(
-                                'Check for Updates',
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                              ),
-                            ),
-                          ),
-                      ],
-                      if (_errorMessage != null) ...[
-                        const SizedBox(height: 16),
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.red[50],
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.red[100]!),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(Icons.error_outline_rounded, color: Colors.red[600], size: 20),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  _errorMessage!,
-                                  style: TextStyle(color: Colors.red[800], fontSize: 12),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
+      backgroundColor: Colors.white,
+      body: Stack(
+        children: [
+          // Background Header
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: MediaQuery.of(context).size.height * 0.45,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.teal.shade700, Colors.teal.shade400],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatusIcon(bool hasUpdate) {
-    if (_isLoading) {
-      return Container(
-        width: 80,
-        height: 80,
-        decoration: BoxDecoration(
-          color: Colors.teal.withOpacity(0.05),
-          shape: BoxShape.circle,
-        ),
-        child: const Center(
-          child: SizedBox(
-            width: 32,
-            height: 32,
-            child: CircularProgressIndicator(color: Colors.teal, strokeWidth: 3),
-          ),
-        ),
-      );
-    }
-
-    return Container(
-      width: 84,
-      height: 84,
-      decoration: BoxDecoration(
-        color: hasUpdate ? Colors.teal.withOpacity(0.08) : const Color(0xFFE8F5E9),
-        shape: BoxShape.circle,
-      ),
-      child: Center(
-        child: Icon(
-          hasUpdate ? Icons.system_update_rounded : Icons.check_circle_outline_rounded,
-          color: hasUpdate ? Colors.teal : const Color(0xFF2E7D32),
-          size: 42,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildVersionDetailsCard() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          Expanded(
+          
+          SafeArea(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Text(
-                  'CURRENT VERSION',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF94A3B8),
-                    letterSpacing: 0.5,
+                // Custom AppBar
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                      const Expanded(
+                        child: Text(
+                          'App Update',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 48), // balance back button
+                    ],
                   ),
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  _currentVersion,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF334155),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(width: 1, height: 28, color: const Color(0xFFE2E8F0)),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Text(
-                  'LATEST VERSION',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF94A3B8),
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  _isLoading ? '...' : (_latestVersion.isEmpty ? _currentVersion : _latestVersion),
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF334155),
+
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 20),
+                          // Icon
+                          _buildStatusIcon(hasUpdate),
+                          const SizedBox(height: 40),
+                          
+                          // Main Card
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(32),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(24),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.teal.withOpacity(0.15),
+                                  blurRadius: 24,
+                                  offset: const Offset(0, 12),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              children: [
+                                Text(
+                                  hasUpdate ? 'Update Available' : 'Up to Date',
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.teal.shade900,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  hasUpdate
+                                      ? 'A newer version of SchoolSync is ready to be installed.'
+                                      : 'You already have the latest features and security updates.',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.teal.shade700.withOpacity(0.8),
+                                    height: 1.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 32),
+                                _buildVersionDetailsCard(),
+                                if (hasUpdate && _releaseNotes.isNotEmpty) ...[
+                                  const SizedBox(height: 24),
+                                  _buildReleaseNotesCard(),
+                                ],
+                                const SizedBox(height: 32),
+                                if (_isDownloading)
+                                  _buildDownloadProgressIndicator()
+                                else if (_isLoading)
+                                  const CircularProgressIndicator(color: Colors.teal)
+                                else ...[
+                                  if (hasUpdate)
+                                    SizedBox(
+                                      width: double.infinity,
+                                      height: 56,
+                                      child: ElevatedButton(
+                                        onPressed: _handleUpdate,
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.teal.shade600,
+                                          foregroundColor: Colors.white,
+                                          elevation: 4,
+                                          shadowColor: Colors.teal.withOpacity(0.4),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(16),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          kIsWeb ? 'Update & Refresh' : 'Update Now',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  else
+                                    SizedBox(
+                                      width: double.infinity,
+                                      height: 56,
+                                      child: OutlinedButton(
+                                        onPressed: _initAndCheck,
+                                        style: OutlinedButton.styleFrom(
+                                          foregroundColor: Colors.teal.shade700,
+                                          side: BorderSide(color: Colors.teal.shade200, width: 2),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(16),
+                                          ),
+                                        ),
+                                        child: const Text(
+                                          'Check for Updates',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                                if (_errorMessage != null) ...[
+                                  const SizedBox(height: 20),
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: Colors.teal.shade50,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: Colors.teal.shade200),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.error_outline_rounded, color: Colors.teal.shade700, size: 20),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            _errorMessage!,
+                                            style: TextStyle(color: Colors.teal.shade900, fontSize: 13),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -440,31 +398,135 @@ class _AppUpdatePageState extends State<AppUpdatePage> {
     );
   }
 
+  Widget _buildStatusIcon(bool hasUpdate) {
+    if (_isLoading) {
+      return Container(
+        width: 100,
+        height: 100,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(color: Colors.teal.withOpacity(0.2), blurRadius: 20, offset: const Offset(0, 10)),
+          ],
+        ),
+        child: const Center(
+          child: SizedBox(
+            width: 36,
+            height: 36,
+            child: CircularProgressIndicator(color: Colors.teal, strokeWidth: 3),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      width: 110,
+      height: 110,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 30,
+            offset: const Offset(0, 15),
+          ),
+        ],
+      ),
+      child: Center(
+        child: Container(
+          width: 86,
+          height: 86,
+          decoration: BoxDecoration(
+            color: hasUpdate ? Colors.teal.shade50 : Colors.teal.shade50,
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            hasUpdate ? Icons.cloud_download_rounded : Icons.verified_rounded,
+            color: Colors.teal.shade600,
+            size: 46,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVersionDetailsCard() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.teal.shade50.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.teal.shade100.withOpacity(0.5)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _buildVersionCol('CURRENT', _currentVersion),
+          Container(width: 1, height: 40, color: Colors.teal.shade200.withOpacity(0.5)),
+          _buildVersionCol('LATEST', _isLoading ? '...' : (_latestVersion.isEmpty ? _currentVersion : _latestVersion)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVersionCol(String title, String version) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            color: Colors.teal.shade700,
+            letterSpacing: 1.0,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          version,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.teal.shade900,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildReleaseNotesCard() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(width: double.infinity),
-        const Text(
-          'What\'s New',
-          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF334155)),
+        Row(
+          children: [
+            Icon(Icons.new_releases_rounded, size: 18, color: Colors.teal.shade600),
+            const SizedBox(width: 8),
+            Text(
+              'What\'s New',
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.teal.shade900),
+            ),
+          ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: const Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            color: Colors.teal.shade50.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.teal.shade100.withOpacity(0.5)),
           ),
-          constraints: const BoxConstraints(maxHeight: 120),
+          constraints: const BoxConstraints(maxHeight: 140),
           child: Scrollbar(
             thumbVisibility: true,
             child: SingleChildScrollView(
               child: Text(
                 _releaseNotes,
-                style: const TextStyle(fontSize: 12, color: Color(0xFF475569), height: 1.4),
+                style: TextStyle(fontSize: 13, color: Colors.teal.shade800, height: 1.5),
               ),
             ),
           ),
@@ -476,17 +538,28 @@ class _AppUpdatePageState extends State<AppUpdatePage> {
   Widget _buildDownloadProgressIndicator() {
     return Column(
       children: [
-        LinearProgressIndicator(
-          value: _downloadProgress,
-          backgroundColor: Colors.teal.withOpacity(0.1),
-          valueColor: const AlwaysStoppedAnimation<Color>(Colors.teal),
-          minHeight: 6,
-          borderRadius: BorderRadius.circular(3),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Downloading...',
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.teal.shade700),
+            ),
+            Text(
+              '${(_downloadProgress * 100).toStringAsFixed(0)}%',
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.teal.shade700),
+            ),
+          ],
         ),
-        const SizedBox(height: 8),
-        Text(
-          'Downloading update... ${(_downloadProgress * 100).toStringAsFixed(0)}%',
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.teal),
+        const SizedBox(height: 12),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(6),
+          child: LinearProgressIndicator(
+            value: _downloadProgress,
+            backgroundColor: Colors.teal.shade100,
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.teal.shade600),
+            minHeight: 8,
+          ),
         ),
       ],
     );
