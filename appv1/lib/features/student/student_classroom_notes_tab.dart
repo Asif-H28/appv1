@@ -60,7 +60,7 @@ class _StudentClassroomNotesTabState extends State<StudentClassroomNotesTab> {
     }
 
     try {
-      final res = await http.get(
+      final res = await ApiService.get(
         Uri.parse('${ApiConstants.apiBaseUrl}/notes/class/$classId'),
         headers: await ApiService.getHeaders(),
       );

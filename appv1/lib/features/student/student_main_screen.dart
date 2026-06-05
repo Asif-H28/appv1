@@ -15,6 +15,7 @@ import '../main_app/pages/login_page.dart';
 import '../main_app/pages/app_update_page.dart';
 import 'student_logout_modal.dart';
 import '../support/presentation/pages/support_page.dart';
+import 'package:appv1/core/services/api_service.dart';
 
 
 const Color _accent = Colors.teal;
@@ -502,7 +503,7 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
 
     if (studentId.isNotEmpty) {
       try {
-        await http.post(
+        await ApiService.post(
           Uri.parse('${ApiConstants.apiBaseUrl}/notification/fcm/student/clear'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({'studentId': studentId}),

@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../teacher/presentation/widgets/pdf_viewer_page.dart';
+import 'package:appv1/core/services/api_service.dart';
 
 const Color _accent = Colors.teal;
 
@@ -154,7 +155,7 @@ class _NoteCardState extends State<NoteCard> {
     }
     setState(() => _downloading[index] = true);
     try {
-      final res = await http.get(Uri.parse(url));
+      final res = await ApiService.get(Uri.parse(url));
       if (res.statusCode != 200) {
         _snack('Download failed.', Colors.red[600]!);
         setState(() => _downloading[index] = false);

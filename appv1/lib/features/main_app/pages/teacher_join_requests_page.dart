@@ -56,7 +56,7 @@ class _TeacherJoinRequestsPageState extends State<TeacherJoinRequestsPage>
     });
 
     try {
-      final response = await http.get(
+      final response = await ApiService.get(
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/teacher/join-requests/$_orgId',
         ),
@@ -109,7 +109,7 @@ class _TeacherJoinRequestsPageState extends State<TeacherJoinRequestsPage>
     _setCardLoading(index, true, isPending: true);
 
     try {
-      final response = await http.put(
+      final response = await ApiService.put(
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/teacher/join-requests/$requestId/approve',
         ),
@@ -147,7 +147,7 @@ class _TeacherJoinRequestsPageState extends State<TeacherJoinRequestsPage>
     _setCardLoading(index, true, isPending: true);
 
     try {
-      final response = await http.put(
+      final response = await ApiService.put(
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/teacher/join-requests/$requestId/reject',
         ),

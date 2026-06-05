@@ -58,7 +58,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     debugPrint('\n[OTP FLOW] 1. Request OTP');
     debugPrint('Payload: {"email": "$email"}');
     try {
-      final res = await http.post(
+      final res = await ApiService.post(
         Uri.parse('$_baseUrl/api/auth/forgot-password'),
         headers: await ApiService.getHeaders(),
         body: jsonEncode({'email': email}),
@@ -96,7 +96,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     debugPrint('\n[OTP FLOW] 2. Verify OTP');
     debugPrint('Payload: {"email": "$email", "otp": "$otp"}');
     try {
-      final res = await http.post(
+      final res = await ApiService.post(
         Uri.parse('$_baseUrl/api/auth/verify-otp'),
         headers: await ApiService.getHeaders(),
         body: jsonEncode({'email': email, 'otp': otp}),
@@ -142,7 +142,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       'Payload: {"email": "$email", "resetToken": "$_resetToken", "newPassword": "***"}',
     );
     try {
-      final res = await http.post(
+      final res = await ApiService.post(
         Uri.parse('$_baseUrl/api/auth/reset-password'),
         headers: await ApiService.getHeaders(),
         body: jsonEncode({

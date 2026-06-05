@@ -84,7 +84,7 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
       _currentPage = 1;
     });
     try {
-      final res = await http.get(
+      final res = await ApiService.get(
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/achievement/org/$_orgId?page=1&limit=3',
         ),
@@ -130,7 +130,7 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
     final url = '${ApiConstants.apiBaseUrl}/achievement/org/$_orgId?page=$nextPage&limit=3';
 
     try {
-      final res = await http.get(
+      final res = await ApiService.get(
         Uri.parse(url),
         headers: await ApiService.getHeaders(),
       );
@@ -195,7 +195,7 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
     });
 
     try {
-      await http.post(
+      await ApiService.post(
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/achievement/$achId/like',
         ),
@@ -336,7 +336,7 @@ class _AdminAchievementsPageState extends State<AdminAchievementsPage> {
   Future<void> _deletePost(int index) async {
     final achId = _posts[index]['achievementId'].toString();
     try {
-      await http.delete(
+      await ApiService.delete(
         Uri.parse('${ApiConstants.apiBaseUrl}/achievement/$achId'),
         headers: await ApiService.getHeaders(),
       );

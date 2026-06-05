@@ -98,7 +98,7 @@ class _LeaveRequestPageState extends State<LeaveRequestPage> with SingleTickerPr
     );
 
     try {
-      final res = await http.put(
+      final res = await ApiService.put(
         Uri.parse('${ApiConstants.apiBaseUrl}/leave/teacher/$leaveId/review'),
         headers: await ApiService.getHeaders(),
         body: jsonEncode({

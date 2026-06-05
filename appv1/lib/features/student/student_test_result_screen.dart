@@ -149,7 +149,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
   Future<void> _fetchOrgDetails() async {
     if (_orgId.isEmpty) return;
     try {
-      final res = await http.get(
+      final res = await ApiService.get(
         Uri.parse('${ApiConstants.apiBaseUrl}/org/school/$_orgId/public'),
       );
       if (res.statusCode == 200) {
@@ -181,7 +181,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
     }
 
     try {
-      final res = await http.get(
+      final res = await ApiService.get(
         Uri.parse(
             '${ApiConstants.apiBaseUrl}/comprehensive-result/assessment/$_testId'),
         headers: await ApiService.getHeaders(),
@@ -229,7 +229,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
       return;
     }
     try {
-      final res = await http.get(
+      final res = await ApiService.get(
         Uri.parse(
             '${ApiConstants.apiBaseUrl}/comprehensive-result/summary/$_studentId/$_testId'),
         headers: await ApiService.getHeaders(),
@@ -264,7 +264,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
     setState(() => _generating = true);
 
     try {
-      final res = await http.post(
+      final res = await ApiService.post(
         Uri.parse(
             '${ApiConstants.apiBaseUrl}/comprehensive-result/summary/$_studentId/$_testId'),
         headers: await ApiService.getHeaders(),

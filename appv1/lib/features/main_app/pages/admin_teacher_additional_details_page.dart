@@ -32,7 +32,7 @@ class _AdminTeacherAdditionalDetailsPageState extends State<AdminTeacherAddition
   Future<void> _fetchRecords() async {
     setState(() => _loading = true);
     try {
-      final res = await http.get(
+      final res = await ApiService.get(
         Uri.parse('${ApiConstants.apiBaseUrl}/teacher-additional-record/${widget.teacherId}'),
         headers: await ApiService.getHeaders(),
       );

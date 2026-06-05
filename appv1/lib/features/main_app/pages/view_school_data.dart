@@ -125,7 +125,7 @@ class ViewSchoolService {
 
   static Future<SchoolBasicData> _getBasic(String orgId) async {
     try {
-      final res = await http.get(
+      final res = await ApiService.get(
         Uri.parse('$_base/$orgId/school-details'),
         headers: await ApiService.getHeaders(),
       );
@@ -140,7 +140,7 @@ class ViewSchoolService {
 
   static Future<List<FeeItem>> _getFees(String orgId) async {
     try {
-      final res = await http.get(
+      final res = await ApiService.get(
         Uri.parse('$_base/school/fee?orgId=$orgId'),
         headers: await ApiService.getHeaders(),
       );
@@ -158,7 +158,7 @@ class ViewSchoolService {
 
   static Future<List<RoleItem>> _getRoles(String orgId) async {
     try {
-      final res = await http.get(
+      final res = await ApiService.get(
         Uri.parse('$_base/school/roles?orgId=$orgId'),
         headers: await ApiService.getHeaders(),
       );

@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:open_file/open_file.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../teacher/presentation/widgets/pdf_viewer_page.dart';
+import 'package:appv1/core/services/api_service.dart';
 
 const Color _accent = Colors.teal;
 
@@ -45,7 +46,7 @@ class _StudentNoteDetailScreenState extends State<StudentNoteDetailScreen> {
     try {
       setState(() => _downloadStatus = 'Downloading...');
 
-      final res = await http.get(Uri.parse(widget.fileUrl));
+      final res = await ApiService.get(Uri.parse(widget.fileUrl));
 
       if (res.statusCode != 200) {
         setState(() {

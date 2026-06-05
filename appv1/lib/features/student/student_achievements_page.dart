@@ -96,7 +96,7 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
     debugPrint('==== [Achievements] GET $url');
 
     try {
-      final res = await http.get(
+      final res = await ApiService.get(
         Uri.parse(url),
         headers: await ApiService.getHeaders(),
       );
@@ -161,7 +161,7 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
     debugPrint('==== [Achievements] LOAD MORE GET $url');
 
     try {
-      final res = await http.get(
+      final res = await ApiService.get(
         Uri.parse(url),
         headers: await ApiService.getHeaders(),
       );
@@ -227,7 +227,7 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
     });
 
     try {
-      await http.post(
+      await ApiService.post(
         Uri.parse('${ApiConstants.apiBaseUrl}/achievement/$achId/like'),
         headers: await ApiService.getHeaders(),
         body: jsonEncode({

@@ -158,7 +158,7 @@ class NotificationService {
         : {'teacherId': userId, 'fcmToken': token};
 
     try {
-      final res = await http.post(
+      final res = await ApiService.post(
         Uri.parse('$_baseUrl$endpoint'),
         headers: await ApiService.getHeaders(),
         body: jsonEncode(body),
@@ -190,7 +190,7 @@ class NotificationService {
       await prefs.setString('fcmToken', token);
       await prefs.setString('fcmRole', 'admin');
 
-      final res = await http.post(
+      final res = await ApiService.post(
         Uri.parse('$_baseUrl/api/notification/fcm/admin/save'),
         headers: await ApiService.getHeaders(),
         body: jsonEncode({'orgId': orgId, 'fcmToken': token}),
@@ -204,7 +204,7 @@ class NotificationService {
   // ── Clear Admin FCM token on admin logout ───────────
   static Future<void> clearAdminToken({required String orgId}) async {
     try {
-      final res = await http.post(
+      final res = await ApiService.post(
         Uri.parse('$_baseUrl/api/notification/fcm/admin/clear'),
         headers: await ApiService.getHeaders(),
         body: jsonEncode({'orgId': orgId}),
@@ -339,7 +339,7 @@ class NotificationService {
     String type = 'general',
   }) async {
     try {
-      final res = await http.post(
+      final res = await ApiService.post(
         Uri.parse('$_baseUrl/api/notification/send/class'),
         headers: await ApiService.getHeaders(),
         body: jsonEncode({
@@ -371,7 +371,7 @@ class NotificationService {
     String type = 'general',
   }) async {
     try {
-      final res = await http.post(
+      final res = await ApiService.post(
         Uri.parse('$_baseUrl/api/notification/send/student'),
         headers: await ApiService.getHeaders(),
         body: jsonEncode({
@@ -403,7 +403,7 @@ class NotificationService {
     String type = 'announcement',
   }) async {
     try {
-      final res = await http.post(
+      final res = await ApiService.post(
         Uri.parse('$_baseUrl/api/notification/send/org'),
         headers: await ApiService.getHeaders(),
         body: jsonEncode({
@@ -429,7 +429,7 @@ class NotificationService {
     String classId,
   ) async {
     try {
-      final res = await http.get(
+      final res = await ApiService.get(
         Uri.parse('$_baseUrl/api/notification/class/$classId'),
         headers: await ApiService.getHeaders(),
       );
@@ -446,7 +446,7 @@ class NotificationService {
 
   static Future<List<Map<String, dynamic>>> getOrgHistory(String orgId) async {
     try {
-      final res = await http.get(
+      final res = await ApiService.get(
         Uri.parse('$_baseUrl/api/notification/org/$orgId'),
         headers: await ApiService.getHeaders(),
       );
@@ -475,7 +475,7 @@ class NotificationService {
   ) async {
     final url = '$_baseUrl/api/notification/org/$orgId/teacher-leave-requests';
     try {
-      final res = await http.get(
+      final res = await ApiService.get(
         Uri.parse(url),
         headers: await ApiService.getHeaders(),
       );
@@ -526,7 +526,7 @@ class NotificationService {
     required String token,
   }) async {
     try {
-      final res = await http.put(
+      final res = await ApiService.put(
         Uri.parse(
           '$_baseUrl/api/notification/teacher/student-leave-requests/mark-all-read',
         ),

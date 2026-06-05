@@ -47,7 +47,7 @@ class _StudentClassroomTestsTabState extends State<StudentClassroomTestsTab> {
     }
 
     try {
-      final res = await http.get(
+      final res = await ApiService.get(
         Uri.parse('${ApiConstants.apiBaseUrl}/comprehensive-assessment/list?orgId=$_orgId&classId=$_classId'),
         headers: await ApiService.getHeaders(),
       );

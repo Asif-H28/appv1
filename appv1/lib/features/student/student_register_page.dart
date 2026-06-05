@@ -37,7 +37,7 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
     setState(() => _isLoading = true);
 
     try {
-      final response = await http.post(
+      final response = await ApiService.post(
         Uri.parse('${ApiConstants.apiBaseUrl}/student/register'),
         headers: await ApiService.getHeaders(),
         body: jsonEncode({

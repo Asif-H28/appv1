@@ -67,7 +67,7 @@ class _StudentOtpPageState extends State<StudentOtpPage> {
     }
     setState(() => _isVerifying = true);
     try {
-      final response = await http.post(
+      final response = await ApiService.post(
         Uri.parse('${ApiConstants.apiBaseUrl}/student/verify-otp'),
         headers: await ApiService.getHeaders(),
         body: jsonEncode({'studentId': widget.studentId, 'otp': _otp}),
@@ -97,7 +97,7 @@ class _StudentOtpPageState extends State<StudentOtpPage> {
   Future<void> _resend() async {
     setState(() => _isResending = true);
     try {
-      await http.post(
+      await ApiService.post(
         Uri.parse('${ApiConstants.apiBaseUrl}/student/resend-otp'),
         headers: await ApiService.getHeaders(),
         body: jsonEncode({'studentId': widget.studentId}),

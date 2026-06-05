@@ -115,7 +115,7 @@ class _OrganizationPageState extends State<OrganizationPage> {
         '${ApiConstants.apiBaseUrl}/org/$_orgId/profile',
       );
 
-      final response = await http.get(
+      final response = await ApiService.get(
         url,
         headers: await ApiService.getHeaders(),
       );
@@ -277,7 +277,7 @@ class _OrganizationPageState extends State<OrganizationPage> {
       '${ApiConstants.apiBaseUrl}/org/$_orgId/profile',
     );
 
-    final response = await http.put(
+    final response = await ApiService.put(
       url,
       headers: await ApiService.getHeaders(),
       body: jsonEncode({

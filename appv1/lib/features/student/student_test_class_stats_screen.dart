@@ -40,7 +40,7 @@ class _StudentTestClassStatsScreenState
       _error = '';
     });
     try {
-      final res = await http.get(
+      final res = await ApiService.get(
         Uri.parse('${ApiConstants.apiBaseUrl}/result/test/$_testId'),
         headers: await ApiService.getHeaders(),
       );

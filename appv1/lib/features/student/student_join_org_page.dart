@@ -118,7 +118,7 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage>
         return;
       }
 
-      final res = await http.get(
+      final res = await ApiService.get(
         Uri.parse('${ApiConstants.apiBaseUrl}/student/profile/$studentId'),
         headers: await ApiService.getHeaders(),
       );
@@ -202,7 +202,7 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage>
   // ── NEW: fetch org details to get orgName ──────────────
   Future<void> _fetchOrgName(SharedPreferences prefs) async {
     try {
-      final res = await http.get(
+      final res = await ApiService.get(
         Uri.parse('${ApiConstants.apiBaseUrl}/org/$_orgId/profile'),
         headers: await ApiService.getHeaders(),
       );
@@ -234,7 +234,7 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage>
     if (_orgId.isEmpty) return;
     setState(() => _isLoading = true);
     try {
-      final res = await http.get(
+      final res = await ApiService.get(
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/student/orgs/$_orgId/classes',
         ),
@@ -278,7 +278,7 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage>
           _selectedClass!['classId']?.toString() ??
           _selectedClass!['_id']?.toString() ??
           '';
-      final res = await http.post(
+      final res = await ApiService.post(
         Uri.parse('${ApiConstants.apiBaseUrl}/student/join-request'),
         headers: await ApiService.getHeaders(),
         body: jsonEncode({'studentId': _studentId, 'classId': classId}),

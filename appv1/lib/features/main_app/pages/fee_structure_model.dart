@@ -80,7 +80,7 @@ class FeeStructureService {
 
   // GET all
   static Future<List<FeeStructure>> getAll(String orgId) async {
-    final res = await http.get(
+    final res = await ApiService.get(
       Uri.parse('$_base?orgId=$orgId'),
       headers: await ApiService.getHeaders(),
     );
@@ -99,7 +99,7 @@ class FeeStructureService {
 
   // POST create
   static Future<FeeStructure> create(FeeStructure fs) async {
-    final res = await http.post(
+    final res = await ApiService.post(
       Uri.parse(_base),
       headers: await ApiService.getHeaders(),
       body: jsonEncode(fs.toJson()),
@@ -113,7 +113,7 @@ class FeeStructureService {
 
   // PUT update
   static Future<FeeStructure> update(String id, FeeStructure fs) async {
-    final res = await http.put(
+    final res = await ApiService.put(
       Uri.parse('$_base/$id'),
       headers: await ApiService.getHeaders(),
       body: jsonEncode(fs.toJson()),
@@ -127,7 +127,7 @@ class FeeStructureService {
 
   // DELETE
   static Future<void> delete(String id, String orgId) async {
-    final res = await http.delete(
+    final res = await ApiService.delete(
       Uri.parse('$_base/$id?orgId=$orgId'),
       headers: await ApiService.getHeaders(),
     );

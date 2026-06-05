@@ -43,7 +43,7 @@ class _StudentPendingScreenState extends State<StudentPendingScreen> {
         return;
       }
 
-      final res = await http.get(
+      final res = await ApiService.get(
         Uri.parse('${ApiConstants.apiBaseUrl}/student/profile/$studentId'),
         headers: await ApiService.getHeaders(),
       );

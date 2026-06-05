@@ -8,6 +8,7 @@ import 'package:open_file/open_file.dart';
 import 'package:http/http.dart' as http;
 import '../../../core/services/api_service.dart';
 import '../../../core/constants/api_constants.dart';
+import 'package:appv1/core/services/api_service.dart';
 
 class AdminAttendancePage extends StatefulWidget {
   const AdminAttendancePage({Key? key}) : super(key: key);
@@ -92,7 +93,7 @@ class _AdminAttendancePageState extends State<AdminAttendancePage> {
 
     try {
       final headers = await ApiService.getHeaders();
-      final response = await http.get(
+      final response = await ApiService.get(
         Uri.parse('${ApiConstants.apiBaseUrl}$urlPath'),
         headers: headers,
       );

@@ -57,7 +57,7 @@ class RoleService {
 
   // GET all
   static Future<List<SchoolRole>> getAll(String orgId) async {
-    final res = await http.get(
+    final res = await ApiService.get(
       Uri.parse('$_base?orgId=$orgId'),
       headers: await ApiService.getHeaders(),
     );
@@ -74,7 +74,7 @@ class RoleService {
 
   // POST create
   static Future<SchoolRole> create(SchoolRole role) async {
-    final res = await http.post(
+    final res = await ApiService.post(
       Uri.parse(_base),
       headers: await ApiService.getHeaders(),
       body: jsonEncode(role.toJson()),
@@ -88,7 +88,7 @@ class RoleService {
 
   // PUT update
   static Future<SchoolRole> update(String id, SchoolRole role) async {
-    final res = await http.put(
+    final res = await ApiService.put(
       Uri.parse('$_base/$id'),
       headers: await ApiService.getHeaders(),
       body: jsonEncode(role.toJson()),
@@ -102,7 +102,7 @@ class RoleService {
 
   // DELETE
   static Future<void> delete(String id, String orgId) async {
-    final res = await http.delete(
+    final res = await ApiService.delete(
       Uri.parse('$_base/$id?orgId=$orgId'),
       headers: await ApiService.getHeaders(),
     );

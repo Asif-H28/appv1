@@ -284,7 +284,7 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
     if (ok != true) return;
     try {
       final noticeId = widget.notice!['noticeId']?.toString() ?? '';
-      await http.delete(
+      await ApiService.delete(
         Uri.parse(
           '${ApiConstants.apiBaseUrl}/admin-notices/$noticeId/attachment',
         ),
@@ -378,7 +378,7 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
       }
       await req.send();
     } else {
-      await http.post(
+      await ApiService.post(
         uri,
         headers: await ApiService.getHeaders(),
         body: jsonEncode(_buildBody()),
@@ -409,7 +409,7 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
       }
       await req.send();
     } else {
-      await http.put(
+      await ApiService.put(
         uri,
         headers: await ApiService.getHeaders(),
         body: jsonEncode(_buildBody()),

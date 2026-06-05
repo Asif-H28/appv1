@@ -83,7 +83,7 @@ class _SchoolSetupPageState extends State<SchoolSetupPage> {
       return;
     }
     try {
-      final res = await http.get(
+      final res = await ApiService.get(
         Uri.parse('$_base/$_orgId/school-details'),
         headers: await ApiService.getHeaders(),
       );
@@ -113,7 +113,7 @@ class _SchoolSetupPageState extends State<SchoolSetupPage> {
 
     setState(() => _saving = true);
     try {
-      final res = await http.put(
+      final res = await ApiService.put(
         Uri.parse('$_base/$_orgId/school-details'),
         headers: await ApiService.getHeaders(),
         body: jsonEncode({

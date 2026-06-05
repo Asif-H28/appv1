@@ -489,7 +489,7 @@ class __AdminLoginTabState extends State<_AdminLoginTab> {
     if (_isLoading) return;
     setState(() => _isLoading = true);
     try {
-      final res = await http.post(
+      final res = await ApiService.post(
         Uri.parse('${ApiConstants.apiBaseUrl}/org/admin/login'),
         headers: await ApiService.getHeaders(),
         body: jsonEncode({
@@ -705,7 +705,7 @@ class __TeacherLoginTabState extends State<_TeacherLoginTab> {
     if (_isLoading) return;
     setState(() => _isLoading = true);
     try {
-      final res = await http.post(
+      final res = await ApiService.post(
         Uri.parse('${ApiConstants.apiBaseUrl}/teacher/login'),
         headers: await ApiService.getHeaders(),
         body: jsonEncode({
@@ -734,7 +734,7 @@ class __TeacherLoginTabState extends State<_TeacherLoginTab> {
       final teacherId = teacher['teacherId']?.toString() ?? '';
       final token = body['token']?.toString() ?? '';
 
-      final profileRes = await http.get(
+      final profileRes = await ApiService.get(
         Uri.parse('${ApiConstants.apiBaseUrl}/teacher/$teacherId/profile'),
         headers: {
           'Content-Type': 'application/json',
@@ -943,7 +943,7 @@ class __StudentLoginTabState extends State<_StudentLoginTab> {
     if (_isLoading) return;
     setState(() => _isLoading = true);
     try {
-      final res = await http.post(
+      final res = await ApiService.post(
         Uri.parse('${ApiConstants.apiBaseUrl}/student/login'),
         headers: await ApiService.getHeaders(),
         body: jsonEncode({
