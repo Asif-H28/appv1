@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../../../core/network/dio_client.dart';
+import 'package:appv1/features/main_app/pages/notification_router.dart';
 import '../models/notification_model.dart';
 
 class InAppNotificationOverlay {
   static void show(NotificationModel notification) {
     debugPrint('InAppNotificationOverlay.show called for: ${notification.title}');
-    final overlayState = DioClient.navigatorKey.currentState?.overlay;
+    final overlayState = navigatorKey.currentState?.overlay;
     if (overlayState == null) {
       debugPrint('InAppNotificationOverlay: Navigator overlayState is null. Cannot show toast.');
       return;

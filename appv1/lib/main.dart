@@ -37,7 +37,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'School Admin',
       theme: appTheme(),
-      navigatorKey: DioClient.navigatorKey,
+      navigatorKey: navigatorKey,
       home: AnnotatedRegion<SystemUiOverlayStyle>(
         value: const SystemUiOverlayStyle(
           // Status bar

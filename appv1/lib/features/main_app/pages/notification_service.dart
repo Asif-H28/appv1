@@ -271,7 +271,7 @@ class NotificationService {
           payload: jsonEncode(message.data),
         );
       } else {
-        final context = DioClient.navigatorKey.currentContext;
+        final context = navigatorKey.currentContext;
         if (context != null) {
           TopNotificationBanner.show(
             context,

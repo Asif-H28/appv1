@@ -1,12 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:appv1/core/constants/api_constants.dart';
+import 'package:appv1/features/main_app/pages/notification_router.dart';
 import 'app_interceptor.dart';
 
 class DioClient {
   static Dio? _instance;
-  // Shared navigator key for global navigation (e.g., redirect to login)
-  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   static Dio get instance {
     _instance ??= _createDio();
