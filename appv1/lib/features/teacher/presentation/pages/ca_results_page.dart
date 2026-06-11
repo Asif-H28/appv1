@@ -73,7 +73,7 @@ class _CaResultsPageState extends State<CaResultsPage> with SingleTickerProvider
 
       if (!mounted) return;
 
-      if (res1.statusCode == 200 && res2.statusCode == 200) {
+      if (res1.statusCode == 200) {
         // Handle Students
         final body1 = jsonDecode(res1.body);
         print('[CaResultsPage] Students body type: ${body1.runtimeType}');
@@ -90,8 +90,13 @@ class _CaResultsPageState extends State<CaResultsPage> with SingleTickerProvider
         print('[CaResultsPage] Total approved students: ${approvedStudents.length}');
 
         // Handle Results
-        final body2 = jsonDecode(res2.body);
-        final resultList = body2 is List ? body2.map((e) => e as Map<String, dynamic>).toList() : (body2['data'] as List? ?? []).map((e) => e as Map<String, dynamic>).toList();
+        List<Map<String, dynamic>> resultList = [];
+        if (res2.statusCode == 200) {
+          final body2 = jsonDecode(res2.body);
+          resultList = body2 is List ? body2.map((e) => e as Map<String, dynamic>).toList() : (body2['data'] as List? ?? []).map((e) => e as Map<String, dynamic>).toList();
+        } else {
+          print('[CaResultsPage] Results API returned non-200: ${res2.statusCode}. Treating as empty results.');
+        }
         print('[CaResultsPage] Total results: ${resultList.length}');
 
         setState(() {

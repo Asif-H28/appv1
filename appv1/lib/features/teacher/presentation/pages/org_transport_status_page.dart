@@ -173,6 +173,7 @@ class VehicleMapView extends StatefulWidget {
 
 class _VehicleMapViewState extends State<VehicleMapView> {
   bool _isLoading = true;
+  bool _isMapLoading = true;
   String? _errorMessage;
   Map<String, dynamic>? _vehicle;
   late final WebViewController _webViewController;
@@ -189,7 +190,15 @@ class _VehicleMapViewState extends State<VehicleMapView> {
     super.initState();
     _webViewController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0x00000000));
+      ..setBackgroundColor(const Color(0x00000000))
+      ..addJavaScriptChannel(
+        'MapLoaded',
+        onMessageReceived: (JavaScriptMessage message) {
+          if (message.message == 'loaded' && mounted) {
+            setState(() => _isMapLoading = false);
+          }
+        },
+      );
       
     _checkRefreshCooldown();
     _fetchLocation();
@@ -279,10 +288,11 @@ class _VehicleMapViewState extends State<VehicleMapView> {
                 </style>
               </head>
               <body>
-                <iframe src="$url" allowfullscreen></iframe>
+                <iframe src="$url" onload="window.MapLoaded.postMessage('loaded')" allowfullscreen></iframe>
               </body>
             </html>
           ''';
+          setState(() => _isMapLoading = true);
           _webViewController.loadHtmlString(htmlString);
         }
       } else {
@@ -358,7 +368,13 @@ class _VehicleMapViewState extends State<VehicleMapView> {
                     ),
                   ),
                 )
-              : WebViewWidget(controller: _webViewController),
+              : Stack(
+                  children: [
+                    WebViewWidget(controller: _webViewController),
+                    if (_isMapLoading)
+                      const Center(child: CircularProgressIndicator(color: Color(0xFF0D9488))),
+                  ],
+                ),
     );
   }
 }
