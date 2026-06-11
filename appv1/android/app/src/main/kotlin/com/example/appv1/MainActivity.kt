@@ -27,5 +27,28 @@ class MainActivity : FlutterActivity() {
                     else -> result.notImplemented()
                 }
             }
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.example.appv1/kiosk")
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "startLockTask" -> {
+                        try {
+                            startLockTask()
+                            result.success(true)
+                        } catch (e: Exception) {
+                            result.error("ERROR", e.message, null)
+                        }
+                    }
+                    "stopLockTask" -> {
+                        try {
+                            stopLockTask()
+                            result.success(true)
+                        } catch (e: Exception) {
+                            result.error("ERROR", e.message, null)
+                        }
+                    }
+                    else -> result.notImplemented()
+                }
+            }
     }
 }

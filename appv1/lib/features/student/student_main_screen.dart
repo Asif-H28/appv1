@@ -16,7 +16,8 @@ import '../main_app/pages/app_update_page.dart';
 import 'student_logout_modal.dart';
 import '../support/presentation/pages/support_page.dart';
 import 'package:appv1/core/services/api_service.dart';
-
+import 'child_lock_service.dart';
+import 'child_lock_settings_page.dart';
 
 const Color _accent = Colors.teal;
 
@@ -31,6 +32,7 @@ class StudentMainScreen extends StatefulWidget {
 class _StudentMainScreenState extends State<StudentMainScreen> {
   late int _currentTab;
   String _orgId = '';
+  bool _isChildLockEnabled = false;
 
   @override
   void initState() {
@@ -41,9 +43,11 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
 
   Future<void> _loadData() async {
     final prefs = await SharedPreferences.getInstance();
+    final childLock = await ChildLockService.instance.isChildLockEnabled();
     if (mounted) {
       setState(() {
         _orgId = prefs.getString('orgId') ?? '';
+        _isChildLockEnabled = childLock;
       });
     }
   }
@@ -56,26 +60,37 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      drawer: _buildDrawer(),
-      body: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: const SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,
-          statusBarIconBrightness: Brightness.light,
-          systemNavigationBarColor: Colors.white,
-          systemNavigationBarIconBrightness: Brightness.dark,
+    return PopScope(
+      canPop: !_isChildLockEnabled,
+      onPopInvoked: (didPop) {
+        if (didPop) return;
+        if (_isChildLockEnabled && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Child lock is enabled. Cannot exit.')),
+          );
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        drawer: _buildDrawer(),
+        body: AnnotatedRegion<SystemUiOverlayStyle>(
+          value: const SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: Brightness.light,
+            systemNavigationBarColor: Colors.white,
+            systemNavigationBarIconBrightness: Brightness.dark,
+          ),
+          child: Column(
+            children: [
+              _buildHeader(),
+              Expanded(
+                child: IndexedStack(index: _currentTab, children: _pages),
+              ),
+            ],
+          ),
         ),
-        child: Column(
-          children: [
-            _buildHeader(),
-            Expanded(
-              child: IndexedStack(index: _currentTab, children: _pages),
-            ),
-          ],
-        ),
+        bottomNavigationBar: _buildBottomNav(),
       ),
-      bottomNavigationBar: _buildBottomNav(),
     );
   }
 
@@ -430,6 +445,21 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
                     );
                   },
                 ),
+                _buildDrawerItem(
+                  icon: Icons.lock_outline_rounded,
+                  title: 'Child Lock',
+                  isSelected: false,
+                  onTap: () async {
+                    Navigator.pop(context); // Close drawer
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const ChildLockSettingsPage(),
+                      ),
+                    );
+                    _loadData(); // Refresh state after returning
+                  },
+                ),
                 const Padding(
                   padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                   child: Divider(height: 1, color: Color(0xFFE2E8F0)),
@@ -490,6 +520,18 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
   }
 
   Future<void> _logout() async {
+    if (_isChildLockEnabled) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Child lock is enabled. Disable it from settings to logout.'),
+            backgroundColor: Colors.red[600],
+          ),
+        );
+      }
+      return;
+    }
+
     final confirmed = await showDialog<bool>(
       context: context,
       barrierDismissible: true,
