@@ -7,6 +7,7 @@ import 'pages/home_page.dart';
 import 'pages/settings_page.dart';
 import 'pages/admin_achievements_page.dart';
 import 'pages/admin_attendance_page.dart';
+import 'pages/admin_tutor_attendance_page.dart';
 import 'pages/support_staff_page.dart';
 import '../support/presentation/pages/support_page.dart';
 import 'pages/notification_service.dart';
@@ -490,6 +491,26 @@ class _MainAppScreenState extends State<MainAppScreen> {
                       MaterialPageRoute(
                         builder: (_) => const AdminAttendancePage(),
                       ),
+                    );
+                  },
+                ),
+                ValueListenableBuilder<bool>(
+                  valueListenable: FeatureFlagService.instance.tuitionFeatureEnabled,
+                  builder: (context, isTuitionEnabled, child) {
+                    if (!isTuitionEnabled) return const SizedBox.shrink();
+                    return _buildDrawerItem(
+                      icon: Icons.checklist_rtl_rounded,
+                      title: 'Tutor Attendance',
+                      isSelected: false,
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const AdminTutorAttendancePage(),
+                          ),
+                        );
+                      },
                     );
                   },
                 ),
