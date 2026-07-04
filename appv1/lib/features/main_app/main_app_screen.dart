@@ -12,6 +12,7 @@ import 'pages/support_staff_page.dart';
 import '../support/presentation/pages/support_page.dart';
 import 'pages/notification_service.dart';
 import 'pages/app_update_page.dart';
+import 'pages/admin_upi_settings_page.dart';
 import '../chat/conversation_list_screen.dart';
 import '../../core/services/chat_socket_service.dart';
 import '../../core/services/api_service.dart';
@@ -571,6 +572,20 @@ class _MainAppScreenState extends State<MainAppScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const SettingsPage()),
+                    );
+                  },
+                ),
+                _buildDrawerItem(
+                  icon: Icons.payments_rounded,
+                  title: 'UPI Settings',
+                  isSelected: false,
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AdminUpiSettingsPage(),
+                      ),
                     );
                   },
                 ),
