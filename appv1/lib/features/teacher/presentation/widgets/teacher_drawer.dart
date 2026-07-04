@@ -12,6 +12,7 @@ import '../../../support/presentation/pages/support_page.dart';
 import '../pages/teacher_attendance_page.dart';
 import '../pages/teacher_settings_page.dart';
 import '../pages/teacher_main_screen.dart';
+import '../pages/tutor_session_history_page.dart';
 
 enum TeacherDrawerRoute {
   home,
@@ -23,7 +24,8 @@ enum TeacherDrawerRoute {
   help,
   settings,
   update,
-  logout
+  logout,
+  tutorSession
 }
 
 class TeacherDrawer extends StatefulWidget {
@@ -139,6 +141,16 @@ class _TeacherDrawerState extends State<TeacherDrawer> {
                   onTap: () => _handleMainTabSelection(context, 4, TeacherDrawerRoute.dashboard),
                 ),
                 _buildDrawerItem(
+                  icon: Icons.co_present_rounded,
+                  title: 'Tutor Session',
+                  isSelected: widget.currentRoute == TeacherDrawerRoute.tutorSession,
+                  onTap: () => _handleRouteSelection(
+                    context,
+                    TeacherDrawerRoute.tutorSession,
+                    () => const TutorSessionHistoryPage(),
+                  ),
+                ),
+                _buildDrawerItem(
                   icon: Icons.how_to_reg_rounded,
                   title: 'My Attendance',
                   isSelected: widget.currentRoute == TeacherDrawerRoute.attendance,
@@ -205,12 +217,9 @@ class _TeacherDrawerState extends State<TeacherDrawer> {
     if (widget.currentRoute != route && widget.onTabSelected != null) {
       widget.onTabSelected!(index);
     } else if (widget.currentRoute != route) {
-      // We are not on the main screen, so we need to navigate there and select the tab
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => TeacherMainScreen(initialTab: index)),
-        (r) => false,
-      );
+      // We are on a pushed page like TutorSessionHistoryPage.
+      // Simply pop back to the main screen, which is always at the root of the navigation stack.
+      Navigator.popUntil(context, (route) => route.isFirst);
     }
   }
 
