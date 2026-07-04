@@ -70,5 +70,9 @@
 	<string>This app needs camera access to scan QR codes for session check-ins.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>This app needs access to location when open to verify session check-ins.</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>upi</string>
+	</array>
 </dict>
 </plist>

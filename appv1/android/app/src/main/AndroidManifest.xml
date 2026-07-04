@@ -76,6 +76,11 @@
             <action android:name="android.intent.action.DELETE"/>
             <data android:scheme="package"/>
         </intent>
+        <!-- ✅ Allows launching UPI apps -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="upi" />
+        </intent>
     </queries>
 
 </manifest>

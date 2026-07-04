@@ -18,6 +18,7 @@ import '../support/presentation/pages/support_page.dart';
 import 'package:appv1/core/services/api_service.dart';
 import 'child_lock_service.dart';
 import 'child_lock_settings_page.dart';
+import 'student_fee_payment_page.dart';
 
 const Color _accent = Colors.teal;
 
@@ -417,6 +418,20 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
                       );
                     },
                   ),
+                _buildDrawerItem(
+                  icon: Icons.payment_rounded,
+                  title: 'View Fee Payment',
+                  isSelected: false,
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const StudentFeePaymentPage(),
+                      ),
+                    );
+                  },
+                ),
                 _buildDrawerItem(
                   icon: Icons.help_outline_rounded,
                   title: 'Help',
