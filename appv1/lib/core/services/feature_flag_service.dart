@@ -11,6 +11,7 @@ class FeatureFlagService {
 
   // Reactive state for the UI
   final ValueNotifier<bool> tuitionFeatureEnabled = ValueNotifier(false);
+  final ValueNotifier<bool> tutorSessionFeatureEnabled = ValueNotifier(false);
 
   bool _isInitialized = false;
 
@@ -25,6 +26,10 @@ class FeatureFlagService {
       final cachedTuition = prefs.getBool('feature_flag_tuition_$orgId');
       if (cachedTuition != null) {
         tuitionFeatureEnabled.value = cachedTuition;
+      }
+      final cachedTutorSession = prefs.getBool('feature_flag_tutor_session_$orgId');
+      if (cachedTutorSession != null) {
+        tutorSessionFeatureEnabled.value = cachedTutorSession;
       }
       _isInitialized = true;
     }
@@ -41,14 +46,19 @@ class FeatureFlagService {
         if (body['success'] == true && body['flags'] != null) {
           final flags = body['flags'] as Map<String, dynamic>;
           final bool isTuitionEnabled = flags['TUITION'] == true;
+          final bool isTutorSessionEnabled = flags['TUTOR_SESSION'] == true;
           
           // 3. Update reactive state (UI updates automatically if it changed)
           if (tuitionFeatureEnabled.value != isTuitionEnabled) {
             tuitionFeatureEnabled.value = isTuitionEnabled;
           }
+          if (tutorSessionFeatureEnabled.value != isTutorSessionEnabled) {
+            tutorSessionFeatureEnabled.value = isTutorSessionEnabled;
+          }
 
           // 4. Update cache
           await prefs.setBool('feature_flag_tuition_$orgId', isTuitionEnabled);
+          await prefs.setBool('feature_flag_tutor_session_$orgId', isTutorSessionEnabled);
         }
       }
     } catch (e) {

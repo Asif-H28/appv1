@@ -32,6 +32,19 @@ class AdmissionService {
     return [];
   }
 
+  Future<Map<String, dynamic>> getTemplateData() async {
+    final url = Uri.parse('${ApiConstants.apiBaseUrl}/admission-forms/template');
+    final response = await http.get(url, headers: await _getHeaders());
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      if (data['success'] == true && data['data'] != null) {
+        return data['data'] as Map<String, dynamic>;
+      }
+    }
+    return {};
+  }
+
   Future<bool> updateTemplate(List<AdmissionFormTemplateField> fields) async {
     final url = Uri.parse('${ApiConstants.apiBaseUrl}/admission-forms/template');
     final response = await http.put(

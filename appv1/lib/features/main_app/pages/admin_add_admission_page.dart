@@ -33,6 +33,14 @@ class _AdminAddAdmissionPageState extends State<AdminAddAdmissionPage> {
   List<AdmissionFormTemplateField> _templateFields = [];
   final Map<String, TextEditingController> _customFieldControllers = {};
 
+  List<Map<String, dynamic>> _upiIds = [];
+  List<Map<String, dynamic>> _customFees = [];
+  List<Map<String, dynamic>> _teachers = [];
+
+  Map<String, dynamic>? _selectedUpi;
+  Map<String, dynamic>? _selectedCustomFee;
+  Map<String, dynamic>? _selectedTeacher;
+
   bool _isLoading = true;
   bool _isSaving = false;
 
@@ -64,11 +72,24 @@ class _AdminAddAdmissionPageState extends State<AdminAddAdmissionPage> {
   Future<void> _fetchInitialData() async {
     setState(() => _isLoading = true);
     try {
-      final fields = await widget.admissionService.getTemplate();
+      final data = await widget.admissionService.getTemplateData();
       if (mounted) {
         setState(() {
-          _templateFields = fields;
-          for (var field in fields) {
+          if (data['admissionFormTemplate'] != null) {
+            _templateFields = (data['admissionFormTemplate'] as List)
+                .map((e) => AdmissionFormTemplateField.fromJson(e))
+                .toList();
+          }
+          if (data['upiIds'] != null) {
+            _upiIds = List<Map<String, dynamic>>.from(data['upiIds']);
+          }
+          if (data['customFees'] != null) {
+            _customFees = List<Map<String, dynamic>>.from(data['customFees']);
+          }
+          if (data['teachers'] != null) {
+            _teachers = List<Map<String, dynamic>>.from(data['teachers']);
+          }
+          for (var field in _templateFields) {
             _customFieldControllers[field.title] = TextEditingController();
           }
         });
@@ -129,6 +150,13 @@ class _AdminAddAdmissionPageState extends State<AdminAddAdmissionPage> {
         'studentClass': _classCtrl.text.trim(),
         'dateOfBirth': _dob?.toIso8601String(),
         'customFields': customFields,
+        if (_selectedCustomFee != null) 'feeTitle': _selectedCustomFee!['title'],
+        if (_selectedCustomFee != null) 'feeAmount': _selectedCustomFee!['amount'],
+        if (_selectedUpi != null) 'upiTitle': _selectedUpi!['title'],
+        if (_selectedUpi != null) 'upiBankingName': _selectedUpi!['bankingName'],
+        if (_selectedUpi != null) 'upiId': _selectedUpi!['upiId'],
+        if (_selectedTeacher != null) 'tutorId': _selectedTeacher!['teacherId'],
+        if (_selectedTeacher != null) 'tutorName': _selectedTeacher!['name'],
       };
 
       final success = await widget.admissionService.createSubmission(data);
@@ -248,6 +276,55 @@ class _AdminAddAdmissionPageState extends State<AdminAddAdmissionPage> {
                                 ),
                               ),
                             ],
+                          ),
+                          const SizedBox(height: 12),
+                          DropdownButtonFormField<Map<String, dynamic>>(
+                            value: _selectedTeacher,
+                            isExpanded: true,
+                            decoration: const InputDecoration(labelText: 'Assign Tutor', border: OutlineInputBorder(), isDense: true),
+                            hint: const Text('Select Tutor'),
+                            items: [
+                              const DropdownMenuItem(value: null, child: Text('None')),
+                              ..._teachers.map((t) => DropdownMenuItem(value: t, child: Text(t['name'] ?? '', overflow: TextOverflow.ellipsis))),
+                            ],
+                            onChanged: (val) => setState(() => _selectedTeacher = val),
+                          ),
+                          const SizedBox(height: 12),
+                          DropdownButtonFormField<Map<String, dynamic>>(
+                            value: _selectedCustomFee,
+                            isExpanded: true,
+                            decoration: const InputDecoration(labelText: 'Fee Structure', border: OutlineInputBorder(), isDense: true),
+                            hint: const Text('Select Fee'),
+                            items: [
+                              const DropdownMenuItem(value: null, child: Text('None')),
+                              ..._customFees.map((f) => DropdownMenuItem(value: f, child: Text('${f['title']} - ₹${f['amount']}', overflow: TextOverflow.ellipsis))),
+                            ],
+                            onChanged: (val) => setState(() => _selectedCustomFee = val),
+                          ),
+                          const SizedBox(height: 12),
+                          DropdownButtonFormField<Map<String, dynamic>>(
+                            value: _selectedUpi,
+                            isExpanded: true,
+                            decoration: const InputDecoration(labelText: 'UPI Account', border: OutlineInputBorder(), isDense: true),
+                            hint: const Text('Select UPI'),
+                            items: [
+                              const DropdownMenuItem(value: null, child: Text('None')),
+                              ..._upiIds.map((u) => DropdownMenuItem(
+                                value: u, 
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(child: Text(u['title'] ?? '', overflow: TextOverflow.ellipsis)),
+                                    Tooltip(
+                                      message: u['upiId'] ?? '',
+                                      triggerMode: TooltipTriggerMode.tap,
+                                      child: const Icon(Icons.remove_red_eye, size: 20, color: Colors.grey),
+                                    ),
+                                  ],
+                                ),
+                              )),
+                            ],
+                            onChanged: (val) => setState(() => _selectedUpi = val),
                           ),
                           
                           const SizedBox(height: 24),

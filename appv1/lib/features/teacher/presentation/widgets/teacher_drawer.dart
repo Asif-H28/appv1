@@ -13,6 +13,7 @@ import '../pages/teacher_attendance_page.dart';
 import '../pages/teacher_settings_page.dart';
 import '../pages/teacher_main_screen.dart';
 import '../pages/tutor_session_history_page.dart';
+import '../../../../core/services/feature_flag_service.dart';
 
 enum TeacherDrawerRoute {
   home,
@@ -140,15 +141,21 @@ class _TeacherDrawerState extends State<TeacherDrawer> {
                   isSelected: widget.currentRoute == TeacherDrawerRoute.dashboard,
                   onTap: () => _handleMainTabSelection(context, 4, TeacherDrawerRoute.dashboard),
                 ),
-                _buildDrawerItem(
-                  icon: Icons.co_present_rounded,
-                  title: 'Tutor Session',
-                  isSelected: widget.currentRoute == TeacherDrawerRoute.tutorSession,
-                  onTap: () => _handleRouteSelection(
-                    context,
-                    TeacherDrawerRoute.tutorSession,
-                    () => const TutorSessionHistoryPage(),
-                  ),
+                ValueListenableBuilder<bool>(
+                  valueListenable: FeatureFlagService.instance.tutorSessionFeatureEnabled,
+                  builder: (context, isTutorSessionEnabled, child) {
+                    if (!isTutorSessionEnabled) return const SizedBox.shrink();
+                    return _buildDrawerItem(
+                      icon: Icons.co_present_rounded,
+                      title: 'Tutor Session',
+                      isSelected: widget.currentRoute == TeacherDrawerRoute.tutorSession,
+                      onTap: () => _handleRouteSelection(
+                        context,
+                        TeacherDrawerRoute.tutorSession,
+                        () => const TutorSessionHistoryPage(),
+                      ),
+                    );
+                  },
                 ),
                 _buildDrawerItem(
                   icon: Icons.how_to_reg_rounded,

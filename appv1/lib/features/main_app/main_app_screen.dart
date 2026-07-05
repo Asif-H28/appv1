@@ -497,9 +497,9 @@ class _MainAppScreenState extends State<MainAppScreen> {
                   },
                 ),
                 ValueListenableBuilder<bool>(
-                  valueListenable: FeatureFlagService.instance.tuitionFeatureEnabled,
-                  builder: (context, isTuitionEnabled, child) {
-                    if (!isTuitionEnabled) return const SizedBox.shrink();
+                  valueListenable: FeatureFlagService.instance.tutorSessionFeatureEnabled,
+                  builder: (context, isTutorSessionEnabled, child) {
+                    if (!isTutorSessionEnabled) return const SizedBox.shrink();
                     return _buildDrawerItem(
                       icon: Icons.checklist_rtl_rounded,
                       title: 'Tutor Attendance',
