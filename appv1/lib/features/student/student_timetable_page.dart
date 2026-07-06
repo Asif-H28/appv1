@@ -1,13 +1,9 @@
-import 'package:appv1/core/constants/api_constants.dart';
-import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/constants/api_constants.dart';
 import 'package:appv1/core/services/api_service.dart';
-import 'package:http/http.dart' as http;
-import '../../../../core/constants/app_colors.dart';
 import 'student_period_card.dart';
-
-const Color _tAccent = Colors.teal;
+import 'student_theme_manager.dart';
 
 class StudentTimetablePage extends StatefulWidget {
   final String classId;
@@ -47,6 +43,9 @@ class _StudentTimetablePageState extends State<StudentTimetablePage>
       vsync: this,
       initialIndex: _todayIndex(),
     );
+    _tabCtrl.addListener(() {
+      if (mounted) setState(() {});
+    });
     _fetchTimetable();
   }
 
@@ -143,34 +142,39 @@ class _StudentTimetablePageState extends State<StudentTimetablePage>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Column(
-        children: [
-          _buildHeader(),
-          if (!_isLoading && !_hasError) _buildTabBar(),
-          Expanded(
-            child: _isLoading
-                ? _buildLoader()
-                : _hasError
-                ? _buildError()
-                : TabBarView(
-                    controller: _tabCtrl,
-                    children: _days.map((d) => _buildDayTab(d)).toList(),
-                  ),
+    return ValueListenableBuilder<StudentThemeConfig>(
+      valueListenable: StudentThemeManager.themeNotifier,
+      builder: (context, theme, _) {
+        return Scaffold(
+          backgroundColor: theme.background,
+          body: Column(
+            children: [
+              _buildHeader(theme),
+              if (!_isLoading && !_hasError) _buildTabBar(theme),
+              Expanded(
+                child: _isLoading
+                    ? _buildLoader(theme)
+                    : _hasError
+                    ? _buildError(theme)
+                    : TabBarView(
+                        controller: _tabCtrl,
+                        children: _days.map((d) => _buildDayTab(d, theme)).toList(),
+                      ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
   // ── Header ─────────────────────────────────────────
 
-  Widget _buildHeader() {
+  Widget _buildHeader(StudentThemeConfig theme) {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [_tAccent, _tAccent.withOpacity(0.72)],
+          colors: [theme.primary, theme.gradientEnd],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -245,7 +249,7 @@ class _StudentTimetablePageState extends State<StudentTimetablePage>
                 Row(
                   children: _days.map((d) {
                     final count = (_timetable[d] ?? []).length;
-                    final isToday = d == _todayKey();
+                    final isSelected = _days.indexOf(d) == _tabCtrl.index;
                     return Expanded(
                       child: GestureDetector(
                         onTap: () => _tabCtrl.animateTo(_days.indexOf(d)),
@@ -253,7 +257,7 @@ class _StudentTimetablePageState extends State<StudentTimetablePage>
                           margin: EdgeInsets.symmetric(horizontal: 2),
                           padding: EdgeInsets.symmetric(vertical: 5),
                           decoration: BoxDecoration(
-                            color: isToday
+                            color: isSelected
                                 ? Colors.white
                                 : Colors.white.withOpacity(0.15),
                             borderRadius: BorderRadius.circular(3),
@@ -263,7 +267,7 @@ class _StudentTimetablePageState extends State<StudentTimetablePage>
                               Text(
                                 d.substring(0, 3),
                                 style: TextStyle(
-                                  color: isToday ? _tAccent : Colors.white,
+                                  color: isSelected ? theme.primary : Colors.white,
                                   fontSize: 9.5,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -272,7 +276,7 @@ class _StudentTimetablePageState extends State<StudentTimetablePage>
                               Text(
                                 '$count',
                                 style: TextStyle(
-                                  color: isToday ? _tAccent : Colors.white,
+                                  color: isSelected ? theme.primary : Colors.white,
                                   fontSize: 13,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -334,38 +338,38 @@ class _StudentTimetablePageState extends State<StudentTimetablePage>
 
   // ── Tab bar ────────────────────────────────────────
 
-  Widget _buildTabBar() {
+  Widget _buildTabBar(StudentThemeConfig theme) {
     return Container(
-      color: AppColors.background,
+      color: theme.background,
       child: TabBar(
         controller: _tabCtrl,
         isScrollable: true,
         tabAlignment: TabAlignment.start,
         indicator: UnderlineTabIndicator(
-          borderSide: BorderSide(color: _tAccent, width: 2.5),
+          borderSide: BorderSide(color: theme.primary, width: 2.5),
           insets: EdgeInsets.symmetric(horizontal: 12),
         ),
-        labelColor: _tAccent,
-        unselectedLabelColor: AppColors.textSecondary,
+        labelColor: theme.primary,
+        unselectedLabelColor: theme.textSecondary,
         labelStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5),
         unselectedLabelStyle: TextStyle(fontSize: 12.5),
-        dividerColor: Colors.grey[200],
+        dividerColor: theme.dividerColor,
         padding: EdgeInsets.zero,
         tabs: _days.map((d) {
           final count = (_timetable[d] ?? []).length;
-          final isToday = d == _todayKey();
+          final isSelected = _days.indexOf(d) == _tabCtrl.index;
           return Tab(
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(d.substring(0, 3)),
-                if (isToday) ...[
+                if (isSelected) ...[
                   SizedBox(width: 4),
                   Container(
                     width: 6,
                     height: 6,
                     decoration: BoxDecoration(
-                      color: _tAccent,
+                      color: theme.primary,
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -374,14 +378,14 @@ class _StudentTimetablePageState extends State<StudentTimetablePage>
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                     decoration: BoxDecoration(
-                      color: _tAccent.withOpacity(0.12),
+                      color: theme.primary.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(3),
                     ),
                     child: Text(
                       '$count',
                       style: TextStyle(
                         fontSize: 9,
-                        color: _tAccent,
+                        color: theme.primary,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -397,12 +401,11 @@ class _StudentTimetablePageState extends State<StudentTimetablePage>
 
   // ── Day tab content ────────────────────────────────
 
-  Widget _buildDayTab(String day) {
+  Widget _buildDayTab(String day, StudentThemeConfig theme) {
     final slots = _timetable[day] ?? [];
-    if (slots.isEmpty) return _buildEmptyDay(day);
+    if (slots.isEmpty) return _buildEmptyDay(day, theme);
 
     return ListView.separated(
-      // After
       padding: EdgeInsets.fromLTRB(
         14,
         14,
@@ -412,13 +415,13 @@ class _StudentTimetablePageState extends State<StudentTimetablePage>
       itemCount: slots.length,
       separatorBuilder: (_, __) => Padding(
         padding: EdgeInsets.only(left: 20),
-        child: Container(height: 10, width: 2, color: Colors.grey[200]),
+        child: Container(height: 10, width: 2, color: theme.dividerColor),
       ),
       itemBuilder: (_, i) => StudentPeriodCard(slot: slots[i]),
     );
   }
 
-  Widget _buildEmptyDay(String day) {
+  Widget _buildEmptyDay(String day, StudentThemeConfig theme) {
     final isToday = day == _todayKey();
     return Center(
       child: Column(
@@ -428,7 +431,7 @@ class _StudentTimetablePageState extends State<StudentTimetablePage>
             width: 64,
             height: 64,
             decoration: BoxDecoration(
-              color: isToday ? Colors.teal[50] : Colors.grey[100],
+              color: isToday ? theme.primary.withOpacity(0.08) : theme.dividerColor.withOpacity(0.5),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Icon(
@@ -436,7 +439,7 @@ class _StudentTimetablePageState extends State<StudentTimetablePage>
                   ? Icons.event_available_rounded
                   : Icons.event_busy_rounded,
               size: 28,
-              color: isToday ? Colors.teal[400] : Colors.grey[350],
+              color: isToday ? theme.primary.withOpacity(0.8) : theme.textSecondary.withOpacity(0.5),
             ),
           ),
           SizedBox(height: 12),
@@ -445,35 +448,35 @@ class _StudentTimetablePageState extends State<StudentTimetablePage>
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 13.5,
-              color: AppColors.textPrimary,
+              color: theme.textPrimary,
             ),
           ),
           SizedBox(height: 3),
           Text(
             isToday ? 'Enjoy your free day' : 'Free day',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+            style: TextStyle(color: theme.textSecondary, fontSize: 12),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildLoader() => Center(
-    child: CircularProgressIndicator(color: _tAccent, strokeWidth: 2.5),
+  Widget _buildLoader(StudentThemeConfig theme) => Center(
+    child: CircularProgressIndicator(color: theme.primary, strokeWidth: 2.5),
   );
 
-  Widget _buildError() => Center(
+  Widget _buildError(StudentThemeConfig theme) => Center(
     child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(Icons.cloud_off_rounded, size: 44, color: Colors.grey[400]),
+        Icon(Icons.cloud_off_rounded, size: 44, color: theme.dividerColor),
         SizedBox(height: 12),
         Text(
           'Failed to load timetable',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 13,
-            color: AppColors.textPrimary,
+            color: theme.textPrimary,
           ),
         ),
         SizedBox(height: 16),
@@ -482,7 +485,7 @@ class _StudentTimetablePageState extends State<StudentTimetablePage>
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             decoration: BoxDecoration(
-              color: _tAccent,
+              color: theme.primary,
               borderRadius: BorderRadius.circular(3),
             ),
             child: Text(

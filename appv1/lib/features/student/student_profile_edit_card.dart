@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
-
-const Color _accent = Colors.teal;
+import 'student_theme_manager.dart';
 
 class StudentProfileEditCard extends StatelessWidget {
   final TextEditingController nameCtrl;
@@ -26,27 +25,30 @@ class StudentProfileEditCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(3),
-        border: Border.all(color: _accent.withOpacity(0.25)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: Offset(0, 3),
+    return ValueListenableBuilder<StudentThemeConfig>(
+      valueListenable: StudentThemeManager.themeNotifier,
+      builder: (context, theme, child) {
+        return Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: theme.cardBackground,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: theme.dividerColor),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 10,
+                offset: Offset(0, 3),
+              ),
+            ],
           ),
-        ],
-      ),
       child: Column(
         children: [
           Container(
             height: 4,
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [_accent, _accent.withOpacity(0.4)],
+                colors: [theme.primary, theme.gradientEnd],
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
               ),
@@ -65,19 +67,19 @@ class StudentProfileEditCard extends StatelessWidget {
                       width: 3,
                       height: 16,
                       decoration: BoxDecoration(
-                        color: _accent,
+                        color: theme.primary,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
                     SizedBox(width: 8),
-                    Icon(Icons.edit_rounded, size: 15, color: _accent),
+                    Icon(Icons.edit_rounded, size: 15, color: theme.primary),
                     SizedBox(width: 5),
                     Text(
                       'Edit Personal Info',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 13,
-                        color: AppColors.textPrimary,
+                        color: theme.textPrimary,
                       ),
                     ),
                   ],
@@ -89,22 +91,22 @@ class StudentProfileEditCard extends StatelessWidget {
                   width: double.infinity,
                   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                   decoration: BoxDecoration(
-                    color: _accent.withOpacity(0.05),
+                    color: theme.primary.withOpacity(0.05),
                     borderRadius: BorderRadius.circular(3),
-                    border: Border.all(color: _accent.withOpacity(0.15)),
+                    border: Border.all(color: theme.primary.withOpacity(0.15)),
                   ),
                   child: Row(
                     children: [
                       Icon(
                         Icons.info_outline_rounded,
                         size: 12,
-                        color: _accent,
+                        color: theme.primary,
                       ),
                       SizedBox(width: 6),
                       Expanded(
                         child: Text(
                           'Only the fields you fill will be updated.',
-                          style: TextStyle(color: _accent, fontSize: 11),
+                          style: TextStyle(color: theme.primary, fontSize: 11),
                         ),
                       ),
                     ],
@@ -113,9 +115,10 @@ class StudentProfileEditCard extends StatelessWidget {
                 SizedBox(height: 18),
 
                 // Full Name
-                _label('Full Name'),
+                _label('Full Name', theme),
                 SizedBox(height: 6),
                 _field(
+                  theme: theme,
                   controller: nameCtrl,
                   hint: 'Enter your full name',
                   icon: Icons.person_rounded,
@@ -125,9 +128,10 @@ class StudentProfileEditCard extends StatelessWidget {
                 SizedBox(height: 16),
 
                 // Phone
-                _label('Phone Number'),
+                _label('Phone Number', theme),
                 SizedBox(height: 6),
                 _field(
+                  theme: theme,
                   controller: phoneCtrl,
                   hint: 'Enter 10-digit phone number',
                   icon: Icons.phone_rounded,
@@ -137,7 +141,7 @@ class StudentProfileEditCard extends StatelessWidget {
                 SizedBox(height: 16),
 
                 // Gender
-                _label('Gender'),
+                _label('Gender', theme),
                 SizedBox(height: 6),
                 Row(
                   children: _genders.map((g) {
@@ -153,10 +157,10 @@ class StudentProfileEditCard extends StatelessWidget {
                             duration: Duration(milliseconds: 180),
                             padding: EdgeInsets.symmetric(vertical: 11),
                             decoration: BoxDecoration(
-                              color: isSelected ? _accent : Colors.grey[50],
+                              color: isSelected ? theme.primary : (theme.id == 'dark' ? Colors.black : Colors.grey[50]),
                               borderRadius: BorderRadius.circular(3),
                               border: Border.all(
-                                color: isSelected ? _accent : Colors.grey[200]!,
+                                color: isSelected ? theme.primary : theme.dividerColor,
                               ),
                             ),
                             child: Column(
@@ -170,7 +174,7 @@ class StudentProfileEditCard extends StatelessWidget {
                                   size: 18,
                                   color: isSelected
                                       ? Colors.white
-                                      : AppColors.textSecondary,
+                                      : theme.textSecondary,
                                 ),
                                 SizedBox(height: 4),
                                 Text(
@@ -178,7 +182,7 @@ class StudentProfileEditCard extends StatelessWidget {
                                   style: TextStyle(
                                     color: isSelected
                                         ? Colors.white
-                                        : AppColors.textSecondary,
+                                        : theme.textSecondary,
                                     fontSize: 11.5,
                                     fontWeight: isSelected
                                         ? FontWeight.bold
@@ -196,9 +200,10 @@ class StudentProfileEditCard extends StatelessWidget {
                 SizedBox(height: 16),
 
                 // Address
-                _label('Address'),
+                _label('Address', theme),
                 SizedBox(height: 6),
                 _field(
+                  theme: theme,
                   controller: addressCtrl,
                   hint: 'Enter your full address',
                   icon: Icons.location_on_rounded,
@@ -214,9 +219,9 @@ class StudentProfileEditCard extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: isSaving ? null : onSave,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: _accent,
+                      backgroundColor: theme.primary,
                       foregroundColor: Colors.white,
-                      disabledBackgroundColor: _accent.withOpacity(0.5),
+                      disabledBackgroundColor: theme.primary.withOpacity(0.5),
                       elevation: 0,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(3),
@@ -253,18 +258,21 @@ class StudentProfileEditCard extends StatelessWidget {
         ],
       ),
     );
+  },
+);
   }
 
-  Widget _label(String text) => Text(
+  Widget _label(String text, StudentThemeConfig theme) => Text(
     text,
     style: TextStyle(
       fontWeight: FontWeight.w600,
       fontSize: 12,
-      color: AppColors.textSecondary,
+      color: theme.textSecondary,
     ),
   );
 
   Widget _field({
+    required StudentThemeConfig theme,
     required TextEditingController controller,
     required String hint,
     required IconData icon,
@@ -275,9 +283,9 @@ class StudentProfileEditCard extends StatelessWidget {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: theme.id == 'dark' ? Colors.black : Colors.grey[50],
         borderRadius: BorderRadius.circular(3),
-        border: Border.all(color: Colors.grey[200]!),
+        border: Border.all(color: theme.dividerColor),
       ),
       child: TextField(
         controller: controller,
@@ -285,11 +293,11 @@ class StudentProfileEditCard extends StatelessWidget {
         textCapitalization: capitalization,
         maxLines: maxLines,
         maxLength: maxLength,
-        style: TextStyle(fontSize: 13, color: AppColors.textPrimary),
+        style: TextStyle(fontSize: 13, color: theme.textPrimary),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: TextStyle(color: AppColors.textSecondary, fontSize: 12.5),
-          prefixIcon: Icon(icon, size: 16, color: _accent),
+          hintStyle: TextStyle(color: theme.textSecondary, fontSize: 12.5),
+          prefixIcon: Icon(icon, size: 16, color: theme.primary),
           border: InputBorder.none,
           contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 13),
           counterText: '',

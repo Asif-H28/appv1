@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_colors.dart';
-
-const Color _accent = Colors.teal;
+import 'student_theme_manager.dart';
 
 class StudentAttendanceRecordsList extends StatefulWidget {
   final List<Map<String, dynamic>> records;
@@ -188,9 +186,12 @@ class _StudentAttendanceRecordsListState
 
   @override
   Widget build(BuildContext context) {
-    final filtered = _filtered;
+    return ValueListenableBuilder<StudentThemeConfig>(
+      valueListenable: StudentThemeManager.themeNotifier,
+      builder: (context, theme, _) {
+        final filtered = _filtered;
 
-    return Column(
+        return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // ── Header row ──
@@ -200,25 +201,25 @@ class _StudentAttendanceRecordsListState
               width: 3,
               height: 16,
               decoration: BoxDecoration(
-                color: _accent,
+                color: theme.primary,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
             SizedBox(width: 8),
-            Icon(Icons.list_alt_rounded, size: 15, color: _accent),
+            Icon(Icons.list_alt_rounded, size: 15, color: theme.primary),
             SizedBox(width: 5),
             Text(
               'Daily Records',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 13,
-                color: AppColors.textPrimary,
+                color: theme.textPrimary,
               ),
             ),
             Spacer(),
             Text(
               '${filtered.length} records',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
+              style: TextStyle(color: theme.textSecondary, fontSize: 11),
             ),
             SizedBox(width: 10),
 
@@ -228,10 +229,10 @@ class _StudentAttendanceRecordsListState
               child: Container(
                 padding: EdgeInsets.all(7),
                 decoration: BoxDecoration(
-                  color: _hasActiveFilter ? _accent : Colors.grey[100],
+                  color: _hasActiveFilter ? theme.primary : theme.cardBackground,
                   borderRadius: BorderRadius.circular(3),
                   border: Border.all(
-                    color: _hasActiveFilter ? _accent : Colors.grey[200]!,
+                    color: _hasActiveFilter ? theme.primary : theme.dividerColor,
                   ),
                 ),
                 child: Row(
@@ -242,14 +243,14 @@ class _StudentAttendanceRecordsListState
                       size: 15,
                       color: _hasActiveFilter
                           ? Colors.white
-                          : AppColors.textSecondary,
+                          : theme.textSecondary,
                     ),
                     if (_hasActiveFilter) ...[
                       SizedBox(width: 4),
                       Text(
                         'Filtered',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: theme.cardBackground,
                           fontSize: 10.5,
                           fontWeight: FontWeight.bold,
                         ),
@@ -267,7 +268,7 @@ class _StudentAttendanceRecordsListState
         Row(
           children: ['All', 'Present', 'Absent'].map((f) {
             final isSelected = _statusFilter == f;
-            Color chipColor = _accent;
+            Color chipColor = theme.primary;
             if (f == 'Present') chipColor = Colors.green[600]!;
             if (f == 'Absent') chipColor = Colors.red[600]!;
             return Padding(
@@ -278,10 +279,10 @@ class _StudentAttendanceRecordsListState
                   duration: Duration(milliseconds: 180),
                   padding: EdgeInsets.symmetric(horizontal: 14, vertical: 7),
                   decoration: BoxDecoration(
-                    color: isSelected ? chipColor : Colors.grey[100],
+                    color: isSelected ? chipColor : theme.cardBackground,
                     borderRadius: BorderRadius.circular(3),
                     border: Border.all(
-                      color: isSelected ? chipColor : Colors.grey[200]!,
+                      color: isSelected ? chipColor : theme.dividerColor,
                     ),
                   ),
                   child: Text(
@@ -289,7 +290,7 @@ class _StudentAttendanceRecordsListState
                     style: TextStyle(
                       color: isSelected
                           ? Colors.white
-                          : AppColors.textSecondary,
+                          : theme.textSecondary,
                       fontSize: 12,
                       fontWeight: isSelected
                           ? FontWeight.bold
@@ -310,9 +311,9 @@ class _StudentAttendanceRecordsListState
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: _accent.withOpacity(0.08),
+                  color: theme.primary.withOpacity(0.08),
                   borderRadius: BorderRadius.circular(3),
-                  border: Border.all(color: _accent.withOpacity(0.25)),
+                  border: Border.all(color: theme.primary.withOpacity(0.25)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -322,7 +323,7 @@ class _StudentAttendanceRecordsListState
                           ? Icons.today_rounded
                           : Icons.calendar_month_rounded,
                       size: 12,
-                      color: _accent,
+                      color: theme.primary,
                     ),
                     SizedBox(width: 5),
                     Text(
@@ -330,7 +331,7 @@ class _StudentAttendanceRecordsListState
                           ? 'Date: $_activeFilterLabel'
                           : 'Month: $_activeFilterLabel',
                       style: TextStyle(
-                        color: _accent,
+                        color: theme.primary,
                         fontSize: 11.5,
                         fontWeight: FontWeight.w600,
                       ),
@@ -345,7 +346,7 @@ class _StudentAttendanceRecordsListState
                       child: Icon(
                         Icons.close_rounded,
                         size: 13,
-                        color: _accent,
+                        color: theme.primary,
                       ),
                     ),
                   ],
@@ -363,9 +364,9 @@ class _StudentAttendanceRecordsListState
             width: double.infinity,
             padding: EdgeInsets.all(32),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: theme.cardBackground,
               borderRadius: BorderRadius.circular(3),
-              border: Border.all(color: Colors.grey[200]!),
+              border: Border.all(color: theme.dividerColor),
             ),
             child: Column(
               children: [
@@ -378,7 +379,7 @@ class _StudentAttendanceRecordsListState
                 Text(
                   'No records found',
                   style: TextStyle(
-                    color: AppColors.textSecondary,
+                    color: theme.textSecondary,
                     fontSize: 13,
                   ),
                 ),
@@ -393,7 +394,7 @@ class _StudentAttendanceRecordsListState
                     child: Text(
                       'Clear filter',
                       style: TextStyle(
-                        color: _accent,
+                        color: theme.primary,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -415,7 +416,7 @@ class _StudentAttendanceRecordsListState
             return Container(
               margin: EdgeInsets.only(bottom: 8),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: theme.cardBackground,
                 borderRadius: BorderRadius.circular(3),
                 border: Border.all(
                   color: isPresent
@@ -456,7 +457,7 @@ class _StudentAttendanceRecordsListState
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
-                            color: AppColors.textPrimary,
+                            color: theme.textPrimary,
                             height: 1,
                           ),
                         ),
@@ -464,7 +465,7 @@ class _StudentAttendanceRecordsListState
                         Text(
                           _monthShort(dateRaw),
                           style: TextStyle(
-                            color: AppColors.textSecondary,
+                            color: theme.textSecondary,
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
                           ),
@@ -482,7 +483,7 @@ class _StudentAttendanceRecordsListState
                       style: TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w500,
-                        color: AppColors.textPrimary,
+                        color: theme.textPrimary,
                       ),
                     ),
                   ),
@@ -522,7 +523,9 @@ class _StudentAttendanceRecordsListState
               ),
             );
           }).toList(),
-      ],
+          ],
+        );
+      },
     );
   }
 }
@@ -648,7 +651,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet>
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
           colorScheme: ColorScheme.light(
-            primary: _accent,
+            primary: StudentThemeManager.themeNotifier.value.primary,
             onPrimary: Colors.white,
             surface: Colors.white,
           ),
@@ -670,11 +673,14 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet>
 
   @override
   Widget build(BuildContext context) {
-    final months = _availableMonths;
+    return ValueListenableBuilder<StudentThemeConfig>(
+      valueListenable: StudentThemeManager.themeNotifier,
+      builder: (context, theme, _) {
+        final months = _availableMonths;
 
-    return Container(
+        return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardBackground,
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       padding: EdgeInsets.only(
@@ -690,7 +696,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet>
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.grey[300],
+                color: theme.dividerColor,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -706,7 +712,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet>
                   width: 3,
                   height: 18,
                   decoration: BoxDecoration(
-                    color: _accent,
+                    color: theme.primary,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -716,7 +722,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet>
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
-                    color: AppColors.textPrimary,
+                    color: theme.textPrimary,
                   ),
                 ),
                 Spacer(),
@@ -753,19 +759,19 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet>
             child: Container(
               height: 38,
               decoration: BoxDecoration(
-                color: Colors.grey[100],
+                color: theme.cardBackground,
                 borderRadius: BorderRadius.circular(3),
-                border: Border.all(color: Colors.grey[200]!),
+                border: Border.all(color: theme.dividerColor),
               ),
               child: TabBar(
                 controller: _tabCtrl,
                 indicator: BoxDecoration(
-                  color: _accent,
+                  color: theme.primary,
                   borderRadius: BorderRadius.circular(3),
                 ),
                 indicatorSize: TabBarIndicatorSize.tab,
                 labelColor: Colors.white,
-                unselectedLabelColor: AppColors.textSecondary,
+                unselectedLabelColor: theme.textSecondary,
                 labelStyle: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
@@ -818,7 +824,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet>
                       Text(
                         'Select a specific date to view attendance',
                         style: TextStyle(
-                          color: AppColors.textSecondary,
+                          color: theme.textSecondary,
                           fontSize: 12,
                         ),
                       ),
@@ -830,13 +836,13 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet>
                           padding: EdgeInsets.all(14),
                           decoration: BoxDecoration(
                             color: _pickedDate != null
-                                ? _accent.withOpacity(0.05)
-                                : Colors.grey[50],
+                                ? theme.primary.withOpacity(0.05)
+                                : theme.background,
                             borderRadius: BorderRadius.circular(3),
                             border: Border.all(
                               color: _pickedDate != null
-                                  ? _accent.withOpacity(0.3)
-                                  : Colors.grey[200]!,
+                                  ? theme.primary.withOpacity(0.3)
+                                  : theme.dividerColor,
                             ),
                           ),
                           child: Row(
@@ -845,12 +851,12 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet>
                                 width: 38,
                                 height: 38,
                                 decoration: BoxDecoration(
-                                  color: _accent.withOpacity(0.1),
+                                  color: theme.primary.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(3),
                                 ),
                                 child: Icon(
                                   Icons.today_rounded,
-                                  color: _accent,
+                                  color: theme.primary,
                                   size: 20,
                                 ),
                               ),
@@ -871,15 +877,15 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet>
                                             : FontWeight.normal,
                                         fontSize: 13,
                                         color: _pickedDate != null
-                                            ? AppColors.textPrimary
-                                            : AppColors.textSecondary,
+                                            ? theme.textPrimary
+                                            : theme.textSecondary,
                                       ),
                                     ),
                                     if (_pickedDate == null)
                                       Text(
                                         'Only dates with records are selectable',
                                         style: TextStyle(
-                                          color: AppColors.textSecondary,
+                                          color: theme.textSecondary,
                                           fontSize: 10.5,
                                         ),
                                       ),
@@ -888,7 +894,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet>
                               ),
                               Icon(
                                 Icons.chevron_right_rounded,
-                                color: AppColors.textSecondary,
+                                color: theme.textSecondary,
                                 size: 18,
                               ),
                             ],
@@ -932,7 +938,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet>
                       Text(
                         'Select a month to view all records',
                         style: TextStyle(
-                          color: AppColors.textSecondary,
+                          color: theme.textSecondary,
                           fontSize: 12,
                         ),
                       ),
@@ -943,7 +949,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet>
                                 child: Text(
                                   'No months available',
                                   style: TextStyle(
-                                    color: AppColors.textSecondary,
+                                    color: theme.textSecondary,
                                     fontSize: 12,
                                   ),
                                 ),
@@ -963,13 +969,13 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet>
                                       duration: Duration(milliseconds: 180),
                                       decoration: BoxDecoration(
                                         color: isSelected
-                                            ? _accent
-                                            : Colors.grey[50],
+                                            ? theme.primary
+                                            : theme.background,
                                         borderRadius: BorderRadius.circular(3),
                                         border: Border.all(
                                           color: isSelected
-                                              ? _accent
-                                              : Colors.grey[200]!,
+                                              ? theme.primary
+                                              : theme.dividerColor,
                                         ),
                                       ),
                                       child: Center(
@@ -978,7 +984,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet>
                                           style: TextStyle(
                                             color: isSelected
                                                 ? Colors.white
-                                                : AppColors.textPrimary,
+                                                : theme.textPrimary,
                                             fontSize: 11.5,
                                             fontWeight: isSelected
                                                 ? FontWeight.bold
@@ -1017,7 +1023,7 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet>
                   Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _accent,
+                  backgroundColor: theme.primary,
                   foregroundColor: Colors.white,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
@@ -1031,8 +1037,10 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet>
               ),
             ),
           ),
-        ],
-      ),
+            ],
+          ),
+        );
+      },
     );
   }
 

@@ -13,8 +13,7 @@ import 'student_profile_edit_card.dart';
 import 'student_logout_modal.dart';
 import '../notification_studio/controllers/notification_studio_controller.dart';
 import 'child_lock_service.dart';
-
-const Color _accent = Colors.teal;
+import 'student_theme_manager.dart';
 
 class StudentProfilePage extends StatefulWidget {
   @override
@@ -264,33 +263,35 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
   // ── Build ──────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA),
-      body: _isLoading
-          ? _buildLoader()
-          : _error.isNotEmpty
-          ? _buildError()
-          : _buildBody(),
+    return ValueListenableBuilder<StudentThemeConfig>(
+      valueListenable: StudentThemeManager.themeNotifier,
+      builder: (context, theme, child) {
+        return Scaffold(
+          backgroundColor: theme.background,
+          body: _isLoading
+              ? _buildLoader(theme)
+              : _error.isNotEmpty
+              ? _buildError(theme)
+              : _buildBody(theme),
+        );
+      },
     );
   }
 
-  Widget _buildBody() {
+  Widget _buildBody(StudentThemeConfig theme) {
     return RefreshIndicator(
-      color: _accent,
+      color: theme.primary,
       onRefresh: _fetchProfile,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         child: Column(
           children: [
             // ✅ Avatar card — replaces old duplicate header
-            _buildAvatarCard(),
+            _buildAvatarCard(theme),
             // ✅ Action buttons row
-            _buildActionRow(),
+            _buildActionRow(theme),
             const SizedBox(height: 12),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 14),
-              child: PwaNotificationPanel(),
-            ),
+            _buildThemeSelector(theme),
             const SizedBox(height: 12),
             // ✅ Content
             Padding(
@@ -318,7 +319,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
   }
 
   // ── Avatar card ────────────────────────────────────
-  Widget _buildAvatarCard() {
+  Widget _buildAvatarCard(StudentThemeConfig theme) {
     final name = _student['name']?.toString() ?? '';
     final email = _student['email']?.toString() ?? '';
     final orgName = _student['orgName']?.toString() ?? '';
@@ -337,11 +338,11 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
       width: double.infinity,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.teal, Colors.teal.shade700],
+          colors: [theme.primary, theme.gradientEnd],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
       ),
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
       child: Column(
@@ -581,8 +582,81 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
     );
   }
 
+  Widget _buildThemeSelector(StudentThemeConfig currentTheme) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      child: Container(
+        decoration: BoxDecoration(
+          color: currentTheme.cardBackground,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 15,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Row(
+          children: [
+            Text(
+              'App Theme',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                color: currentTheme.textPrimary,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                child: Row(
+                  children: StudentThemeManager.availableThemes.map((t) {
+                    final isSelected = t.id == currentTheme.id;
+                    return GestureDetector(
+                      onTap: () => StudentThemeManager.setTheme(t.id),
+                      child: Container(
+                        margin: const EdgeInsets.only(right: 12),
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            colors: [t.primary, t.gradientEnd],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          border: isSelected ? Border.all(color: Colors.white, width: 2) : null,
+                          boxShadow: isSelected
+                              ? [
+                                  BoxShadow(
+                                    color: t.primary.withOpacity(0.4),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
+                                  )
+                                ]
+                              : [],
+                        ),
+                        child: isSelected 
+                            ? const Icon(Icons.check, color: Colors.white, size: 18)
+                            : null,
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // ── Edit / Logout action row ───────────────────────
-  Widget _buildActionRow() {
+  Widget _buildActionRow(StudentThemeConfig theme) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 14, 14, 0),
       child: Row(
@@ -599,12 +673,12 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
                 decoration: BoxDecoration(
                   color: _isEditing
                       ? Colors.grey.shade100
-                      : Colors.teal.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(3),
+                      : theme.primary.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: _isEditing
                         ? Colors.grey.shade300
-                        : Colors.teal.withOpacity(0.3),
+                        : theme.primary.withOpacity(0.3),
                   ),
                 ),
                 child: Row(
@@ -612,15 +686,15 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
                   children: [
                     Icon(
                       _isEditing ? Icons.close_rounded : Icons.edit_rounded,
-                      size: 15,
-                      color: _isEditing ? Colors.grey[600] : Colors.teal,
+                      size: 18,
+                      color: _isEditing ? Colors.grey[600] : theme.primary,
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 8),
                     Text(
                       _isEditing ? 'Cancel Edit' : 'Edit Profile',
                       style: TextStyle(
-                        color: _isEditing ? Colors.grey[600] : Colors.teal,
-                        fontSize: 13,
+                        color: _isEditing ? Colors.grey[600] : theme.primary,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -637,9 +711,9 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
               decoration: BoxDecoration(
-                color: Colors.red.shade50,
-                borderRadius: BorderRadius.circular(3),
-                border: Border.all(color: Colors.red.shade200),
+                color: theme.cardBackground,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: theme.dividerColor),
               ),
               child: Row(
                 children: [
@@ -663,11 +737,11 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
   }
 
   // ── States ─────────────────────────────────────────
-  Widget _buildLoader() => const Center(
-    child: CircularProgressIndicator(color: _accent, strokeWidth: 2.5),
+  Widget _buildLoader(StudentThemeConfig theme) => Center(
+    child: CircularProgressIndicator(color: theme.primary, strokeWidth: 2.5),
   );
 
-  Widget _buildError() => Center(
+  Widget _buildError(StudentThemeConfig theme) => Center(
     child: Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -691,7 +765,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
             _error,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: AppColors.textPrimary,
+              color: theme.textPrimary,
               fontWeight: FontWeight.w600,
               fontSize: 14,
             ),
@@ -700,10 +774,10 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
           GestureDetector(
             onTap: _fetchProfile,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               decoration: BoxDecoration(
-                color: _accent,
-                borderRadius: BorderRadius.circular(3),
+                color: theme.primary,
+                borderRadius: BorderRadius.circular(16),
               ),
               child: const Text(
                 'Retry',

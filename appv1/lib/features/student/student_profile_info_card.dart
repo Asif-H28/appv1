@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/constants/app_colors.dart';
-
-const Color _accent = Colors.teal;
+import 'student_theme_manager.dart';
 
 class StudentProfileInfoCard extends StatelessWidget {
   final Map<String, dynamic> student;
@@ -20,33 +19,44 @@ class StudentProfileInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _card(
-      title: 'Personal Info',
-      icon: Icons.person_outline_rounded,
-      children: [
-        _row(Icons.person_rounded, 'Full Name', _val('name')),
-        _divider(),
-        _row(Icons.email_rounded, 'Email', _val('email')),
-        _divider(),
-        _row(Icons.phone_rounded, 'Phone', _val('phone')),
-        _divider(),
-        _row(Icons.wc_rounded, 'Gender', _val('gender')),
-        _divider(),
-        _row(
-          Icons.location_on_rounded,
-          'Address',
-          _val('address'),
-          multiLine: true,
-        ),
-        _divider(),
-        _copyRow(context, Icons.badge_rounded, 'Student ID', _val('studentId')),
-      ],
+    return ValueListenableBuilder<StudentThemeConfig>(
+      valueListenable: StudentThemeManager.themeNotifier,
+      builder: (context, theme, child) {
+        return _card(
+          context: context,
+          theme: theme,
+          title: 'Personal Info',
+          icon: Icons.person_outline_rounded,
+          children: [
+            _row(theme, Icons.person_rounded, 'Full Name', _val('name')),
+            _divider(theme),
+            _row(theme, Icons.email_rounded, 'Email', _val('email')),
+            _divider(theme),
+            _row(theme, Icons.phone_rounded, 'Phone', _val('phone')),
+            _divider(theme),
+            _row(theme, Icons.wc_rounded, 'Gender', _val('gender')),
+            _divider(theme),
+            _row(
+              theme,
+              Icons.location_on_rounded,
+              'Address',
+              _val('address'),
+              multiLine: true,
+            ),
+            _divider(theme),
+            _copyRow(context, theme, Icons.badge_rounded, 'Student ID', _val('studentId')),
+          ],
+        );
+      },
     );
   }
+
 
   // ── Card shell ────────────────────────────────────────
 
   Widget _card({
+    required BuildContext context,
+    required StudentThemeConfig theme,
     required String title,
     required IconData icon,
     required List<Widget> children,
@@ -54,9 +64,9 @@ class StudentProfileInfoCard extends StatelessWidget {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(3),
-        border: Border.all(color: Colors.grey[200]!),
+        color: theme.cardBackground,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: theme.dividerColor),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
@@ -72,7 +82,7 @@ class StudentProfileInfoCard extends StatelessWidget {
             height: 4,
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [_accent, _accent.withOpacity(0.4)],
+                colors: [theme.primary, theme.gradientEnd],
                 begin: Alignment.centerLeft,
                 end: Alignment.centerRight,
               ),
@@ -90,19 +100,19 @@ class StudentProfileInfoCard extends StatelessWidget {
                       width: 3,
                       height: 16,
                       decoration: BoxDecoration(
-                        color: _accent,
+                        color: theme.primary,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
                     SizedBox(width: 8),
-                    Icon(icon, size: 15, color: _accent),
+                    Icon(icon, size: 15, color: theme.primary),
                     SizedBox(width: 5),
                     Text(
                       title,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 13,
-                        color: AppColors.textPrimary,
+                        color: theme.textPrimary,
                       ),
                     ),
                   ],
@@ -120,6 +130,7 @@ class StudentProfileInfoCard extends StatelessWidget {
   // ── Info row ──────────────────────────────────────────
 
   Widget _row(
+    StudentThemeConfig theme,
     IconData icon,
     String label,
     String value, {
@@ -136,10 +147,10 @@ class StudentProfileInfoCard extends StatelessWidget {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: _accent.withOpacity(0.08),
+              color: theme.primary.withOpacity(0.08),
               borderRadius: BorderRadius.circular(3),
             ),
-            child: Icon(icon, size: 15, color: _accent),
+            child: Icon(icon, size: 15, color: theme.primary),
           ),
           SizedBox(width: 12),
           Expanded(
@@ -149,7 +160,7 @@ class StudentProfileInfoCard extends StatelessWidget {
                 Text(
                   label,
                   style: TextStyle(
-                    color: AppColors.textSecondary,
+                    color: theme.textSecondary,
                     fontSize: 10.5,
                     fontWeight: FontWeight.w500,
                   ),
@@ -158,7 +169,7 @@ class StudentProfileInfoCard extends StatelessWidget {
                 Text(
                   value,
                   style: TextStyle(
-                    color: AppColors.textPrimary,
+                    color: theme.textPrimary,
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                     height: 1.4,
@@ -176,6 +187,7 @@ class StudentProfileInfoCard extends StatelessWidget {
 
   Widget _copyRow(
     BuildContext context,
+    StudentThemeConfig theme,
     IconData icon,
     String label,
     String value,
@@ -188,10 +200,10 @@ class StudentProfileInfoCard extends StatelessWidget {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: _accent.withOpacity(0.08),
+              color: theme.primary.withOpacity(0.08),
               borderRadius: BorderRadius.circular(3),
             ),
-            child: Icon(icon, size: 15, color: _accent),
+            child: Icon(icon, size: 15, color: theme.primary),
           ),
           SizedBox(width: 12),
           Expanded(
@@ -201,7 +213,7 @@ class StudentProfileInfoCard extends StatelessWidget {
                 Text(
                   label,
                   style: TextStyle(
-                    color: AppColors.textSecondary,
+                    color: theme.textSecondary,
                     fontSize: 10.5,
                     fontWeight: FontWeight.w500,
                   ),
@@ -210,7 +222,7 @@ class StudentProfileInfoCard extends StatelessWidget {
                 Text(
                   value,
                   style: TextStyle(
-                    color: AppColors.textPrimary,
+                    color: theme.textPrimary,
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                     fontFamily: 'monospace',
@@ -229,7 +241,7 @@ class StudentProfileInfoCard extends StatelessWidget {
                       '$label copied',
                       style: TextStyle(fontSize: 12),
                     ),
-                    backgroundColor: _accent,
+                    backgroundColor: theme.primary,
                     behavior: SnackBarBehavior.floating,
                     duration: Duration(seconds: 1),
                     shape: RoundedRectangleBorder(
@@ -242,10 +254,10 @@ class StudentProfileInfoCard extends StatelessWidget {
               child: Container(
                 padding: EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: _accent.withOpacity(0.08),
+                  color: theme.primary.withOpacity(0.08),
                   borderRadius: BorderRadius.circular(3),
                 ),
-                child: Icon(Icons.copy_rounded, size: 13, color: _accent),
+                child: Icon(Icons.copy_rounded, size: 13, color: theme.primary),
               ),
             ),
         ],
@@ -253,5 +265,5 @@ class StudentProfileInfoCard extends StatelessWidget {
     );
   }
 
-  Widget _divider() => Divider(height: 1, color: Colors.grey[100]);
+  Widget _divider(StudentThemeConfig theme) => Divider(height: 1, color: theme.dividerColor);
 }

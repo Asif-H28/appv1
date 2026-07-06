@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import 'student_theme_manager.dart';
 
-const Color _accent = Colors.teal;
 
 class StudentNoticeCard extends StatelessWidget {
   final Map<String, dynamic> notice;
@@ -94,16 +94,19 @@ class StudentNoticeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final expiry = _expiryLabel;
-    final thumbnail = _thumbnailUrl;
+    return ValueListenableBuilder<StudentThemeConfig>(
+      valueListenable: StudentThemeManager.themeNotifier,
+      builder: (context, theme, _) {
+        final expiry = _expiryLabel;
+        final thumbnail = _thumbnailUrl;
 
-    return GestureDetector(
+        return GestureDetector(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: theme.cardBackground,
           borderRadius: BorderRadius.circular(3),
-          border: Border.all(color: Colors.grey[200]!),
+          border: Border.all(color: theme.dividerColor),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.04),
@@ -120,7 +123,7 @@ class StudentNoticeCard extends StatelessWidget {
               height: 4,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [_accent, _accent.withOpacity(0.4)],
+                  colors: [theme.primary, theme.primary.withOpacity(0.4)],
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                 ),
@@ -145,7 +148,7 @@ class StudentNoticeCard extends StatelessWidget {
                       child: Center(
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: _accent,
+                          color: theme.primary,
                         ),
                       ),
                     );
@@ -167,7 +170,7 @@ class StudentNoticeCard extends StatelessWidget {
                         height: 36,
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [_accent, _accent.withOpacity(0.7)],
+                            colors: [theme.primary, theme.primary.withOpacity(0.7)],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
@@ -175,7 +178,7 @@ class StudentNoticeCard extends StatelessWidget {
                         ),
                         child: Icon(
                           Icons.campaign_rounded,
-                          color: Colors.white,
+                          color: theme.cardBackground,
                           size: 18,
                         ),
                       ),
@@ -189,7 +192,7 @@ class StudentNoticeCard extends StatelessWidget {
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
-                                color: AppColors.textPrimary,
+                                color: theme.textPrimary,
                                 height: 1.2,
                               ),
                               maxLines: 2,
@@ -202,7 +205,7 @@ class StudentNoticeCard extends StatelessWidget {
                                   Icon(
                                     Icons.person_rounded,
                                     size: 10,
-                                    color: _accent,
+                                    color: theme.primary,
                                   ),
                                   SizedBox(width: 3),
                                   Flexible(
@@ -210,7 +213,7 @@ class StudentNoticeCard extends StatelessWidget {
                                       _createdBy,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
-                                        color: _accent,
+                                        color: theme.primary,
                                         fontSize: 10.5,
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -231,7 +234,7 @@ class StudentNoticeCard extends StatelessWidget {
                                   Text(
                                     _timeAgo,
                                     style: TextStyle(
-                                      color: AppColors.textSecondary,
+                                      color: theme.textSecondary,
                                       fontSize: 10.5,
                                     ),
                                   ),
@@ -251,7 +254,7 @@ class StudentNoticeCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: theme.textSecondary,
                         fontSize: 12.5,
                         height: 1.5,
                       ),
@@ -298,7 +301,7 @@ class StudentNoticeCard extends StatelessWidget {
                               border: Border.all(
                                 color: _isExpiringSoon
                                     ? Colors.orange.withOpacity(0.3)
-                                    : Colors.grey[200]!,
+                                    : theme.dividerColor,
                               ),
                             ),
                             child: Row(
@@ -309,7 +312,7 @@ class StudentNoticeCard extends StatelessWidget {
                                   size: 10,
                                   color: _isExpiringSoon
                                       ? Colors.orange[700]
-                                      : AppColors.textSecondary,
+                                      : theme.textSecondary,
                                 ),
                                 SizedBox(width: 4),
                                 Flexible(
@@ -319,7 +322,7 @@ class StudentNoticeCard extends StatelessWidget {
                                     style: TextStyle(
                                       color: _isExpiringSoon
                                           ? Colors.orange[700]
-                                          : AppColors.textSecondary,
+                                          : theme.textSecondary,
                                       fontSize: 10.5,
                                       fontWeight: _isExpiringSoon
                                           ? FontWeight.bold
@@ -341,7 +344,7 @@ class StudentNoticeCard extends StatelessWidget {
                           vertical: 5,
                         ),
                         decoration: BoxDecoration(
-                          color: _accent,
+                          color: theme.primary,
                           borderRadius: BorderRadius.circular(3),
                         ),
                         child: Row(
@@ -350,7 +353,7 @@ class StudentNoticeCard extends StatelessWidget {
                             Text(
                               'Read More',
                               style: TextStyle(
-                                color: Colors.white,
+                                color: theme.cardBackground,
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -359,7 +362,7 @@ class StudentNoticeCard extends StatelessWidget {
                             Icon(
                               Icons.arrow_forward_ios_rounded,
                               size: 10,
-                              color: Colors.white,
+                              color: theme.cardBackground,
                             ),
                           ],
                         ),
@@ -371,7 +374,9 @@ class StudentNoticeCard extends StatelessWidget {
             ),
           ],
         ),
-      ),
+          ),
+        );
+      },
     );
   }
 

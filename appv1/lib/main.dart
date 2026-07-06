@@ -16,6 +16,7 @@ import 'features/teacher/presentation/pages/teacher_main_screen.dart';
 import 'features/teacher/presentation/pages/teacher_pending_screen.dart';
 import 'core/services/chat_socket_service.dart';
 import 'features/notification_studio/controllers/notification_studio_controller.dart';
+import 'package:appv1/features/student/student_theme_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,6 +26,9 @@ void main() async {
 
   // Init Firebase + local notification channel
   await NotificationService.initFirebase();
+  
+  // Init Student Theme preference
+  await StudentThemeManager.init();
 
   runApp(MyApp());
 }

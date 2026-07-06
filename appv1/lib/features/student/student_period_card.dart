@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import 'student_theme_manager.dart';
 
 // Shared period card used in both home + timetable page
 
@@ -87,6 +88,13 @@ class StudentPeriodCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return ValueListenableBuilder<StudentThemeConfig>(
+      valueListenable: StudentThemeManager.themeNotifier,
+      builder: (context, theme, _) => _buildCard(context, theme),
+    );
+  }
+
+  Widget _buildCard(BuildContext context, StudentThemeConfig theme) {
     final type = slot['type']?.toString() ?? 'class';
     final subject = slot['subjectName']?.toString() ?? '';
     final teacher = slot['teacherName']?.toString() ?? '';
@@ -99,25 +107,23 @@ class StudentPeriodCard extends StatelessWidget {
     final isClass = type == 'class' || type == 'lab';
     final dur = _duration();
 
-    // Force teal for class/lab, keep others muted
-    final color = (type == 'class')
-        ? Colors.teal[600]!
-        : (type == 'lab')
-        ? Colors.teal[700]!
+    // Force primary color for class/lab, keep others muted
+    final color = (type == 'class' || type == 'lab')
+        ? theme.primary
         : cfg.color;
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardBackground,
         borderRadius: BorderRadius.circular(6),
         border: Border.all(
-          color: isCurr ? Colors.teal[400]! : Colors.grey[200]!,
+          color: isCurr ? theme.primary : theme.dividerColor,
           width: isCurr ? 1.5 : 1,
         ),
         boxShadow: [
           BoxShadow(
             color: isCurr
-                ? Colors.teal.withOpacity(0.08)
+                ? theme.primary.withOpacity(0.08)
                 : Colors.black.withOpacity(0.025),
             blurRadius: isCurr ? 10 : 4,
             offset: Offset(0, 1),
@@ -146,7 +152,7 @@ class StudentPeriodCard extends StatelessWidget {
               padding: EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
                 color: color.withOpacity(0.04),
-                border: Border(right: BorderSide(color: Colors.grey[100]!)),
+                border: Border(right: BorderSide(color: theme.dividerColor)),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -185,7 +191,7 @@ class StudentPeriodCard extends StatelessWidget {
                     Container(
                       padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                       decoration: BoxDecoration(
-                        color: Colors.teal[600],
+                        color: theme.primary,
                         borderRadius: BorderRadius.circular(2),
                       ),
                       child: Text(
@@ -216,13 +222,13 @@ class StudentPeriodCard extends StatelessWidget {
                         Icon(
                           Icons.access_time_rounded,
                           size: 11,
-                          color: AppColors.textSecondary,
+                          color: theme.textSecondary,
                         ),
                         SizedBox(width: 3),
                         Text(
                           '$start – $end',
                           style: TextStyle(
-                            color: AppColors.textSecondary,
+                            color: theme.textSecondary,
                             fontSize: 11,
                             fontWeight: FontWeight.w500,
                           ),
@@ -235,13 +241,13 @@ class StudentPeriodCard extends StatelessWidget {
                               vertical: 1,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.grey[100],
+                              color: theme.dividerColor,
                               borderRadius: BorderRadius.circular(2),
                             ),
                             child: Text(
                               dur,
                               style: TextStyle(
-                                color: AppColors.textSecondary,
+                                color: theme.textSecondary,
                                 fontSize: 9,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -263,7 +269,7 @@ class StudentPeriodCard extends StatelessWidget {
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 13,
-                              color: isClass ? AppColors.textPrimary : color,
+                              color: isClass ? theme.textPrimary : color,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -309,7 +315,7 @@ class StudentPeriodCard extends StatelessWidget {
                             child: Text(
                               teacher,
                               style: TextStyle(
-                                color: AppColors.textSecondary,
+                                color: theme.textSecondary,
                                 fontSize: 11,
                                 fontWeight: FontWeight.w500,
                               ),

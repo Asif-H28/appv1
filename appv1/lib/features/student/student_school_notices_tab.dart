@@ -4,10 +4,10 @@ import 'package:appv1/core/constants/api_constants.dart';
 import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import '../../../../core/constants/app_colors.dart';
+import 'student_theme_manager.dart';
 import 'student_notice_card.dart';
 import 'student_notice_detail_screen.dart';
 
-const Color _accent = Colors.teal;
 
 class StudentSchoolNoticesTab extends StatefulWidget {
   @override
@@ -79,11 +79,14 @@ class _StudentSchoolNoticesTabState extends State<StudentSchoolNoticesTab>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    if (_isLoading) return _buildLoader();
-    if (_error.isNotEmpty) return _buildError();
-    if (_notices.isEmpty) return _buildEmpty();
-    return RefreshIndicator(
-      color: _accent,
+    return ValueListenableBuilder<StudentThemeConfig>(
+      valueListenable: StudentThemeManager.themeNotifier,
+      builder: (context, theme, _) {
+        if (_isLoading) return _buildLoader(theme);
+        if (_error.isNotEmpty) return _buildError(theme);
+        if (_notices.isEmpty) return _buildEmpty(theme);
+        return RefreshIndicator(
+      color: theme.primary,
       onRefresh: _fetchNotices,
       child: ListView.separated(
         padding: EdgeInsets.fromLTRB(
@@ -103,23 +106,25 @@ class _StudentSchoolNoticesTabState extends State<StudentSchoolNoticesTab>
             ),
           ),
         ),
-      ),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildLoader() => Center(
+  Widget _buildLoader(StudentThemeConfig theme) => Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircularProgressIndicator(color: _accent, strokeWidth: 2.5),
+            CircularProgressIndicator(color: theme.primary, strokeWidth: 2.5),
             SizedBox(height: 14),
             Text('Loading notices...',
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                style: TextStyle(color: theme.textSecondary, fontSize: 13)),
           ],
         ),
       );
 
-  Widget _buildError() => Center(
+  Widget _buildError(StudentThemeConfig theme) => Center(
         child: Padding(
           padding: EdgeInsets.all(24),
           child: Column(
@@ -139,7 +144,7 @@ class _StudentSchoolNoticesTabState extends State<StudentSchoolNoticesTab>
               Text(_error,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                      color: AppColors.textPrimary,
+                      color: theme.textPrimary,
                       fontWeight: FontWeight.w600,
                       fontSize: 14)),
               SizedBox(height: 16),
@@ -149,7 +154,7 @@ class _StudentSchoolNoticesTabState extends State<StudentSchoolNoticesTab>
                   padding:
                       EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   decoration: BoxDecoration(
-                    color: _accent,
+                    color: theme.primary,
                     borderRadius: BorderRadius.circular(3),
                   ),
                   child: Text('Retry',
@@ -164,7 +169,7 @@ class _StudentSchoolNoticesTabState extends State<StudentSchoolNoticesTab>
         ),
       );
 
-  Widget _buildEmpty() => Center(
+  Widget _buildEmpty(StudentThemeConfig theme) => Center(
         child: Padding(
           padding: EdgeInsets.all(32),
           child: Column(
@@ -175,22 +180,22 @@ class _StudentSchoolNoticesTabState extends State<StudentSchoolNoticesTab>
                 height: 70,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: _accent.withAlpha((0.08 * 255).round()),
+                  color: theme.primary.withAlpha((0.08 * 255).round()),
                 ),
                 child: Icon(Icons.notifications_none_rounded,
-                    color: _accent, size: 32),
+                    color: theme.primary, size: 32),
               ),
               SizedBox(height: 16),
               Text('No Notices Yet',
                   style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 15,
-                      color: AppColors.textPrimary)),
+                      color: theme.textPrimary)),
               SizedBox(height: 6),
               Text('Your organization has no notices posted.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                      color: AppColors.textSecondary,
+                      color: theme.textSecondary,
                       fontSize: 12,
                       height: 1.5)),
             ],

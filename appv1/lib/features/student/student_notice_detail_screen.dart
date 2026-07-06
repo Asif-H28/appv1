@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_colors.dart';
+import 'student_theme_manager.dart';
 import '../teacher/presentation/widgets/pdf_viewer_page.dart';
 
-const Color _accent = Colors.teal;
 
 class StudentNoticeDetailScreen extends StatelessWidget {
   final Map<String, dynamic> notice;
@@ -61,8 +61,11 @@ class StudentNoticeDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
+    return ValueListenableBuilder<StudentThemeConfig>(
+      valueListenable: StudentThemeManager.themeNotifier,
+      builder: (context, theme, _) {
+        return Scaffold(
+      backgroundColor: theme.background,
       body: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
@@ -74,7 +77,7 @@ class StudentNoticeDetailScreen extends StatelessWidget {
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [_accent, _accent.withOpacity(0.75)],
+                  colors: [theme.primary, theme.primary.withOpacity(0.75)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -96,7 +99,7 @@ class StudentNoticeDetailScreen extends StatelessWidget {
                           ),
                           child: Icon(
                             Icons.arrow_back_ios_new_rounded,
-                            color: Colors.white,
+                            color: theme.cardBackground,
                             size: 15,
                           ),
                         ),
@@ -113,7 +116,7 @@ class StudentNoticeDetailScreen extends StatelessWidget {
                         ),
                         child: Icon(
                           Icons.campaign_rounded,
-                          color: Colors.white,
+                          color: theme.cardBackground,
                           size: 18,
                         ),
                       ),
@@ -125,7 +128,7 @@ class StudentNoticeDetailScreen extends StatelessWidget {
                             Text(
                               'Notice Detail',
                               style: TextStyle(
-                                color: Colors.white,
+                                color: theme.cardBackground,
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -157,9 +160,9 @@ class StudentNoticeDetailScreen extends StatelessWidget {
                     Container(
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: theme.cardBackground,
                         borderRadius: BorderRadius.circular(3),
-                        border: Border.all(color: Colors.grey[200]!),
+                        border: Border.all(color: theme.dividerColor),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.04),
@@ -175,7 +178,7 @@ class StudentNoticeDetailScreen extends StatelessWidget {
                             height: 4,
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
-                                colors: [_accent, _accent.withOpacity(0.4)],
+                                colors: [theme.primary, theme.primary.withOpacity(0.4)],
                                 begin: Alignment.centerLeft,
                                 end: Alignment.centerRight,
                               ),
@@ -195,7 +198,7 @@ class StudentNoticeDetailScreen extends StatelessWidget {
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 17,
-                                    color: AppColors.textPrimary,
+                                    color: theme.textPrimary,
                                     height: 1.3,
                                   ),
                                 ),
@@ -205,14 +208,14 @@ class StudentNoticeDetailScreen extends StatelessWidget {
                                 _metaRow(
                                   Icons.person_rounded,
                                   _createdBy,
-                                  _accent,
+                                  theme.primary,
                                 ),
                                 if (_createdAt.isNotEmpty) ...[
                                   SizedBox(height: 6),
                                   _metaRow(
                                     Icons.calendar_today_rounded,
                                     _createdAt,
-                                    AppColors.textSecondary,
+                                    theme.textSecondary,
                                   ),
                                 ],
                                 if (_expiresAt.isNotEmpty) ...[
@@ -232,7 +235,7 @@ class StudentNoticeDetailScreen extends StatelessWidget {
                                 Text(
                                   _description,
                                   style: TextStyle(
-                                    color: AppColors.textPrimary,
+                                    color: theme.textPrimary,
                                     fontSize: 13.5,
                                     height: 1.65,
                                   ),
@@ -265,7 +268,9 @@ class StudentNoticeDetailScreen extends StatelessWidget {
             ),
           ],
         ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -277,7 +282,7 @@ class StudentNoticeDetailScreen extends StatelessWidget {
       margin: EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(3),
-        border: Border.all(color: Colors.grey[200]!),
+        border: Border.all(color: StudentThemeManager.themeNotifier.value.dividerColor),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
@@ -313,7 +318,7 @@ class StudentNoticeDetailScreen extends StatelessWidget {
                 child: Center(
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: _accent,
+                    color: StudentThemeManager.themeNotifier.value.primary,
                   ),
                 ),
               );
@@ -356,9 +361,9 @@ class StudentNoticeDetailScreen extends StatelessWidget {
     return Container(
       margin: EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: StudentThemeManager.themeNotifier.value.cardBackground,
         borderRadius: BorderRadius.circular(3),
-        border: Border.all(color: Colors.grey[200]!),
+        border: Border.all(color: StudentThemeManager.themeNotifier.value.dividerColor),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.03),
@@ -388,14 +393,14 @@ class StudentNoticeDetailScreen extends StatelessWidget {
           style: TextStyle(
             fontWeight: FontWeight.w600,
             fontSize: 13,
-            color: AppColors.textPrimary,
+            color: StudentThemeManager.themeNotifier.value.textPrimary,
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
         subtitle: Text(
           'Tap to view PDF',
-          style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
+          style: TextStyle(color: StudentThemeManager.themeNotifier.value.textSecondary, fontSize: 11),
         ),
         trailing: Container(
           padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -453,19 +458,19 @@ class StudentNoticeDetailScreen extends StatelessWidget {
         width: 3,
         height: 16,
         decoration: BoxDecoration(
-          color: _accent,
+          color: StudentThemeManager.themeNotifier.value.primary,
           borderRadius: BorderRadius.circular(2),
         ),
       ),
       SizedBox(width: 8),
-      Icon(icon, size: 15, color: _accent),
+      Icon(icon, size: 15, color: StudentThemeManager.themeNotifier.value.primary),
       SizedBox(width: 5),
       Text(
         title,
         style: TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 13,
-          color: AppColors.textPrimary,
+          color: StudentThemeManager.themeNotifier.value.textPrimary,
         ),
       ),
     ],

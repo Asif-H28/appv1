@@ -1,13 +1,14 @@
 import 'package:appv1/core/constants/api_constants.dart';
 import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
-import 'package:appv1/features/teacher/presentation/pages/achievement_comments_sheet.dart';
+import 'achievement_comments_sheet.dart';
 import 'package:appv1/core/utils/share_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
+import 'student_theme_manager.dart';
 
 class StudentAchievementsPage extends StatefulWidget {
   const StudentAchievementsPage({super.key});
@@ -267,9 +268,16 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
 
   @override
   Widget build(BuildContext context) {
+    return ValueListenableBuilder<StudentThemeConfig>(
+      valueListenable: StudentThemeManager.themeNotifier,
+      builder: (context, theme, _) => _buildPage(context, theme),
+    );
+  }
+
+  Widget _buildPage(BuildContext context, StudentThemeConfig theme) {
     if (_loading) {
-      return const Center(
-        child: CircularProgressIndicator(color: Colors.teal, strokeWidth: 2),
+      return Center(
+        child: CircularProgressIndicator(color: theme.primary, strokeWidth: 2),
       );
     }
 
@@ -282,7 +290,7 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
             const SizedBox(height: 12),
             Text(
               'Failed to load achievements',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+              style: TextStyle(color: theme.textSecondary, fontSize: 13),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
@@ -294,14 +302,14 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
             ),
             TextButton.icon(
               onPressed: _fetchFeed,
-              icon: const Icon(
+              icon: Icon(
                 Icons.refresh_rounded,
-                color: Colors.teal,
+                color: theme.primary,
                 size: 16,
               ),
-              label: const Text(
+              label: Text(
                 'Retry',
-                style: TextStyle(color: Colors.teal, fontSize: 13),
+                style: TextStyle(color: theme.primary, fontSize: 13),
               ),
             ),
           ],
@@ -322,7 +330,7 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
             const SizedBox(height: 12),
             Text(
               'No achievements yet',
-              style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+              style: TextStyle(color: theme.textSecondary, fontSize: 13),
             ),
             // ── shows orgId + post count on screen ──
             Padding(
@@ -339,7 +347,7 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
     }
 
     return RefreshIndicator(
-      color: Colors.teal,
+      color: theme.primary,
       onRefresh: _fetchFeed,
       child: ListView.separated(
         controller: _scrollController,
@@ -348,16 +356,17 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
         separatorBuilder: (_, __) => const SizedBox(height: 14),
         itemBuilder: (_, i) {
           if (i == _posts.length) {
-            return const Center(
+            return Center(
               child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 16),
-                child: CircularProgressIndicator(color: Colors.teal, strokeWidth: 2),
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: CircularProgressIndicator(color: theme.primary, strokeWidth: 2),
               ),
             );
           }
           return _StudentAchievementCard(
             post: _posts[i],
             studentId: _studentId,
+            theme: theme,
             onLike: () => _toggleLike(i),
             onComment: () => _openComments(i),
           );
@@ -372,12 +381,14 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
 class _StudentAchievementCard extends StatefulWidget {
   final Map<String, dynamic> post;
   final String studentId;
+  final StudentThemeConfig theme;
   final VoidCallback onLike;
   final VoidCallback onComment;
 
   const _StudentAchievementCard({
     required this.post,
     required this.studentId,
+    required this.theme,
     required this.onLike,
     required this.onComment,
   });
@@ -428,6 +439,7 @@ class _StudentAchievementCardState extends State<_StudentAchievementCard> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = widget.theme;
     final post = widget.post;
     final images = (post['images'] as List? ?? []).cast<String>();
     final tagged = (post['taggedStudents'] as List? ?? [])
@@ -441,7 +453,7 @@ class _StudentAchievementCardState extends State<_StudentAchievementCard> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardBackground,
         borderRadius: BorderRadius.circular(3),
         boxShadow: [
           BoxShadow(
@@ -462,7 +474,7 @@ class _StudentAchievementCardState extends State<_StudentAchievementCard> {
                   width: 36,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: Colors.teal.withOpacity(0.12),
+                    color: theme.primary.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(3),
                   ),
                   alignment: Alignment.center,
@@ -473,8 +485,8 @@ class _StudentAchievementCardState extends State<_StudentAchievementCard> {
                             ? post['orgName'].toString()
                             : 'U')[0]
                         .toUpperCase(),
-                    style: const TextStyle(
-                      color: Colors.teal,
+                    style: TextStyle(
+                      color: theme.primary,
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
                     ),
@@ -492,14 +504,14 @@ class _StudentAchievementCardState extends State<_StudentAchievementCard> {
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
-                          color: AppColors.textPrimary,
+                          color: theme.textPrimary,
                         ),
                       ),
                       Text(
                         '${(post['className']?.toString() ?? '').isNotEmpty ? post['className'].toString() : 'Admin'} � '
                         '${_timeAgo(post['createdAt']?.toString() ?? '')}',
                         style: TextStyle(
-                          color: AppColors.textSecondary,
+                          color: theme.textSecondary,
                           fontSize: 11,
                         ),
                       ),
@@ -553,7 +565,7 @@ class _StudentAchievementCardState extends State<_StudentAchievementCard> {
                       width: _imgIndex == i ? 14 : 5,
                       height: 5,
                       decoration: BoxDecoration(
-                        color: _imgIndex == i ? Colors.teal : Colors.grey[300],
+                        color: _imgIndex == i ? theme.primary : Colors.grey[300],
                         borderRadius: BorderRadius.circular(3),
                       ),
                     ),
@@ -579,13 +591,13 @@ class _StudentAchievementCardState extends State<_StudentAchievementCard> {
                               vertical: 3,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.teal.withOpacity(0.08),
+                              color: theme.primary.withOpacity(0.08),
                               borderRadius: BorderRadius.circular(3),
                             ),
                             child: Text(
                               '🏷 ${s['studentName']}',
-                              style: const TextStyle(
-                                color: Colors.teal,
+                              style: TextStyle(
+                                color: theme.primary,
                                 fontSize: 11,
                                 fontWeight: FontWeight.w500,
                               ),
@@ -600,7 +612,7 @@ class _StudentAchievementCardState extends State<_StudentAchievementCard> {
                   post['caption']?.toString() ?? '',
                   style: TextStyle(
                     fontSize: 13,
-                    color: AppColors.textPrimary,
+                    color: theme.textPrimary,
                     height: 1.45,
                   ),
                 ),
@@ -608,9 +620,9 @@ class _StudentAchievementCardState extends State<_StudentAchievementCard> {
             ),
           ),
 
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 10),
-            child: Divider(height: 1, color: Color(0xFFF0F0F0)),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: Divider(height: 1, color: theme.dividerColor),
           ),
 
           Padding(
@@ -627,23 +639,25 @@ class _StudentAchievementCardState extends State<_StudentAchievementCard> {
                   activeBg: Colors.red.withOpacity(0.07),
                   activeBorder: Colors.red.withOpacity(0.2),
                   onTap: widget.onLike,
+                  theme: theme,
                 ),
                 const SizedBox(width: 8),
                 _ActionBtn(
                   icon: Icons.chat_bubble_outline_rounded,
                   label: '$commentCount',
                   active: false,
-                  activeColor: Colors.teal,
+                  activeColor: theme.primary,
                   activeBg: Colors.transparent,
                   activeBorder: Colors.transparent,
                   onTap: widget.onComment,
+                  theme: theme,
                 ),
                 const SizedBox(width: 8),
                 _ActionBtn(
                   icon: Icons.share_outlined,
                   label: 'Share',
                   active: false,
-                  activeColor: Colors.teal,
+                  activeColor: theme.primary,
                   activeBg: Colors.transparent,
                   activeBorder: Colors.transparent,
                   onTap: () {
@@ -659,6 +673,7 @@ class _StudentAchievementCardState extends State<_StudentAchievementCard> {
                       className: className,
                     );
                   },
+                  theme: theme,
                 ),
               ],
             ),
@@ -677,6 +692,7 @@ class _ActionBtn extends StatelessWidget {
   final Color activeBg;
   final Color activeBorder;
   final VoidCallback onTap;
+  final StudentThemeConfig theme;
 
   const _ActionBtn({
     required this.icon,
@@ -686,6 +702,7 @@ class _ActionBtn extends StatelessWidget {
     required this.activeBg,
     required this.activeBorder,
     required this.onTap,
+    required this.theme,
   });
 
   @override
@@ -703,14 +720,14 @@ class _ActionBtn extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: active ? activeColor : AppColors.textSecondary,
+              color: active ? activeColor : theme.textSecondary,
               size: 17,
             ),
             const SizedBox(width: 5),
             Text(
               label,
               style: TextStyle(
-                color: active ? activeColor : AppColors.textSecondary,
+                color: active ? activeColor : theme.textSecondary,
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
