@@ -283,48 +283,33 @@ class _StudentFeePaymentPageState extends State<StudentFeePaymentPage> {
                       _buildInfoRow(Icons.class_outlined, 'Class', _feeData!['classOrGrade']?.toString() ?? 'N/A'),
                       _buildInfoRow(Icons.menu_book_rounded, 'Board/Syllabus', _feeData!['boardOrSyllabus']?.toString() ?? 'N/A'),
                       _buildInfoRow(Icons.school_outlined, 'Tutor Name', _feeData!['tutorName']?.toString() ?? 'N/A'),
-                      _buildInfoRow(Icons.description_outlined, 'Fee Title', 'Tuition Fee'),
-                      const SizedBox(height: 8),
+                      const Padding(
+                        padding: EdgeInsets.only(top: 8, bottom: 24),
+                        child: Divider(height: 1, color: Color(0xFFE5E7EB)),
+                      ),
                       
-                      // Amount Highlight
-                      Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF4F46E5), Color(0xFF6366F1)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
+                      // Amount Row
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Text(
+                            'Total Amount',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                              color: Color(0xFF1F2937),
+                            ),
                           ),
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF4F46E5).withOpacity(0.3),
-                              blurRadius: 12,
-                              offset: const Offset(0, 6),
+                          Text(
+                            '₹$feeAmount',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 28,
+                              color: Color(0xFF059669), // Emerald Green
                             ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'Total Amount',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 16,
-                                color: Colors.white70,
-                              ),
-                            ),
-                            Text(
-                              '₹$feeAmount',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 28,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
