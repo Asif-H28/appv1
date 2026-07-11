@@ -85,6 +85,39 @@ class ApiService {
     }
   }
 
+  // Fetch Organization Settings
+  static Future<Map<String, dynamic>> getOrgSettings() async {
+    try {
+      final response = await ApiService.get('$_baseUrl/org/settings');
+      checkResponse(response);
+      if (response.statusCode == 200) {
+        return {'success': true, 'data': jsonDecode(response.body)};
+      } else {
+        return {'success': false, 'message': 'Failed to load settings'};
+      }
+    } catch (e) {
+      return {'success': false, 'message': e.toString()};
+    }
+  }
+
+  // Update Organization Settings
+  static Future<Map<String, dynamic>> updateOrgSettings(Map<String, dynamic> data) async {
+    try {
+      final response = await ApiService.put(
+        '$_baseUrl/org/settings',
+        body: jsonEncode(data),
+      );
+      checkResponse(response);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return {'success': true, 'message': 'Settings updated successfully'};
+      } else {
+        return {'success': false, 'message': 'Failed to update settings: ${response.statusCode}'};
+      }
+    } catch (e) {
+      return {'success': false, 'message': e.toString()};
+    }
+  }
+
   // Fetch Classrooms by Org ID
   static Future<Map<String, dynamic>> fetchClassroomsByOrg(String orgId) async {
     try {
