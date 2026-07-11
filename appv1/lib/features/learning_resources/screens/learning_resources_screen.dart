@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:appv1/features/student/student_theme_manager.dart';
+
 import 'package:appv1/features/learning_resources/services/lesson_video_service.dart';
 import 'package:appv1/features/learning_resources/widgets/video_card.dart';
 import 'package:appv1/features/learning_resources/widgets/add_video_sheet.dart';
@@ -18,6 +20,7 @@ class LearningResourcesScreen extends StatefulWidget {
 }
 
 class _LearningResourcesScreenState extends State<LearningResourcesScreen> {
+  StudentThemeConfig get theme => StudentThemeManager.themeNotifier.value;
   bool _isLoading = true;
   String _error = '';
   List<dynamic> _videos = [];
@@ -156,18 +159,18 @@ class _LearningResourcesScreenState extends State<LearningResourcesScreen> {
   Widget build(BuildContext context) {
     if (_showMenu) {
       return Scaffold(
-        backgroundColor: const Color(0xFFF0F7F6),
+        backgroundColor: theme.background,
         body: _buildMenu(),
       );
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F7F6),
+      backgroundColor: theme.background,
       floatingActionButton: _isTeacher
           ? FloatingActionButton(
-              backgroundColor: const Color(0xFF009688),
+              backgroundColor: theme.primary,
               onPressed: _showAddVideoSheet,
-              child: const Icon(Icons.add, color: Colors.white),
+              child: Icon(Icons.add, color: Colors.white),
             )
           : null,
       body: Column(
@@ -182,23 +185,23 @@ class _LearningResourcesScreenState extends State<LearningResourcesScreen> {
                   children: [
                     InkWell(
                       onTap: () => setState(() => _showMenu = true),
-                      child: const Padding(
+                      child: Padding(
                         padding: EdgeInsets.only(right: 12),
-                        child: Icon(Icons.arrow_back, color: Color(0xFF009688)),
+                        child: Icon(Icons.arrow_back, color: theme.primary),
                       ),
                     ),
                     Text(
                       _videoType == 'lesson' ? 'Lesson Videos' : 'General Videos',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF2D3748),
+                        color: theme.textPrimary,
                       ),
                     ),
                   ],
                 ),
                 if (_videoType == 'lesson') ...[
-                  const SizedBox(height: 16),
+                  SizedBox(height: 16),
                   Row(
                     children: [
                       Expanded(
@@ -211,7 +214,7 @@ class _LearningResourcesScreenState extends State<LearningResourcesScreen> {
                           child: DropdownButtonHideUnderline(
                             child: DropdownButton<String>(
                               isExpanded: true,
-                              hint: const Text('All Subjects'),
+                              hint: Text('All Subjects'),
                               value: _selectedSubjectId,
                               items: [
                                 const DropdownMenuItem<String>(
@@ -230,7 +233,7 @@ class _LearningResourcesScreenState extends State<LearningResourcesScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8),
                       Expanded(
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -241,7 +244,7 @@ class _LearningResourcesScreenState extends State<LearningResourcesScreen> {
                           child: DropdownButtonHideUnderline(
                             child: DropdownButton<String>(
                               isExpanded: true,
-                              hint: const Text('All Lessons'),
+                              hint: Text('All Lessons'),
                               value: _selectedLessonId,
                               items: [
                                 const DropdownMenuItem<String>(
@@ -273,12 +276,12 @@ class _LearningResourcesScreenState extends State<LearningResourcesScreen> {
           ),
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator(color: Color(0xFF009688)))
+                ? Center(child: CircularProgressIndicator(color: theme.primary))
                 : _error.isNotEmpty
                     ? Center(
                         child: Text(
                           _error,
-                          style: const TextStyle(color: Colors.red),
+                          style: TextStyle(color: Colors.red),
                         ),
                       )
                     : _videos.isEmpty
@@ -287,13 +290,13 @@ class _LearningResourcesScreenState extends State<LearningResourcesScreen> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(Icons.video_library_outlined, size: 64, color: Colors.grey[400]),
-                                const SizedBox(height: 16),
+                                SizedBox(height: 16),
                                 Text(
                                   'No videos found.',
                                   style: TextStyle(color: Colors.grey[600], fontSize: 16),
                                 ),
                                 if (_isTeacher) ...[
-                                  const SizedBox(height: 8),
+                                  SizedBox(height: 8),
                                   Text(
                                     "Tap '+' to share your first resource.",
                                     style: TextStyle(color: Colors.grey[500], fontSize: 14),
@@ -357,7 +360,7 @@ class _LearningResourcesScreenState extends State<LearningResourcesScreen> {
                 _buildMenuItem(
                   icon: Icons.play_lesson,
                   label: 'Lesson Videos',
-                  color: const Color(0xFF009688),
+                  color: theme.primary,
                   onTap: () {
                     setState(() {
                       _videoType = 'lesson';
@@ -373,7 +376,7 @@ class _LearningResourcesScreenState extends State<LearningResourcesScreen> {
                 _buildMenuItem(
                   icon: Icons.video_library,
                   label: 'General Videos',
-                  color: const Color(0xFF009688),
+                  color: theme.primary,
                   onTap: () {
                     setState(() {
                       _videoType = 'general';
@@ -411,18 +414,18 @@ class _LearningResourcesScreenState extends State<LearningResourcesScreen> {
               ),
               child: Icon(icon, color: color, size: 18),
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: 16),
             Expanded(
               child: Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
-                  color: Color(0xFF2D3748),
+                  color: theme.textPrimary,
                 ),
               ),
             ),
-            const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
+            Icon(Icons.chevron_right, color: Colors.grey, size: 20),
           ],
         ),
       ),

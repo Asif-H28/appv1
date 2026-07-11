@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:appv1/features/student/student_theme_manager.dart';
+
 import 'package:appv1/core/services/api_service.dart';
 import '../../../../core/constants/app_colors.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -14,6 +16,7 @@ class OrgTransportStatusPage extends StatefulWidget {
 }
 
 class _OrgTransportStatusPageState extends State<OrgTransportStatusPage> {
+  StudentThemeConfig get theme => StudentThemeManager.themeNotifier.value;
   bool _isLoading = true;
   List<dynamic> _vehicles = [];
 
@@ -37,10 +40,10 @@ class _OrgTransportStatusPageState extends State<OrgTransportStatusPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: theme.background,
       appBar: AppBar(
         title: const Text('Live Transport Status', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
-        backgroundColor: const Color(0xFF0D9488),
+        backgroundColor: theme.primary,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
@@ -54,7 +57,7 @@ class _OrgTransportStatusPageState extends State<OrgTransportStatusPage> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF0D9488)))
+          ? Center(child: CircularProgressIndicator(color: theme.primary))
           : _vehicles.isEmpty
               ? _buildEmptyState()
               : _buildVehicleList(),
@@ -97,12 +100,12 @@ class _OrgTransportStatusPageState extends State<OrgTransportStatusPage> {
             leading: Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: (isActive ? const Color(0xFF0D9488) : Colors.grey[400])!.withOpacity(0.1),
+                color: (isActive ? theme.primary : Colors.grey[400])!.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.directions_bus_rounded,
-                color: isActive ? const Color(0xFF0D9488) : Colors.grey[500],
+                color: isActive ? theme.primary : Colors.grey[500],
                 size: 24,
               ),
             ),
@@ -172,6 +175,7 @@ class VehicleMapView extends StatefulWidget {
 }
 
 class _VehicleMapViewState extends State<VehicleMapView> {
+  StudentThemeConfig get theme => StudentThemeManager.themeNotifier.value;
   bool _isLoading = true;
   bool _isMapLoading = true;
   String? _errorMessage;
@@ -323,7 +327,7 @@ class _VehicleMapViewState extends State<VehicleMapView> {
             Text(isActive ? 'Currently Live' : 'Last Known Location', style: const TextStyle(fontSize: 11, color: Colors.white70)),
           ],
         ),
-        backgroundColor: const Color(0xFF0D9488),
+        backgroundColor: theme.primary,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
           onPressed: () => Navigator.pop(context),
@@ -349,7 +353,7 @@ class _VehicleMapViewState extends State<VehicleMapView> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF0D9488)))
+          ? Center(child: CircularProgressIndicator(color: theme.primary))
           : _errorMessage != null
               ? Center(
                   child: Padding(
@@ -372,7 +376,7 @@ class _VehicleMapViewState extends State<VehicleMapView> {
                   children: [
                     WebViewWidget(controller: _webViewController),
                     if (_isMapLoading)
-                      const Center(child: CircularProgressIndicator(color: Color(0xFF0D9488))),
+                      Center(child: CircularProgressIndicator(color: theme.primary)),
                   ],
                 ),
     );

@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/features/student/student_theme_manager.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/api_constants.dart';
-import '../../../../core/constants/app_colors.dart';
 
 class StudentFeePaymentPage extends StatefulWidget {
   const StudentFeePaymentPage({Key? key}) : super(key: key);
@@ -14,6 +14,7 @@ class StudentFeePaymentPage extends StatefulWidget {
 }
 
 class _StudentFeePaymentPageState extends State<StudentFeePaymentPage> {
+  StudentThemeConfig get theme => StudentThemeManager.themeNotifier.value;
   bool _isLoading = true;
   String? _errorMessage;
   Map<String, dynamic>? _feeData;
@@ -153,23 +154,34 @@ class _StudentFeePaymentPageState extends State<StudentFeePaymentPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: const Text(
-          'Fee Payment',
-          style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600),
-        ),
-        backgroundColor: const Color(0xFF4F46E5), // Indigo
-        elevation: 0,
-        centerTitle: true,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF4F46E5)))
-          : _errorMessage != null
-          ? _buildErrorView()
-          : _buildFeeDetailsView(),
+    return ValueListenableBuilder<StudentThemeConfig>(
+      valueListenable: StudentThemeManager.themeNotifier,
+      builder: (context, theme, _) {
+        return Scaffold(
+          backgroundColor: Colors.grey[50],
+          appBar: AppBar(
+            title: Text(
+              'Fee Payment',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            backgroundColor: theme.primary, // Indigo
+            elevation: 0,
+            centerTitle: true,
+            iconTheme: const IconThemeData(color: Colors.white),
+          ),
+          body: _isLoading
+              ? Center(
+                  child: CircularProgressIndicator(color: theme.primary),
+                )
+              : _errorMessage != null
+              ? _buildErrorView()
+              : _buildFeeDetailsView(),
+        );
+      },
     );
   }
 
@@ -186,24 +198,37 @@ class _StudentFeePaymentPageState extends State<StudentFeePaymentPage> {
                 color: Colors.red.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.error_outline_rounded, size: 64, color: Colors.redAccent),
+              child: Icon(
+                Icons.error_outline_rounded,
+                size: 64,
+                color: Colors.redAccent,
+              ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24),
             Text(
               _errorMessage!,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16, color: Colors.black87, height: 1.5),
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.black87,
+                height: 1.5,
+              ),
             ),
-            const SizedBox(height: 32),
+            SizedBox(height: 32),
             ElevatedButton.icon(
               onPressed: _fetchFeeStatus,
-              icon: const Icon(Icons.refresh, color: Colors.white),
-              label: const Text('Retry'),
+              icon: Icon(Icons.refresh, color: Colors.white),
+              label: Text('Retry'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4F46E5),
+                backgroundColor: theme.primary,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 14,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ],
@@ -215,7 +240,8 @@ class _StudentFeePaymentPageState extends State<StudentFeePaymentPage> {
   Widget _buildFeeDetailsView() {
     if (_feeData == null) return const SizedBox.shrink();
 
-    final studentName = _feeData!['studentName']?.toString() ?? 'Unknown Student';
+    final studentName =
+        _feeData!['studentName']?.toString() ?? 'Unknown Student';
     final feeAmount = _feeData!['feeAmount']?.toString() ?? '0';
 
     return Stack(
@@ -223,8 +249,8 @@ class _StudentFeePaymentPageState extends State<StudentFeePaymentPage> {
         // Background banner
         Container(
           height: 120,
-          decoration: const BoxDecoration(
-            color: Color(0xFF4F46E5),
+          decoration: BoxDecoration(
+            color: theme.primary,
             borderRadius: BorderRadius.only(
               bottomLeft: Radius.circular(32),
               bottomRight: Radius.circular(32),
@@ -259,54 +285,73 @@ class _StudentFeePaymentPageState extends State<StudentFeePaymentPage> {
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF4F46E5).withOpacity(0.1),
+                              color: theme.primary.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const Icon(Icons.receipt_long_rounded, color: Color(0xFF4F46E5)),
+                            child: Icon(
+                              Icons.receipt_long_rounded,
+                              color: theme.primary,
+                            ),
                           ),
-                          const SizedBox(width: 16),
-                          const Text(
+                          SizedBox(width: 16),
+                          Text(
                             'Payment Summary',
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF1F2937),
+                              color: theme.textPrimary,
                             ),
                           ),
                         ],
                       ),
-                      const Padding(
+                      Padding(
                         padding: EdgeInsets.symmetric(vertical: 24),
-                        child: Divider(height: 1, color: Color(0xFFE5E7EB)),
+                        child: Divider(height: 1, color: theme.dividerColor),
                       ),
-                      _buildInfoRow(Icons.person_outline_rounded, 'Student Name', studentName),
-                      _buildInfoRow(Icons.class_outlined, 'Class', _feeData!['classOrGrade']?.toString() ?? 'N/A'),
-                      _buildInfoRow(Icons.menu_book_rounded, 'Board/Syllabus', _feeData!['boardOrSyllabus']?.toString() ?? 'N/A'),
-                      _buildInfoRow(Icons.school_outlined, 'Tutor Name', _feeData!['tutorName']?.toString() ?? 'N/A'),
-                      const Padding(
+                      _buildInfoRow(
+                        Icons.person_outline_rounded,
+                        'Student Name',
+                        studentName,
+                      ),
+                      _buildInfoRow(
+                        Icons.class_outlined,
+                        'Class',
+                        _feeData!['classOrGrade']?.toString() ?? 'N/A',
+                      ),
+                      _buildInfoRow(
+                        Icons.menu_book_rounded,
+                        'Board/Syllabus',
+                        _feeData!['boardOrSyllabus']?.toString() ?? 'N/A',
+                      ),
+                      _buildInfoRow(
+                        Icons.school_outlined,
+                        'Tutor Name',
+                        _feeData!['tutorName']?.toString() ?? 'N/A',
+                      ),
+                      Padding(
                         padding: EdgeInsets.only(top: 8, bottom: 24),
-                        child: Divider(height: 1, color: Color(0xFFE5E7EB)),
+                        child: Divider(height: 1, color: theme.dividerColor),
                       ),
-                      
+
                       // Amount Row
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          const Text(
+                          Text(
                             'Total Amount',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 18,
-                              color: Color(0xFF1F2937),
+                              color: theme.textPrimary,
                             ),
                           ),
                           Text(
                             '₹$feeAmount',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.w900,
                               fontSize: 28,
-                              color: Color(0xFF059669), // Emerald Green
+                              color: theme.primary, // Emerald Green
                             ),
                           ),
                         ],
@@ -315,20 +360,20 @@ class _StudentFeePaymentPageState extends State<StudentFeePaymentPage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 32),
-              
+              SizedBox(height: 32),
+
               // Pay Now Button (Gradient)
               Container(
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
+                  gradient: LinearGradient(
+                    colors: [theme.primary, theme.primary],
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
                   ),
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF4F46E5).withOpacity(0.4),
+                      color: theme.primary.withOpacity(0.4),
                       blurRadius: 12,
                       offset: const Offset(0, 6),
                     ),
@@ -344,10 +389,14 @@ class _StudentFeePaymentPageState extends State<StudentFeePaymentPage> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.lock_outline_rounded, color: Colors.white, size: 22),
+                      Icon(
+                        Icons.lock_outline_rounded,
+                        color: Colors.white,
+                        size: 22,
+                      ),
                       SizedBox(width: 10),
                       Text(
                         'Proceed to Pay',
@@ -362,19 +411,23 @@ class _StudentFeePaymentPageState extends State<StudentFeePaymentPage> {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               // Secure payment footer
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.shield_rounded, size: 16, color: Colors.grey[500]),
-                  const SizedBox(width: 6),
+                  SizedBox(width: 6),
                   Text(
                     '100% Secure UPI Payments',
-                    style: TextStyle(color: Colors.grey[600], fontSize: 13, fontWeight: FontWeight.w500),
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ],
-              )
+              ),
             ],
           ),
         ),
@@ -388,25 +441,25 @@ class _StudentFeePaymentPageState extends State<StudentFeePaymentPage> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 22, color: const Color(0xFF6B7280)),
-          const SizedBox(width: 16),
+          Icon(icon, size: 22, color: theme.textSecondary),
+          SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
-                    color: Color(0xFF6B7280),
+                  style: TextStyle(
+                    color: theme.textSecondary,
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(
                   value,
-                  style: const TextStyle(
-                    color: Color(0xFF1F2937),
+                  style: TextStyle(
+                    color: theme.textPrimary,
                     fontWeight: FontWeight.w600,
                     fontSize: 16,
                   ),

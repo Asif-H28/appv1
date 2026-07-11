@@ -93,7 +93,8 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
       _currentPage = 1;
     });
 
-    final url = '${ApiConstants.apiBaseUrl}/achievement/org/$_orgId?page=1&limit=3';
+    final url =
+        '${ApiConstants.apiBaseUrl}/achievement/org/$_orgId?page=1&limit=3';
     debugPrint('==== [Achievements] GET $url');
 
     try {
@@ -158,7 +159,8 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
     });
 
     final nextPage = _currentPage + 1;
-    final url = '${ApiConstants.apiBaseUrl}/achievement/org/$_orgId?page=$nextPage&limit=3';
+    final url =
+        '${ApiConstants.apiBaseUrl}/achievement/org/$_orgId?page=$nextPage&limit=3';
     debugPrint('==== [Achievements] LOAD MORE GET $url');
 
     try {
@@ -171,7 +173,8 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
 
       if (res.statusCode == 200) {
         final body = jsonDecode(res.body) as Map;
-        final list = (body['achievements'] as List?) ??
+        final list =
+            (body['achievements'] as List?) ??
             (body['data'] as List?) ??
             (body['posts'] as List?) ??
             [];
@@ -182,7 +185,7 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
         setState(() {
           _currentPage = nextPage;
           _posts.addAll(
-            list.map((e) => Map<String, dynamic>.from(e as Map)).toList()
+            list.map((e) => Map<String, dynamic>.from(e as Map)).toList(),
           );
           _hasMore = _currentPage < totalPages;
           _loadingMore = false;
@@ -302,11 +305,7 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
             ),
             TextButton.icon(
               onPressed: _fetchFeed,
-              icon: Icon(
-                Icons.refresh_rounded,
-                color: theme.primary,
-                size: 16,
-              ),
+              icon: Icon(Icons.refresh_rounded, color: theme.primary, size: 16),
               label: Text(
                 'Retry',
                 style: TextStyle(color: theme.primary, fontSize: 13),
@@ -359,7 +358,10 @@ class _StudentAchievementsPageState extends State<StudentAchievementsPage> {
             return Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                child: CircularProgressIndicator(color: theme.primary, strokeWidth: 2),
+                child: CircularProgressIndicator(
+                  color: theme.primary,
+                  strokeWidth: 2,
+                ),
               ),
             );
           }
@@ -565,7 +567,9 @@ class _StudentAchievementCardState extends State<_StudentAchievementCard> {
                       width: _imgIndex == i ? 14 : 5,
                       height: 5,
                       decoration: BoxDecoration(
-                        color: _imgIndex == i ? theme.primary : Colors.grey[300],
+                        color: _imgIndex == i
+                            ? theme.primary
+                            : Colors.grey[300],
                         borderRadius: BorderRadius.circular(3),
                       ),
                     ),
@@ -661,7 +665,8 @@ class _StudentAchievementCardState extends State<_StudentAchievementCard> {
                   activeBg: Colors.transparent,
                   activeBorder: Colors.transparent,
                   onTap: () {
-                    final authorName = (post['teacherName']?.toString() ?? '').isNotEmpty
+                    final authorName =
+                        (post['teacherName']?.toString() ?? '').isNotEmpty
                         ? post['teacherName'].toString()
                         : post['orgName']?.toString() ?? 'Admin';
                     final className = post['className']?.toString() ?? '';

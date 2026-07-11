@@ -10,7 +10,6 @@ import 'student_theme_manager.dart';
 import 'student_notice_card.dart';
 import 'student_notice_detail_screen.dart';
 
-
 class StudentClassNoticesTab extends StatefulWidget {
   @override
   _StudentClassNoticesTabState createState() => _StudentClassNoticesTabState();
@@ -93,26 +92,27 @@ class _StudentClassNoticesTabState extends State<StudentClassNoticesTab>
         if (_notices.isEmpty) return _buildEmpty(theme);
 
         return RefreshIndicator(
-      color: theme.primary,
-      onRefresh: _fetchNotices,
-      child: ListView.separated(
-        padding: EdgeInsets.fromLTRB(
-          14,
-          16,
-          14,
-          40 + MediaQuery.of(context).padding.bottom,
-        ),
-        itemCount: _notices.length,
-        separatorBuilder: (_, __) => SizedBox(height: 10),
-        itemBuilder: (_, i) => StudentNoticeCard(
-          notice: _notices[i],
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => StudentNoticeDetailScreen(notice: _notices[i]),
+          color: theme.primary,
+          onRefresh: _fetchNotices,
+          child: ListView.separated(
+            padding: EdgeInsets.fromLTRB(
+              14,
+              16,
+              14,
+              40 + MediaQuery.of(context).padding.bottom,
             ),
-          ),
-        ),
+            itemCount: _notices.length,
+            separatorBuilder: (_, __) => SizedBox(height: 10),
+            itemBuilder: (_, i) => StudentNoticeCard(
+              notice: _notices[i],
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      StudentNoticeDetailScreen(notice: _notices[i]),
+                ),
+              ),
+            ),
           ),
         );
       },
@@ -229,4 +229,3 @@ class _StudentClassNoticesTabState extends State<StudentClassNoticesTab>
     ),
   );
 }
-

@@ -8,7 +8,6 @@ import 'student_theme_manager.dart';
 import 'student_class_notices_tab.dart';
 import 'student_school_notices_tab.dart';
 
-
 class StudentNoticeScreen extends StatefulWidget {
   @override
   _StudentNoticeScreenState createState() => _StudentNoticeScreenState();
@@ -37,22 +36,25 @@ class _StudentNoticeScreenState extends State<StudentNoticeScreen>
       builder: (context, theme, _) {
         return Scaffold(
           backgroundColor: theme.background,
-      body: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,
-          statusBarIconBrightness: Brightness.light,
-        ),
-        child: Column(
-          children: [
-            _buildHeader(theme),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [StudentClassNoticesTab(), StudentSchoolNoticesTab()],
-              ),
+          body: AnnotatedRegion<SystemUiOverlayStyle>(
+            value: SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              statusBarIconBrightness: Brightness.light,
             ),
-          ],
-        ),
+            child: Column(
+              children: [
+                _buildHeader(theme),
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      StudentClassNoticesTab(),
+                      StudentSchoolNoticesTab(),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },

@@ -9,7 +9,6 @@ import 'student_theme_manager.dart';
 import 'student_attendance_summary_card.dart';
 import 'student_attendance_records_list.dart';
 
-
 class StudentAttendanceScreen extends StatefulWidget {
   @override
   _StudentAttendanceScreenState createState() =>
@@ -119,48 +118,48 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
       builder: (context, theme, _) {
         return Scaffold(
           backgroundColor: theme.background,
-      body: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,
-          statusBarIconBrightness: Brightness.light,
-        ),
-        child: Column(
-          children: [
-            // ── Header ──
-            _buildHeader(theme),
-
-            // ── Body ──
-            Expanded(
-              child: _isLoading
-                  ? _buildLoader(theme)
-                  : _error.isNotEmpty
-                  ? _buildError(theme)
-                  : RefreshIndicator(
-                      color: theme.primary,
-                      onRefresh: _fetchSummary,
-                      child: SingleChildScrollView(
-                        physics: AlwaysScrollableScrollPhysics(),
-                        padding: EdgeInsets.fromLTRB(14, 16, 14, 40),
-                        child: Column(
-                          children: [
-                            _buildCalendar(theme),
-                            StudentAttendanceSummaryCard(
-                              totalDays: _totalDays,
-                              totalPresent: _totalPresent,
-                              totalAbsent: _totalAbsent,
-                              percentage: _percentage,
-                              statusColor: _statusColor,
-                              statusLabel: _statusLabel,
-                            ),
-                            SizedBox(height: 16),
-                            StudentAttendanceRecordsList(records: _records),
-                          ],
-                        ),
-                      ),
-                    ),
+          body: AnnotatedRegion<SystemUiOverlayStyle>(
+            value: SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              statusBarIconBrightness: Brightness.light,
             ),
-          ],
-        ),
+            child: Column(
+              children: [
+                // ── Header ──
+                _buildHeader(theme),
+
+                // ── Body ──
+                Expanded(
+                  child: _isLoading
+                      ? _buildLoader(theme)
+                      : _error.isNotEmpty
+                      ? _buildError(theme)
+                      : RefreshIndicator(
+                          color: theme.primary,
+                          onRefresh: _fetchSummary,
+                          child: SingleChildScrollView(
+                            physics: AlwaysScrollableScrollPhysics(),
+                            padding: EdgeInsets.fromLTRB(14, 16, 14, 40),
+                            child: Column(
+                              children: [
+                                _buildCalendar(theme),
+                                StudentAttendanceSummaryCard(
+                                  totalDays: _totalDays,
+                                  totalPresent: _totalPresent,
+                                  totalAbsent: _totalAbsent,
+                                  percentage: _percentage,
+                                  statusColor: _statusColor,
+                                  statusLabel: _statusLabel,
+                                ),
+                                SizedBox(height: 16),
+                                StudentAttendanceRecordsList(records: _records),
+                              ],
+                            ),
+                          ),
+                        ),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -174,16 +173,17 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
     final firstDay = DateTime(year, month, 1);
     final firstWeekday = firstDay.weekday; // 1=Mon, 7=Sun
     final emptyDays = firstWeekday % 7; // Sunday=0, Monday=1, ..., Saturday=6
-    
+
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    
+
     final attendanceMap = <int, String>{};
     for (var record in _records) {
       final dateStr = record['date']?.toString() ?? '';
       final dt = DateTime.tryParse(dateStr);
       if (dt != null && dt.year == year && dt.month == month) {
-        attendanceMap[dt.day] = record['attendance']?.toString().toLowerCase() ?? '';
+        attendanceMap[dt.day] =
+            record['attendance']?.toString().toLowerCase() ?? '';
       }
     }
 
@@ -219,7 +219,11 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
               ),
               Text(
                 DateFormat('MMMM yyyy').format(_selectedDate),
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: theme.textPrimary),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: theme.textPrimary,
+                ),
               ),
               IconButton(
                 icon: Icon(Icons.chevron_right, color: theme.primary),
@@ -237,11 +241,20 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-                .map((d) => Expanded(
-                      child: Center(
-                        child: Text(d, style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, fontSize: 12)),
+                .map(
+                  (d) => Expanded(
+                    child: Center(
+                      child: Text(
+                        d,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                          fontSize: 12,
+                        ),
                       ),
-                    ))
+                    ),
+                  ),
+                )
                 .toList(),
           ),
           SizedBox(height: 8),
@@ -261,13 +274,13 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
               }
               final day = index - emptyDays + 1;
               final currentDayDate = DateTime(year, month, day);
-              
+
               final isFuture = currentDayDate.isAfter(today);
               final status = attendanceMap[day];
-              
+
               Color bgColor = Colors.transparent;
               Color textColor = theme.textPrimary;
-              
+
               if (isFuture) {
                 textColor = Colors.grey[400]!;
               } else if (status == 'present') {
@@ -289,7 +302,11 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
                 ),
                 child: Text(
                   '$day',
-                  style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 13),
+                  style: TextStyle(
+                    color: textColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
                 ),
               );
             },
@@ -487,4 +504,3 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
     ),
   );
 }
-

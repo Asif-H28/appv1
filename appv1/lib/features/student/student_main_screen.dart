@@ -69,35 +69,38 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
             if (didPop) return;
             if (_isChildLockEnabled && mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Child lock is enabled. Cannot exit.')),
+                const SnackBar(
+                  content: Text('Child lock is enabled. Cannot exit.'),
+                ),
               );
             }
           },
           child: Scaffold(
             backgroundColor: theme.background,
             drawer: _buildDrawer(theme),
-        body: AnnotatedRegion<SystemUiOverlayStyle>(
-          value: const SystemUiOverlayStyle(
-            statusBarColor: Colors.transparent,
-            statusBarIconBrightness: Brightness.light,
-            systemNavigationBarColor: Colors.white,
-            systemNavigationBarIconBrightness: Brightness.dark,
-          ),
-          child: Column(
-            children: [
-              _buildHeader(theme),
-              Expanded(
-                child: IndexedStack(index: _currentTab, children: _pages),
+            body: AnnotatedRegion<SystemUiOverlayStyle>(
+              value: const SystemUiOverlayStyle(
+                statusBarColor: Colors.transparent,
+                statusBarIconBrightness: Brightness.light,
+                systemNavigationBarColor: Colors.white,
+                systemNavigationBarIconBrightness: Brightness.dark,
               ),
-            ],
+              child: Column(
+                children: [
+                  _buildHeader(theme),
+                  Expanded(
+                    child: IndexedStack(index: _currentTab, children: _pages),
+                  ),
+                ],
+              ),
+            ),
+            bottomNavigationBar: _buildBottomNav(theme),
           ),
-        ),
-        bottomNavigationBar: _buildBottomNav(theme),
-      ),
-    );
+        );
       },
     );
   }
+
   Widget _buildHeader(StudentThemeConfig theme) {
     return Container(
       decoration: BoxDecoration(
@@ -122,9 +125,7 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(3),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.3),
-                      ),
+                      border: Border.all(color: Colors.white.withOpacity(0.3)),
                     ),
                     child: const Icon(
                       Icons.menu,
@@ -234,9 +235,7 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(3),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.3),
-                    ),
+                    border: Border.all(color: Colors.white.withOpacity(0.3)),
                   ),
                   child: const Icon(
                     Icons.directions_bus_rounded,
@@ -264,7 +263,13 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
           height: 58,
           child: Row(
             children: [
-              _navItem(0, Icons.home_rounded, Icons.home_outlined, 'Home', theme),
+              _navItem(
+                0,
+                Icons.home_rounded,
+                Icons.home_outlined,
+                'Home',
+                theme,
+              ),
               _navItem(
                 1,
                 Icons.emoji_events_rounded,
@@ -286,7 +291,13 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
     );
   }
 
-  Widget _navItem(int index, IconData active, IconData inactive, String label, StudentThemeConfig theme) {
+  Widget _navItem(
+    int index,
+    IconData active,
+    IconData inactive,
+    String label,
+    StudentThemeConfig theme,
+  ) {
     final isActive = _currentTab == index;
     return Expanded(
       child: GestureDetector(
@@ -365,10 +376,7 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
                       SizedBox(height: 4),
                       Text(
                         'Student Portal',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 13,
-                        ),
+                        style: TextStyle(color: Colors.white70, fontSize: 13),
                       ),
                     ],
                   ),
@@ -379,7 +387,11 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
           const SizedBox(height: 12),
           Expanded(
             child: ListView(
-              padding: EdgeInsets.only(left: 12, right: 12, bottom: MediaQuery.of(context).padding.bottom + 64),
+              padding: EdgeInsets.only(
+                left: 12,
+                right: 12,
+                bottom: MediaQuery.of(context).padding.bottom + 64,
+              ),
               children: [
                 _buildDrawerItem(
                   theme: theme,
@@ -451,9 +463,7 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
                     Navigator.pop(context);
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => const SupportPage(),
-                      ),
+                      MaterialPageRoute(builder: (_) => const SupportPage()),
                     );
                   },
                 ),
@@ -466,9 +476,7 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
                     Navigator.pop(context);
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => const AppUpdatePage(),
-                      ),
+                      MaterialPageRoute(builder: (_) => const AppUpdatePage()),
                     );
                   },
                 ),
@@ -489,7 +497,10 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
                   },
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 8,
+                    horizontal: 12,
+                  ),
                   child: Divider(height: 1, color: theme.dividerColor),
                 ),
                 _buildDrawerItem(
@@ -554,7 +565,9 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Child lock is enabled. Disable it from settings to logout.'),
+            content: const Text(
+              'Child lock is enabled. Disable it from settings to logout.',
+            ),
             backgroundColor: Colors.red[600],
           ),
         );
@@ -576,7 +589,9 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
     if (studentId.isNotEmpty) {
       try {
         await ApiService.post(
-          Uri.parse('${ApiConstants.apiBaseUrl}/notification/fcm/student/clear'),
+          Uri.parse(
+            '${ApiConstants.apiBaseUrl}/notification/fcm/student/clear',
+          ),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({'studentId': studentId}),
         );

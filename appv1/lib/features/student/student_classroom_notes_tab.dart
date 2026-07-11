@@ -2,13 +2,11 @@ import 'package:appv1/core/constants/api_constants.dart';
 import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/features/student/student_theme_manager.dart';
 import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../../core/constants/app_colors.dart';
 import 'student_note_card.dart';
-
-const Color _accent = Colors.teal;
 
 class StudentClassroomNotesTab extends StatefulWidget {
   @override
@@ -17,6 +15,7 @@ class StudentClassroomNotesTab extends StatefulWidget {
 }
 
 class _StudentClassroomNotesTabState extends State<StudentClassroomNotesTab> {
+  StudentThemeConfig get theme => StudentThemeManager.themeNotifier.value;
   bool _isLoading = true;
   String _error = '';
   String _selectedTeacher = 'All';
@@ -143,44 +142,49 @@ class _StudentClassroomNotesTabState extends State<StudentClassroomNotesTab> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) return _buildLoader();
-    if (_error.isNotEmpty) return _buildError();
-    if (_notes.isEmpty) return _buildEmpty();
+    return ValueListenableBuilder<StudentThemeConfig>(
+      valueListenable: StudentThemeManager.themeNotifier,
+      builder: (context, theme, _) {
+        if (_isLoading) return _buildLoader();
+        if (_error.isNotEmpty) return _buildError();
+        if (_notes.isEmpty) return _buildEmpty();
 
-    final filtered = _filtered;
+        final filtered = _filtered;
 
-    return Column(
-      children: [
-        // ── Top bar: search toggle + result count ──
-        _buildTopBar(),
+        return Column(
+          children: [
+            // ── Top bar: search toggle + result count ──
+            _buildTopBar(),
 
-        // ── Search field ──
-        if (_showSearch) _buildSearchField(),
+            // ── Search field ──
+            if (_showSearch) _buildSearchField(),
 
-        // ── Teacher filter chips ──
-        if (_teacherList.isNotEmpty) _buildTeacherChips(),
+            // ── Teacher filter chips ──
+            if (_teacherList.isNotEmpty) _buildTeacherChips(),
 
-        // ── Notes list ──
-        Expanded(
-          child: filtered.isEmpty
-              ? _buildNoResults()
-              : RefreshIndicator(
-                  color: _accent,
-                  onRefresh: _fetchNotes,
-                  child: ListView.separated(
-                    padding: EdgeInsets.fromLTRB(
-                      14,
-                      12,
-                      14,
-                      40 + MediaQuery.of(context).padding.bottom,
+            // ── Notes list ──
+            Expanded(
+              child: filtered.isEmpty
+                  ? _buildNoResults()
+                  : RefreshIndicator(
+                      color: theme.primary,
+                      onRefresh: _fetchNotes,
+                      child: ListView.separated(
+                        padding: EdgeInsets.fromLTRB(
+                          14,
+                          12,
+                          14,
+                          40 + MediaQuery.of(context).padding.bottom,
+                        ),
+                        itemCount: filtered.length,
+                        separatorBuilder: (_, __) => SizedBox(height: 10),
+                        itemBuilder: (_, i) => NoteCard(note: filtered[i]),
+                      ),
                     ),
-                    itemCount: filtered.length,
-                    separatorBuilder: (_, __) => SizedBox(height: 10),
-                    itemBuilder: (_, i) => NoteCard(note: filtered[i]),
-                  ),
-                ),
-        ),
-      ],
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -195,7 +199,7 @@ class _StudentClassroomNotesTabState extends State<StudentClassroomNotesTab> {
           Text(
             '$count note${count != 1 ? 's' : ''}',
             style: TextStyle(
-              color: AppColors.textSecondary,
+              color: theme.textSecondary,
               fontSize: 12,
               fontWeight: FontWeight.w600,
             ),
@@ -215,12 +219,12 @@ class _StudentClassroomNotesTabState extends State<StudentClassroomNotesTab> {
               padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
                 color: _showSearch
-                    ? _accent.withOpacity(0.1)
+                    ? theme.primary.withOpacity(0.1)
                     : Colors.grey[100],
                 borderRadius: BorderRadius.circular(3),
                 border: Border.all(
                   color: _showSearch
-                      ? _accent.withOpacity(0.3)
+                      ? theme.primary.withOpacity(0.3)
                       : Colors.grey[200]!,
                 ),
               ),
@@ -232,13 +236,13 @@ class _StudentClassroomNotesTabState extends State<StudentClassroomNotesTab> {
                         ? Icons.search_off_rounded
                         : Icons.search_rounded,
                     size: 14,
-                    color: _showSearch ? _accent : AppColors.textSecondary,
+                    color: _showSearch ? theme.primary : theme.textSecondary,
                   ),
                   SizedBox(width: 4),
                   Text(
                     _showSearch ? 'Close' : 'Search',
                     style: TextStyle(
-                      color: _showSearch ? _accent : AppColors.textSecondary,
+                      color: _showSearch ? theme.primary : theme.textSecondary,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
@@ -260,16 +264,20 @@ class _StudentClassroomNotesTabState extends State<StudentClassroomNotesTab> {
       child: TextField(
         controller: _searchCtrl,
         autofocus: true,
-        cursorColor: _accent,
-        style: TextStyle(fontSize: 13, color: AppColors.textPrimary),
+        cursorColor: theme.primary,
+        style: TextStyle(fontSize: 13, color: theme.textPrimary),
         onChanged: (v) => setState(() => _searchQuery = v.trim()),
         decoration: InputDecoration(
           hintText: 'Search by file name...',
           hintStyle: TextStyle(
-            color: AppColors.textSecondary.withOpacity(0.5),
+            color: theme.textSecondary.withOpacity(0.5),
             fontSize: 13,
           ),
-          prefixIcon: Icon(Icons.search_rounded, color: _accent, size: 18),
+          prefixIcon: Icon(
+            Icons.search_rounded,
+            color: theme.primary,
+            size: 18,
+          ),
           suffixIcon: _searchQuery.isNotEmpty
               ? GestureDetector(
                   onTap: () => setState(() {
@@ -278,7 +286,7 @@ class _StudentClassroomNotesTabState extends State<StudentClassroomNotesTab> {
                   }),
                   child: Icon(
                     Icons.close_rounded,
-                    color: AppColors.textSecondary,
+                    color: theme.textSecondary,
                     size: 16,
                   ),
                 )
@@ -297,7 +305,10 @@ class _StudentClassroomNotesTabState extends State<StudentClassroomNotesTab> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(3),
-            borderSide: BorderSide(color: _accent.withOpacity(0.5), width: 1.5),
+            borderSide: BorderSide(
+              color: theme.primary.withOpacity(0.5),
+              width: 1.5,
+            ),
           ),
         ),
       ),
@@ -325,10 +336,10 @@ class _StudentClassroomNotesTabState extends State<StudentClassroomNotesTab> {
               duration: Duration(milliseconds: 180),
               padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
-                color: isSelected ? _accent : Colors.white,
+                color: isSelected ? theme.primary : Colors.white,
                 borderRadius: BorderRadius.circular(3),
                 border: Border.all(
-                  color: isSelected ? _accent : Colors.grey[200]!,
+                  color: isSelected ? theme.primary : Colors.grey[200]!,
                 ),
               ),
               child: Row(
@@ -342,13 +353,13 @@ class _StudentClassroomNotesTabState extends State<StudentClassroomNotesTab> {
                         shape: BoxShape.circle,
                         color: isSelected
                             ? Colors.white.withOpacity(0.25)
-                            : _accent.withOpacity(0.1),
+                            : theme.primary.withOpacity(0.1),
                       ),
                       child: Center(
                         child: Text(
                           name[0].toUpperCase(),
                           style: TextStyle(
-                            color: isSelected ? Colors.white : _accent,
+                            color: isSelected ? Colors.white : theme.primary,
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                           ),
@@ -360,7 +371,7 @@ class _StudentClassroomNotesTabState extends State<StudentClassroomNotesTab> {
                   Text(
                     name,
                     style: TextStyle(
-                      color: isSelected ? Colors.white : AppColors.textPrimary,
+                      color: isSelected ? Colors.white : theme.textPrimary,
                       fontSize: 12,
                       fontWeight: isSelected
                           ? FontWeight.bold
@@ -382,11 +393,11 @@ class _StudentClassroomNotesTabState extends State<StudentClassroomNotesTab> {
     child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        CircularProgressIndicator(color: _accent, strokeWidth: 2.5),
+        CircularProgressIndicator(color: theme.primary, strokeWidth: 2.5),
         SizedBox(height: 14),
         Text(
           'Loading notes...',
-          style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+          style: TextStyle(color: theme.textSecondary, fontSize: 13),
         ),
       ],
     ),
@@ -416,7 +427,7 @@ class _StudentClassroomNotesTabState extends State<StudentClassroomNotesTab> {
             _error,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: AppColors.textPrimary,
+              color: theme.textPrimary,
               fontWeight: FontWeight.w600,
               fontSize: 14,
             ),
@@ -427,7 +438,7 @@ class _StudentClassroomNotesTabState extends State<StudentClassroomNotesTab> {
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               decoration: BoxDecoration(
-                color: _accent,
+                color: theme.primary,
                 borderRadius: BorderRadius.circular(3),
               ),
               child: Text(
@@ -456,9 +467,9 @@ class _StudentClassroomNotesTabState extends State<StudentClassroomNotesTab> {
             height: 64,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: _accent.withOpacity(0.08),
+              color: theme.primary.withOpacity(0.08),
             ),
-            child: Icon(Icons.notes_rounded, color: _accent, size: 30),
+            child: Icon(Icons.notes_rounded, color: theme.primary, size: 30),
           ),
           SizedBox(height: 14),
           Text(
@@ -466,7 +477,7 @@ class _StudentClassroomNotesTabState extends State<StudentClassroomNotesTab> {
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 15,
-              color: AppColors.textPrimary,
+              color: theme.textPrimary,
             ),
           ),
           SizedBox(height: 6),
@@ -474,7 +485,7 @@ class _StudentClassroomNotesTabState extends State<StudentClassroomNotesTab> {
             'Your teacher has not uploaded any notes yet.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: AppColors.textSecondary,
+              color: theme.textSecondary,
               fontSize: 12,
               height: 1.5,
             ),
@@ -509,17 +520,16 @@ class _StudentClassroomNotesTabState extends State<StudentClassroomNotesTab> {
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 15,
-              color: AppColors.textPrimary,
+              color: theme.textPrimary,
             ),
           ),
           SizedBox(height: 6),
           Text(
             'Try a different search term or filter.',
-            style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+            style: TextStyle(color: theme.textSecondary, fontSize: 12),
           ),
         ],
       ),
     ),
   );
 }
-

@@ -358,7 +358,11 @@ class _StudentHomePageState extends State<StudentHomePage> {
                       ),
                     ),
                     const SizedBox(width: 3),
-                    Icon(Icons.arrow_forward_rounded, size: 12, color: theme.primary),
+                    Icon(
+                      Icons.arrow_forward_rounded,
+                      size: 12,
+                      color: theme.primary,
+                    ),
                   ],
                 ),
               ),
@@ -423,7 +427,11 @@ class _StudentHomePageState extends State<StudentHomePage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(height: 11, width: 100, color: theme.dividerColor),
+                    Container(
+                      height: 11,
+                      width: 100,
+                      color: theme.dividerColor,
+                    ),
                     const SizedBox(height: 7),
                     Container(height: 9, width: 64, color: theme.dividerColor),
                   ],
@@ -516,7 +524,10 @@ class _StudentHomePageState extends State<StudentHomePage> {
                 const SizedBox(height: 1),
                 Text(
                   'Enjoy your free day',
-                  style: TextStyle(color: theme.primary.withOpacity(0.8), fontSize: 11),
+                  style: TextStyle(
+                    color: theme.primary.withOpacity(0.8),
+                    fontSize: 11,
+                  ),
                 ),
               ],
             ),
@@ -674,4 +685,3 @@ class _StudentHomePageState extends State<StudentHomePage> {
     );
   }
 }
-

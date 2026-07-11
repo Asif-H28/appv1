@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:appv1/features/student/student_theme_manager.dart';
+
 import 'dart:typed_data';
 import 'dart:convert';
 import 'package:appv1/core/constants/api_constants.dart';
@@ -14,7 +16,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
 
-const Color _accent = Colors.teal;
+
 
 // ── Language enum ──────────────────────────────────────────
 
@@ -29,8 +31,7 @@ const Map<String, String> _kn = {
   'ai_summary_title': 'AI ಕಾರ್ಯಕ್ಷಮತೆ ಸಾರಾಂಶ',
   'powered_by': 'Gemini AI ನಿಂದ ನಿರ್ವಹಿಸಲ್ಪಡುತ್ತದೆ',
   'no_summary': 'ಇನ್ನೂ AI ಸಾರಾಂಶ ಇಲ್ಲ',
-  'generate_desc':
-      'ನಿಮ್ಮ ಕಾರ್ಯಕ್ಷಮತೆಯ ವೈಯಕ್ತಿಕ AI-ಚಾಲಿತ ವಿಶ್ಲೇಷಣೆ ರಚಿಸಿ.',
+  'generate_desc': 'ನಿಮ್ಮ ಕಾರ್ಯಕ್ಷಮತೆಯ ವೈಯಕ್ತಿಕ AI-ಚಾಲಿತ ವಿಶ್ಲೇಷಣೆ ರಚಿಸಿ.',
   'generate_btn': 'AI ಸಾರಾಂಶ ರಚಿಸಿ',
   'generating': 'ರಚಿಸಲಾಗುತ್ತಿದೆ...',
   'generated_on': 'ರಚಿಸಲಾದ ದಿನಾಂಕ',
@@ -98,6 +99,7 @@ class StudentTestResultScreen extends StatefulWidget {
 }
 
 class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
+  StudentThemeConfig get theme => StudentThemeManager.themeNotifier.value;
   // ── Result state ───────────────────────────────────────
   bool _isLoading = true;
   String _error = '';
@@ -183,7 +185,8 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
     try {
       final res = await ApiService.get(
         Uri.parse(
-            '${ApiConstants.apiBaseUrl}/comprehensive-result/assessment/$_testId'),
+          '${ApiConstants.apiBaseUrl}/comprehensive-result/assessment/$_testId',
+        ),
         headers: await ApiService.getHeaders(),
       );
       if (!mounted) return;
@@ -231,7 +234,8 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
     try {
       final res = await ApiService.get(
         Uri.parse(
-            '${ApiConstants.apiBaseUrl}/comprehensive-result/summary/$_studentId/$_testId'),
+          '${ApiConstants.apiBaseUrl}/comprehensive-result/summary/$_studentId/$_testId',
+        ),
         headers: await ApiService.getHeaders(),
       );
       if (!mounted) return;
@@ -266,7 +270,8 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
     try {
       final res = await ApiService.post(
         Uri.parse(
-            '${ApiConstants.apiBaseUrl}/comprehensive-result/summary/$_studentId/$_testId'),
+          '${ApiConstants.apiBaseUrl}/comprehensive-result/summary/$_studentId/$_testId',
+        ),
         headers: await ApiService.getHeaders(),
       );
       if (!mounted) return;
@@ -315,7 +320,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
 
     try {
       if (Platform.isAndroid) {
-        // Just request it for older Android versions. 
+        // Just request it for older Android versions.
         // On Android 13+ it may return denied, but scoped storage allows writing to Downloads anyway.
         await Permission.storage.request();
       }
@@ -403,18 +408,16 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
               width: double.infinity,
               padding: const pw.EdgeInsets.only(bottom: 12),
               decoration: pw.BoxDecoration(
-                border: pw.Border(bottom: pw.BorderSide(color: black, width: 2)),
+                border: pw.Border(
+                  bottom: pw.BorderSide(color: black, width: 2),
+                ),
               ),
               child: pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.center,
                 children: [
                   pw.Text(
                     _orgName.isNotEmpty ? _orgName : 'School Name',
-                    style: pw.TextStyle(
-                      font: bold,
-                      fontSize: 22,
-                      color: black,
-                    ),
+                    style: pw.TextStyle(font: bold, fontSize: 22, color: black),
                     textAlign: pw.TextAlign.center,
                   ),
                   if (_orgAddress.isNotEmpty) ...[
@@ -465,25 +468,24 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                       _pdfKV('Class', _className, bold, regular, black),
                       if (_studentEmail.isNotEmpty) ...[
                         pw.SizedBox(height: 4),
-                        _pdfKV(
-                            'Email', _studentEmail, bold, regular, grey600),
+                        _pdfKV('Email', _studentEmail, bold, regular, grey600),
                       ],
                     ],
                   ),
                   pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.end,
                     children: [
-                      _pdfKV(
-                          'Assessment', _title, bold, regular, black),
+                      _pdfKV('Assessment', _title, bold, regular, black),
                       pw.SizedBox(height: 4),
                       _pdfKV('Date', dateNow(), bold, regular, grey600),
                       pw.SizedBox(height: 4),
                       _pdfKV(
-                          'Total',
-                          '${totalScored.toStringAsFixed(0)} / ${totalMax.toStringAsFixed(0)}',
-                          bold,
-                          bold,
-                          black),
+                        'Total',
+                        '${totalScored.toStringAsFixed(0)} / ${totalMax.toStringAsFixed(0)}',
+                        bold,
+                        bold,
+                        black,
+                      ),
                     ],
                   ),
                 ],
@@ -516,14 +518,14 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                   final i = e.key;
                   final s = e.value as Map<String, dynamic>;
                   final subName = s['subjectName']?.toString() ?? '';
-                  final internal = (s['internalMarksScored'] as num?)
-                          ?.toStringAsFixed(0) ??
+                  final internal =
+                      (s['internalMarksScored'] as num?)?.toStringAsFixed(0) ??
                       '-';
-                  final external = (s['externalMarksScored'] as num?)
-                          ?.toStringAsFixed(0) ??
+                  final external =
+                      (s['externalMarksScored'] as num?)?.toStringAsFixed(0) ??
                       '-';
-                  final scored = (s['totalMarksScored'] as num?)
-                          ?.toStringAsFixed(0) ??
+                  final scored =
+                      (s['totalMarksScored'] as num?)?.toStringAsFixed(0) ??
                       '-';
                   final grade = s['grade']?.toString() ?? '-';
                   final bg = i.isEven ? white : grey50;
@@ -531,14 +533,20 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                     decoration: pw.BoxDecoration(color: bg),
                     children: [
                       _pdfCell(subName, bold, black),
-                      _pdfCell(internal, regular, black,
-                          align: pw.TextAlign.center),
-                      _pdfCell(external, regular, black,
-                          align: pw.TextAlign.center),
-                      _pdfCell(scored, bold, black,
-                          align: pw.TextAlign.center),
-                      _pdfCell(grade, bold, black,
-                          align: pw.TextAlign.center),
+                      _pdfCell(
+                        internal,
+                        regular,
+                        black,
+                        align: pw.TextAlign.center,
+                      ),
+                      _pdfCell(
+                        external,
+                        regular,
+                        black,
+                        align: pw.TextAlign.center,
+                      ),
+                      _pdfCell(scored, bold, black, align: pw.TextAlign.center),
+                      _pdfCell(grade, bold, black, align: pw.TextAlign.center),
                     ],
                   );
                 }),
@@ -550,10 +558,11 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                     _pdfCell('', regular, black),
                     _pdfCell('', regular, black),
                     _pdfCell(
-                        '${totalScored.toStringAsFixed(0)} / ${totalMax.toStringAsFixed(0)}',
-                        bold,
-                        black,
-                        align: pw.TextAlign.center),
+                      '${totalScored.toStringAsFixed(0)} / ${totalMax.toStringAsFixed(0)}',
+                      bold,
+                      black,
+                      align: pw.TextAlign.center,
+                    ),
                     _pdfCell('', regular, black),
                   ],
                 ),
@@ -586,8 +595,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                     decoration: pw.BoxDecoration(color: bg),
                     children: [
                       _pdfCell(name, bold, black),
-                      _pdfCell(grade, bold, black,
-                          align: pw.TextAlign.center),
+                      _pdfCell(grade, bold, black, align: pw.TextAlign.center),
                     ],
                   );
                 }),
@@ -600,8 +608,16 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
           if (_summary != null) ...[
             _pdfSectionLabel('AI PERFORMANCE SUMMARY', bold, black),
             pw.SizedBox(height: 8),
-            _buildPdfSummarySection(_summary!, bold, regular, black, black,
-                black, grey50, grey50),
+            _buildPdfSummarySection(
+              _summary!,
+              bold,
+              regular,
+              black,
+              black,
+              black,
+              grey50,
+              grey50,
+            ),
           ],
 
           // ── Footer note ──
@@ -616,11 +632,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
             ),
             child: pw.Text(
               'This report was auto-generated by SchoolSync on ${dateNow()}. Powered by Gemini AI.',
-              style: pw.TextStyle(
-                font: regular,
-                fontSize: 8,
-                color: grey600,
-              ),
+              style: pw.TextStyle(font: regular, fontSize: 8, color: grey600),
               textAlign: pw.TextAlign.center,
             ),
           ),
@@ -643,7 +655,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
   ) {
     final langKey = _lang == _Lang.kannada ? 'kannada' : 'english';
     final data = s[langKey] as Map<String, dynamic>? ?? s;
-    
+
     final overallSummary = data['overallSummary']?.toString() ?? '';
     final strengths = (data['strengths'] as List?)?.cast<String>() ?? [];
     final improvements =
@@ -657,26 +669,50 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
       children: [
         if (overallSummary.isNotEmpty) ...[
           _pdfSummaryBlock(
-              'Overview', overallSummary, bold, regular, teal, lightTeal,
-              isBullet: false),
+            'Overview',
+            overallSummary,
+            bold,
+            regular,
+            teal,
+            lightTeal,
+            isBullet: false,
+          ),
           pw.SizedBox(height: 8),
         ],
         if (strengths.isNotEmpty) ...[
           _pdfSummaryBlock(
-              'Strengths', strengths.join('\n'), bold, regular, teal, lightTeal,
-              bullets: strengths),
+            'Strengths',
+            strengths.join('\n'),
+            bold,
+            regular,
+            teal,
+            lightTeal,
+            bullets: strengths,
+          ),
           pw.SizedBox(height: 8),
         ],
         if (improvements.isNotEmpty) ...[
-          _pdfSummaryBlock('Areas to Improve', '', bold, regular, teal,
-              lightTeal,
-              bullets: improvements),
+          _pdfSummaryBlock(
+            'Areas to Improve',
+            '',
+            bold,
+            regular,
+            teal,
+            lightTeal,
+            bullets: improvements,
+          ),
           pw.SizedBox(height: 8),
         ],
         if (recommendations.isNotEmpty) ...[
-          _pdfSummaryBlock('Recommendations', '', bold, regular, teal,
-              lightTeal,
-              bullets: recommendations),
+          _pdfSummaryBlock(
+            'Recommendations',
+            '',
+            bold,
+            regular,
+            teal,
+            lightTeal,
+            bullets: recommendations,
+          ),
           pw.SizedBox(height: 8),
         ],
         if (motivationalNote.isNotEmpty) ...[
@@ -686,7 +722,10 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
             decoration: pw.BoxDecoration(
               color: PdfColor.fromHex('#FAFAFA'),
               borderRadius: pw.BorderRadius.circular(4),
-              border: pw.Border.all(color: PdfColor.fromHex('#EEEEEE'), width: 1),
+              border: pw.Border.all(
+                color: PdfColor.fromHex('#EEEEEE'),
+                width: 1,
+              ),
             ),
             child: pw.Text(
               '"$motivationalNote"',
@@ -744,39 +783,52 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                 ? pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: bullets
-                        .map((b) => pw.Padding(
-                              padding:
-                                  const pw.EdgeInsets.only(bottom: 4),
-                              child: pw.Row(
-                                crossAxisAlignment:
-                                    pw.CrossAxisAlignment.start,
-                                children: [
-                                  pw.Text('• ',
-                                      style: pw.TextStyle(
-                                          font: bold,
-                                          fontSize: 10,
-                                          color: PdfColors.black)),
-                                  pw.Expanded(
-                                    child: pw.Text(b,
-                                        style: pw.TextStyle(
-                                            font: regular, fontSize: 10)),
+                        .map(
+                          (b) => pw.Padding(
+                            padding: const pw.EdgeInsets.only(bottom: 4),
+                            child: pw.Row(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: [
+                                pw.Text(
+                                  '• ',
+                                  style: pw.TextStyle(
+                                    font: bold,
+                                    fontSize: 10,
+                                    color: PdfColors.black,
                                   ),
-                                ],
-                              ),
-                            ))
+                                ),
+                                pw.Expanded(
+                                  child: pw.Text(
+                                    b,
+                                    style: pw.TextStyle(
+                                      font: regular,
+                                      fontSize: 10,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
                         .toList(),
                   )
-                : pw.Text(text,
-                    style: pw.TextStyle(font: regular, fontSize: 10)),
+                : pw.Text(
+                    text,
+                    style: pw.TextStyle(font: regular, fontSize: 10),
+                  ),
           ),
         ],
       ),
     );
   }
 
-  pw.Widget _pdfCell(String text, pw.Font font, PdfColor color,
-      {bool isHeader = false,
-      pw.TextAlign align = pw.TextAlign.left}) {
+  pw.Widget _pdfCell(
+    String text,
+    pw.Font font,
+    PdfColor color, {
+    bool isHeader = false,
+    pw.TextAlign align = pw.TextAlign.left,
+  }) {
     return pw.Padding(
       padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       child: pw.Text(
@@ -791,21 +843,25 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
     );
   }
 
-  pw.Widget _pdfKV(String key, String value, pw.Font bold, pw.Font regular,
-      PdfColor valueColor) {
+  pw.Widget _pdfKV(
+    String key,
+    String value,
+    pw.Font bold,
+    pw.Font regular,
+    PdfColor valueColor,
+  ) {
     return pw.Row(
       children: [
-        pw.Text('$key: ',
-            style: pw.TextStyle(font: bold, fontSize: 9)),
-        pw.Text(value,
-            style: pw.TextStyle(
-                font: regular, fontSize: 9, color: valueColor)),
+        pw.Text('$key: ', style: pw.TextStyle(font: bold, fontSize: 9)),
+        pw.Text(
+          value,
+          style: pw.TextStyle(font: regular, fontSize: 9, color: valueColor),
+        ),
       ],
     );
   }
 
-  pw.Widget _pdfSectionLabel(
-      String label, pw.Font bold, PdfColor color) {
+  pw.Widget _pdfSectionLabel(String label, pw.Font bold, PdfColor color) {
     return pw.Row(
       children: [
         pw.Container(width: 3, height: 14, color: color),
@@ -828,7 +884,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
               color: Colors.white,
               size: 16,
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8),
             Expanded(child: Text(msg)),
           ],
         ),
@@ -857,7 +913,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [_accent, _accent.withOpacity(0.8)],
+                  colors: [theme.primary, theme.primary.withOpacity(0.8)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -878,14 +934,14 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                             color: Colors.white.withOpacity(0.15),
                             borderRadius: BorderRadius.circular(3),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.arrow_back_ios_new_rounded,
                             color: Colors.white,
                             size: 15,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      SizedBox(width: 10),
 
                       // Icon
                       Container(
@@ -894,15 +950,16 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                           color: Colors.white.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(3),
                           border: Border.all(
-                              color: Colors.white.withOpacity(0.3)),
+                            color: Colors.white.withOpacity(0.3),
+                          ),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.assignment_turned_in_rounded,
                           color: Colors.white,
                           size: 18,
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      SizedBox(width: 10),
 
                       // Title
                       Expanded(
@@ -911,7 +968,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                           children: [
                             Text(
                               _title,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
@@ -936,16 +993,20 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                           onTap: _downloading ? null : _downloadReport,
                           child: Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 7),
+                              horizontal: 10,
+                              vertical: 7,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.white.withOpacity(
-                                  _downloading ? 0.1 : 0.22),
+                                _downloading ? 0.1 : 0.22,
+                              ),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                  color: Colors.white.withOpacity(0.4)),
+                                color: Colors.white.withOpacity(0.4),
+                              ),
                             ),
                             child: _downloading
-                                ? const SizedBox(
+                                ? SizedBox(
                                     width: 16,
                                     height: 16,
                                     child: CircularProgressIndicator(
@@ -956,14 +1017,15 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                                 : Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      const Icon(
-                                          Icons.download_rounded,
-                                          color: Colors.white,
-                                          size: 16),
-                                      const SizedBox(width: 5),
+                                      Icon(
+                                        Icons.download_rounded,
+                                        color: Colors.white,
+                                        size: 16,
+                                      ),
+                                      SizedBox(width: 5),
                                       Text(
                                         _t('download_report', _lang),
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           color: Colors.white,
                                           fontSize: 11,
                                           fontWeight: FontWeight.w600,
@@ -984,10 +1046,10 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
               child: _isLoading
                   ? _buildLoader()
                   : _error.isNotEmpty
-                      ? _buildError()
-                      : _result == null
-                          ? _buildNoResult()
-                          : _buildResult(),
+                  ? _buildError()
+                  : _result == null
+                  ? _buildNoResult()
+                  : _buildResult(),
             ),
           ],
         ),
@@ -1001,7 +1063,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
       child: Column(
         children: [
           _resultCard(_result!),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           _buildAiSummarySection(),
         ],
       ),
@@ -1030,7 +1092,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
           // ── Section header with language toggle ──
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [Color(0xFF1B5E20), Color(0xFF2E7D32)],
                 begin: Alignment.topLeft,
@@ -1046,29 +1108,29 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                     color: Colors.white.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.auto_awesome_rounded,
                     color: Colors.white,
                     size: 18,
                   ),
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         _t('ai_summary_title', _lang),
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                           fontSize: 13.5,
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      SizedBox(height: 2),
                       Text(
                         _t('powered_by', _lang),
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white70,
                           fontSize: 10.5,
                         ),
@@ -1078,8 +1140,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                 ),
 
                 // ── Language toggle ──
-                if (_summary != null)
-                  _buildLangToggle(),
+                if (_summary != null) _buildLangToggle(),
               ],
             ),
           ),
@@ -1090,8 +1151,8 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
             child: _summaryLoading
                 ? _buildSummaryLoader()
                 : _summary != null
-                    ? _buildSummaryContent(_summary!)
-                    : _buildGenerateButton(),
+                ? _buildSummaryContent(_summary!)
+                : _buildGenerateButton(),
           ),
         ],
       ),
@@ -1145,7 +1206,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(
+            SizedBox(
               width: 22,
               height: 22,
               child: CircularProgressIndicator(
@@ -1153,11 +1214,13 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                 strokeWidth: 2,
               ),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             Text(
               _t('checking', _lang),
-              style: const TextStyle(
-                  fontSize: 12, color: AppColors.textSecondary),
+              style: TextStyle(
+                fontSize: 12,
+                color: AppColors.textSecondary,
+              ),
             ),
           ],
         ),
@@ -1177,10 +1240,9 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
               colors: [Color(0xFFE8F5E9), Color(0xFFF1F8E9)],
             ),
             shape: BoxShape.circle,
-            border: Border.all(
-                color: const Color(0xFFA5D6A7), width: 1.5),
+            border: Border.all(color: const Color(0xFFA5D6A7), width: 1.5),
           ),
-          child: const Icon(
+          child: Icon(
             Icons.auto_awesome_rounded,
             color: Color(0xFF2E7D32),
             size: 30,
@@ -1188,28 +1250,25 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
         ),
         Text(
           _t('no_summary', _lang),
-          style: const TextStyle(
+          style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 14,
             color: Color(0xFF1B5E20),
           ),
         ),
-        const SizedBox(height: 6),
+        SizedBox(height: 6),
         Text(
           _t('generate_desc', _lang),
           textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
-            height: 1.5,
-          ),
+          style: TextStyle(fontSize: 12, color: Colors.grey[600], height: 1.5),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
-            onPressed:
-                (_generating || _summaryGenerated) ? null : _generateSummary,
+            onPressed: (_generating || _summaryGenerated)
+                ? null
+                : _generateSummary,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF2E7D32),
               foregroundColor: Colors.white,
@@ -1221,7 +1280,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
               elevation: 0,
             ),
             icon: _generating
-                ? const SizedBox(
+                ? SizedBox(
                     width: 16,
                     height: 16,
                     child: CircularProgressIndicator(
@@ -1229,12 +1288,10 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                       color: Colors.white,
                     ),
                   )
-                : const Icon(Icons.auto_awesome_rounded, size: 18),
+                : Icon(Icons.auto_awesome_rounded, size: 18),
             label: Text(
-              _generating
-                  ? _t('generating', _lang)
-                  : _t('generate_btn', _lang),
-              style: const TextStyle(
+              _generating ? _t('generating', _lang) : _t('generate_btn', _lang),
+              style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 13.5,
               ),
@@ -1248,7 +1305,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
   Widget _buildSummaryContent(Map<String, dynamic> s) {
     final langKey = _lang == _Lang.kannada ? 'kannada' : 'english';
     final data = s[langKey] as Map<String, dynamic>? ?? s;
-    
+
     final overallSummary = data['overallSummary']?.toString() ?? '';
     final strengths = (data['strengths'] as List?)?.cast<String>() ?? [];
     final improvements =
@@ -1278,11 +1335,14 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
             bgColor: const Color(0xFFE3F2FD),
             child: Text(
               overallSummary,
-              style: const TextStyle(
-                  fontSize: 13, height: 1.6, color: Color(0xFF1A1A2E)),
+              style: TextStyle(
+                fontSize: 13,
+                height: 1.6,
+                color: Color(0xFF1A1A2E),
+              ),
             ),
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14),
         ],
         if (strengths.isNotEmpty) ...[
           _summaryBlock(
@@ -1296,7 +1356,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                   .toList(),
             ),
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14),
         ],
         if (improvements.isNotEmpty) ...[
           _summaryBlock(
@@ -1310,7 +1370,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                   .toList(),
             ),
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14),
         ],
         if (recommendations.isNotEmpty) ...[
           _summaryBlock(
@@ -1324,7 +1384,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                   .toList(),
             ),
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14),
         ],
         if (motivationalNote.isNotEmpty) ...[
           Container(
@@ -1338,13 +1398,16 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.format_quote_rounded,
-                    color: Colors.white70, size: 20),
-                const SizedBox(width: 10),
+                Icon(
+                  Icons.format_quote_rounded,
+                  color: Colors.white70,
+                  size: 20,
+                ),
+                SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     motivationalNote,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
                       fontSize: 13,
                       height: 1.5,
@@ -1355,19 +1418,22 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 14),
+          SizedBox(height: 14),
         ],
         Row(
           children: [
-            const Icon(Icons.check_circle_outline_rounded,
-                size: 13, color: Color(0xFF2E7D32)),
-            const SizedBox(width: 5),
+            Icon(
+              Icons.check_circle_outline_rounded,
+              size: 13,
+              color: Color(0xFF2E7D32),
+            ),
+            SizedBox(width: 5),
             Expanded(
               child: Text(
                 dateStr.isNotEmpty
                     ? '${_t('generated_on', _lang)}: $dateStr'
                     : 'Summary generated',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 10.5,
                   color: Color(0xFF2E7D32),
                   fontWeight: FontWeight.w500,
@@ -1401,7 +1467,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
             child: Row(
               children: [
                 Icon(icon, size: 15, color: color),
-                const SizedBox(width: 6),
+                SizedBox(width: 6),
                 Text(
                   label.toUpperCase(),
                   style: TextStyle(
@@ -1434,19 +1500,17 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
             margin: const EdgeInsets.only(top: 5),
             width: 6,
             height: 6,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-            ),
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(
-                  fontSize: 13,
-                  height: 1.5,
-                  color: Color(0xFF1A1A2E)),
+              style: TextStyle(
+                fontSize: 13,
+                height: 1.5,
+                color: Color(0xFF1A1A2E),
+              ),
             ),
           ),
         ],
@@ -1485,7 +1549,7 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(3),
-        side: BorderSide(color: Colors.teal.shade100, width: 1),
+        side: BorderSide(color: theme.primary, width: 1),
       ),
       color: Colors.white,
       margin: EdgeInsets.zero,
@@ -1495,11 +1559,11 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.teal.withOpacity(0.04),
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(3)),
-              border:
-                  Border(bottom: BorderSide(color: Colors.teal.shade100)),
+              color: theme.primary.withOpacity(0.04),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(3),
+              ),
+              border: Border(bottom: BorderSide(color: theme.primary)),
             ),
             child: Row(
               children: [
@@ -1508,29 +1572,34 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.teal.shade200),
+                    border: Border.all(color: theme.primary),
                   ),
-                  child: Icon(Icons.stars_rounded,
-                      color: Colors.teal[600], size: 24),
+                  child: Icon(
+                    Icons.stars_rounded,
+                    color: theme.primary,
+                    size: 24,
+                  ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       _t('overall', _lang),
                       style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                          color: Colors.teal[900]),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        color: theme.primary,
+                      ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4),
                     Text(
                       '${_t('total', _lang)}: ${totalScored.toStringAsFixed(0)} / ${totalMax.toStringAsFixed(0)}',
                       style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.teal[800]),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                        color: theme.primary,
+                      ),
                     ),
                   ],
                 ),
@@ -1545,95 +1614,105 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                 if (scholastic.isNotEmpty) ...[
                   Row(
                     children: [
-                      const Icon(Icons.menu_book_rounded,
-                          size: 16, color: Colors.teal),
-                      const SizedBox(width: 8),
+                      Icon(
+                        Icons.menu_book_rounded,
+                        size: 16,
+                        color: theme.primary,
+                      ),
+                      SizedBox(width: 8),
                       Text(
                         _t('scholastic', _lang),
                         style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.teal[700],
-                            letterSpacing: 0.5),
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: theme.primary,
+                          letterSpacing: 0.5,
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(3),
-                      border: Border.all(color: Colors.teal.shade100),
+                      border: Border.all(color: theme.primary),
                     ),
                     child: Column(
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 10),
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
                           decoration: BoxDecoration(
-                            color: Colors.teal.shade50,
+                            color: theme.primary,
                             borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(3)),
+                              top: Radius.circular(3),
+                            ),
                           ),
                           child: Row(
                             children: [
                               Expanded(
                                 flex: 3,
-                                child: Text(_t('subject', _lang),
-                                    style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.teal[900],
-                                        letterSpacing: 0.5)),
+                                child: Text(
+                                  _t('subject', _lang),
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: theme.primary,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
                               ),
                               Expanded(
                                 flex: 2,
-                                child: Text(_t('marks', _lang),
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.teal[900],
-                                        letterSpacing: 0.5)),
+                                child: Text(
+                                  _t('marks', _lang),
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: theme.primary,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
                               ),
                               Expanded(
-                                child: Text(_t('grade', _lang),
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.teal[900],
-                                        letterSpacing: 0.5)),
+                                child: Text(
+                                  _t('grade', _lang),
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: theme.primary,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
                         ),
                         ...scholastic.map((s) {
-                          final subName =
-                              s['subjectName']?.toString() ?? '';
-                          final scored = (s['totalMarksScored'] as num?)
-                                  ?.toDouble() ??
-                              0;
+                          final subName = s['subjectName']?.toString() ?? '';
+                          final scored =
+                              (s['totalMarksScored'] as num?)?.toDouble() ?? 0;
                           final grade = s['grade']?.toString() ?? '-';
 
                           final assessmentSubjects =
-                              widget.test['scholasticSubjects'] as List? ??
-                                  [];
-                          final assessmentSub =
-                              assessmentSubjects.firstWhere(
+                              widget.test['scholasticSubjects'] as List? ?? [];
+                          final assessmentSub = assessmentSubjects.firstWhere(
                             (as) => as['subjectName'] == subName,
                             orElse: () => null,
                           );
                           double max = 0;
                           if (assessmentSub != null) {
-                            final iM = (assessmentSub[
-                                            'internalMaximumScore']
-                                        as num?)
+                            final iM =
+                                (assessmentSub['internalMaximumScore'] as num?)
                                     ?.toDouble() ??
                                 0;
-                            final eM = (assessmentSub[
-                                            'externalMaximumScore']
-                                        as num?)
+                            final eM =
+                                (assessmentSub['externalMaximumScore'] as num?)
                                     ?.toDouble() ??
                                 0;
                             max = iM + eM;
@@ -1641,39 +1720,49 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
 
                           return Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 10),
+                              horizontal: 16,
+                              vertical: 10,
+                            ),
                             decoration: BoxDecoration(
                               border: Border(
-                                  bottom: BorderSide(
-                                      color: Colors.grey.shade100)),
+                                bottom: BorderSide(color: Colors.grey.shade100),
+                              ),
                             ),
                             child: Row(
                               children: [
                                 Expanded(
                                   flex: 3,
-                                  child: Text(subName,
-                                      style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.grey[800])),
+                                  child: Text(
+                                    subName,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.grey[800],
+                                    ),
+                                  ),
                                 ),
                                 Expanded(
                                   flex: 2,
                                   child: Text(
-                                      '${scored.toStringAsFixed(0)} / ${max.toStringAsFixed(0)}',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.teal[800])),
+                                    '${scored.toStringAsFixed(0)} / ${max.toStringAsFixed(0)}',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: theme.primary,
+                                    ),
+                                  ),
                                 ),
                                 Expanded(
-                                  child: Text(grade,
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.teal[700])),
+                                  child: Text(
+                                    grade,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: theme.primary,
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
@@ -1681,31 +1770,39 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                         }),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 12),
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
                           decoration: BoxDecoration(
-                            color: Colors.teal.shade50.withOpacity(0.5),
+                            color: theme.primary.withOpacity(0.5),
                             borderRadius: const BorderRadius.vertical(
-                                bottom: Radius.circular(3)),
+                              bottom: Radius.circular(3),
+                            ),
                           ),
                           child: Row(
                             children: [
                               Expanded(
                                 flex: 3,
-                                child: Text(_t('total', _lang),
-                                    style: TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.teal[900])),
+                                child: Text(
+                                  _t('total', _lang),
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: theme.primary,
+                                  ),
+                                ),
                               ),
                               Expanded(
                                 flex: 2,
                                 child: Text(
-                                    '${totalScored.toStringAsFixed(0)} / ${totalMax.toStringAsFixed(0)}',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w900,
-                                        color: Colors.teal[900])),
+                                  '${totalScored.toStringAsFixed(0)} / ${totalMax.toStringAsFixed(0)}',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w900,
+                                    color: theme.primary,
+                                  ),
+                                ),
                               ),
                               const Expanded(child: SizedBox()),
                             ],
@@ -1716,91 +1813,111 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                   ),
                 ],
                 if (coScholastic.isNotEmpty) ...[
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24),
                   Row(
                     children: [
-                      const Icon(Icons.palette_rounded,
-                          size: 16, color: Colors.teal),
-                      const SizedBox(width: 8),
+                      Icon(
+                        Icons.palette_rounded,
+                        size: 16,
+                        color: theme.primary,
+                      ),
+                      SizedBox(width: 8),
                       Text(
                         _t('co_scholastic', _lang),
                         style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.teal[700],
-                            letterSpacing: 0.5),
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: theme.primary,
+                          letterSpacing: 0.5,
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(3),
-                      border: Border.all(color: Colors.teal.shade100),
+                      border: Border.all(color: theme.primary),
                     ),
                     child: Column(
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 10),
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
                           decoration: BoxDecoration(
-                            color: Colors.teal.shade50,
+                            color: theme.primary,
                             borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(3)),
+                              top: Radius.circular(3),
+                            ),
                           ),
                           child: Row(
                             children: [
                               Expanded(
                                 flex: 3,
-                                child: Text(_t('activity', _lang),
-                                    style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.teal[900],
-                                        letterSpacing: 0.5)),
+                                child: Text(
+                                  _t('activity', _lang),
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: theme.primary,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
                               ),
                               Expanded(
-                                child: Text(_t('grade', _lang),
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.teal[900],
-                                        letterSpacing: 0.5)),
+                                child: Text(
+                                  _t('grade', _lang),
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: theme.primary,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
                         ),
                         ...coScholastic.map((c) {
-                          final name =
-                              c['activityName']?.toString() ?? '';
+                          final name = c['activityName']?.toString() ?? '';
                           final grade = c['grade']?.toString() ?? '-';
                           return Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 10),
+                              horizontal: 16,
+                              vertical: 10,
+                            ),
                             decoration: BoxDecoration(
                               border: Border(
-                                  bottom: BorderSide(
-                                      color: Colors.grey.shade100)),
+                                bottom: BorderSide(color: Colors.grey.shade100),
+                              ),
                             ),
                             child: Row(
                               children: [
                                 Expanded(
                                   flex: 3,
-                                  child: Text(name,
-                                      style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.grey[800])),
+                                  child: Text(
+                                    name,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.grey[800],
+                                    ),
+                                  ),
                                 ),
                                 Expanded(
-                                  child: Text(grade,
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.teal[700])),
+                                  child: Text(
+                                    grade,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: theme.primary,
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),
@@ -1810,16 +1927,17 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
                     ),
                   ),
                 ],
-                const SizedBox(height: 16),
+                SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Text(
                       '${_t('published_by', _lang)} ${result['publishedBy'] ?? 'Teacher'}',
                       style: TextStyle(
-                          fontSize: 10,
-                          fontStyle: FontStyle.italic,
-                          color: Colors.grey[500]),
+                        fontSize: 10,
+                        fontStyle: FontStyle.italic,
+                        color: Colors.grey[500],
+                      ),
                     ),
                   ],
                 ),
@@ -1833,115 +1951,113 @@ class _StudentTestResultScreenState extends State<StudentTestResultScreen> {
 
   // ── Loader / Error / No Result ─────────────────────────
 
-  Widget _buildLoader() => const Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircularProgressIndicator(color: _accent, strokeWidth: 2.5),
-            SizedBox(height: 14),
-            Text(
-              'Loading your result...',
-              style: TextStyle(
-                  color: AppColors.textSecondary, fontSize: 13),
-            ),
-          ],
+  Widget _buildLoader() => Center(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        CircularProgressIndicator(color: theme.primary, strokeWidth: 2.5),
+        SizedBox(height: 14),
+        Text(
+          'Loading your result...',
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
         ),
-      );
+      ],
+    ),
+  );
 
   Widget _buildError() => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.red.withOpacity(0.1),
-                ),
-                child: Icon(
-                  Icons.error_outline_rounded,
-                  color: Colors.red[400],
-                  size: 30,
-                ),
-              ),
-              const SizedBox(height: 14),
-              Text(
-                _error,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(height: 16),
-              GestureDetector(
-                onTap: _fetchResult,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 20, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: _accent,
-                    borderRadius: BorderRadius.circular(3),
-                  ),
-                  child: const Text(
-                    'Retry',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
-              ),
-            ],
+    child: Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.red.withOpacity(0.1),
+            ),
+            child: Icon(
+              Icons.error_outline_rounded,
+              color: Colors.red[400],
+              size: 30,
+            ),
           ),
-        ),
-      );
+          SizedBox(height: 14),
+          Text(
+            _error,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: AppColors.textPrimary,
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+            ),
+          ),
+          SizedBox(height: 16),
+          GestureDetector(
+            onTap: _fetchResult,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              decoration: BoxDecoration(
+                color: theme.primary,
+                borderRadius: BorderRadius.circular(3),
+              ),
+              child: Text(
+                'Retry',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 
   Widget _buildNoResult() => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.orange.withOpacity(0.08),
-                ),
-                child: Icon(
-                  Icons.hourglass_empty_rounded,
-                  color: Colors.orange[600],
-                  size: 30,
-                ),
-              ),
-              const SizedBox(height: 14),
-              Text(
-                _t('result_not_published', _lang),
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                _t('result_not_published_desc', _lang),
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 12,
-                  height: 1.5,
-                ),
-              ),
-            ],
+    child: Padding(
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.orange.withOpacity(0.08),
+            ),
+            child: Icon(
+              Icons.hourglass_empty_rounded,
+              color: Colors.orange[600],
+              size: 30,
+            ),
           ),
-        ),
-      );
+          SizedBox(height: 14),
+          Text(
+            _t('result_not_published', _lang),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 15,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          SizedBox(height: 6),
+          Text(
+            _t('result_not_published_desc', _lang),
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 12,
+              height: 1.5,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }

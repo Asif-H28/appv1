@@ -42,224 +42,245 @@ class StudentProfileEditCard extends StatelessWidget {
               ),
             ],
           ),
-      child: Column(
-        children: [
-          Container(
-            height: 4,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [theme.primary, theme.gradientEnd],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
+          child: Column(
+            children: [
+              Container(
+                height: 4,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [theme.primary, theme.gradientEnd],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  ),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(3)),
+                ),
               ),
-              borderRadius: BorderRadius.vertical(top: Radius.circular(3)),
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Section title
-                Row(
+              Padding(
+                padding: EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Section title
+                    Row(
+                      children: [
+                        Container(
+                          width: 3,
+                          height: 16,
+                          decoration: BoxDecoration(
+                            color: theme.primary,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        Icon(
+                          Icons.edit_rounded,
+                          size: 15,
+                          color: theme.primary,
+                        ),
+                        SizedBox(width: 5),
+                        Text(
+                          'Edit Personal Info',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                            color: theme.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+
+                    // Info banner
                     Container(
-                      width: 3,
-                      height: 16,
+                      width: double.infinity,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 7,
+                      ),
                       decoration: BoxDecoration(
-                        color: theme.primary,
-                        borderRadius: BorderRadius.circular(2),
+                        color: theme.primary.withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(3),
+                        border: Border.all(
+                          color: theme.primary.withOpacity(0.15),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.info_outline_rounded,
+                            size: 12,
+                            color: theme.primary,
+                          ),
+                          SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              'Only the fields you fill will be updated.',
+                              style: TextStyle(
+                                color: theme.primary,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    SizedBox(width: 8),
-                    Icon(Icons.edit_rounded, size: 15, color: theme.primary),
-                    SizedBox(width: 5),
-                    Text(
-                      'Edit Personal Info',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                        color: theme.textPrimary,
+                    SizedBox(height: 18),
+
+                    // Full Name
+                    _label('Full Name', theme),
+                    SizedBox(height: 6),
+                    _field(
+                      theme: theme,
+                      controller: nameCtrl,
+                      hint: 'Enter your full name',
+                      icon: Icons.person_rounded,
+                      inputType: TextInputType.name,
+                      capitalization: TextCapitalization.words,
+                    ),
+                    SizedBox(height: 16),
+
+                    // Phone
+                    _label('Phone Number', theme),
+                    SizedBox(height: 6),
+                    _field(
+                      theme: theme,
+                      controller: phoneCtrl,
+                      hint: 'Enter 10-digit phone number',
+                      icon: Icons.phone_rounded,
+                      inputType: TextInputType.phone,
+                      maxLength: 10,
+                    ),
+                    SizedBox(height: 16),
+
+                    // Gender
+                    _label('Gender', theme),
+                    SizedBox(height: 6),
+                    Row(
+                      children: _genders.map((g) {
+                        final isSelected = selectedGender == g;
+                        return Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.only(
+                              right: g != _genders.last ? 8 : 0,
+                            ),
+                            child: GestureDetector(
+                              onTap: () =>
+                                  onGenderChange(isSelected ? null : g),
+                              child: AnimatedContainer(
+                                duration: Duration(milliseconds: 180),
+                                padding: EdgeInsets.symmetric(vertical: 11),
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? theme.primary
+                                      : (theme.id == 'dark'
+                                            ? Colors.black
+                                            : Colors.grey[50]),
+                                  borderRadius: BorderRadius.circular(3),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? theme.primary
+                                        : theme.dividerColor,
+                                  ),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Icon(
+                                      g == 'Male'
+                                          ? Icons.male_rounded
+                                          : g == 'Female'
+                                          ? Icons.female_rounded
+                                          : Icons.transgender_rounded,
+                                      size: 18,
+                                      color: isSelected
+                                          ? Colors.white
+                                          : theme.textSecondary,
+                                    ),
+                                    SizedBox(height: 4),
+                                    Text(
+                                      g,
+                                      style: TextStyle(
+                                        color: isSelected
+                                            ? Colors.white
+                                            : theme.textSecondary,
+                                        fontSize: 11.5,
+                                        fontWeight: isSelected
+                                            ? FontWeight.bold
+                                            : FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                    SizedBox(height: 16),
+
+                    // Address
+                    _label('Address', theme),
+                    SizedBox(height: 6),
+                    _field(
+                      theme: theme,
+                      controller: addressCtrl,
+                      hint: 'Enter your full address',
+                      icon: Icons.location_on_rounded,
+                      maxLines: 3,
+                      capitalization: TextCapitalization.sentences,
+                    ),
+                    SizedBox(height: 22),
+
+                    // Save button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton(
+                        onPressed: isSaving ? null : onSave,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: theme.primary,
+                          foregroundColor: Colors.white,
+                          disabledBackgroundColor: theme.primary.withOpacity(
+                            0.5,
+                          ),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                        ),
+                        child: isSaving
+                            ? SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.save_rounded, size: 16),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Save Changes',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
                       ),
                     ),
                   ],
                 ),
-                SizedBox(height: 8),
-
-                // Info banner
-                Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-                  decoration: BoxDecoration(
-                    color: theme.primary.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(3),
-                    border: Border.all(color: theme.primary.withOpacity(0.15)),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.info_outline_rounded,
-                        size: 12,
-                        color: theme.primary,
-                      ),
-                      SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          'Only the fields you fill will be updated.',
-                          style: TextStyle(color: theme.primary, fontSize: 11),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 18),
-
-                // Full Name
-                _label('Full Name', theme),
-                SizedBox(height: 6),
-                _field(
-                  theme: theme,
-                  controller: nameCtrl,
-                  hint: 'Enter your full name',
-                  icon: Icons.person_rounded,
-                  inputType: TextInputType.name,
-                  capitalization: TextCapitalization.words,
-                ),
-                SizedBox(height: 16),
-
-                // Phone
-                _label('Phone Number', theme),
-                SizedBox(height: 6),
-                _field(
-                  theme: theme,
-                  controller: phoneCtrl,
-                  hint: 'Enter 10-digit phone number',
-                  icon: Icons.phone_rounded,
-                  inputType: TextInputType.phone,
-                  maxLength: 10,
-                ),
-                SizedBox(height: 16),
-
-                // Gender
-                _label('Gender', theme),
-                SizedBox(height: 6),
-                Row(
-                  children: _genders.map((g) {
-                    final isSelected = selectedGender == g;
-                    return Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.only(
-                          right: g != _genders.last ? 8 : 0,
-                        ),
-                        child: GestureDetector(
-                          onTap: () => onGenderChange(isSelected ? null : g),
-                          child: AnimatedContainer(
-                            duration: Duration(milliseconds: 180),
-                            padding: EdgeInsets.symmetric(vertical: 11),
-                            decoration: BoxDecoration(
-                              color: isSelected ? theme.primary : (theme.id == 'dark' ? Colors.black : Colors.grey[50]),
-                              borderRadius: BorderRadius.circular(3),
-                              border: Border.all(
-                                color: isSelected ? theme.primary : theme.dividerColor,
-                              ),
-                            ),
-                            child: Column(
-                              children: [
-                                Icon(
-                                  g == 'Male'
-                                      ? Icons.male_rounded
-                                      : g == 'Female'
-                                      ? Icons.female_rounded
-                                      : Icons.transgender_rounded,
-                                  size: 18,
-                                  color: isSelected
-                                      ? Colors.white
-                                      : theme.textSecondary,
-                                ),
-                                SizedBox(height: 4),
-                                Text(
-                                  g,
-                                  style: TextStyle(
-                                    color: isSelected
-                                        ? Colors.white
-                                        : theme.textSecondary,
-                                    fontSize: 11.5,
-                                    fontWeight: isSelected
-                                        ? FontWeight.bold
-                                        : FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-                SizedBox(height: 16),
-
-                // Address
-                _label('Address', theme),
-                SizedBox(height: 6),
-                _field(
-                  theme: theme,
-                  controller: addressCtrl,
-                  hint: 'Enter your full address',
-                  icon: Icons.location_on_rounded,
-                  maxLines: 3,
-                  capitalization: TextCapitalization.sentences,
-                ),
-                SizedBox(height: 22),
-
-                // Save button
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: isSaving ? null : onSave,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: theme.primary,
-                      foregroundColor: Colors.white,
-                      disabledBackgroundColor: theme.primary.withOpacity(0.5),
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                    ),
-                    child: isSaving
-                        ? SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.save_rounded, size: 16),
-                              SizedBox(width: 8),
-                              Text(
-                                'Save Changes',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
-  },
-);
   }
 
   Widget _label(String text, StudentThemeConfig theme) => Text(

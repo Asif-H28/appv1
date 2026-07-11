@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
+import 'student_theme_manager.dart';
 import 'student_classroom_subjects_tab.dart';
 import 'student_classroom_notes_tab.dart';
 import 'student_classroom_tests_tab.dart';
@@ -13,8 +14,6 @@ import 'student_classroom_homework_tab.dart';
 import 'package:appv1/features/learning_resources/screens/learning_resources_screen.dart';
 import 'package:appv1/features/tuition_session/student/student_session_generator_screen.dart';
 import 'package:appv1/core/services/feature_flag_service.dart';
-
-const Color _accent = Colors.teal;
 
 class StudentClassroomScreen extends StatefulWidget {
   @override
@@ -114,25 +113,28 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => Scaffold(
-          backgroundColor: const Color(0xFFF5F6FA),
-          appBar: AppBar(
-            backgroundColor: _accent,
-            foregroundColor: Colors.white,
-            elevation: 0,
-            title: Text(
-              title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
+        builder: (_) => ValueListenableBuilder<StudentThemeConfig>(
+          valueListenable: StudentThemeManager.themeNotifier,
+          builder: (context, theme, _) => Scaffold(
+            backgroundColor: theme.background,
+            appBar: AppBar(
+              backgroundColor: theme.primary,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              title: Text(
+                title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 16),
+                onPressed: () => Navigator.pop(context),
               ),
             ),
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 16),
-              onPressed: () => Navigator.pop(context),
-            ),
+            body: page,
           ),
-          body: page,
         ),
       ),
     );
@@ -142,161 +144,169 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen> {
   Widget build(BuildContext context) {
     final className = _classroom['className']?.toString() ?? 'Classroom';
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA),
-      body: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: const SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,
-          statusBarIconBrightness: Brightness.light,
-        ),
-        child: Column(
-          children: [
-            // ── Gradient header ──
-            Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [_accent, Color(0xFF26A69A)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+    return ValueListenableBuilder<StudentThemeConfig>(
+      valueListenable: StudentThemeManager.themeNotifier,
+      builder: (context, theme, _) => Scaffold(
+        backgroundColor: theme.background,
+        body: AnnotatedRegion<SystemUiOverlayStyle>(
+          value: const SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: Brightness.light,
+          ),
+          child: Column(
+            children: [
+              // ── Gradient header ──
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      theme.primary,
+                      theme.primary.withValues(alpha: 0.8),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                 ),
-              ),
-              child: SafeArea(
-                bottom: false,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(14, 12, 16, 20),
-                  child: Row(
-                    children: [
-                      // ── Back button ──
-                      GestureDetector(
-                        onTap: () => Navigator.pop(context),
-                        child: Container(
-                          width: 34,
-                          height: 34,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(3),
-                          ),
-                          child: const Icon(
-                            Icons.arrow_back_ios_new_rounded,
-                            color: Colors.white,
-                            size: 15,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-
-                      // ── Icon ──
-                      Container(
-                        padding: const EdgeInsets.all(7),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(3),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.3),
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.class_rounded,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-
-                      // ── Title + teacher tag ──
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              _isLoading ? 'Loading...' : className,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
+                child: SafeArea(
+                  bottom: false,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(14, 12, 16, 20),
+                    child: Row(
+                      children: [
+                        // ── Back button ──
+                        GestureDetector(
+                          onTap: () => Navigator.pop(context),
+                          child: Container(
+                            width: 34,
+                            height: 34,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(3),
                             ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                if (_teacherName.isNotEmpty) ...[
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 7,
-                                      vertical: 3,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.2),
-                                      borderRadius: BorderRadius.circular(3),
-                                      border: Border.all(
-                                        color: Colors.white.withOpacity(0.3),
+                            child: Icon(
+                              Icons.arrow_back_ios_new_rounded,
+                              color: theme.cardBackground,
+                              size: 15,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+
+                        // ── Icon ──
+                        Container(
+                          padding: const EdgeInsets.all(7),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(3),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.3),
+                            ),
+                          ),
+                          child: Icon(
+                            Icons.class_rounded,
+                            color: theme.cardBackground,
+                            size: 18,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+
+                        // ── Title + teacher tag ──
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _isLoading ? 'Loading...' : className,
+                                style: TextStyle(
+                                  color: theme.cardBackground,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  if (_teacherName.isNotEmpty) ...[
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 7,
+                                        vertical: 3,
                                       ),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          Icons.person_rounded,
-                                          color: Colors.white.withOpacity(0.9),
-                                          size: 10,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.2),
+                                        borderRadius: BorderRadius.circular(3),
+                                        border: Border.all(
+                                          color: Colors.white.withOpacity(0.3),
                                         ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          _teacherName,
-                                          style: TextStyle(
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.person_rounded,
                                             color: Colors.white.withOpacity(
                                               0.9,
                                             ),
-                                            fontSize: 10.5,
-                                            fontWeight: FontWeight.w600,
+                                            size: 10,
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 6),
-                                ],
-                                if (!_isLoading &&
-                                    _classroom['subjects'] != null) ...[
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 7,
-                                      vertical: 3,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.15),
-                                      borderRadius: BorderRadius.circular(3),
-                                    ),
-                                    child: Text(
-                                      '${(_classroom['subjects'] as List).length} Subjects',
-                                      style: TextStyle(
-                                        color: Colors.white.withOpacity(0.85),
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w500,
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            _teacherName,
+                                            style: TextStyle(
+                                              color: Colors.white.withOpacity(
+                                                0.9,
+                                              ),
+                                              fontSize: 10.5,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                  ),
+                                    const SizedBox(width: 6),
+                                  ],
+                                  if (!_isLoading &&
+                                      _classroom['subjects'] != null) ...[
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 7,
+                                        vertical: 3,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.15),
+                                        borderRadius: BorderRadius.circular(3),
+                                      ),
+                                      child: Text(
+                                        '${(_classroom['subjects'] as List).length} Subjects',
+                                        style: TextStyle(
+                                          color: Colors.white.withOpacity(0.85),
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ],
-                              ],
-                            ),
-                          ],
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
 
-            // ── Body ──
-            Expanded(
-              child: _isLoading
-                  ? _buildLoader()
-                  : _error.isNotEmpty
-                  ? _buildError()
-                  : _buildMenuList(),
-            ),
-          ],
+              // ── Body ──
+              Expanded(
+                child: _isLoading
+                    ? _buildLoader(theme)
+                    : _error.isNotEmpty
+                    ? _buildError(theme)
+                    : _buildMenuList(theme),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -304,7 +314,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen> {
 
   // ── Vertical menu list ─────────────────────────────────
 
-  Widget _buildMenuList() {
+  Widget _buildMenuList(StudentThemeConfig theme) {
     final items = [
       _MenuItem(
         label: 'Subjects',
@@ -346,7 +356,9 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen> {
         icon: Icons.video_library_rounded,
         iconColor: const Color(0xFFE53935),
         bgColor: const Color(0xFFFFEBEE),
-        page: LearningResourcesScreen(classData: {..._classroom, 'classId': _classId}),
+        page: LearningResourcesScreen(
+          classData: {..._classroom, 'classId': _classId},
+        ),
       ),
       _MenuItem(
         label: 'Generate Session QR',
@@ -368,7 +380,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen> {
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
-              color: Colors.grey[500],
+              color: theme.textSecondary,
               letterSpacing: 1.1,
             ),
           ),
@@ -380,11 +392,13 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen> {
           builder: (context, isTuitionEnabled, child) {
             final activeItems = List<_MenuItem>.from(items);
             if (!isTuitionEnabled) {
-              activeItems.removeWhere((item) => item.label == 'Generate Session QR');
+              activeItems.removeWhere(
+                (item) => item.label == 'Generate Session QR',
+              );
             }
             return Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: theme.cardBackground,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
@@ -398,7 +412,12 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen> {
                 children: List.generate(activeItems.length, (index) {
                   final item = activeItems[index];
                   final isLast = index == activeItems.length - 1;
-                  return _buildMenuItem(item, isLast: isLast, onTap: () => _navigateTo(item.page, item.label));
+                  return _buildMenuItem(
+                    item,
+                    theme,
+                    isLast: isLast,
+                    onTap: () => _navigateTo(item.page, item.label),
+                  );
                 }),
               ),
             );
@@ -408,7 +427,12 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen> {
     );
   }
 
-  Widget _buildMenuItem(_MenuItem item, {bool isLast = false, VoidCallback? onTap}) {
+  Widget _buildMenuItem(
+    _MenuItem item,
+    StudentThemeConfig theme, {
+    bool isLast = false,
+    VoidCallback? onTap,
+  }) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -417,12 +441,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen> {
         decoration: BoxDecoration(
           border: isLast
               ? null
-              : Border(
-                  bottom: BorderSide(
-                    color: Colors.grey.withOpacity(0.1),
-                    width: 1,
-                  ),
-                ),
+              : Border(bottom: BorderSide(color: theme.dividerColor, width: 1)),
         ),
         child: Row(
           children: [
@@ -442,10 +461,10 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen> {
             Expanded(
               child: Text(
                 item.label,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF1A1A2E),
+                  color: theme.textPrimary,
                 ),
               ),
             ),
@@ -453,7 +472,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen> {
             // ── Chevron ──
             Icon(
               Icons.chevron_right_rounded,
-              color: Colors.grey[400],
+              color: theme.textSecondary,
               size: 22,
             ),
           ],
@@ -464,15 +483,15 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen> {
 
   // ── Loader ────────────────────────────────────────────
 
-  Widget _buildLoader() => const Center(
+  Widget _buildLoader(StudentThemeConfig theme) => Center(
     child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        CircularProgressIndicator(color: _accent, strokeWidth: 2.5),
+        CircularProgressIndicator(color: theme.primary, strokeWidth: 2.5),
         SizedBox(height: 14),
         Text(
           'Loading classroom...',
-          style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+          style: TextStyle(color: theme.textSecondary, fontSize: 13),
         ),
       ],
     ),
@@ -480,7 +499,7 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen> {
 
   // ── Error ─────────────────────────────────────────────
 
-  Widget _buildError() => Center(
+  Widget _buildError(StudentThemeConfig theme) => Center(
     child: Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -503,8 +522,8 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen> {
           Text(
             _error,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
+            style: TextStyle(
+              color: theme.textPrimary,
               fontWeight: FontWeight.w600,
               fontSize: 14,
             ),
@@ -521,13 +540,13 @@ class _StudentClassroomScreenState extends State<StudentClassroomScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               decoration: BoxDecoration(
-                color: _accent,
+                color: theme.primary,
                 borderRadius: BorderRadius.circular(3),
               ),
-              child: const Text(
+              child: Text(
                 'Retry',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: theme.cardBackground,
                   fontWeight: FontWeight.bold,
                   fontSize: 13,
                 ),

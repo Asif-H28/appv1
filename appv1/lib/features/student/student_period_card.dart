@@ -63,7 +63,10 @@ class StudentPeriodCard extends StatelessWidget {
     if (t.isEmpty) return t;
     try {
       final parts = t.split(':');
-      final tod = TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+      final tod = TimeOfDay(
+        hour: int.parse(parts[0]),
+        minute: int.parse(parts[1]),
+      );
       return tod.format(context);
     } catch (_) {
       return t;

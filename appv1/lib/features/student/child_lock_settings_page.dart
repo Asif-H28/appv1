@@ -34,7 +34,9 @@ class _ChildLockSettingsPageState extends State<ChildLockSettingsPage> {
       barrierDismissible: false,
       builder: (context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           title: Text(isEnabling ? 'Set 4-Digit PIN' : 'Enter 4-Digit PIN'),
           content: Form(
             key: formKey,
@@ -73,7 +75,9 @@ class _ChildLockSettingsPageState extends State<ChildLockSettingsPage> {
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: isEnabling ? Colors.teal : Colors.red,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
               onPressed: () async {
                 if (formKey.currentState!.validate()) {
@@ -88,7 +92,9 @@ class _ChildLockSettingsPageState extends State<ChildLockSettingsPage> {
                       );
                     }
                   } else {
-                    final isValid = await ChildLockService.instance.verifyPin(enteredPin);
+                    final isValid = await ChildLockService.instance.verifyPin(
+                      enteredPin,
+                    );
                     if (isValid) {
                       await ChildLockService.instance.disableChildLock();
                       Navigator.pop(context);
@@ -108,7 +114,10 @@ class _ChildLockSettingsPageState extends State<ChildLockSettingsPage> {
                   }
                 }
               },
-              child: Text(isEnabling ? 'Enable' : 'Disable', style: const TextStyle(color: Colors.white)),
+              child: Text(
+                isEnabling ? 'Enable' : 'Disable',
+                style: const TextStyle(color: Colors.white),
+              ),
             ),
           ],
         );
@@ -121,11 +130,17 @@ class _ChildLockSettingsPageState extends State<ChildLockSettingsPage> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text('Child Lock Settings', style: TextStyle(color: Colors.white)),
+        title: const Text(
+          'Child Lock Settings',
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: Colors.teal,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Colors.white,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -139,7 +154,11 @@ class _ChildLockSettingsPageState extends State<ChildLockSettingsPage> {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
-                  BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
                 ],
               ),
               child: Row(
@@ -148,9 +167,18 @@ class _ChildLockSettingsPageState extends State<ChildLockSettingsPage> {
                   const Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Child Lock', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      Text(
+                        'Child Lock',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       SizedBox(height: 4),
-                      Text('Prevent exiting the app', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                      Text(
+                        'Prevent exiting the app',
+                        style: TextStyle(color: Colors.grey, fontSize: 12),
+                      ),
                     ],
                   ),
                   Switch(

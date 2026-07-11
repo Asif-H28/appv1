@@ -335,4 +335,3 @@ class _StudentOtpPageState extends State<StudentOtpPage> {
     );
   }
 }
-

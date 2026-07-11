@@ -192,328 +192,170 @@ class _StudentAttendanceRecordsListState
         final filtered = _filtered;
 
         return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // ── Header row ──
-        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 3,
-              height: 16,
-              decoration: BoxDecoration(
-                color: theme.primary,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            SizedBox(width: 8),
-            Icon(Icons.list_alt_rounded, size: 15, color: theme.primary),
-            SizedBox(width: 5),
-            Text(
-              'Daily Records',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-                color: theme.textPrimary,
-              ),
-            ),
-            Spacer(),
-            Text(
-              '${filtered.length} records',
-              style: TextStyle(color: theme.textSecondary, fontSize: 11),
-            ),
-            SizedBox(width: 10),
-
-            // ── Filter icon button ──
-            GestureDetector(
-              onTap: _showFilterSheet,
-              child: Container(
-                padding: EdgeInsets.all(7),
-                decoration: BoxDecoration(
-                  color: _hasActiveFilter ? theme.primary : theme.cardBackground,
-                  borderRadius: BorderRadius.circular(3),
-                  border: Border.all(
-                    color: _hasActiveFilter ? theme.primary : theme.dividerColor,
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.filter_list_rounded,
-                      size: 15,
-                      color: _hasActiveFilter
-                          ? Colors.white
-                          : theme.textSecondary,
-                    ),
-                    if (_hasActiveFilter) ...[
-                      SizedBox(width: 4),
-                      Text(
-                        'Filtered',
-                        style: TextStyle(
-                          color: theme.cardBackground,
-                          fontSize: 10.5,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 10),
-
-        // ── Status filter chips ──
-        Row(
-          children: ['All', 'Present', 'Absent'].map((f) {
-            final isSelected = _statusFilter == f;
-            Color chipColor = theme.primary;
-            if (f == 'Present') chipColor = Colors.green[600]!;
-            if (f == 'Absent') chipColor = Colors.red[600]!;
-            return Padding(
-              padding: EdgeInsets.only(right: 8),
-              child: GestureDetector(
-                onTap: () => setState(() => _statusFilter = f),
-                child: AnimatedContainer(
-                  duration: Duration(milliseconds: 180),
-                  padding: EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                  decoration: BoxDecoration(
-                    color: isSelected ? chipColor : theme.cardBackground,
-                    borderRadius: BorderRadius.circular(3),
-                    border: Border.all(
-                      color: isSelected ? chipColor : theme.dividerColor,
-                    ),
-                  ),
-                  child: Text(
-                    f,
-                    style: TextStyle(
-                      color: isSelected
-                          ? Colors.white
-                          : theme.textSecondary,
-                      fontSize: 12,
-                      fontWeight: isSelected
-                          ? FontWeight.bold
-                          : FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-
-        // ── Active filter chip (date/month) ──
-        if (_hasActiveFilter) ...[
-          SizedBox(height: 8),
-          Row(
-            children: [
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: theme.primary.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(3),
-                  border: Border.all(color: theme.primary.withOpacity(0.25)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      _filterMode == _FilterMode.date
-                          ? Icons.today_rounded
-                          : Icons.calendar_month_rounded,
-                      size: 12,
-                      color: theme.primary,
-                    ),
-                    SizedBox(width: 5),
-                    Text(
-                      _filterMode == _FilterMode.date
-                          ? 'Date: $_activeFilterLabel'
-                          : 'Month: $_activeFilterLabel',
-                      style: TextStyle(
-                        color: theme.primary,
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    SizedBox(width: 8),
-                    GestureDetector(
-                      onTap: () => setState(() {
-                        _filterMode = _FilterMode.none;
-                        _selectedDate = null;
-                        _selectedMonth = null;
-                      }),
-                      child: Icon(
-                        Icons.close_rounded,
-                        size: 13,
-                        color: theme.primary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-
-        SizedBox(height: 10),
-
-        // ── Records ──
-        if (filtered.isEmpty)
-          Container(
-            width: double.infinity,
-            padding: EdgeInsets.all(32),
-            decoration: BoxDecoration(
-              color: theme.cardBackground,
-              borderRadius: BorderRadius.circular(3),
-              border: Border.all(color: theme.dividerColor),
-            ),
-            child: Column(
+            // ── Header row ──
+            Row(
               children: [
-                Icon(
-                  Icons.search_off_rounded,
-                  color: Colors.grey[400],
-                  size: 32,
+                Container(
+                  width: 3,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: theme.primary,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
-                SizedBox(height: 10),
+                SizedBox(width: 8),
+                Icon(Icons.list_alt_rounded, size: 15, color: theme.primary),
+                SizedBox(width: 5),
                 Text(
-                  'No records found',
+                  'Daily Records',
                   style: TextStyle(
-                    color: theme.textSecondary,
+                    fontWeight: FontWeight.bold,
                     fontSize: 13,
+                    color: theme.textPrimary,
                   ),
                 ),
-                if (_hasActiveFilter) ...[
-                  SizedBox(height: 8),
-                  GestureDetector(
-                    onTap: () => setState(() {
-                      _filterMode = _FilterMode.none;
-                      _selectedDate = null;
-                      _selectedMonth = null;
-                    }),
-                    child: Text(
-                      'Clear filter',
-                      style: TextStyle(
-                        color: theme.primary,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          )
-        else
-          ...filtered.map((r) {
-            final att = r['attendance']?.toString() ?? '';
-            final isPresent = att.toLowerCase() == 'present';
-            final statusColor = isPresent
-                ? Colors.green[600]!
-                : Colors.red[600]!;
-            final dateRaw = r['date']?.toString() ?? '';
-
-            return Container(
-              margin: EdgeInsets.only(bottom: 8),
-              decoration: BoxDecoration(
-                color: theme.cardBackground,
-                borderRadius: BorderRadius.circular(3),
-                border: Border.all(
-                  color: isPresent
-                      ? Colors.green.withOpacity(0.15)
-                      : Colors.red.withOpacity(0.15),
+                Spacer(),
+                Text(
+                  '${filtered.length} records',
+                  style: TextStyle(color: theme.textSecondary, fontSize: 11),
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.03),
-                    blurRadius: 6,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  // ── Left color strip ──
-                  Container(
-                    width: 4,
-                    height: 62,
+                SizedBox(width: 10),
+
+                // ── Filter icon button ──
+                GestureDetector(
+                  onTap: _showFilterSheet,
+                  child: Container(
+                    padding: EdgeInsets.all(7),
                     decoration: BoxDecoration(
-                      color: statusColor,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(3),
-                        bottomLeft: Radius.circular(3),
-                      ),
-                    ),
-                  ),
-
-                  // ── Date box ──
-                  Container(
-                    width: 52,
-                    padding: EdgeInsets.symmetric(vertical: 12),
-                    child: Column(
-                      children: [
-                        Text(
-                          _dayInitial(dateRaw),
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                            color: theme.textPrimary,
-                            height: 1,
-                          ),
-                        ),
-                        SizedBox(height: 2),
-                        Text(
-                          _monthShort(dateRaw),
-                          style: TextStyle(
-                            color: theme.textSecondary,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  Container(width: 1, height: 36, color: Colors.grey[200]),
-                  SizedBox(width: 12),
-
-                  Expanded(
-                    child: Text(
-                      _formatDate(dateRaw),
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.w500,
-                        color: theme.textPrimary,
-                      ),
-                    ),
-                  ),
-
-                  // ── Status badge ──
-                  Container(
-                    margin: EdgeInsets.only(right: 12),
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.1),
+                      color: _hasActiveFilter
+                          ? theme.primary
+                          : theme.cardBackground,
                       borderRadius: BorderRadius.circular(3),
-                      border: Border.all(color: statusColor.withOpacity(0.3)),
+                      border: Border.all(
+                        color: _hasActiveFilter
+                            ? theme.primary
+                            : theme.dividerColor,
+                      ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          isPresent
-                              ? Icons.check_circle_rounded
-                              : Icons.cancel_rounded,
-                          size: 12,
-                          color: statusColor,
+                          Icons.filter_list_rounded,
+                          size: 15,
+                          color: _hasActiveFilter
+                              ? Colors.white
+                              : theme.textSecondary,
                         ),
-                        SizedBox(width: 4),
+                        if (_hasActiveFilter) ...[
+                          SizedBox(width: 4),
+                          Text(
+                            'Filtered',
+                            style: TextStyle(
+                              color: theme.cardBackground,
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 10),
+
+            // ── Status filter chips ──
+            Row(
+              children: ['All', 'Present', 'Absent'].map((f) {
+                final isSelected = _statusFilter == f;
+                Color chipColor = theme.primary;
+                if (f == 'Present') chipColor = Colors.green[600]!;
+                if (f == 'Absent') chipColor = Colors.red[600]!;
+                return Padding(
+                  padding: EdgeInsets.only(right: 8),
+                  child: GestureDetector(
+                    onTap: () => setState(() => _statusFilter = f),
+                    child: AnimatedContainer(
+                      duration: Duration(milliseconds: 180),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 7,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected ? chipColor : theme.cardBackground,
+                        borderRadius: BorderRadius.circular(3),
+                        border: Border.all(
+                          color: isSelected ? chipColor : theme.dividerColor,
+                        ),
+                      ),
+                      child: Text(
+                        f,
+                        style: TextStyle(
+                          color: isSelected
+                              ? Colors.white
+                              : theme.textSecondary,
+                          fontSize: 12,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+
+            // ── Active filter chip (date/month) ──
+            if (_hasActiveFilter) ...[
+              SizedBox(height: 8),
+              Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: theme.primary.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(3),
+                      border: Border.all(
+                        color: theme.primary.withOpacity(0.25),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          _filterMode == _FilterMode.date
+                              ? Icons.today_rounded
+                              : Icons.calendar_month_rounded,
+                          size: 12,
+                          color: theme.primary,
+                        ),
+                        SizedBox(width: 5),
                         Text(
-                          att,
+                          _filterMode == _FilterMode.date
+                              ? 'Date: $_activeFilterLabel'
+                              : 'Month: $_activeFilterLabel',
                           style: TextStyle(
-                            color: statusColor,
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
+                            color: theme.primary,
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: () => setState(() {
+                            _filterMode = _FilterMode.none;
+                            _selectedDate = null;
+                            _selectedMonth = null;
+                          }),
+                          child: Icon(
+                            Icons.close_rounded,
+                            size: 13,
+                            color: theme.primary,
                           ),
                         ),
                       ],
@@ -521,8 +363,180 @@ class _StudentAttendanceRecordsListState
                   ),
                 ],
               ),
-            );
-          }).toList(),
+            ],
+
+            SizedBox(height: 10),
+
+            // ── Records ──
+            if (filtered.isEmpty)
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  color: theme.cardBackground,
+                  borderRadius: BorderRadius.circular(3),
+                  border: Border.all(color: theme.dividerColor),
+                ),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.search_off_rounded,
+                      color: Colors.grey[400],
+                      size: 32,
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      'No records found',
+                      style: TextStyle(
+                        color: theme.textSecondary,
+                        fontSize: 13,
+                      ),
+                    ),
+                    if (_hasActiveFilter) ...[
+                      SizedBox(height: 8),
+                      GestureDetector(
+                        onTap: () => setState(() {
+                          _filterMode = _FilterMode.none;
+                          _selectedDate = null;
+                          _selectedMonth = null;
+                        }),
+                        child: Text(
+                          'Clear filter',
+                          style: TextStyle(
+                            color: theme.primary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              )
+            else
+              ...filtered.map((r) {
+                final att = r['attendance']?.toString() ?? '';
+                final isPresent = att.toLowerCase() == 'present';
+                final statusColor = isPresent
+                    ? Colors.green[600]!
+                    : Colors.red[600]!;
+                final dateRaw = r['date']?.toString() ?? '';
+
+                return Container(
+                  margin: EdgeInsets.only(bottom: 8),
+                  decoration: BoxDecoration(
+                    color: theme.cardBackground,
+                    borderRadius: BorderRadius.circular(3),
+                    border: Border.all(
+                      color: isPresent
+                          ? Colors.green.withOpacity(0.15)
+                          : Colors.red.withOpacity(0.15),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.03),
+                        blurRadius: 6,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      // ── Left color strip ──
+                      Container(
+                        width: 4,
+                        height: 62,
+                        decoration: BoxDecoration(
+                          color: statusColor,
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(3),
+                            bottomLeft: Radius.circular(3),
+                          ),
+                        ),
+                      ),
+
+                      // ── Date box ──
+                      Container(
+                        width: 52,
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                        child: Column(
+                          children: [
+                            Text(
+                              _dayInitial(dateRaw),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                                color: theme.textPrimary,
+                                height: 1,
+                              ),
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              _monthShort(dateRaw),
+                              style: TextStyle(
+                                color: theme.textSecondary,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      Container(width: 1, height: 36, color: Colors.grey[200]),
+                      SizedBox(width: 12),
+
+                      Expanded(
+                        child: Text(
+                          _formatDate(dateRaw),
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w500,
+                            color: theme.textPrimary,
+                          ),
+                        ),
+                      ),
+
+                      // ── Status badge ──
+                      Container(
+                        margin: EdgeInsets.only(right: 12),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: statusColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(3),
+                          border: Border.all(
+                            color: statusColor.withOpacity(0.3),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              isPresent
+                                  ? Icons.check_circle_rounded
+                                  : Icons.cancel_rounded,
+                              size: 12,
+                              color: statusColor,
+                            ),
+                            SizedBox(width: 4),
+                            Text(
+                              att,
+                              style: TextStyle(
+                                color: statusColor,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
           ],
         );
       },
@@ -679,364 +693,376 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet>
         final months = _availableMonths;
 
         return Container(
-      decoration: BoxDecoration(
-        color: theme.cardBackground,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // ── Handle ──
-          SizedBox(height: 12),
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: theme.dividerColor,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
+          decoration: BoxDecoration(
+            color: theme.cardBackground,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
           ),
-          SizedBox(height: 16),
-
-          // ── Title + clear ──
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 18),
-            child: Row(
-              children: [
-                Container(
-                  width: 3,
-                  height: 18,
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // ── Handle ──
+              SizedBox(height: 12),
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
                   decoration: BoxDecoration(
-                    color: theme.primary,
+                    color: theme.dividerColor,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-                SizedBox(width: 8),
-                Text(
-                  'Filter Records',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: theme.textPrimary,
-                  ),
-                ),
-                Spacer(),
-                GestureDetector(
-                  onTap: () {
-                    widget.onClear();
-                    Navigator.pop(context);
-                  },
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(3),
-                      border: Border.all(color: Colors.red.withOpacity(0.2)),
-                    ),
-                    child: Text(
-                      'Clear All',
-                      style: TextStyle(
-                        color: Colors.red[600],
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+              ),
+              SizedBox(height: 16),
+
+              // ── Title + clear ──
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 18),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 3,
+                      height: 18,
+                      decoration: BoxDecoration(
+                        color: theme.primary,
+                        borderRadius: BorderRadius.circular(2),
                       ),
                     ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 14),
-
-          // ── Tab bar ──
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 18),
-            child: Container(
-              height: 38,
-              decoration: BoxDecoration(
-                color: theme.cardBackground,
-                borderRadius: BorderRadius.circular(3),
-                border: Border.all(color: theme.dividerColor),
-              ),
-              child: TabBar(
-                controller: _tabCtrl,
-                indicator: BoxDecoration(
-                  color: theme.primary,
-                  borderRadius: BorderRadius.circular(3),
-                ),
-                indicatorSize: TabBarIndicatorSize.tab,
-                labelColor: Colors.white,
-                unselectedLabelColor: theme.textSecondary,
-                labelStyle: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                ),
-                unselectedLabelStyle: TextStyle(
-                  fontWeight: FontWeight.w500,
-                  fontSize: 12,
-                ),
-                padding: EdgeInsets.all(3),
-                dividerColor: Colors.transparent,
-                tabs: [
-                  Tab(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.today_rounded, size: 13),
-                        SizedBox(width: 5),
-                        Text('By Date'),
-                      ],
+                    SizedBox(width: 8),
+                    Text(
+                      'Filter Records',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: theme.textPrimary,
+                      ),
                     ),
-                  ),
-                  Tab(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.calendar_month_rounded, size: 13),
-                        SizedBox(width: 5),
-                        Text('By Month'),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          SizedBox(height: 16),
-
-          // ── Tab content ──
-          SizedBox(
-            height: 200,
-            child: TabBarView(
-              controller: _tabCtrl,
-              children: [
-                // ── Date picker tab ──
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 18),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Select a specific date to view attendance',
-                        style: TextStyle(
-                          color: theme.textSecondary,
-                          fontSize: 12,
+                    Spacer(),
+                    GestureDetector(
+                      onTap: () {
+                        widget.onClear();
+                        Navigator.pop(context);
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(3),
+                          border: Border.all(
+                            color: Colors.red.withOpacity(0.2),
+                          ),
+                        ),
+                        child: Text(
+                          'Clear All',
+                          style: TextStyle(
+                            color: Colors.red[600],
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
-                      SizedBox(height: 14),
-                      GestureDetector(
-                        onTap: _pickDate,
-                        child: Container(
-                          width: double.infinity,
-                          padding: EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: _pickedDate != null
-                                ? theme.primary.withOpacity(0.05)
-                                : theme.background,
-                            borderRadius: BorderRadius.circular(3),
-                            border: Border.all(
-                              color: _pickedDate != null
-                                  ? theme.primary.withOpacity(0.3)
-                                  : theme.dividerColor,
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 14),
+
+              // ── Tab bar ──
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 18),
+                child: Container(
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: theme.cardBackground,
+                    borderRadius: BorderRadius.circular(3),
+                    border: Border.all(color: theme.dividerColor),
+                  ),
+                  child: TabBar(
+                    controller: _tabCtrl,
+                    indicator: BoxDecoration(
+                      color: theme.primary,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    labelColor: Colors.white,
+                    unselectedLabelColor: theme.textSecondary,
+                    labelStyle: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                    unselectedLabelStyle: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 12,
+                    ),
+                    padding: EdgeInsets.all(3),
+                    dividerColor: Colors.transparent,
+                    tabs: [
+                      Tab(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.today_rounded, size: 13),
+                            SizedBox(width: 5),
+                            Text('By Date'),
+                          ],
+                        ),
+                      ),
+                      Tab(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.calendar_month_rounded, size: 13),
+                            SizedBox(width: 5),
+                            Text('By Month'),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(height: 16),
+
+              // ── Tab content ──
+              SizedBox(
+                height: 200,
+                child: TabBarView(
+                  controller: _tabCtrl,
+                  children: [
+                    // ── Date picker tab ──
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 18),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Select a specific date to view attendance',
+                            style: TextStyle(
+                              color: theme.textSecondary,
+                              fontSize: 12,
                             ),
                           ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 38,
-                                height: 38,
-                                decoration: BoxDecoration(
-                                  color: theme.primary.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(3),
-                                ),
-                                child: Icon(
-                                  Icons.today_rounded,
-                                  color: theme.primary,
-                                  size: 20,
+                          SizedBox(height: 14),
+                          GestureDetector(
+                            onTap: _pickDate,
+                            child: Container(
+                              width: double.infinity,
+                              padding: EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: _pickedDate != null
+                                    ? theme.primary.withOpacity(0.05)
+                                    : theme.background,
+                                borderRadius: BorderRadius.circular(3),
+                                border: Border.all(
+                                  color: _pickedDate != null
+                                      ? theme.primary.withOpacity(0.3)
+                                      : theme.dividerColor,
                                 ),
                               ),
-                              SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      _pickedDate != null
-                                          ? _formatDate(
-                                              _pickedDate!.toIso8601String(),
-                                            )
-                                          : 'Tap to pick a date',
-                                      style: TextStyle(
-                                        fontWeight: _pickedDate != null
-                                            ? FontWeight.bold
-                                            : FontWeight.normal,
-                                        fontSize: 13,
-                                        color: _pickedDate != null
-                                            ? theme.textPrimary
-                                            : theme.textSecondary,
-                                      ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 38,
+                                    height: 38,
+                                    decoration: BoxDecoration(
+                                      color: theme.primary.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(3),
                                     ),
-                                    if (_pickedDate == null)
-                                      Text(
-                                        'Only dates with records are selectable',
-                                        style: TextStyle(
-                                          color: theme.textSecondary,
-                                          fontSize: 10.5,
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              ),
-                              Icon(
-                                Icons.chevron_right_rounded,
-                                color: theme.textSecondary,
-                                size: 18,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      if (_pickedDate != null) ...[
-                        SizedBox(height: 8),
-                        GestureDetector(
-                          onTap: () => setState(() => _pickedDate = null),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.close_rounded,
-                                size: 13,
-                                color: Colors.red[600],
-                              ),
-                              SizedBox(width: 4),
-                              Text(
-                                'Clear date',
-                                style: TextStyle(
-                                  color: Colors.red[600],
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-
-                // ── Month picker tab ──
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 18),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Select a month to view all records',
-                        style: TextStyle(
-                          color: theme.textSecondary,
-                          fontSize: 12,
-                        ),
-                      ),
-                      SizedBox(height: 12),
-                      Expanded(
-                        child: months.isEmpty
-                            ? Center(
-                                child: Text(
-                                  'No months available',
-                                  style: TextStyle(
-                                    color: theme.textSecondary,
-                                    fontSize: 12,
+                                    child: Icon(
+                                      Icons.today_rounded,
+                                      color: theme.primary,
+                                      size: 20,
+                                    ),
                                   ),
-                                ),
-                              )
-                            : GridView.count(
-                                crossAxisCount: 3,
-                                childAspectRatio: 2.5,
-                                crossAxisSpacing: 8,
-                                mainAxisSpacing: 8,
-                                children: months.map((m) {
-                                  final isSelected = _pickedMonth == m;
-                                  return GestureDetector(
-                                    onTap: () => setState(() {
-                                      _pickedMonth = isSelected ? null : m;
-                                    }),
-                                    child: AnimatedContainer(
-                                      duration: Duration(milliseconds: 180),
-                                      decoration: BoxDecoration(
-                                        color: isSelected
-                                            ? theme.primary
-                                            : theme.background,
-                                        borderRadius: BorderRadius.circular(3),
-                                        border: Border.all(
-                                          color: isSelected
-                                              ? theme.primary
-                                              : theme.dividerColor,
-                                        ),
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          m,
+                                  SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          _pickedDate != null
+                                              ? _formatDate(
+                                                  _pickedDate!
+                                                      .toIso8601String(),
+                                                )
+                                              : 'Tap to pick a date',
                                           style: TextStyle(
-                                            color: isSelected
-                                                ? Colors.white
-                                                : theme.textPrimary,
-                                            fontSize: 11.5,
-                                            fontWeight: isSelected
+                                            fontWeight: _pickedDate != null
                                                 ? FontWeight.bold
-                                                : FontWeight.w500,
+                                                : FontWeight.normal,
+                                            fontSize: 13,
+                                            color: _pickedDate != null
+                                                ? theme.textPrimary
+                                                : theme.textSecondary,
                                           ),
                                         ),
+                                        if (_pickedDate == null)
+                                          Text(
+                                            'Only dates with records are selectable',
+                                            style: TextStyle(
+                                              color: theme.textSecondary,
+                                              fontSize: 10.5,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.chevron_right_rounded,
+                                    color: theme.textSecondary,
+                                    size: 18,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          if (_pickedDate != null) ...[
+                            SizedBox(height: 8),
+                            GestureDetector(
+                              onTap: () => setState(() => _pickedDate = null),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.close_rounded,
+                                    size: 13,
+                                    color: Colors.red[600],
+                                  ),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'Clear date',
+                                    style: TextStyle(
+                                      color: Colors.red[600],
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+
+                    // ── Month picker tab ──
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 18),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Select a month to view all records',
+                            style: TextStyle(
+                              color: theme.textSecondary,
+                              fontSize: 12,
+                            ),
+                          ),
+                          SizedBox(height: 12),
+                          Expanded(
+                            child: months.isEmpty
+                                ? Center(
+                                    child: Text(
+                                      'No months available',
+                                      style: TextStyle(
+                                        color: theme.textSecondary,
+                                        fontSize: 12,
                                       ),
                                     ),
-                                  );
-                                }).toList(),
-                              ),
+                                  )
+                                : GridView.count(
+                                    crossAxisCount: 3,
+                                    childAspectRatio: 2.5,
+                                    crossAxisSpacing: 8,
+                                    mainAxisSpacing: 8,
+                                    children: months.map((m) {
+                                      final isSelected = _pickedMonth == m;
+                                      return GestureDetector(
+                                        onTap: () => setState(() {
+                                          _pickedMonth = isSelected ? null : m;
+                                        }),
+                                        child: AnimatedContainer(
+                                          duration: Duration(milliseconds: 180),
+                                          decoration: BoxDecoration(
+                                            color: isSelected
+                                                ? theme.primary
+                                                : theme.background,
+                                            borderRadius: BorderRadius.circular(
+                                              3,
+                                            ),
+                                            border: Border.all(
+                                              color: isSelected
+                                                  ? theme.primary
+                                                  : theme.dividerColor,
+                                            ),
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              m,
+                                              style: TextStyle(
+                                                color: isSelected
+                                                    ? Colors.white
+                                                    : theme.textPrimary,
+                                                fontSize: 11.5,
+                                                fontWeight: isSelected
+                                                    ? FontWeight.bold
+                                                    : FontWeight.w500,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // ── Apply button ──
-          Padding(
-            padding: EdgeInsets.fromLTRB(18, 8, 18, 24),
-            child: SizedBox(
-              width: double.infinity,
-              height: 46,
-              child: ElevatedButton(
-                onPressed: () {
-                  final tab = _tabCtrl.index;
-                  if (tab == 0 && _pickedDate != null) {
-                    widget.onApply(_FilterMode.date, _pickedDate, null);
-                  } else if (tab == 1 && _pickedMonth != null) {
-                    widget.onApply(_FilterMode.month, null, _pickedMonth);
-                  } else {
-                    widget.onClear();
-                  }
-                  Navigator.pop(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: theme.primary,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(3),
-                  ),
-                ),
-                child: Text(
-                  'Apply Filter',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ),
+
+              // ── Apply button ──
+              Padding(
+                padding: EdgeInsets.fromLTRB(18, 8, 18, 24),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 46,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      final tab = _tabCtrl.index;
+                      if (tab == 0 && _pickedDate != null) {
+                        widget.onApply(_FilterMode.date, _pickedDate, null);
+                      } else if (tab == 1 && _pickedMonth != null) {
+                        widget.onApply(_FilterMode.month, null, _pickedMonth);
+                      } else {
+                        widget.onClear();
+                      }
+                      Navigator.pop(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: theme.primary,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    ),
+                    child: Text(
+                      'Apply Filter',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         );

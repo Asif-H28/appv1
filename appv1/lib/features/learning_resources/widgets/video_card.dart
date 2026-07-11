@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:appv1/features/student/student_theme_manager.dart';
+
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:appv1/features/learning_resources/screens/video_player_screen.dart';
 
 class VideoCard extends StatelessWidget {
+  StudentThemeConfig get theme => StudentThemeManager.themeNotifier.value;
   final Map<String, dynamic> videoData;
   final bool isTeacher;
   final VoidCallback? onDelete;
@@ -57,10 +60,10 @@ class VideoCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFF009688).withOpacity(0.2)),
+          border: Border.all(color: theme.primary.withOpacity(0.2)),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF009688).withOpacity(0.05),
+              color: theme.primary.withOpacity(0.05),
               blurRadius: 5,
               offset: const Offset(0, 2),
             ),
@@ -83,14 +86,14 @@ class VideoCard extends StatelessWidget {
                             return Container(
                               height: 180,
                               color: Colors.grey[200],
-                              child: const Icon(Icons.video_library, size: 48, color: Colors.grey),
+                              child: Icon(Icons.video_library, size: 48, color: Colors.grey),
                             );
                           },
                         )
                       : Container(
                           height: 180,
                           color: Colors.grey[200],
-                          child: const Icon(Icons.video_library, size: 48, color: Colors.grey),
+                          child: Icon(Icons.video_library, size: 48, color: Colors.grey),
                         ),
                 ),
                 Positioned.fill(
@@ -101,7 +104,7 @@ class VideoCard extends StatelessWidget {
                         color: Colors.black.withOpacity(0.6),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.play_arrow, color: Colors.white, size: 36),
+                      child: Icon(Icons.play_arrow, color: Colors.white, size: 36),
                     ),
                   ),
                 ),
@@ -125,7 +128,7 @@ class VideoCard extends StatelessWidget {
                             ),
                           ],
                         ),
-                        child: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                        child: Icon(Icons.delete_outline, color: Colors.red, size: 20),
                       ),
                     ),
                   ),
@@ -138,41 +141,41 @@ class VideoCard extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF2D3748),
+                      color: theme.textPrimary,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF009688).withOpacity(0.1),
+                      color: theme.primary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
                       subtitle,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF009688),
+                        color: theme.primary,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.person_outline, size: 14, color: Color(0xFF718096)),
-                          const SizedBox(width: 4),
+                          Icon(Icons.person_outline, size: 14, color: theme.textSecondary),
+                          SizedBox(width: 4),
                           Text(
                             teacherName,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
-                              color: Color(0xFF718096),
+                              color: theme.textSecondary,
                             ),
                           ),
                         ],
@@ -180,9 +183,9 @@ class VideoCard extends StatelessWidget {
                       if (dateStr.isNotEmpty)
                         Text(
                           dateStr,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
-                            color: Color(0xFF718096),
+                            color: theme.textSecondary,
                           ),
                         ),
                     ],
@@ -200,12 +203,12 @@ class VideoCard extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Video'),
-        content: const Text('Are you sure you want to delete this video?'),
+        title: Text('Delete Video'),
+        content: Text('Are you sure you want to delete this video?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+            child: Text('Cancel', style: TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -215,7 +218,7 @@ class VideoCard extends StatelessWidget {
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Delete'),
+            child: Text('Delete'),
           ),
         ],
       ),

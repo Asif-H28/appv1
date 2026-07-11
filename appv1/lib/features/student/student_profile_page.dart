@@ -184,10 +184,14 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
 
   // ── Logout ─────────────────────────────────────────
   Future<void> _logout() async {
-    final isChildLockEnabled = await ChildLockService.instance.isChildLockEnabled();
+    final isChildLockEnabled = await ChildLockService.instance
+        .isChildLockEnabled();
     if (isChildLockEnabled) {
       if (!mounted) return;
-      _showSnack('Child lock is enabled. Disable it from the menu to logout.', isError: true);
+      _showSnack(
+        'Child lock is enabled. Disable it from the menu to logout.',
+        isError: true,
+      );
       return;
     }
 
@@ -629,19 +633,25 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
-                          border: isSelected ? Border.all(color: Colors.white, width: 2) : null,
+                          border: isSelected
+                              ? Border.all(color: Colors.white, width: 2)
+                              : null,
                           boxShadow: isSelected
                               ? [
                                   BoxShadow(
                                     color: t.primary.withOpacity(0.4),
                                     blurRadius: 8,
                                     offset: const Offset(0, 4),
-                                  )
+                                  ),
                                 ]
                               : [],
                         ),
-                        child: isSelected 
-                            ? const Icon(Icons.check, color: Colors.white, size: 18)
+                        child: isSelected
+                            ? const Icon(
+                                Icons.check,
+                                color: Colors.white,
+                                size: 18,
+                              )
                             : null,
                       ),
                     );
@@ -794,4 +804,3 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
     ),
   );
 }
-

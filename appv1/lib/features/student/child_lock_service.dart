@@ -2,13 +2,16 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ChildLockService {
-  static const MethodChannel _kioskChannel = MethodChannel('com.example.appv1/kiosk');
+  static const MethodChannel _kioskChannel = MethodChannel(
+    'com.example.appv1/kiosk',
+  );
   static const String _keyChildLockEnabled = 'child_lock_enabled';
   static const String _keyChildLockPin = 'child_lock_pin';
 
   // Private constructor
   ChildLockService._privateConstructor();
-  static final ChildLockService instance = ChildLockService._privateConstructor();
+  static final ChildLockService instance =
+      ChildLockService._privateConstructor();
 
   Future<bool> isChildLockEnabled() async {
     final prefs = await SharedPreferences.getInstance();

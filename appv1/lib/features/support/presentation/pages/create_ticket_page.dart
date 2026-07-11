@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:appv1/features/student/student_theme_manager.dart';
+
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:dio/dio.dart';
@@ -12,6 +14,7 @@ class CreateTicketPage extends StatefulWidget {
 }
 
 class _CreateTicketPageState extends State<CreateTicketPage> {
+  StudentThemeConfig get theme => StudentThemeManager.themeNotifier.value;
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
@@ -114,19 +117,19 @@ class _CreateTicketPageState extends State<CreateTicketPage> {
           'Create Ticket',
           style: TextStyle(fontWeight: FontWeight.w600, letterSpacing: 0.5),
         ),
-        backgroundColor: Colors.teal,
+        backgroundColor: theme.primary,
         foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
       ),
       body: _isSubmitting
-          ? const Center(
+          ? Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CircularProgressIndicator(color: Colors.teal),
-                  SizedBox(height: 16),
-                  Text(
+                  CircularProgressIndicator(color: theme.primary),
+                  const SizedBox(height: 16),
+                  const Text(
                     'Submitting your ticket...',
                     style: TextStyle(fontWeight: FontWeight.w500, color: Colors.black87),
                   ),
@@ -143,13 +146,13 @@ class _CreateTicketPageState extends State<CreateTicketPage> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.teal.withOpacity(0.05),
+                        color: theme.primary.withOpacity(0.05),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.teal.withOpacity(0.1)),
+                        border: Border.all(color: theme.primary.withOpacity(0.1)),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.info_outline_rounded, color: Colors.teal[600]),
+                          Icon(Icons.info_outline_rounded, color: theme.primary),
                           const SizedBox(width: 12),
                           const Expanded(
                             child: Text(
@@ -279,7 +282,7 @@ class _CreateTicketPageState extends State<CreateTicketPage> {
                     ElevatedButton(
                       onPressed: _submitTicket,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.teal,
+                        backgroundColor: theme.primary,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         elevation: 2,
@@ -331,7 +334,7 @@ class _CreateTicketPageState extends State<CreateTicketPage> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.teal, width: 2),
+          borderSide: BorderSide(color: theme.primary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -349,16 +352,16 @@ class _CreateTicketPageState extends State<CreateTicketPage> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.teal.withOpacity(0.5), width: 1.5, style: BorderStyle.solid),
+          border: Border.all(color: theme.primary.withOpacity(0.5), width: 1.5, style: BorderStyle.solid),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.add_photo_alternate_outlined, color: Colors.teal[400], size: 32),
+            Icon(Icons.add_photo_alternate_outlined, color: theme.primary.withOpacity(0.8), size: 32),
             const SizedBox(height: 8),
             Text(
               'Add Image',
-              style: TextStyle(color: Colors.teal[600], fontSize: 12, fontWeight: FontWeight.w600),
+              style: TextStyle(color: theme.primary, fontSize: 12, fontWeight: FontWeight.w600),
             ),
           ],
         ),

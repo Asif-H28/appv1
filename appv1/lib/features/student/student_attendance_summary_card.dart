@@ -208,7 +208,9 @@ class StudentAttendanceSummaryCard extends StatelessWidget {
                             value: totalDays > 0 ? totalPresent / totalDays : 0,
                             minHeight: 8,
                             backgroundColor: theme.dividerColor,
-                            valueColor: AlwaysStoppedAnimation<Color>(statusColor),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              statusColor,
+                            ),
                           ),
                         ),
                         SizedBox(height: 6),
@@ -256,10 +258,7 @@ class StudentAttendanceSummaryCard extends StatelessWidget {
           decoration: BoxDecoration(shape: BoxShape.circle, color: color),
         ),
         SizedBox(width: 8),
-        Text(
-          label,
-          style: TextStyle(color: theme.textSecondary, fontSize: 12),
-        ),
+        Text(label, style: TextStyle(color: theme.textSecondary, fontSize: 12)),
         Spacer(),
         Text(
           value,

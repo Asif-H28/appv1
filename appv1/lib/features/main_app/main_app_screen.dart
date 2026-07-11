@@ -9,6 +9,7 @@ import 'pages/admin_achievements_page.dart';
 import 'pages/admin_attendance_page.dart';
 import 'pages/admin_tutor_attendance_page.dart';
 import 'pages/support_staff_page.dart';
+import 'pages/admin_staff_salary_page.dart';
 import '../support/presentation/pages/support_page.dart';
 import 'pages/notification_service.dart';
 import 'pages/app_update_page.dart';
@@ -561,6 +562,20 @@ class _MainAppScreenState extends State<MainAppScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (_) => const SupportStaffPage(),
+                      ),
+                    );
+                  },
+                ),
+                _buildDrawerItem(
+                  icon: Icons.account_balance_wallet_rounded,
+                  title: 'Staff Salary',
+                  isSelected: false,
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AdminStaffSalaryPage(),
                       ),
                     );
                   },

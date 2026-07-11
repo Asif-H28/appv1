@@ -29,7 +29,7 @@ class StudentThemeConfig {
 
 class StudentThemeManager {
   static const String _prefKey = 'student_theme_preference';
-  
+
   static final List<StudentThemeConfig> availableThemes = [
     const StudentThemeConfig(
       id: 'blue',
@@ -95,7 +95,7 @@ class StudentThemeManager {
     ),
   ];
 
-  static final ValueNotifier<StudentThemeConfig> themeNotifier = 
+  static final ValueNotifier<StudentThemeConfig> themeNotifier =
       ValueNotifier<StudentThemeConfig>(availableThemes.first);
 
   static Future<void> init() async {

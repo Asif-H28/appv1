@@ -5,7 +5,6 @@ import '../../../../core/constants/app_colors.dart';
 import 'student_theme_manager.dart';
 import '../teacher/presentation/widgets/pdf_viewer_page.dart';
 
-
 class StudentNoticeDetailScreen extends StatelessWidget {
   final Map<String, dynamic> notice;
   const StudentNoticeDetailScreen({required this.notice});
@@ -65,179 +64,79 @@ class StudentNoticeDetailScreen extends StatelessWidget {
       valueListenable: StudentThemeManager.themeNotifier,
       builder: (context, theme, _) {
         return Scaffold(
-      backgroundColor: theme.background,
-      body: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,
-          statusBarIconBrightness: Brightness.light,
-        ),
-        child: Column(
-          children: [
-            // ── Header ──
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [theme.primary, theme.primary.withOpacity(0.75)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-              child: SafeArea(
-                bottom: false,
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(14, 12, 16, 16),
-                  child: Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () => Navigator.pop(context),
-                        child: Container(
-                          width: 34,
-                          height: 34,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(3),
-                          ),
-                          child: Icon(
-                            Icons.arrow_back_ios_new_rounded,
-                            color: theme.cardBackground,
-                            size: 15,
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 10),
-                      Container(
-                        padding: EdgeInsets.all(7),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(3),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.3),
-                          ),
-                        ),
-                        child: Icon(
-                          Icons.campaign_rounded,
-                          color: theme.cardBackground,
-                          size: 18,
-                        ),
-                      ),
-                      SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Notice Detail',
-                              style: TextStyle(
-                                color: theme.cardBackground,
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              'Full announcement',
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.75),
-                                fontSize: 11,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+          backgroundColor: theme.background,
+          body: AnnotatedRegion<SystemUiOverlayStyle>(
+            value: SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              statusBarIconBrightness: Brightness.light,
             ),
-
-            // ── Body ──
-            Expanded(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.fromLTRB(14, 16, 14, 40),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // ── Main notice card ──
-                    Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: theme.cardBackground,
-                        borderRadius: BorderRadius.circular(3),
-                        border: Border.all(color: theme.dividerColor),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
-                            blurRadius: 10,
-                            offset: Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+            child: Column(
+              children: [
+                // ── Header ──
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [theme.primary, theme.primary.withOpacity(0.75)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  child: SafeArea(
+                    bottom: false,
+                    child: Padding(
+                      padding: EdgeInsets.fromLTRB(14, 12, 16, 16),
+                      child: Row(
                         children: [
-                          Container(
-                            height: 4,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [theme.primary, theme.primary.withOpacity(0.4)],
-                                begin: Alignment.centerLeft,
-                                end: Alignment.centerRight,
+                          GestureDetector(
+                            onTap: () => Navigator.pop(context),
+                            child: Container(
+                              width: 34,
+                              height: 34,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(3),
                               ),
-                              borderRadius: BorderRadius.vertical(
-                                top: Radius.circular(3),
+                              child: Icon(
+                                Icons.arrow_back_ios_new_rounded,
+                                color: theme.cardBackground,
+                                size: 15,
                               ),
                             ),
                           ),
-                          Padding(
-                            padding: EdgeInsets.all(16),
+                          SizedBox(width: 10),
+                          Container(
+                            padding: EdgeInsets.all(7),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(3),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.3),
+                              ),
+                            ),
+                            child: Icon(
+                              Icons.campaign_rounded,
+                              color: theme.cardBackground,
+                              size: 18,
+                            ),
+                          ),
+                          SizedBox(width: 10),
+                          Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // ── Title ──
                                 Text(
-                                  _title,
+                                  'Notice Detail',
                                   style: TextStyle(
+                                    color: theme.cardBackground,
+                                    fontSize: 15,
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 17,
-                                    color: theme.textPrimary,
-                                    height: 1.3,
                                   ),
                                 ),
-                                SizedBox(height: 10),
-
-                                // ── Meta row ──
-                                _metaRow(
-                                  Icons.person_rounded,
-                                  _createdBy,
-                                  theme.primary,
-                                ),
-                                if (_createdAt.isNotEmpty) ...[
-                                  SizedBox(height: 6),
-                                  _metaRow(
-                                    Icons.calendar_today_rounded,
-                                    _createdAt,
-                                    theme.textSecondary,
-                                  ),
-                                ],
-                                if (_expiresAt.isNotEmpty) ...[
-                                  SizedBox(height: 6),
-                                  _metaRow(
-                                    Icons.access_time_rounded,
-                                    'Expires: $_expiresAt',
-                                    Colors.orange[700]!,
-                                  ),
-                                ],
-
-                                SizedBox(height: 14),
-                                Divider(height: 1, color: Colors.grey[100]),
-                                SizedBox(height: 14),
-
-                                // ── Description ──
                                 Text(
-                                  _description,
+                                  'Full announcement',
                                   style: TextStyle(
-                                    color: theme.textPrimary,
-                                    fontSize: 13.5,
-                                    height: 1.65,
+                                    color: Colors.white.withOpacity(0.75),
+                                    fontSize: 11,
                                   ),
                                 ),
                               ],
@@ -246,28 +145,134 @@ class StudentNoticeDetailScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-
-                    // ── Images ──
-                    if (_images.isNotEmpty) ...[
-                      SizedBox(height: 16),
-                      _sectionHeader('Images', Icons.image_rounded),
-                      SizedBox(height: 10),
-                      ..._images.map((img) => _imageCard(context, img)),
-                    ],
-
-                    // ── PDFs ──
-                    if (_pdfs.isNotEmpty) ...[
-                      SizedBox(height: 16),
-                      _sectionHeader('Attachments', Icons.attach_file_rounded),
-                      SizedBox(height: 10),
-                      ..._pdfs.map((pdf) => _pdfCard(context, pdf)),
-                    ],
-                  ],
+                  ),
                 ),
-              ),
+
+                // ── Body ──
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.fromLTRB(14, 16, 14, 40),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // ── Main notice card ──
+                        Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: theme.cardBackground,
+                            borderRadius: BorderRadius.circular(3),
+                            border: Border.all(color: theme.dividerColor),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 10,
+                                offset: Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                height: 4,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      theme.primary,
+                                      theme.primary.withOpacity(0.4),
+                                    ],
+                                    begin: Alignment.centerLeft,
+                                    end: Alignment.centerRight,
+                                  ),
+                                  borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(3),
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.all(16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // ── Title ──
+                                    Text(
+                                      _title,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 17,
+                                        color: theme.textPrimary,
+                                        height: 1.3,
+                                      ),
+                                    ),
+                                    SizedBox(height: 10),
+
+                                    // ── Meta row ──
+                                    _metaRow(
+                                      Icons.person_rounded,
+                                      _createdBy,
+                                      theme.primary,
+                                    ),
+                                    if (_createdAt.isNotEmpty) ...[
+                                      SizedBox(height: 6),
+                                      _metaRow(
+                                        Icons.calendar_today_rounded,
+                                        _createdAt,
+                                        theme.textSecondary,
+                                      ),
+                                    ],
+                                    if (_expiresAt.isNotEmpty) ...[
+                                      SizedBox(height: 6),
+                                      _metaRow(
+                                        Icons.access_time_rounded,
+                                        'Expires: $_expiresAt',
+                                        Colors.orange[700]!,
+                                      ),
+                                    ],
+
+                                    SizedBox(height: 14),
+                                    Divider(height: 1, color: Colors.grey[100]),
+                                    SizedBox(height: 14),
+
+                                    // ── Description ──
+                                    Text(
+                                      _description,
+                                      style: TextStyle(
+                                        color: theme.textPrimary,
+                                        fontSize: 13.5,
+                                        height: 1.65,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // ── Images ──
+                        if (_images.isNotEmpty) ...[
+                          SizedBox(height: 16),
+                          _sectionHeader('Images', Icons.image_rounded),
+                          SizedBox(height: 10),
+                          ..._images.map((img) => _imageCard(context, img)),
+                        ],
+
+                        // ── PDFs ──
+                        if (_pdfs.isNotEmpty) ...[
+                          SizedBox(height: 16),
+                          _sectionHeader(
+                            'Attachments',
+                            Icons.attach_file_rounded,
+                          ),
+                          SizedBox(height: 10),
+                          ..._pdfs.map((pdf) => _pdfCard(context, pdf)),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
           ),
         );
       },
@@ -282,7 +287,9 @@ class StudentNoticeDetailScreen extends StatelessWidget {
       margin: EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(3),
-        border: Border.all(color: StudentThemeManager.themeNotifier.value.dividerColor),
+        border: Border.all(
+          color: StudentThemeManager.themeNotifier.value.dividerColor,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
@@ -363,7 +370,9 @@ class StudentNoticeDetailScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: StudentThemeManager.themeNotifier.value.cardBackground,
         borderRadius: BorderRadius.circular(3),
-        border: Border.all(color: StudentThemeManager.themeNotifier.value.dividerColor),
+        border: Border.all(
+          color: StudentThemeManager.themeNotifier.value.dividerColor,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.03),
@@ -400,7 +409,10 @@ class StudentNoticeDetailScreen extends StatelessWidget {
         ),
         subtitle: Text(
           'Tap to view PDF',
-          style: TextStyle(color: StudentThemeManager.themeNotifier.value.textSecondary, fontSize: 11),
+          style: TextStyle(
+            color: StudentThemeManager.themeNotifier.value.textSecondary,
+            fontSize: 11,
+          ),
         ),
         trailing: Container(
           padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -463,7 +475,11 @@ class StudentNoticeDetailScreen extends StatelessWidget {
         ),
       ),
       SizedBox(width: 8),
-      Icon(icon, size: 15, color: StudentThemeManager.themeNotifier.value.primary),
+      Icon(
+        icon,
+        size: 15,
+        color: StudentThemeManager.themeNotifier.value.primary,
+      ),
       SizedBox(width: 5),
       Text(
         title,

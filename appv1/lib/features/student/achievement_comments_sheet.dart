@@ -71,10 +71,7 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
       debugPrint('── [AddComment] POST $url');
       debugPrint('── [AddComment] Payload: ${jsonEncode(payload)}');
 
-      final res = await ApiService.post(
-        url,
-        body: jsonEncode(payload),
-      );
+      final res = await ApiService.post(url, body: jsonEncode(payload));
 
       debugPrint('── [AddComment] Status: ${res.statusCode}');
       debugPrint('── [AddComment] Response body: ${res.body}');
@@ -91,7 +88,9 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
         });
         widget.onChanged(List.from(_comments), count);
       } else {
-        debugPrint('── [AddComment] ❌ Failed with status ${res.statusCode}: ${res.body}');
+        debugPrint(
+          '── [AddComment] ❌ Failed with status ${res.statusCode}: ${res.body}',
+        );
         if (mounted) setState(() => _submitting = false);
       }
     } catch (e, st) {
@@ -272,7 +271,8 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Row(
                                           children: [
@@ -287,7 +287,8 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
                                             const SizedBox(width: 6),
                                             Text(
                                               _timeAgo(
-                                                c['commentedAt']?.toString() ?? '',
+                                                c['commentedAt']?.toString() ??
+                                                    '',
                                               ),
                                               style: TextStyle(
                                                 color: theme.textSecondary,
@@ -430,4 +431,3 @@ class _AchievementCommentsSheetState extends State<AchievementCommentsSheet> {
     );
   }
 }
-

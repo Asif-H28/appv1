@@ -466,4 +466,3 @@ class _StudentRegisterPageState extends State<StudentRegisterPage> {
     ),
   );
 }
-

@@ -158,7 +158,9 @@ class _StudentTimetablePageState extends State<StudentTimetablePage>
                     ? _buildError(theme)
                     : TabBarView(
                         controller: _tabCtrl,
-                        children: _days.map((d) => _buildDayTab(d, theme)).toList(),
+                        children: _days
+                            .map((d) => _buildDayTab(d, theme))
+                            .toList(),
                       ),
               ),
             ],
@@ -267,7 +269,9 @@ class _StudentTimetablePageState extends State<StudentTimetablePage>
                               Text(
                                 d.substring(0, 3),
                                 style: TextStyle(
-                                  color: isSelected ? theme.primary : Colors.white,
+                                  color: isSelected
+                                      ? theme.primary
+                                      : Colors.white,
                                   fontSize: 9.5,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -276,7 +280,9 @@ class _StudentTimetablePageState extends State<StudentTimetablePage>
                               Text(
                                 '$count',
                                 style: TextStyle(
-                                  color: isSelected ? theme.primary : Colors.white,
+                                  color: isSelected
+                                      ? theme.primary
+                                      : Colors.white,
                                   fontSize: 13,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -431,7 +437,9 @@ class _StudentTimetablePageState extends State<StudentTimetablePage>
             width: 64,
             height: 64,
             decoration: BoxDecoration(
-              color: isToday ? theme.primary.withOpacity(0.08) : theme.dividerColor.withOpacity(0.5),
+              color: isToday
+                  ? theme.primary.withOpacity(0.08)
+                  : theme.dividerColor.withOpacity(0.5),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Icon(
@@ -439,7 +447,9 @@ class _StudentTimetablePageState extends State<StudentTimetablePage>
                   ? Icons.event_available_rounded
                   : Icons.event_busy_rounded,
               size: 28,
-              color: isToday ? theme.primary.withOpacity(0.8) : theme.textSecondary.withOpacity(0.5),
+              color: isToday
+                  ? theme.primary.withOpacity(0.8)
+                  : theme.textSecondary.withOpacity(0.5),
             ),
           ),
           SizedBox(height: 12),
@@ -502,4 +512,3 @@ class _StudentTimetablePageState extends State<StudentTimetablePage>
     ),
   );
 }
-

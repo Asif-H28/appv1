@@ -44,13 +44,18 @@ class StudentProfileInfoCard extends StatelessWidget {
               multiLine: true,
             ),
             _divider(theme),
-            _copyRow(context, theme, Icons.badge_rounded, 'Student ID', _val('studentId')),
+            _copyRow(
+              context,
+              theme,
+              Icons.badge_rounded,
+              'Student ID',
+              _val('studentId'),
+            ),
           ],
         );
       },
     );
   }
-
 
   // ── Card shell ────────────────────────────────────────
 
@@ -265,5 +270,6 @@ class StudentProfileInfoCard extends StatelessWidget {
     );
   }
 
-  Widget _divider(StudentThemeConfig theme) => Divider(height: 1, color: theme.dividerColor);
+  Widget _divider(StudentThemeConfig theme) =>
+      Divider(height: 1, color: theme.dividerColor);
 }
