@@ -1,5 +1,6 @@
 import 'package:appv1/core/constants/api_constants.dart';
 import 'dart:convert';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
@@ -17,11 +18,34 @@ class _ClassroomsPageState extends State<ClassroomsPage> {
   bool _isLoading = true;
   String _error = '';
   List<dynamic> _classrooms = [];
+  String _searchQuery = '';
+  Timer? _debounce;
+  int _currentPage = 1;
+  int _totalPages = 1;
+  bool _isFetchingMore = false;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     _fetchClassrooms();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _debounce?.cancel();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200 &&
+        !_isLoading &&
+        !_isFetchingMore &&
+        _currentPage < _totalPages) {
+      _fetchMoreClassrooms();
+    }
   }
 
   Future<void> _fetchClassrooms() async {
@@ -37,7 +61,12 @@ class _ClassroomsPageState extends State<ClassroomsPage> {
         return;
       }
 
-      final url = Uri.parse('${ApiConstants.apiBaseUrl}/classroom/org/$orgId');
+      _currentPage = 1;
+      String urlStr = '${ApiConstants.apiBaseUrl}/classroom/org/$orgId?page=$_currentPage&limit=10';
+      if (_searchQuery.isNotEmpty) {
+        urlStr += '&search=$_searchQuery';
+      }
+      final url = Uri.parse(urlStr);
       final response = await ApiService.get(url);
 
       if (response.statusCode == 200) {
@@ -45,6 +74,7 @@ class _ClassroomsPageState extends State<ClassroomsPage> {
         if (data['success'] == true) {
           setState(() {
             _classrooms = data['classrooms'] ?? [];
+            _totalPages = data['totalPages'] ?? 1;
             _isLoading = false;
           });
         } else {
@@ -65,6 +95,44 @@ class _ClassroomsPageState extends State<ClassroomsPage> {
         _error = 'Network error occurred. Please try again.';
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _fetchMoreClassrooms() async {
+    setState(() {
+      _isFetchingMore = true;
+    });
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final orgId = prefs.getString('orgId');
+      if (orgId == null || orgId.isEmpty) return;
+
+      _currentPage++;
+      String urlStr = '${ApiConstants.apiBaseUrl}/classroom/org/$orgId?page=$_currentPage&limit=10';
+      if (_searchQuery.isNotEmpty) {
+        urlStr += '&search=$_searchQuery';
+      }
+      final url = Uri.parse(urlStr);
+      final response = await ApiService.get(url);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['success'] == true) {
+          setState(() {
+            _classrooms.addAll(data['classrooms'] ?? []);
+            _totalPages = data['totalPages'] ?? _totalPages;
+          });
+        }
+      }
+    } catch (e) {
+      // Ignore network errors for infinite scroll
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isFetchingMore = false;
+        });
+      }
     }
   }
 
@@ -90,6 +158,45 @@ class _ClassroomsPageState extends State<ClassroomsPage> {
   }
 
   Widget _buildBody() {
+    return Column(
+      children: [
+        Container(
+          color: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: TextField(
+            onChanged: (value) {
+              if (_debounce?.isActive ?? false) _debounce!.cancel();
+              _debounce = Timer(const Duration(milliseconds: 500), () {
+                setState(() {
+                  _searchQuery = value;
+                  _isLoading = true;
+                  _error = '';
+                });
+                _fetchClassrooms();
+              });
+            },
+            decoration: InputDecoration(
+              hintText: 'Search classrooms...',
+              hintStyle: const TextStyle(color: Colors.grey),
+              prefixIcon: const Icon(Icons.search, color: Color(0xFF009688)),
+              filled: true,
+              fillColor: const Color(0xFFF0F7F6),
+              contentPadding: const EdgeInsets.symmetric(vertical: 0),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+          child: _buildList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildList() {
     if (_isLoading) {
       return const Center(
         child: CircularProgressIndicator(color: Color(0xFF009688)),
@@ -135,18 +242,28 @@ class _ClassroomsPageState extends State<ClassroomsPage> {
     }
 
     if (_classrooms.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
-          'No classrooms found.',
-          style: TextStyle(color: Colors.black54, fontSize: 16),
+          _searchQuery.isEmpty ? 'No classrooms found.' : 'No classrooms matching "$_searchQuery".',
+          style: const TextStyle(color: Colors.black54, fontSize: 16),
         ),
       );
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: _classrooms.length,
+      controller: _scrollController,
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 100),
+      itemCount: _classrooms.length + (_isFetchingMore ? 1 : 0),
       itemBuilder: (context, index) {
+        if (index == _classrooms.length) {
+          return const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Center(
+              child: CircularProgressIndicator(color: Color(0xFF009688)),
+            ),
+          );
+        }
+
         final c = _classrooms[index];
         final name = c['className'] ?? 'Unknown Class';
         
@@ -223,4 +340,3 @@ class _ClassroomsPageState extends State<ClassroomsPage> {
     );
   }
 }
-

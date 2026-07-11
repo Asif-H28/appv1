@@ -4,10 +4,12 @@ import 'package:appv1/features/teacher/presentation/pages/assessment_results_pag
 import 'package:appv1/features/learning_resources/screens/learning_resources_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:intl/intl.dart';
+import 'class_students_page.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-enum DrawerType { subjectDetails }
+enum DrawerType { none, subjectDetails }
 
 class ClassDetailPage extends StatefulWidget {
   final Map<String, dynamic> classData;
@@ -236,8 +238,10 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
   @override
   Widget build(BuildContext context) {
     final className = widget.classData['className'] ?? 'Unknown Class';
-    final studentCount =
-        (widget.classData['studentIds'] as List<dynamic>? ?? []).length;
+    final studentCount = (widget.classData['students'] as List<dynamic>? ??
+            widget.classData['studentIds'] as List<dynamic>? ??
+            [])
+        .length;
 
     int totalLessons = 0;
     int completedLessons = 0;
@@ -301,6 +305,35 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
                   icon: Icons.groups_rounded,
                   title: 'Total Students Enrolled',
                   value: '$studentCount',
+                  action: studentCount > 0
+                      ? TextButton(
+                          onPressed: () {
+                            final students = widget.classData['students'] as List<dynamic>? ?? [];
+                            final className = widget.classData['className'] ?? 'Class';
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => ClassStudentsPage(
+                                  students: students,
+                                  className: className,
+                                ),
+                              ),
+                            );
+                          },
+                          style: TextButton.styleFrom(
+                            foregroundColor: const Color(0xFF009688),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text('View Students', style: TextStyle(fontWeight: FontWeight.bold)),
+                              SizedBox(width: 4),
+                              Icon(Icons.arrow_forward_rounded, size: 16),
+                            ],
+                          ),
+                        )
+                      : null,
                 ),
                 const SizedBox(height: 16),
                 Container(
@@ -791,6 +824,7 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
     required IconData icon,
     required String title,
     required String value,
+    Widget? action,
   }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
@@ -840,6 +874,8 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
               ),
             ],
           ),
+          if (action != null) const Spacer(),
+          if (action != null) action,
         ],
       ),
     );
