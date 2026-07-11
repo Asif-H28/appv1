@@ -14,6 +14,8 @@ import 'student_attendance_screen.dart';
 import 'student_notice_screen.dart';
 import 'student_timetable_page.dart';
 import 'student_theme_manager.dart';
+import '../main_app/pages/mark_teacher_attendance_page.dart';
+import 'upload_payment_proof_page.dart';
 
 class StudentHomePage extends StatefulWidget {
   @override
@@ -551,6 +553,28 @@ class _StudentHomePageState extends State<StudentHomePage> {
           ),
         ),
         const SizedBox(height: 12),
+        _buildNavCard(
+          icon: Icons.camera_alt_rounded,
+          title: 'Mark Attendance',
+          subtitle: 'Mark attendance for teachers',
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const MarkTeacherAttendancePage()),
+          ),
+          theme: theme,
+        ),
+        const SizedBox(height: 8),
+        _buildNavCard(
+          icon: Icons.receipt_long_rounded,
+          title: 'Upload Payment Proof',
+          subtitle: 'Upload your fee payment screenshot',
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const UploadPaymentProofPage()),
+          ),
+          theme: theme,
+        ),
+        const SizedBox(height: 8),
         _buildNavCard(
           icon: Icons.calendar_month_rounded,
           title: 'Timetable',

@@ -12,6 +12,7 @@ import 'notice_page.dart';
 import 'teacher_approvals_page.dart';
 import 'teachers_page.dart';
 import 'ongoing_classes_page.dart';
+import 'mark_teacher_attendance_page.dart';
 import '../../teacher/presentation/pages/org_transport_status_page.dart';
 
 class HomePage extends StatefulWidget {
