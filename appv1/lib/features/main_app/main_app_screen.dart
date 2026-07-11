@@ -7,11 +7,14 @@ import 'pages/home_page.dart';
 import 'pages/settings_page.dart';
 import 'pages/admin_achievements_page.dart';
 import 'pages/admin_tutor_attendance_page.dart';
-import 'pages/support_staff_page.dart';
+import 'pages/admin_parent_attendance_uploads_page.dart';
+import 'pages/admin_payment_uploads_page.dart';
+import 'pages/notification_router.dart';
 import 'pages/admin_staff_salary_page.dart';
 import '../support/presentation/pages/support_page.dart';
 import 'pages/notification_service.dart';
 import 'pages/app_update_page.dart';
+import 'pages/support_staff_page.dart';
 import 'pages/admin_upi_settings_page.dart';
 import 'pages/admin_org_settings_page.dart';
 import 'pages/admin_tuition_admissions_page.dart';
@@ -484,6 +487,34 @@ class _MainAppScreenState extends State<MainAppScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (_) => const AdminTuitionAdmissionsPage(),
+                      ),
+                    );
+                  },
+                ),
+                _buildDrawerItem(
+                  icon: Icons.upload_file_rounded,
+                  title: 'Parent Attendence Uploads',
+                  isSelected: false,
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AdminParentAttendanceUploadsPage(),
+                      ),
+                    );
+                  },
+                ),
+                _buildDrawerItem(
+                  icon: Icons.receipt_long_rounded,
+                  title: 'Payment Uploads',
+                  isSelected: false,
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AdminPaymentUploadsPage(),
                       ),
                     );
                   },
