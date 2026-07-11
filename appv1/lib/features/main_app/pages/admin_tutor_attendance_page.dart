@@ -363,15 +363,60 @@ class _AdminTutorAttendancePageState extends State<AdminTutorAttendancePage> {
                                 ),
                               ),
                               title: Text(report['name'] ?? 'Unknown', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
-                              subtitle: Text(
-                                '${report['totalPresent']} Present / ${report['totalAbsent']} Absent',
-                                style: const TextStyle(color: Colors.teal, fontWeight: FontWeight.w500),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '${report['totalPresent']} Present / ${report['totalAbsent']} Absent',
+                                    style: const TextStyle(color: Colors.teal, fontWeight: FontWeight.w500),
+                                  ),
+                                  if (report['salaryType'] != null)
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 4.0),
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.currency_rupee_rounded, size: 14, color: Colors.grey.shade700),
+                                          Text(
+                                            '${report['totalSalary']} Total (${report['salaryType'] == 'monthwise' ? 'Monthly' : 'Daily'})',
+                                            style: TextStyle(color: Colors.grey.shade700, fontSize: 13),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                ],
                               ),
                               children: [
                                 Padding(
                                   padding: const EdgeInsets.all(16.0),
                                   child: Column(
-                                    children: dayWise.entries.map((entry) {
+                                    children: [
+                                      if (report['salaryType'] != null)
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                                          margin: const EdgeInsets.only(bottom: 16),
+                                          decoration: BoxDecoration(
+                                            color: Colors.teal.shade50,
+                                            borderRadius: BorderRadius.circular(12),
+                                            border: Border.all(color: Colors.teal.shade100),
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                            children: [
+                                              _buildSalaryInfoStat('Base Salary', '₹${report['salaryAmount']}'),
+                                              _buildSalaryInfoStat('Type', report['salaryType'] == 'monthwise' ? 'Monthly' : 'Daily'),
+                                              _buildSalaryInfoStat('Total Pay', '₹${report['totalSalary']}', isHighlight: true),
+                                            ],
+                                          ),
+                                        ),
+                                      const Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Padding(
+                                          padding: EdgeInsets.only(bottom: 8.0),
+                                          child: Text('Daily Attendance Breakdown', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.teal)),
+                                        ),
+                                      ),
+                                      ...dayWise.entries.map((entry) {
                                       final isPresent = entry.value.toString().toLowerCase() == 'present';
                                       return Padding(
                                         padding: const EdgeInsets.only(bottom: 8),
@@ -393,6 +438,7 @@ class _AdminTutorAttendancePageState extends State<AdminTutorAttendancePage> {
                                         ),
                                       );
                                     }).toList(),
+                                    ],
                                   ),
                                 ),
                               ],
@@ -401,6 +447,23 @@ class _AdminTutorAttendancePageState extends State<AdminTutorAttendancePage> {
                         );
                       },
                     ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSalaryInfoStat(String label, String value, {bool isHighlight = false}) {
+    return Column(
+      children: [
+        Text(label, style: TextStyle(fontSize: 12, color: Colors.teal.shade700)),
+        const SizedBox(height: 4),
+        Text(
+          value, 
+          style: TextStyle(
+            fontSize: 14, 
+            fontWeight: FontWeight.bold, 
+            color: isHighlight ? Colors.teal.shade900 : Colors.teal.shade800
+          )
         ),
       ],
     );

@@ -6,14 +6,14 @@ import '../../../core/constants/app_colors.dart';
 import 'pages/home_page.dart';
 import 'pages/settings_page.dart';
 import 'pages/admin_achievements_page.dart';
-import 'pages/admin_attendance_page.dart';
 import 'pages/admin_tutor_attendance_page.dart';
 import 'pages/support_staff_page.dart';
+import 'pages/admin_staff_salary_page.dart';
 import '../support/presentation/pages/support_page.dart';
 import 'pages/notification_service.dart';
 import 'pages/app_update_page.dart';
 import 'pages/admin_upi_settings_page.dart';
-import 'pages/admin_admission_forms_page.dart';
+import 'pages/admin_org_settings_page.dart';
 import 'pages/admin_tuition_admissions_page.dart';
 import '../chat/conversation_list_screen.dart';
 import '../../core/services/chat_socket_service.dart';
@@ -475,24 +475,15 @@ class _MainAppScreenState extends State<MainAppScreen> {
                   },
                 ),
                 _buildDrawerItem(
-                  icon: Icons.emoji_events_rounded,
-                  title: 'Achievements',
-                  isSelected: _currentIndex == 2,
-                  onTap: () {
-                    Navigator.pop(context);
-                    setState(() => _currentIndex = 2);
-                  },
-                ),
-                _buildDrawerItem(
-                  icon: Icons.fact_check_rounded,
-                  title: 'Attendance',
+                  icon: Icons.school_rounded,
+                  title: 'Admissions',
                   isSelected: false,
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const AdminAttendancePage(),
+                        builder: (_) => const AdminTuitionAdmissionsPage(),
                       ),
                     );
                   },
@@ -515,6 +506,57 @@ class _MainAppScreenState extends State<MainAppScreen> {
                         );
                       },
                     );
+                  },
+                ),
+                _buildDrawerItem(
+                  icon: Icons.account_balance_wallet_rounded,
+                  title: 'Staff Salary',
+                  isSelected: false,
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AdminStaffSalaryPage(),
+                      ),
+                    );
+                  },
+                ),
+                _buildDrawerItem(
+                  icon: Icons.payments_rounded,
+                  title: 'UPI Settings',
+                  isSelected: false,
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AdminUpiSettingsPage(),
+                      ),
+                    );
+                  },
+                ),
+                _buildDrawerItem(
+                  icon: Icons.business_rounded,
+                  title: 'Org Settings',
+                  isSelected: false,
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AdminOrgSettingsPage(),
+                      ),
+                    );
+                  },
+                ),
+                _buildDrawerItem(
+                  icon: Icons.emoji_events_rounded,
+                  title: 'Achievements',
+                  isSelected: _currentIndex == 2,
+                  onTap: () {
+                    Navigator.pop(context);
+                    setState(() => _currentIndex = 2);
                   },
                 ),
                 ValueListenableBuilder<bool>(
@@ -574,48 +616,6 @@ class _MainAppScreenState extends State<MainAppScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const SettingsPage()),
-                    );
-                  },
-                ),
-                _buildDrawerItem(
-                  icon: Icons.payments_rounded,
-                  title: 'UPI Settings',
-                  isSelected: false,
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const AdminUpiSettingsPage(),
-                      ),
-                    );
-                  },
-                ),
-                _buildDrawerItem(
-                  icon: Icons.assignment_ind_rounded,
-                  title: 'Admission Forms',
-                  isSelected: false,
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const AdminAdmissionFormsPage(),
-                      ),
-                    );
-                  },
-                ),
-                _buildDrawerItem(
-                  icon: Icons.school_rounded,
-                  title: 'Admissions',
-                  isSelected: false,
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const AdminTuitionAdmissionsPage(),
-                      ),
                     );
                   },
                 ),

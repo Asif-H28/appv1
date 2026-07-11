@@ -13,8 +13,7 @@ import 'student_classroom_screen.dart';
 import 'student_attendance_screen.dart';
 import 'student_notice_screen.dart';
 import 'student_timetable_page.dart';
-
-const Color _accent = Colors.teal;
+import 'student_theme_manager.dart';
 
 class StudentHomePage extends StatefulWidget {
   @override
@@ -137,41 +136,46 @@ class _StudentHomePageState extends State<StudentHomePage> {
   // ── Build ──────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      // ✅ SafeArea removed — StudentMainScreen header handles it
-      body: RefreshIndicator(
-        color: _accent,
-        onRefresh: _fetchToday,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(),
-              const SizedBox(height: 18),
-              _buildBanner(),
-              const SizedBox(height: 22),
-              _buildTodaySection(),
-              const SizedBox(height: 22),
-              _buildQuickAccessSection(),
-            ],
+    return ValueListenableBuilder<StudentThemeConfig>(
+      valueListenable: StudentThemeManager.themeNotifier,
+      builder: (context, theme, _) {
+        return Scaffold(
+          backgroundColor: theme.background,
+          // ✅ SafeArea removed — StudentMainScreen header handles it
+          body: RefreshIndicator(
+            color: theme.primary,
+            onRefresh: _fetchToday,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeader(theme),
+                  const SizedBox(height: 18),
+                  _buildBanner(theme),
+                  const SizedBox(height: 22),
+                  _buildTodaySection(theme),
+                  const SizedBox(height: 22),
+                  _buildQuickAccessSection(theme),
+                ],
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
   // ── Header — bell removed (lives in StudentMainScreen) ──
-  Widget _buildHeader() {
+  Widget _buildHeader(StudentThemeConfig theme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           _greeting(),
           style: TextStyle(
-            color: AppColors.textSecondary,
+            color: theme.textSecondary,
             fontSize: 12,
             fontWeight: FontWeight.w500,
           ),
@@ -180,7 +184,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
         Text(
           'Hi, $_studentName',
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: theme.textPrimary,
             fontSize: 21,
             fontWeight: FontWeight.bold,
           ),
@@ -192,12 +196,12 @@ class _StudentHomePageState extends State<StudentHomePage> {
               Icon(
                 Icons.business_rounded,
                 size: 11,
-                color: AppColors.textSecondary,
+                color: theme.textSecondary,
               ),
               const SizedBox(width: 3),
               Text(
                 _orgName,
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 11),
+                style: TextStyle(color: theme.textSecondary, fontSize: 11),
               ),
             ],
           ),
@@ -207,13 +211,13 @@ class _StudentHomePageState extends State<StudentHomePage> {
   }
 
   // ── Banner ─────────────────────────────────────────
-  Widget _buildBanner() {
+  Widget _buildBanner(StudentThemeConfig theme) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [_accent, _accent.withOpacity(0.75)],
+          colors: [theme.primary, theme.gradientEnd],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -298,7 +302,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
   );
 
   // ── Today's timetable section ──────────────────────
-  Widget _buildTodaySection() {
+  Widget _buildTodaySection(StudentThemeConfig theme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -313,7 +317,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+                      color: theme.textPrimary,
                     ),
                   ),
                   if (!_schedLoading && _todaySlots.isNotEmpty)
@@ -322,7 +326,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                       child: Text(
                         '${_todaySlots.length} period${_todaySlots.length == 1 ? '' : 's'}',
                         style: TextStyle(
-                          color: AppColors.textSecondary,
+                          color: theme.textSecondary,
                           fontSize: 11,
                         ),
                       ),
@@ -338,9 +342,9 @@ class _StudentHomePageState extends State<StudentHomePage> {
                   vertical: 5,
                 ),
                 decoration: BoxDecoration(
-                  color: _accent.withOpacity(0.07),
+                  color: theme.primary.withOpacity(0.07),
                   borderRadius: BorderRadius.circular(3),
-                  border: Border.all(color: _accent.withOpacity(0.18)),
+                  border: Border.all(color: theme.primary.withOpacity(0.18)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -348,13 +352,17 @@ class _StudentHomePageState extends State<StudentHomePage> {
                     Text(
                       'View All',
                       style: TextStyle(
-                        color: _accent,
+                        color: theme.primary,
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(width: 3),
-                    Icon(Icons.arrow_forward_rounded, size: 12, color: _accent),
+                    Icon(
+                      Icons.arrow_forward_rounded,
+                      size: 12,
+                      color: theme.primary,
+                    ),
                   ],
                 ),
               ),
@@ -364,11 +372,11 @@ class _StudentHomePageState extends State<StudentHomePage> {
         const SizedBox(height: 10),
 
         if (_schedLoading)
-          _buildSkeleton()
+          _buildSkeleton(theme)
         else if (_schedError)
-          _buildErrorCard()
+          _buildErrorCard(theme)
         else if (_todaySlots.isEmpty)
-          _buildNoClassCard()
+          _buildNoClassCard(theme)
         else
           ..._todaySlots
               .take(2)
@@ -382,7 +390,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
     );
   }
 
-  Widget _buildSkeleton() {
+  Widget _buildSkeleton(StudentThemeConfig theme) {
     return Column(
       children: List.generate(
         3,
@@ -390,7 +398,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
           margin: const EdgeInsets.only(bottom: 8),
           height: 64,
           decoration: BoxDecoration(
-            color: Colors.grey[100],
+            color: theme.cardBackground,
             borderRadius: BorderRadius.circular(6),
           ),
           child: Row(
@@ -400,7 +408,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                 height: 38,
                 margin: const EdgeInsets.only(left: 12),
                 decoration: BoxDecoration(
-                  color: Colors.teal.withOpacity(0.15),
+                  color: theme.primary.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(3),
                 ),
               ),
@@ -409,7 +417,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                 width: 28,
                 height: 28,
                 decoration: BoxDecoration(
-                  color: Colors.grey[200],
+                  color: theme.dividerColor,
                   borderRadius: BorderRadius.circular(3),
                 ),
               ),
@@ -419,9 +427,13 @@ class _StudentHomePageState extends State<StudentHomePage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(height: 11, width: 100, color: Colors.grey[200]),
+                    Container(
+                      height: 11,
+                      width: 100,
+                      color: theme.dividerColor,
+                    ),
                     const SizedBox(height: 7),
-                    Container(height: 9, width: 64, color: Colors.grey[200]),
+                    Container(height: 9, width: 64, color: theme.dividerColor),
                   ],
                 ),
               ),
@@ -432,7 +444,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
     );
   }
 
-  Widget _buildErrorCard() {
+  Widget _buildErrorCard(StudentThemeConfig theme) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
@@ -473,26 +485,26 @@ class _StudentHomePageState extends State<StudentHomePage> {
     );
   }
 
-  Widget _buildNoClassCard() {
+  Widget _buildNoClassCard(StudentThemeConfig theme) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.teal[50],
+        color: theme.primary.withOpacity(0.05),
         borderRadius: BorderRadius.circular(3),
-        border: Border.all(color: Colors.teal.withOpacity(0.18)),
+        border: Border.all(color: theme.primary.withOpacity(0.18)),
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.teal.withOpacity(0.12),
+              color: theme.primary.withOpacity(0.12),
               borderRadius: BorderRadius.circular(3),
             ),
             child: Icon(
               Icons.event_available_rounded,
-              color: Colors.teal[600],
+              color: theme.primary,
               size: 18,
             ),
           ),
@@ -506,13 +518,16 @@ class _StudentHomePageState extends State<StudentHomePage> {
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 12.5,
-                    color: Colors.teal[700],
+                    color: theme.primary,
                   ),
                 ),
                 const SizedBox(height: 1),
                 Text(
                   'Enjoy your free day',
-                  style: TextStyle(color: Colors.teal[400], fontSize: 11),
+                  style: TextStyle(
+                    color: theme.primary.withOpacity(0.8),
+                    fontSize: 11,
+                  ),
                 ),
               ],
             ),
@@ -523,7 +538,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
   }
 
   // ── Quick access section ───────────────────────────
-  Widget _buildQuickAccessSection() {
+  Widget _buildQuickAccessSection(StudentThemeConfig theme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -532,7 +547,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 14,
-            color: AppColors.textPrimary,
+            color: theme.textPrimary,
           ),
         ),
         const SizedBox(height: 12),
@@ -541,6 +556,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
           title: 'Timetable',
           subtitle: 'View your full weekly schedule',
           onTap: _goToTimetable,
+          theme: theme,
         ),
         const SizedBox(height: 8),
         _buildNavCard(
@@ -553,6 +569,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
             context,
             MaterialPageRoute(builder: (_) => StudentClassroomScreen()),
           ),
+          theme: theme,
         ),
         const SizedBox(height: 8),
         _buildNavCard(
@@ -563,6 +580,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
             context,
             MaterialPageRoute(builder: (_) => StudentAttendanceScreen()),
           ),
+          theme: theme,
         ),
         const SizedBox(height: 8),
         _buildNavCard(
@@ -573,6 +591,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
             context,
             MaterialPageRoute(builder: (_) => StudentNoticeScreen()),
           ),
+          theme: theme,
         ),
         const SizedBox(height: 8),
         _buildNavCard(
@@ -583,6 +602,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
             context,
             MaterialPageRoute(builder: (_) => StudentLeaveScreen()),
           ),
+          theme: theme,
         ),
       ],
     );
@@ -593,12 +613,13 @@ class _StudentHomePageState extends State<StudentHomePage> {
     required String title,
     required String subtitle,
     required VoidCallback onTap,
+    required StudentThemeConfig theme,
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardBackground,
         borderRadius: BorderRadius.circular(3),
-        border: Border.all(color: Colors.grey[200]!),
+        border: Border.all(color: theme.dividerColor),
       ),
       child: Material(
         color: Colors.transparent,
@@ -614,10 +635,10 @@ class _StudentHomePageState extends State<StudentHomePage> {
                   width: 38,
                   height: 38,
                   decoration: BoxDecoration(
-                    color: _accent.withOpacity(0.1),
+                    color: theme.primary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(3),
                   ),
-                  child: Icon(icon, color: _accent, size: 19),
+                  child: Icon(icon, color: theme.primary, size: 19),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -629,14 +650,14 @@ class _StudentHomePageState extends State<StudentHomePage> {
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
-                          color: AppColors.textPrimary,
+                          color: theme.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         subtitle,
                         style: TextStyle(
-                          color: AppColors.textSecondary,
+                          color: theme.textSecondary,
                           fontSize: 11.5,
                         ),
                       ),
@@ -647,13 +668,13 @@ class _StudentHomePageState extends State<StudentHomePage> {
                   width: 26,
                   height: 26,
                   decoration: BoxDecoration(
-                    color: _accent.withOpacity(0.08),
+                    color: theme.primary.withOpacity(0.08),
                     borderRadius: BorderRadius.circular(3),
                   ),
                   child: Icon(
                     Icons.arrow_forward_ios_rounded,
                     size: 11,
-                    color: _accent,
+                    color: theme.primary,
                   ),
                 ),
               ],

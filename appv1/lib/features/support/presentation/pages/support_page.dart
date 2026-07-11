@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:appv1/features/student/student_theme_manager.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
@@ -13,6 +15,7 @@ class SupportPage extends StatefulWidget {
 }
 
 class _SupportPageState extends State<SupportPage> {
+  StudentThemeConfig get theme => StudentThemeManager.themeNotifier.value;
   bool _isLoading = false;
   List<dynamic> _tickets = [];
   String _orgId = '';
@@ -97,13 +100,13 @@ class _SupportPageState extends State<SupportPage> {
           'Help & Support',
           style: TextStyle(fontWeight: FontWeight.w600, letterSpacing: 0.5),
         ),
-        backgroundColor: Colors.teal,
+        backgroundColor: theme.primary,
         foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Colors.teal))
+          ? Center(child: CircularProgressIndicator(color: theme.primary))
           : _tickets.isEmpty
               ? Center(
                   child: Column(
@@ -112,10 +115,10 @@ class _SupportPageState extends State<SupportPage> {
                       Container(
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          color: Colors.teal.withOpacity(0.1),
+                          color: theme.primary.withOpacity(0.1),
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(Icons.support_agent_rounded, size: 64, color: Colors.teal[300]),
+                        child: Icon(Icons.support_agent_rounded, size: 64, color: theme.primary.withOpacity(0.6)),
                       ),
                       const SizedBox(height: 24),
                       const Text(
@@ -171,10 +174,10 @@ class _SupportPageState extends State<SupportPage> {
                                 Container(
                                   padding: const EdgeInsets.all(10),
                                   decoration: BoxDecoration(
-                                    color: Colors.teal.withOpacity(0.1),
+                                    color: theme.primary.withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
-                                  child: const Icon(Icons.confirmation_number_outlined, color: Colors.teal, size: 20),
+                                  child: Icon(Icons.confirmation_number_outlined, color: theme.primary, size: 20),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
@@ -245,7 +248,7 @@ class _SupportPageState extends State<SupportPage> {
             _fetchTickets(); // Refresh after ticket creation
           }
         },
-        backgroundColor: Colors.teal,
+        backgroundColor: theme.primary,
         elevation: 4,
         icon: const Icon(Icons.add_circle_outline, color: Colors.white),
         label: const Text(

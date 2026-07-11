@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:appv1/features/student/student_theme_manager.dart';
+
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,6 +19,7 @@ class StudentQuizListScreen extends StatefulWidget {
 }
 
 class _StudentQuizListScreenState extends State<StudentQuizListScreen> {
+  StudentThemeConfig get theme => StudentThemeManager.themeNotifier.value;
   List _quizzes = [];
   List _attemptedQuizIds = [];
   bool _isLoading = true;
@@ -77,20 +80,20 @@ class _StudentQuizListScreenState extends State<StudentQuizListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6FAFA),
+      backgroundColor: theme.background,
 
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Colors.teal))
+          ? Center(child: CircularProgressIndicator(color: theme.primary))
           : RefreshIndicator(
               onRefresh: _fetchData,
-              color: Colors.teal,
+              color: theme.primary,
               child: _quizzes.isEmpty
                   ? Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(Icons.quiz_outlined, size: 80, color: Colors.grey[400]),
-                          const SizedBox(height: 16),
+                          SizedBox(height: 16),
                           Text('No quizzes available yet', style: TextStyle(fontSize: 18, color: Colors.grey[600])),
                         ],
                       ),
@@ -115,21 +118,21 @@ class _StudentQuizListScreenState extends State<StudentQuizListScreen> {
                               children: [
                                 Text(
                                   quiz['title'] ?? 'Untitled Quiz',
-                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                                 ),
-                                const SizedBox(height: 4),
+                                SizedBox(height: 4),
                                 Text('${quiz['subject']} • ${quiz['lessonName']}', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
-                                const SizedBox(height: 12),
+                                SizedBox(height: 12),
                                 Row(
                                   children: [
                                     DifficultyBadge(difficulty: quiz['difficulty'] ?? 'medium'),
-                                    const SizedBox(width: 8),
+                                    SizedBox(width: 8),
                                     _infoChip(Icons.timer_outlined, '${quiz['durationMinutes']} mins'),
-                                    const SizedBox(width: 8),
+                                    SizedBox(width: 8),
                                     _infoChip(Icons.help_outline, '${quiz['totalQuestions']} Qs'),
                                   ],
                                 ),
-                                const Divider(height: 24),
+                                Divider(height: 24),
                                 SizedBox(
                                   width: double.infinity,
                                   child: isAttempted
@@ -150,13 +153,13 @@ class _StudentQuizListScreenState extends State<StudentQuizListScreen> {
                                                 );
                                               },
                                               style: OutlinedButton.styleFrom(
-                                                side: const BorderSide(color: Colors.teal),
+                                                side: BorderSide(color: theme.primary),
                                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
                                               ),
-                                              child: const Text('View Result', style: TextStyle(color: Colors.teal)),
+                                              child: Text('View Result', style: TextStyle(color: theme.primary)),
                                             ),
                                           ),
-                                          const SizedBox(height: 8),
+                                          SizedBox(height: 8),
                                           SizedBox(
                                             width: double.infinity,
                                             child: ElevatedButton(
@@ -167,7 +170,7 @@ class _StudentQuizListScreenState extends State<StudentQuizListScreen> {
                                                 elevation: 0,
                                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
                                               ),
-                                              child: const Text('Already Attempted'),
+                                              child: Text('Already Attempted'),
                                             ),
                                           ),
                                         ],
@@ -184,12 +187,12 @@ class _StudentQuizListScreenState extends State<StudentQuizListScreen> {
                                             ).then((_) => _fetchData());
                                           },
                                           style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.teal,
+                                            backgroundColor: theme.primary,
                                             foregroundColor: Colors.white,
                                             elevation: 0,
                                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
                                           ),
-                                          child: const Text('Start Quiz'),
+                                          child: Text('Start Quiz'),
                                         ),
                                       ),
                                 ),
@@ -214,7 +217,7 @@ class _StudentQuizListScreenState extends State<StudentQuizListScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 12, color: Colors.grey[600]),
-          const SizedBox(width: 4),
+          SizedBox(width: 4),
           Text(label, style: TextStyle(fontSize: 11, color: Colors.grey[700])),
         ],
       ),

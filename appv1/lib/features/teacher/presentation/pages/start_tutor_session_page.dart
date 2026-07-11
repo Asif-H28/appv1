@@ -203,15 +203,19 @@ class _StartTutorSessionPageState extends State<StartTutorSessionPage> {
         body: jsonEncode(payload),
       );
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
+      final responseBody = jsonDecode(response.body);
+      final bool isSuccess = (response.statusCode == 200 || response.statusCode == 201) && 
+                             (responseBody['success'] == true || responseBody['success'] == null);
+
+      if (isSuccess) {
         _showSnackBar('Session started successfully!');
         if (mounted) Navigator.pop(context, true);
       } else {
-        final errorMsg = jsonDecode(response.body)['error'] ?? 'Failed to start session';
-        _showSnackBar(errorMsg, isError: true);
+        final errorMsg = responseBody['message'] ?? responseBody['error'] ?? 'Failed to start session';
+        _showErrorDialog(errorMsg);
       }
     } catch (e) {
-      _showSnackBar('An error occurred: $e', isError: true);
+      _showErrorDialog('An error occurred: $e');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -223,6 +227,81 @@ class _StartTutorSessionPageState extends State<StartTutorSessionPage> {
       SnackBar(
         content: Text(message),
         backgroundColor: isError ? Colors.red : Colors.green,
+      ),
+    );
+  }
+
+  void _showErrorDialog(String message) {
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.error_outline_rounded,
+                  color: Colors.red,
+                  size: 48,
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Check-in Failed',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 15,
+                  color: Colors.black54,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 28),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red.shade500,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Close',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

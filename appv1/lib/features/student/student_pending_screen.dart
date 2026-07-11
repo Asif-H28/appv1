@@ -36,7 +36,11 @@ class _StudentPendingScreenState extends State<StudentPendingScreen> {
       if (studentId.isEmpty) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Session expired. Please sign out and login again.')),
+            const SnackBar(
+              content: Text(
+                'Session expired. Please sign out and login again.',
+              ),
+            ),
           );
         }
         setState(() => _isChecking = false);
@@ -70,7 +74,10 @@ class _StudentPendingScreenState extends State<StudentPendingScreen> {
         } else if (status == 'rejected') {
           Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (_) => StudentRejectedScreen(studentName: widget.studentName)),
+            MaterialPageRoute(
+              builder: (_) =>
+                  StudentRejectedScreen(studentName: widget.studentName),
+            ),
             (route) => false,
           );
         } else {
@@ -83,13 +90,17 @@ class _StudentPendingScreenState extends State<StudentPendingScreen> {
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to check status. Try again later.')),
+          const SnackBar(
+            content: Text('Failed to check status. Try again later.'),
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Connection error. Please check your internet.')),
+          const SnackBar(
+            content: Text('Connection error. Please check your internet.'),
+          ),
         );
       }
     } finally {
@@ -307,7 +318,11 @@ class _StudentPendingScreenState extends State<StudentPendingScreen> {
                                 : const Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Icon(Icons.refresh_rounded, color: Colors.white, size: 18),
+                                      Icon(
+                                        Icons.refresh_rounded,
+                                        color: Colors.white,
+                                        size: 18,
+                                      ),
                                       SizedBox(width: 8),
                                       Text(
                                         'Check Approval Status',

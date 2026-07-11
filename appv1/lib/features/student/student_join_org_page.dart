@@ -12,7 +12,6 @@ import '../../../../core/constants/app_colors.dart';
 import '../main_app/pages/login_page.dart';
 import '../notification_studio/controllers/notification_studio_controller.dart';
 
-
 const Color _accent = Colors.teal;
 
 class StudentJoinOrgPage extends StatefulWidget {
@@ -45,7 +44,10 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage>
   static const _loadingSteps = [
     {'icon': Icons.wifi_rounded, 'msg': 'Connecting to your school...'},
     {'icon': Icons.school_rounded, 'msg': 'Finding classrooms...'},
-    {'icon': Icons.door_front_door_outlined, 'msg': 'Getting into the classroom...'},
+    {
+      'icon': Icons.door_front_door_outlined,
+      'msg': 'Getting into the classroom...',
+    },
     {'icon': Icons.auto_awesome_rounded, 'msg': 'Almost ready...'},
   ];
 
@@ -65,9 +67,10 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage>
       vsync: this,
       duration: const Duration(milliseconds: 500),
     );
-    _fadeAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _fadeController, curve: Curves.easeOut),
-    );
+    _fadeAnim = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeOut));
     _fadeController.forward();
 
     _startLoadingPhases();
@@ -111,7 +114,11 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage>
       if (studentId.isEmpty) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Session expired. Please sign out and login again.')),
+            const SnackBar(
+              content: Text(
+                'Session expired. Please sign out and login again.',
+              ),
+            ),
           );
         }
         setState(() => _isCheckingStatus = false);
@@ -143,7 +150,11 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage>
           );
         } else if (status == 'rejected') {
           Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => StudentRejectedScreen(studentName: student['name'] ?? 'Student')),
+            MaterialPageRoute(
+              builder: (_) => StudentRejectedScreen(
+                studentName: student['name'] ?? 'Student',
+              ),
+            ),
             (route) => false,
           );
         } else {
@@ -156,13 +167,17 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage>
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to check status. Try again later.')),
+          const SnackBar(
+            content: Text('Failed to check status. Try again later.'),
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Connection error. Please check your internet.')),
+          const SnackBar(
+            content: Text('Connection error. Please check your internet.'),
+          ),
         );
       }
     } finally {
@@ -235,9 +250,7 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage>
     setState(() => _isLoading = true);
     try {
       final res = await ApiService.get(
-        Uri.parse(
-          '${ApiConstants.apiBaseUrl}/student/orgs/$_orgId/classes',
-        ),
+        Uri.parse('${ApiConstants.apiBaseUrl}/student/orgs/$_orgId/classes'),
         headers: await ApiService.getHeaders(),
       );
       if (!mounted) return;
@@ -467,7 +480,10 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage>
                 clipBehavior: Clip.antiAlias,
                 child: _isLoading
                     ? AnimatedBuilder(
-                        animation: Listenable.merge([_pulseController, _fadeController]),
+                        animation: Listenable.merge([
+                          _pulseController,
+                          _fadeController,
+                        ]),
                         builder: (context, _) {
                           final phase = _loadingSteps[_loadingPhase];
                           final pulseVal = _pulseController.value;
@@ -485,7 +501,9 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage>
                                       height: 90 + (pulseVal * 16),
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
-                                        color: _accent.withOpacity(0.04 + pulseVal * 0.03),
+                                        color: _accent.withOpacity(
+                                          0.04 + pulseVal * 0.03,
+                                        ),
                                       ),
                                     ),
                                     Container(
@@ -493,7 +511,9 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage>
                                       height: 68 + (pulseVal * 8),
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
-                                        color: _accent.withOpacity(0.06 + pulseVal * 0.04),
+                                        color: _accent.withOpacity(
+                                          0.06 + pulseVal * 0.04,
+                                        ),
                                       ),
                                     ),
                                     Container(
@@ -501,14 +521,19 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage>
                                       height: 52,
                                       decoration: BoxDecoration(
                                         gradient: LinearGradient(
-                                          colors: [_accent, _accent.withOpacity(0.7)],
+                                          colors: [
+                                            _accent,
+                                            _accent.withOpacity(0.7),
+                                          ],
                                           begin: Alignment.topLeft,
                                           end: Alignment.bottomRight,
                                         ),
                                         borderRadius: BorderRadius.circular(16),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: _accent.withOpacity(0.2 + pulseVal * 0.1),
+                                            color: _accent.withOpacity(
+                                              0.2 + pulseVal * 0.1,
+                                            ),
                                             blurRadius: 16 + (pulseVal * 8),
                                             spreadRadius: 1,
                                             offset: const Offset(0, 4),
@@ -546,24 +571,33 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage>
                                 // Phase dots
                                 Row(
                                   mainAxisSize: MainAxisSize.min,
-                                  children: List.generate(_loadingSteps.length, (i) {
-                                    final isActive = i == _loadingPhase;
-                                    final isDone = i < _loadingPhase;
-                                    return AnimatedContainer(
-                                      duration: const Duration(milliseconds: 300),
-                                      margin: const EdgeInsets.symmetric(horizontal: 3),
-                                      width: isActive ? 16 : 6,
-                                      height: 6,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(3),
-                                        color: isActive
-                                            ? _accent
-                                            : isDone
-                                                ? _accent.withOpacity(0.4)
-                                                : _accent.withOpacity(0.12),
-                                      ),
-                                    );
-                                  }),
+                                  children: List.generate(
+                                    _loadingSteps.length,
+                                    (i) {
+                                      final isActive = i == _loadingPhase;
+                                      final isDone = i < _loadingPhase;
+                                      return AnimatedContainer(
+                                        duration: const Duration(
+                                          milliseconds: 300,
+                                        ),
+                                        margin: const EdgeInsets.symmetric(
+                                          horizontal: 3,
+                                        ),
+                                        width: isActive ? 16 : 6,
+                                        height: 6,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(
+                                            3,
+                                          ),
+                                          color: isActive
+                                              ? _accent
+                                              : isDone
+                                              ? _accent.withOpacity(0.4)
+                                              : _accent.withOpacity(0.12),
+                                        ),
+                                      );
+                                    },
+                                  ),
                                 ),
                               ],
                             ),
@@ -1059,7 +1093,11 @@ class _StudentJoinOrgPageState extends State<StudentJoinOrgPage>
                     : const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.refresh_rounded, color: Colors.white, size: 18),
+                          Icon(
+                            Icons.refresh_rounded,
+                            color: Colors.white,
+                            size: 18,
+                          ),
                           SizedBox(width: 8),
                           Text(
                             'Check Approval Status',

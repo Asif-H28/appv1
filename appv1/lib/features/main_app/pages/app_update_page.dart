@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:appv1/features/student/student_theme_manager.dart';
+
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -15,6 +17,7 @@ class AppUpdatePage extends StatefulWidget {
 }
 
 class _AppUpdatePageState extends State<AppUpdatePage> {
+  StudentThemeConfig get theme => StudentThemeManager.themeNotifier.value;
   String _currentVersion = '...';
   String _latestVersion = '';
   String _releaseNotes = '';
@@ -149,7 +152,7 @@ class _AppUpdatePageState extends State<AppUpdatePage> {
               _handleConflictFlow();
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.teal,
+              backgroundColor: theme.primary,
               foregroundColor: Colors.white,
               elevation: 0,
             ),
@@ -212,7 +215,7 @@ class _AppUpdatePageState extends State<AppUpdatePage> {
             child: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Colors.teal.shade700, Colors.teal.shade400],
+                  colors: [theme.primary, theme.primary.withOpacity(0.8)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -229,7 +232,7 @@ class _AppUpdatePageState extends State<AppUpdatePage> {
                   child: Row(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+                        icon: Icon(Icons.arrow_back_ios_new, color: Colors.white),
                         onPressed: () => Navigator.pop(context),
                       ),
                       const Expanded(
@@ -269,7 +272,7 @@ class _AppUpdatePageState extends State<AppUpdatePage> {
                               borderRadius: BorderRadius.circular(24),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.teal.withOpacity(0.15),
+                                  color: theme.primary.withOpacity(0.15),
                                   blurRadius: 24,
                                   offset: const Offset(0, 12),
                                 ),
@@ -282,7 +285,7 @@ class _AppUpdatePageState extends State<AppUpdatePage> {
                                   style: TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.teal.shade900,
+                                    color: theme.textPrimary,
                                   ),
                                 ),
                                 const SizedBox(height: 12),
@@ -293,7 +296,7 @@ class _AppUpdatePageState extends State<AppUpdatePage> {
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: Colors.teal.shade700.withOpacity(0.8),
+                                    color: theme.primary.withOpacity(0.8),
                                     height: 1.5,
                                   ),
                                 ),
@@ -307,7 +310,7 @@ class _AppUpdatePageState extends State<AppUpdatePage> {
                                 if (_isDownloading)
                                   _buildDownloadProgressIndicator()
                                 else if (_isLoading)
-                                  const CircularProgressIndicator(color: Colors.teal)
+                                  CircularProgressIndicator(color: theme.primary)
                                 else ...[
                                   if (hasUpdate)
                                     SizedBox(
@@ -316,10 +319,10 @@ class _AppUpdatePageState extends State<AppUpdatePage> {
                                       child: ElevatedButton(
                                         onPressed: _handleUpdate,
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.teal.shade600,
+                                          backgroundColor: theme.primary,
                                           foregroundColor: Colors.white,
                                           elevation: 4,
-                                          shadowColor: Colors.teal.withOpacity(0.4),
+                                          shadowColor: theme.primary.withOpacity(0.4),
                                           shape: RoundedRectangleBorder(
                                             borderRadius: BorderRadius.circular(16),
                                           ),
@@ -341,8 +344,8 @@ class _AppUpdatePageState extends State<AppUpdatePage> {
                                       child: OutlinedButton(
                                         onPressed: _initAndCheck,
                                         style: OutlinedButton.styleFrom(
-                                          foregroundColor: Colors.teal.shade700,
-                                          side: BorderSide(color: Colors.teal.shade200, width: 2),
+                                          foregroundColor: theme.primary,
+                                          side: BorderSide(color: theme.primary.withOpacity(0.5), width: 2),
                                           shape: RoundedRectangleBorder(
                                             borderRadius: BorderRadius.circular(16),
                                           ),
@@ -363,18 +366,18 @@ class _AppUpdatePageState extends State<AppUpdatePage> {
                                   Container(
                                     padding: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
-                                      color: Colors.teal.shade50,
+                                      color: theme.primary.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: Colors.teal.shade200),
+                                      border: Border.all(color: theme.primary.withOpacity(0.5)),
                                     ),
                                     child: Row(
                                       children: [
-                                        Icon(Icons.error_outline_rounded, color: Colors.teal.shade700, size: 20),
+                                        Icon(Icons.error_outline_rounded, color: theme.primary, size: 20),
                                         const SizedBox(width: 8),
                                         Expanded(
                                           child: Text(
                                             _errorMessage!,
-                                            style: TextStyle(color: Colors.teal.shade900, fontSize: 13),
+                                            style: TextStyle(color: theme.textPrimary, fontSize: 13),
                                           ),
                                         ),
                                       ],
@@ -407,14 +410,14 @@ class _AppUpdatePageState extends State<AppUpdatePage> {
           color: Colors.white,
           shape: BoxShape.circle,
           boxShadow: [
-            BoxShadow(color: Colors.teal.withOpacity(0.2), blurRadius: 20, offset: const Offset(0, 10)),
+            BoxShadow(color: theme.primary.withOpacity(0.2), blurRadius: 20, offset: const Offset(0, 10)),
           ],
         ),
-        child: const Center(
+        child: Center(
           child: SizedBox(
             width: 36,
             height: 36,
-            child: CircularProgressIndicator(color: Colors.teal, strokeWidth: 3),
+            child: CircularProgressIndicator(color: theme.primary, strokeWidth: 3),
           ),
         ),
       );
@@ -439,12 +442,12 @@ class _AppUpdatePageState extends State<AppUpdatePage> {
           width: 86,
           height: 86,
           decoration: BoxDecoration(
-            color: hasUpdate ? Colors.teal.shade50 : Colors.teal.shade50,
+            color: hasUpdate ? theme.primary.withOpacity(0.1) : theme.primary.withOpacity(0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(
             hasUpdate ? Icons.cloud_download_rounded : Icons.verified_rounded,
-            color: Colors.teal.shade600,
+            color: theme.primary,
             size: 46,
           ),
         ),
@@ -456,15 +459,15 @@ class _AppUpdatePageState extends State<AppUpdatePage> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
       decoration: BoxDecoration(
-        color: Colors.teal.shade50.withOpacity(0.5),
+        color: theme.primary.withOpacity(0.1).withOpacity(0.5),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.teal.shade100.withOpacity(0.5)),
+        border: Border.all(color: theme.primary.withOpacity(0.3).withOpacity(0.5)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           _buildVersionCol('CURRENT', _currentVersion),
-          Container(width: 1, height: 40, color: Colors.teal.shade200.withOpacity(0.5)),
+          Container(width: 1, height: 40, color: theme.primary.withOpacity(0.5).withOpacity(0.5)),
           _buildVersionCol('LATEST', _isLoading ? '...' : (_latestVersion.isEmpty ? _currentVersion : _latestVersion)),
         ],
       ),
@@ -480,7 +483,7 @@ class _AppUpdatePageState extends State<AppUpdatePage> {
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w700,
-            color: Colors.teal.shade700,
+            color: theme.primary,
             letterSpacing: 1.0,
           ),
         ),
@@ -490,7 +493,7 @@ class _AppUpdatePageState extends State<AppUpdatePage> {
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: Colors.teal.shade900,
+            color: theme.textPrimary,
           ),
         ),
       ],
@@ -503,11 +506,11 @@ class _AppUpdatePageState extends State<AppUpdatePage> {
       children: [
         Row(
           children: [
-            Icon(Icons.new_releases_rounded, size: 18, color: Colors.teal.shade600),
+            Icon(Icons.new_releases_rounded, size: 18, color: theme.primary),
             const SizedBox(width: 8),
             Text(
               'What\'s New',
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.teal.shade900),
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: theme.textPrimary),
             ),
           ],
         ),
@@ -516,9 +519,9 @@ class _AppUpdatePageState extends State<AppUpdatePage> {
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.teal.shade50.withOpacity(0.3),
+            color: theme.primary.withOpacity(0.1).withOpacity(0.3),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.teal.shade100.withOpacity(0.5)),
+            border: Border.all(color: theme.primary.withOpacity(0.3).withOpacity(0.5)),
           ),
           constraints: const BoxConstraints(maxHeight: 140),
           child: Scrollbar(
@@ -526,7 +529,7 @@ class _AppUpdatePageState extends State<AppUpdatePage> {
             child: SingleChildScrollView(
               child: Text(
                 _releaseNotes,
-                style: TextStyle(fontSize: 13, color: Colors.teal.shade800, height: 1.5),
+                style: TextStyle(fontSize: 13, color: theme.primary, height: 1.5),
               ),
             ),
           ),
@@ -543,11 +546,11 @@ class _AppUpdatePageState extends State<AppUpdatePage> {
           children: [
             Text(
               'Downloading...',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.teal.shade700),
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: theme.primary),
             ),
             Text(
               '${(_downloadProgress * 100).toStringAsFixed(0)}%',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.teal.shade700),
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: theme.primary),
             ),
           ],
         ),
@@ -556,8 +559,8 @@ class _AppUpdatePageState extends State<AppUpdatePage> {
           borderRadius: BorderRadius.circular(6),
           child: LinearProgressIndicator(
             value: _downloadProgress,
-            backgroundColor: Colors.teal.shade100,
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.teal.shade600),
+            backgroundColor: theme.primary.withOpacity(0.3),
+            valueColor: AlwaysStoppedAnimation<Color>(theme.primary),
             minHeight: 8,
           ),
         ),

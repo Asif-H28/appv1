@@ -2,10 +2,10 @@ import 'package:appv1/core/constants/api_constants.dart';
 import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:appv1/features/student/student_theme_manager.dart';
 import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../../../core/constants/app_colors.dart';
 import 'student_results_widgets.dart';
 import 'student_result_detail_page.dart';
 
@@ -162,63 +162,67 @@ class _StudentResultsPageState extends State<StudentResultsPage>
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // ── Top control bar ──────────────────────────
-        ResultsTopBar(
-          tests: _tests,
-          selectedTest: _selectedTest,
-          testsLoading: _testsLoading,
-          tabController: _tabController,
-          onTestSelected: _onTestSelected,
-        ),
-        const Divider(height: 1, thickness: 1, color: Color(0xFFF0F0F0)),
+    return ValueListenableBuilder<StudentThemeConfig>(
+      valueListenable: StudentThemeManager.themeNotifier,
+      builder: (context, theme, _) {
+        return Column(
+          children: [
+            // ── Top control bar ──────────────────────────
+            ResultsTopBar(
+              tests: _tests,
+              selectedTest: _selectedTest,
+              testsLoading: _testsLoading,
+              tabController: _tabController,
+              onTestSelected: _onTestSelected,
+            ),
+            const Divider(height: 1, thickness: 1, color: Color(0xFFF0F0F0)),
 
-        // ── Content ──────────────────────────────────
-        Expanded(
-          child: _testsLoading
-              ? const ResultsSkeleton()
-              : _testsError
-              ? ResultsErrorState(onRetry: _fetchTests)
-              : _tests.isEmpty
-              ? const ResultsNoTestsState()
-              : TabBarView(
-                  controller: _tabController,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: [
-                    // My Result tab
-                    _resultsLoading
-                        ? const ResultsSkeleton()
-                        : _resultsError
-                        ? ResultsErrorState(
-                            onRetry: () => _fetchResults(
-                              _selectedTest?['testId']?.toString() ?? '',
-                            ),
-                          )
-                        : _myResult == null
-                        ? const ResultsNoResultsState()
-                        : MyResultTab(result: _myResult!, rank: _myRank),
+            // ── Content ──────────────────────────────────
+            Expanded(
+              child: _testsLoading
+                  ? const ResultsSkeleton()
+                  : _testsError
+                  ? ResultsErrorState(onRetry: _fetchTests)
+                  : _tests.isEmpty
+                  ? const ResultsNoTestsState()
+                  : TabBarView(
+                      controller: _tabController,
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: [
+                        // My Result tab
+                        _resultsLoading
+                            ? const ResultsSkeleton()
+                            : _resultsError
+                            ? ResultsErrorState(
+                                onRetry: () => _fetchResults(
+                                  _selectedTest?['testId']?.toString() ?? '',
+                                ),
+                              )
+                            : _myResult == null
+                            ? const ResultsNoResultsState()
+                            : MyResultTab(result: _myResult!, rank: _myRank),
 
-                    // Class Results tab
-                    _resultsLoading
-                        ? const ResultsSkeleton()
-                        : _resultsError
-                        ? ResultsErrorState(
-                            onRetry: () => _fetchResults(
-                              _selectedTest?['testId']?.toString() ?? '',
-                            ),
-                          )
-                        : _results.isEmpty
-                        ? const ResultsNoResultsState()
-                        : ClassResultsTab(
-                            results: _results,
-                            studentId: _studentId,
-                          ),
-                  ],
-                ),
-        ),
-      ],
+                        // Class Results tab
+                        _resultsLoading
+                            ? const ResultsSkeleton()
+                            : _resultsError
+                            ? ResultsErrorState(
+                                onRetry: () => _fetchResults(
+                                  _selectedTest?['testId']?.toString() ?? '',
+                                ),
+                              )
+                            : _results.isEmpty
+                            ? const ResultsNoResultsState()
+                            : ClassResultsTab(
+                                results: _results,
+                                studentId: _studentId,
+                              ),
+                      ],
+                    ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
-

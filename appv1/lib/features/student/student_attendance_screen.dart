@@ -5,11 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
-import '../../../../core/constants/app_colors.dart';
+import 'student_theme_manager.dart';
 import 'student_attendance_summary_card.dart';
 import 'student_attendance_records_list.dart';
-
-const Color _accent = Colors.teal;
 
 class StudentAttendanceScreen extends StatefulWidget {
   @override
@@ -115,71 +113,77 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,
-          statusBarIconBrightness: Brightness.light,
-        ),
-        child: Column(
-          children: [
-            // ── Header ──
-            _buildHeader(),
-
-            // ── Body ──
-            Expanded(
-              child: _isLoading
-                  ? _buildLoader()
-                  : _error.isNotEmpty
-                  ? _buildError()
-                  : RefreshIndicator(
-                      color: _accent,
-                      onRefresh: _fetchSummary,
-                      child: SingleChildScrollView(
-                        physics: AlwaysScrollableScrollPhysics(),
-                        padding: EdgeInsets.fromLTRB(14, 16, 14, 40),
-                        child: Column(
-                          children: [
-                            _buildCalendar(),
-                            StudentAttendanceSummaryCard(
-                              totalDays: _totalDays,
-                              totalPresent: _totalPresent,
-                              totalAbsent: _totalAbsent,
-                              percentage: _percentage,
-                              statusColor: _statusColor,
-                              statusLabel: _statusLabel,
-                            ),
-                            SizedBox(height: 16),
-                            StudentAttendanceRecordsList(records: _records),
-                          ],
-                        ),
-                      ),
-                    ),
+    return ValueListenableBuilder<StudentThemeConfig>(
+      valueListenable: StudentThemeManager.themeNotifier,
+      builder: (context, theme, _) {
+        return Scaffold(
+          backgroundColor: theme.background,
+          body: AnnotatedRegion<SystemUiOverlayStyle>(
+            value: SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              statusBarIconBrightness: Brightness.light,
             ),
-          ],
-        ),
-      ),
+            child: Column(
+              children: [
+                // ── Header ──
+                _buildHeader(theme),
+
+                // ── Body ──
+                Expanded(
+                  child: _isLoading
+                      ? _buildLoader(theme)
+                      : _error.isNotEmpty
+                      ? _buildError(theme)
+                      : RefreshIndicator(
+                          color: theme.primary,
+                          onRefresh: _fetchSummary,
+                          child: SingleChildScrollView(
+                            physics: AlwaysScrollableScrollPhysics(),
+                            padding: EdgeInsets.fromLTRB(14, 16, 14, 40),
+                            child: Column(
+                              children: [
+                                _buildCalendar(theme),
+                                StudentAttendanceSummaryCard(
+                                  totalDays: _totalDays,
+                                  totalPresent: _totalPresent,
+                                  totalAbsent: _totalAbsent,
+                                  percentage: _percentage,
+                                  statusColor: _statusColor,
+                                  statusLabel: _statusLabel,
+                                ),
+                                SizedBox(height: 16),
+                                StudentAttendanceRecordsList(records: _records),
+                              ],
+                            ),
+                          ),
+                        ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildCalendar() {
+  Widget _buildCalendar(StudentThemeConfig theme) {
     final year = _selectedDate.year;
     final month = _selectedDate.month;
     final daysInMonth = DateUtils.getDaysInMonth(year, month);
     final firstDay = DateTime(year, month, 1);
     final firstWeekday = firstDay.weekday; // 1=Mon, 7=Sun
     final emptyDays = firstWeekday % 7; // Sunday=0, Monday=1, ..., Saturday=6
-    
+
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    
+
     final attendanceMap = <int, String>{};
     for (var record in _records) {
       final dateStr = record['date']?.toString() ?? '';
       final dt = DateTime.tryParse(dateStr);
       if (dt != null && dt.year == year && dt.month == month) {
-        attendanceMap[dt.day] = record['attendance']?.toString().toLowerCase() ?? '';
+        attendanceMap[dt.day] =
+            record['attendance']?.toString().toLowerCase() ?? '';
       }
     }
 
@@ -187,9 +191,9 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
       padding: EdgeInsets.all(16),
       margin: EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardBackground,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[200]!),
+        border: Border.all(color: theme.dividerColor),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
@@ -205,7 +209,7 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(
-                icon: Icon(Icons.chevron_left, color: _accent),
+                icon: Icon(Icons.chevron_left, color: theme.primary),
                 onPressed: () {
                   setState(() {
                     _selectedDate = DateTime(year, month - 1);
@@ -215,10 +219,14 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
               ),
               Text(
                 DateFormat('MMMM yyyy').format(_selectedDate),
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textPrimary),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: theme.textPrimary,
+                ),
               ),
               IconButton(
-                icon: Icon(Icons.chevron_right, color: _accent),
+                icon: Icon(Icons.chevron_right, color: theme.primary),
                 onPressed: () {
                   setState(() {
                     _selectedDate = DateTime(year, month + 1);
@@ -233,11 +241,20 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-                .map((d) => Expanded(
-                      child: Center(
-                        child: Text(d, style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, fontSize: 12)),
+                .map(
+                  (d) => Expanded(
+                    child: Center(
+                      child: Text(
+                        d,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                          fontSize: 12,
+                        ),
                       ),
-                    ))
+                    ),
+                  ),
+                )
                 .toList(),
           ),
           SizedBox(height: 8),
@@ -257,13 +274,13 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
               }
               final day = index - emptyDays + 1;
               final currentDayDate = DateTime(year, month, day);
-              
+
               final isFuture = currentDayDate.isAfter(today);
               final status = attendanceMap[day];
-              
+
               Color bgColor = Colors.transparent;
-              Color textColor = AppColors.textPrimary;
-              
+              Color textColor = theme.textPrimary;
+
               if (isFuture) {
                 textColor = Colors.grey[400]!;
               } else if (status == 'present') {
@@ -285,7 +302,11 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
                 ),
                 child: Text(
                   '$day',
-                  style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 13),
+                  style: TextStyle(
+                    color: textColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
                 ),
               );
             },
@@ -297,11 +318,11 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
 
   // ── Header ────────────────────────────────────────────
 
-  Widget _buildHeader() {
+  Widget _buildHeader(StudentThemeConfig theme) {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [_accent, _accent.withOpacity(0.75)],
+          colors: [theme.primary, theme.primary.withOpacity(0.75)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -416,21 +437,21 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
 
   // ── States ────────────────────────────────────────────
 
-  Widget _buildLoader() => Center(
+  Widget _buildLoader(StudentThemeConfig theme) => Center(
     child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        CircularProgressIndicator(color: _accent, strokeWidth: 2.5),
+        CircularProgressIndicator(color: theme.primary, strokeWidth: 2.5),
         SizedBox(height: 14),
         Text(
           'Loading attendance...',
-          style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+          style: TextStyle(color: theme.textSecondary, fontSize: 13),
         ),
       ],
     ),
   );
 
-  Widget _buildError() => Center(
+  Widget _buildError(StudentThemeConfig theme) => Center(
     child: Padding(
       padding: EdgeInsets.all(24),
       child: Column(
@@ -454,7 +475,7 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
             _error,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: AppColors.textPrimary,
+              color: theme.textPrimary,
               fontWeight: FontWeight.w600,
               fontSize: 14,
             ),
@@ -465,7 +486,7 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               decoration: BoxDecoration(
-                color: _accent,
+                color: theme.primary,
                 borderRadius: BorderRadius.circular(3),
               ),
               child: Text(
@@ -483,4 +504,3 @@ class _StudentAttendanceScreenState extends State<StudentAttendanceScreen> {
     ),
   );
 }
-

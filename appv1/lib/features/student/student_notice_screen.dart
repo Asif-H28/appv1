@@ -4,10 +4,9 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
+import 'student_theme_manager.dart';
 import 'student_class_notices_tab.dart';
 import 'student_school_notices_tab.dart';
-
-const Color _accent = Colors.teal;
 
 class StudentNoticeScreen extends StatefulWidget {
   @override
@@ -32,33 +31,41 @@ class _StudentNoticeScreenState extends State<StudentNoticeScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,
-          statusBarIconBrightness: Brightness.light,
-        ),
-        child: Column(
-          children: [
-            _buildHeader(),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [StudentClassNoticesTab(), StudentSchoolNoticesTab()],
-              ),
+    return ValueListenableBuilder<StudentThemeConfig>(
+      valueListenable: StudentThemeManager.themeNotifier,
+      builder: (context, theme, _) {
+        return Scaffold(
+          backgroundColor: theme.background,
+          body: AnnotatedRegion<SystemUiOverlayStyle>(
+            value: SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              statusBarIconBrightness: Brightness.light,
             ),
-          ],
-        ),
-      ),
+            child: Column(
+              children: [
+                _buildHeader(theme),
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      StudentClassNoticesTab(),
+                      StudentSchoolNoticesTab(),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(StudentThemeConfig theme) {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [_accent, _accent.withOpacity(0.75)],
+          colors: [theme.primary, theme.primary.withOpacity(0.75)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -144,7 +151,7 @@ class _StudentNoticeScreenState extends State<StudentNoticeScreen>
                   borderRadius: BorderRadius.circular(3),
                 ),
                 indicatorSize: TabBarIndicatorSize.tab,
-                labelColor: _accent,
+                labelColor: theme.primary,
                 unselectedLabelColor: Colors.white.withOpacity(0.85),
                 labelStyle: TextStyle(
                   fontWeight: FontWeight.bold,

@@ -6,10 +6,9 @@ import 'package:appv1/core/services/api_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
+import 'student_theme_manager.dart';
 import 'student_notice_card.dart';
 import 'student_notice_detail_screen.dart';
-
-const Color _accent = Colors.teal;
 
 class StudentClassNoticesTab extends StatefulWidget {
   @override
@@ -85,50 +84,56 @@ class _StudentClassNoticesTabState extends State<StudentClassNoticesTab>
   Widget build(BuildContext context) {
     super.build(context);
 
-    if (_isLoading) return _buildLoader();
-    if (_error.isNotEmpty) return _buildError();
-    if (_notices.isEmpty) return _buildEmpty();
+    return ValueListenableBuilder<StudentThemeConfig>(
+      valueListenable: StudentThemeManager.themeNotifier,
+      builder: (context, theme, _) {
+        if (_isLoading) return _buildLoader(theme);
+        if (_error.isNotEmpty) return _buildError(theme);
+        if (_notices.isEmpty) return _buildEmpty(theme);
 
-    return RefreshIndicator(
-      color: _accent,
-      onRefresh: _fetchNotices,
-      child: ListView.separated(
-        padding: EdgeInsets.fromLTRB(
-          14,
-          16,
-          14,
-          40 + MediaQuery.of(context).padding.bottom,
-        ),
-        itemCount: _notices.length,
-        separatorBuilder: (_, __) => SizedBox(height: 10),
-        itemBuilder: (_, i) => StudentNoticeCard(
-          notice: _notices[i],
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => StudentNoticeDetailScreen(notice: _notices[i]),
+        return RefreshIndicator(
+          color: theme.primary,
+          onRefresh: _fetchNotices,
+          child: ListView.separated(
+            padding: EdgeInsets.fromLTRB(
+              14,
+              16,
+              14,
+              40 + MediaQuery.of(context).padding.bottom,
+            ),
+            itemCount: _notices.length,
+            separatorBuilder: (_, __) => SizedBox(height: 10),
+            itemBuilder: (_, i) => StudentNoticeCard(
+              notice: _notices[i],
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      StudentNoticeDetailScreen(notice: _notices[i]),
+                ),
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildLoader() => Center(
+  Widget _buildLoader(StudentThemeConfig theme) => Center(
     child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        CircularProgressIndicator(color: _accent, strokeWidth: 2.5),
+        CircularProgressIndicator(color: theme.primary, strokeWidth: 2.5),
         SizedBox(height: 14),
         Text(
           'Loading notices...',
-          style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+          style: TextStyle(color: theme.textSecondary, fontSize: 13),
         ),
       ],
     ),
   );
 
-  Widget _buildError() => Center(
+  Widget _buildError(StudentThemeConfig theme) => Center(
     child: Padding(
       padding: EdgeInsets.all(24),
       child: Column(
@@ -152,7 +157,7 @@ class _StudentClassNoticesTabState extends State<StudentClassNoticesTab>
             _error,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: AppColors.textPrimary,
+              color: theme.textPrimary,
               fontWeight: FontWeight.w600,
               fontSize: 14,
             ),
@@ -163,7 +168,7 @@ class _StudentClassNoticesTabState extends State<StudentClassNoticesTab>
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               decoration: BoxDecoration(
-                color: _accent,
+                color: theme.primary,
                 borderRadius: BorderRadius.circular(3),
               ),
               child: Text(
@@ -181,7 +186,7 @@ class _StudentClassNoticesTabState extends State<StudentClassNoticesTab>
     ),
   );
 
-  Widget _buildEmpty() => Center(
+  Widget _buildEmpty(StudentThemeConfig theme) => Center(
     child: Padding(
       padding: EdgeInsets.all(32),
       child: Column(
@@ -192,11 +197,11 @@ class _StudentClassNoticesTabState extends State<StudentClassNoticesTab>
             height: 70,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: _accent.withOpacity(0.08),
+              color: theme.primary.withOpacity(0.08),
             ),
             child: Icon(
               Icons.notifications_none_rounded,
-              color: _accent,
+              color: theme.primary,
               size: 32,
             ),
           ),
@@ -206,7 +211,7 @@ class _StudentClassNoticesTabState extends State<StudentClassNoticesTab>
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 15,
-              color: AppColors.textPrimary,
+              color: theme.textPrimary,
             ),
           ),
           SizedBox(height: 6),
@@ -214,7 +219,7 @@ class _StudentClassNoticesTabState extends State<StudentClassNoticesTab>
             'Your teacher hasn\'t posted any\nnotices for this classroom yet.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: AppColors.textSecondary,
+              color: theme.textSecondary,
               fontSize: 12,
               height: 1.5,
             ),
@@ -224,4 +229,3 @@ class _StudentClassNoticesTabState extends State<StudentClassNoticesTab>
     ),
   );
 }
-

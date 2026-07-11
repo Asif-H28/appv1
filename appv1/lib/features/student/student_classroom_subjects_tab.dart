@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_colors.dart';
-
-const Color _accent = Colors.teal;
+import 'package:appv1/features/student/student_theme_manager.dart';
 
 class StudentClassroomSubjectsTab extends StatefulWidget {
   final Map<String, dynamic> classroom;
@@ -14,6 +12,7 @@ class StudentClassroomSubjectsTab extends StatefulWidget {
 
 class _StudentClassroomSubjectsTabState
     extends State<StudentClassroomSubjectsTab> {
+  StudentThemeConfig get theme => StudentThemeManager.themeNotifier.value;
   // Track which subjects are expanded
   final Set<int> _expanded = {};
 
@@ -29,46 +28,57 @@ class _StudentClassroomSubjectsTabState
 
   @override
   Widget build(BuildContext context) {
-    if (_subjects.isEmpty) return _buildEmpty();
+    return ValueListenableBuilder<StudentThemeConfig>(
+      valueListenable: StudentThemeManager.themeNotifier,
+      builder: (context, theme, _) {
+        if (_subjects.isEmpty) return _buildEmpty();
 
-    // ── Overall progress across all subjects ──
-    int totalLessons = 0;
-    int completedLessons = 0;
-    for (final s in _subjects) {
-      final lessons = s['lessons'] as List<dynamic>? ?? [];
-      totalLessons += lessons.length;
-      completedLessons += lessons.where((l) => l['completed'] == true).length;
-    }
-    final overallProgress = totalLessons == 0
-        ? 0.0
-        : completedLessons / totalLessons;
+        // ── Overall progress across all subjects ──
+        int totalLessons = 0;
+        int completedLessons = 0;
+        for (final s in _subjects) {
+          final lessons = s['lessons'] as List<dynamic>? ?? [];
+          totalLessons += lessons.length;
+          completedLessons += lessons
+              .where((l) => l['completed'] == true)
+              .length;
+        }
+        final overallProgress = totalLessons == 0
+            ? 0.0
+            : completedLessons / totalLessons;
 
-    return ListView(
-      padding: EdgeInsets.fromLTRB(14, 16, 14, 40),
-      children: [
-        // ── Overall progress card ──
-        _buildOverallProgress(completedLessons, totalLessons, overallProgress),
-        SizedBox(height: 20),
+        return ListView(
+          padding: EdgeInsets.fromLTRB(14, 16, 14, 40),
+          children: [
+            // ── Overall progress card ──
+            _buildOverallProgress(
+              completedLessons,
+              totalLessons,
+              overallProgress,
+            ),
+            SizedBox(height: 20),
 
-        Text(
-          'Subjects',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 14,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        SizedBox(height: 10),
+            Text(
+              'Subjects',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: theme.textPrimary,
+              ),
+            ),
+            SizedBox(height: 10),
 
-        // ── Subject cards ──
-        ...List.generate(_subjects.length, (i) {
-          final subject = _subjects[i] as Map<String, dynamic>;
-          return Padding(
-            padding: EdgeInsets.only(bottom: 10),
-            child: _buildSubjectCard(subject, i),
-          );
-        }),
-      ],
+            // ── Subject cards ──
+            ...List.generate(_subjects.length, (i) {
+              final subject = _subjects[i] as Map<String, dynamic>;
+              return Padding(
+                padding: EdgeInsets.only(bottom: 10),
+                child: _buildSubjectCard(subject, i),
+              );
+            }),
+          ],
+        );
+      },
     );
   }
 
@@ -79,7 +89,7 @@ class _StudentClassroomSubjectsTabState
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [_accent, _accent.withOpacity(0.75)],
+          colors: [theme.primary, theme.primary.withOpacity(0.75)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -172,7 +182,9 @@ class _StudentClassroomSubjectsTabState
         color: Colors.white,
         borderRadius: BorderRadius.circular(3),
         border: Border.all(
-          color: isExpanded ? _accent.withOpacity(0.35) : Colors.grey[200]!,
+          color: isExpanded
+              ? theme.primary.withOpacity(0.35)
+              : Colors.grey[200]!,
         ),
       ),
       child: Column(
@@ -196,14 +208,14 @@ class _StudentClassroomSubjectsTabState
                     width: 38,
                     height: 38,
                     decoration: BoxDecoration(
-                      color: _accent.withOpacity(0.1),
+                      color: theme.primary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(3),
                     ),
                     child: Center(
                       child: Text(
                         name.isNotEmpty ? name[0].toUpperCase() : 'S',
                         style: TextStyle(
-                          color: _accent,
+                          color: theme.primary,
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
@@ -220,7 +232,7 @@ class _StudentClassroomSubjectsTabState
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 13,
-                            color: AppColors.textPrimary,
+                            color: theme.textPrimary,
                           ),
                         ),
                         SizedBox(height: 4),
@@ -234,7 +246,7 @@ class _StudentClassroomSubjectsTabState
                                   minHeight: 5,
                                   backgroundColor: Colors.grey[100]!,
                                   valueColor: AlwaysStoppedAnimation<Color>(
-                                    _accent,
+                                    theme.primary,
                                   ),
                                 ),
                               ),
@@ -243,7 +255,7 @@ class _StudentClassroomSubjectsTabState
                             Text(
                               '$done/$total',
                               style: TextStyle(
-                                color: AppColors.textSecondary,
+                                color: theme.textSecondary,
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -257,13 +269,13 @@ class _StudentClassroomSubjectsTabState
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: _accent.withOpacity(0.08),
+                      color: theme.primary.withOpacity(0.08),
                       borderRadius: BorderRadius.circular(3),
                     ),
                     child: Text(
                       '$total lessons',
                       style: TextStyle(
-                        color: _accent,
+                        color: theme.primary,
                         fontSize: 10.5,
                         fontWeight: FontWeight.w600,
                       ),
@@ -274,7 +286,7 @@ class _StudentClassroomSubjectsTabState
                     isExpanded
                         ? Icons.keyboard_arrow_up_rounded
                         : Icons.keyboard_arrow_down_rounded,
-                    color: AppColors.textSecondary,
+                    color: theme.textSecondary,
                     size: 20,
                   ),
                 ],
@@ -290,10 +302,7 @@ class _StudentClassroomSubjectsTabState
                 padding: EdgeInsets.all(16),
                 child: Text(
                   'No lessons added yet.',
-                  style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(color: theme.textSecondary, fontSize: 12),
                 ),
               )
             else
@@ -336,14 +345,16 @@ class _StudentClassroomSubjectsTabState
               height: 22,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: completed ? _accent.withOpacity(0.1) : Colors.grey[100],
+                color: completed
+                    ? theme.primary.withOpacity(0.1)
+                    : Colors.grey[100],
                 border: Border.all(
-                  color: completed ? _accent : Colors.grey[300]!,
+                  color: completed ? theme.primary : Colors.grey[300]!,
                   width: 1.5,
                 ),
               ),
               child: completed
-                  ? Icon(Icons.check_rounded, color: _accent, size: 12)
+                  ? Icon(Icons.check_rounded, color: theme.primary, size: 12)
                   : null,
             ),
             SizedBox(width: 12),
@@ -352,12 +363,10 @@ class _StudentClassroomSubjectsTabState
                 name,
                 style: TextStyle(
                   fontSize: 12.5,
-                  color: completed
-                      ? AppColors.textSecondary
-                      : AppColors.textPrimary,
+                  color: completed ? theme.textSecondary : theme.textPrimary,
                   fontWeight: completed ? FontWeight.w400 : FontWeight.w500,
                   decoration: completed ? TextDecoration.lineThrough : null,
-                  decorationColor: AppColors.textSecondary,
+                  decorationColor: theme.textSecondary,
                 ),
               ),
             ),
@@ -397,9 +406,13 @@ class _StudentClassroomSubjectsTabState
             height: 64,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: _accent.withOpacity(0.08),
+              color: theme.primary.withOpacity(0.08),
             ),
-            child: Icon(Icons.menu_book_rounded, color: _accent, size: 30),
+            child: Icon(
+              Icons.menu_book_rounded,
+              color: theme.primary,
+              size: 30,
+            ),
           ),
           SizedBox(height: 14),
           Text(
@@ -407,7 +420,7 @@ class _StudentClassroomSubjectsTabState
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 15,
-              color: AppColors.textPrimary,
+              color: theme.textPrimary,
             ),
           ),
           SizedBox(height: 6),
@@ -415,7 +428,7 @@ class _StudentClassroomSubjectsTabState
             'Your teacher has not added any subjects yet.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: AppColors.textSecondary,
+              color: theme.textSecondary,
               fontSize: 12,
               height: 1.5,
             ),

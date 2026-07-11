@@ -420,4 +420,3 @@ class _StudentNotificationScreenState extends State<StudentNotificationScreen> {
     );
   }
 }
-

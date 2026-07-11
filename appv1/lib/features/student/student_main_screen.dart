@@ -19,8 +19,7 @@ import 'package:appv1/core/services/api_service.dart';
 import 'child_lock_service.dart';
 import 'child_lock_settings_page.dart';
 import 'student_fee_payment_page.dart';
-
-const Color _accent = Colors.teal;
+import 'student_theme_manager.dart';
 
 class StudentMainScreen extends StatefulWidget {
   final int initialTab;
@@ -61,45 +60,52 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: !_isChildLockEnabled,
-      onPopInvoked: (didPop) {
-        if (didPop) return;
-        if (_isChildLockEnabled && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Child lock is enabled. Cannot exit.')),
-          );
-        }
-      },
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        drawer: _buildDrawer(),
-        body: AnnotatedRegion<SystemUiOverlayStyle>(
-          value: const SystemUiOverlayStyle(
-            statusBarColor: Colors.transparent,
-            statusBarIconBrightness: Brightness.light,
-            systemNavigationBarColor: Colors.white,
-            systemNavigationBarIconBrightness: Brightness.dark,
-          ),
-          child: Column(
-            children: [
-              _buildHeader(),
-              Expanded(
-                child: IndexedStack(index: _currentTab, children: _pages),
+    return ValueListenableBuilder<StudentThemeConfig>(
+      valueListenable: StudentThemeManager.themeNotifier,
+      builder: (context, theme, child) {
+        return PopScope(
+          canPop: !_isChildLockEnabled,
+          onPopInvoked: (didPop) {
+            if (didPop) return;
+            if (_isChildLockEnabled && mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Child lock is enabled. Cannot exit.'),
+                ),
+              );
+            }
+          },
+          child: Scaffold(
+            backgroundColor: theme.background,
+            drawer: _buildDrawer(theme),
+            body: AnnotatedRegion<SystemUiOverlayStyle>(
+              value: const SystemUiOverlayStyle(
+                statusBarColor: Colors.transparent,
+                statusBarIconBrightness: Brightness.light,
+                systemNavigationBarColor: Colors.white,
+                systemNavigationBarIconBrightness: Brightness.dark,
               ),
-            ],
+              child: Column(
+                children: [
+                  _buildHeader(theme),
+                  Expanded(
+                    child: IndexedStack(index: _currentTab, children: _pages),
+                  ),
+                ],
+              ),
+            ),
+            bottomNavigationBar: _buildBottomNav(theme),
           ),
-        ),
-        bottomNavigationBar: _buildBottomNav(),
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(StudentThemeConfig theme) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.teal, Color(0xFF00897B)],
+          colors: [theme.primary, theme.gradientEnd],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -119,9 +125,7 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(3),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.3),
-                      ),
+                      border: Border.all(color: Colors.white.withOpacity(0.3)),
                     ),
                     child: const Icon(
                       Icons.menu,
@@ -231,9 +235,7 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(3),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.3),
-                    ),
+                    border: Border.all(color: Colors.white.withOpacity(0.3)),
                   ),
                   child: const Icon(
                     Icons.directions_bus_rounded,
@@ -249,11 +251,11 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
     );
   }
 
-  Widget _buildBottomNav() {
+  Widget _buildBottomNav(StudentThemeConfig theme) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey[200]!, width: 1)),
+        color: theme.cardBackground,
+        border: Border(top: BorderSide(color: theme.dividerColor, width: 1)),
       ),
       child: SafeArea(
         top: false,
@@ -261,18 +263,26 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
           height: 58,
           child: Row(
             children: [
-              _navItem(0, Icons.home_rounded, Icons.home_outlined, 'Home'),
+              _navItem(
+                0,
+                Icons.home_rounded,
+                Icons.home_outlined,
+                'Home',
+                theme,
+              ),
               _navItem(
                 1,
                 Icons.emoji_events_rounded,
                 Icons.emoji_events_outlined,
                 'Achievements',
+                theme,
               ),
               _navItem(
                 2,
                 Icons.person_rounded,
                 Icons.person_outline_rounded,
                 'Profile',
+                theme,
               ),
             ],
           ),
@@ -281,7 +291,13 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
     );
   }
 
-  Widget _navItem(int index, IconData active, IconData inactive, String label) {
+  Widget _navItem(
+    int index,
+    IconData active,
+    IconData inactive,
+    String label,
+    StudentThemeConfig theme,
+  ) {
     final isActive = _currentTab == index;
     return Expanded(
       child: GestureDetector(
@@ -292,14 +308,14 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
           children: [
             Icon(
               isActive ? active : inactive,
-              color: isActive ? _accent : AppColors.textSecondary,
+              color: isActive ? theme.primary : theme.textSecondary,
               size: 22,
             ),
             const SizedBox(height: 3),
             Text(
               label,
               style: TextStyle(
-                color: isActive ? _accent : AppColors.textSecondary,
+                color: isActive ? theme.primary : theme.textSecondary,
                 fontSize: 10.5,
                 fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
               ),
@@ -310,9 +326,9 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
     );
   }
 
-  Widget _buildDrawer() {
+  Widget _buildDrawer(StudentThemeConfig theme) {
     return Drawer(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.background,
       child: Column(
         children: [
           Container(
@@ -322,9 +338,9 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
               left: 20,
               right: 20,
             ),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.teal, Color(0xFF00897B)],
+                colors: [theme.primary, theme.gradientEnd],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -360,10 +376,7 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
                       SizedBox(height: 4),
                       Text(
                         'Student Portal',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 13,
-                        ),
+                        style: TextStyle(color: Colors.white70, fontSize: 13),
                       ),
                     ],
                   ),
@@ -374,9 +387,14 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
           const SizedBox(height: 12),
           Expanded(
             child: ListView(
-              padding: EdgeInsets.only(left: 12, right: 12, bottom: MediaQuery.of(context).padding.bottom + 64),
+              padding: EdgeInsets.only(
+                left: 12,
+                right: 12,
+                bottom: MediaQuery.of(context).padding.bottom + 64,
+              ),
               children: [
                 _buildDrawerItem(
+                  theme: theme,
                   icon: Icons.home_rounded,
                   title: 'Home',
                   isSelected: _currentTab == 0,
@@ -386,6 +404,7 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
                   },
                 ),
                 _buildDrawerItem(
+                  theme: theme,
                   icon: Icons.emoji_events_rounded,
                   title: 'Achievements',
                   isSelected: _currentTab == 1,
@@ -395,6 +414,7 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
                   },
                 ),
                 _buildDrawerItem(
+                  theme: theme,
                   icon: Icons.person_rounded,
                   title: 'Profile & Settings',
                   isSelected: _currentTab == 2,
@@ -405,6 +425,7 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
                 ),
                 if (_orgId.isNotEmpty)
                   _buildDrawerItem(
+                    theme: theme,
                     icon: Icons.directions_bus_rounded,
                     title: 'Bus Tracker',
                     isSelected: false,
@@ -419,6 +440,7 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
                     },
                   ),
                 _buildDrawerItem(
+                  theme: theme,
                   icon: Icons.payment_rounded,
                   title: 'View Fee Payment',
                   isSelected: false,
@@ -433,6 +455,7 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
                   },
                 ),
                 _buildDrawerItem(
+                  theme: theme,
                   icon: Icons.help_outline_rounded,
                   title: 'Help',
                   isSelected: false,
@@ -440,13 +463,12 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
                     Navigator.pop(context);
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => const SupportPage(),
-                      ),
+                      MaterialPageRoute(builder: (_) => const SupportPage()),
                     );
                   },
                 ),
                 _buildDrawerItem(
+                  theme: theme,
                   icon: Icons.system_update_rounded,
                   title: 'App Update',
                   isSelected: false,
@@ -454,13 +476,12 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
                     Navigator.pop(context);
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => const AppUpdatePage(),
-                      ),
+                      MaterialPageRoute(builder: (_) => const AppUpdatePage()),
                     );
                   },
                 ),
                 _buildDrawerItem(
+                  theme: theme,
                   icon: Icons.lock_outline_rounded,
                   title: 'Child Lock',
                   isSelected: false,
@@ -475,11 +496,15 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
                     _loadData(); // Refresh state after returning
                   },
                 ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                  child: Divider(height: 1, color: Color(0xFFE2E8F0)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 8,
+                    horizontal: 12,
+                  ),
+                  child: Divider(height: 1, color: theme.dividerColor),
                 ),
                 _buildDrawerItem(
+                  theme: theme,
                   icon: Icons.logout_rounded,
                   title: 'Logout',
                   isSelected: false,
@@ -499,6 +524,7 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
   }
 
   Widget _buildDrawerItem({
+    required StudentThemeConfig theme,
     required IconData icon,
     required String title,
     required bool isSelected,
@@ -506,7 +532,7 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
     Color? iconColor,
     Color? textColor,
   }) {
-    final activeColor = Colors.teal;
+    final activeColor = theme.primary;
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 2),
       decoration: BoxDecoration(
@@ -519,13 +545,13 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         leading: Icon(
           icon,
-          color: isSelected ? activeColor : (iconColor ?? const Color(0xFF64748B)),
+          color: isSelected ? activeColor : (iconColor ?? theme.textSecondary),
           size: 20,
         ),
         title: Text(
           title,
           style: TextStyle(
-            color: isSelected ? activeColor : (textColor ?? const Color(0xFF1E293B)),
+            color: isSelected ? activeColor : (textColor ?? theme.textPrimary),
             fontSize: 14,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
           ),
@@ -539,7 +565,9 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Child lock is enabled. Disable it from settings to logout.'),
+            content: const Text(
+              'Child lock is enabled. Disable it from settings to logout.',
+            ),
             backgroundColor: Colors.red[600],
           ),
         );
@@ -561,7 +589,9 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
     if (studentId.isNotEmpty) {
       try {
         await ApiService.post(
-          Uri.parse('${ApiConstants.apiBaseUrl}/notification/fcm/student/clear'),
+          Uri.parse(
+            '${ApiConstants.apiBaseUrl}/notification/fcm/student/clear',
+          ),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({'studentId': studentId}),
         );
