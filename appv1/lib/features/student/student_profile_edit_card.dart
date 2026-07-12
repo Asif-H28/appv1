@@ -36,59 +36,44 @@ class StudentProfileEditCard extends StatelessWidget {
             border: Border.all(color: theme.dividerColor),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 10,
-                offset: Offset(0, 3),
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
-          child: Column(
-            children: [
-              Container(
-                height: 4,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [theme.primary, theme.gradientEnd],
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                  ),
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(3)),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Section title
+                Row(
                   children: [
-                    // Section title
-                    Row(
-                      children: [
-                        Container(
-                          width: 3,
-                          height: 16,
-                          decoration: BoxDecoration(
-                            color: theme.primary,
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                        SizedBox(width: 8),
-                        Icon(
-                          Icons.edit_rounded,
-                          size: 15,
-                          color: theme.primary,
-                        ),
-                        SizedBox(width: 5),
-                        Text(
-                          'Edit Personal Info',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                            color: theme.textPrimary,
-                          ),
-                        ),
-                      ],
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: theme.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.edit_rounded,
+                        size: 18,
+                        color: theme.primary,
+                      ),
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Edit Personal Info',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: theme.textPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
 
                     // Info banner
                     Container(
@@ -172,9 +157,7 @@ class StudentProfileEditCard extends StatelessWidget {
                                 decoration: BoxDecoration(
                                   color: isSelected
                                       ? theme.primary
-                                      : (theme.id == 'dark'
-                                            ? Colors.black
-                                            : Colors.grey[50]),
+                                      : Colors.grey[50],
                                   borderRadius: BorderRadius.circular(3),
                                   border: Border.all(
                                     color: isSelected
@@ -249,7 +232,7 @@ class StudentProfileEditCard extends StatelessWidget {
                           ),
                         ),
                         child: isSaving
-                            ? SizedBox(
+                            ? const SizedBox(
                                 width: 18,
                                 height: 18,
                                 child: CircularProgressIndicator(
@@ -257,7 +240,7 @@ class StudentProfileEditCard extends StatelessWidget {
                                   strokeWidth: 2,
                                 ),
                               )
-                            : Row(
+                            : const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Icon(Icons.save_rounded, size: 16),
@@ -276,9 +259,7 @@ class StudentProfileEditCard extends StatelessWidget {
                   ],
                 ),
               ),
-            ],
-          ),
-        );
+            );
       },
     );
   }
@@ -304,7 +285,7 @@ class StudentProfileEditCard extends StatelessWidget {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: theme.id == 'dark' ? Colors.black : Colors.grey[50],
+        color: Colors.grey[50],
         borderRadius: BorderRadius.circular(3),
         border: Border.all(color: theme.dividerColor),
       ),

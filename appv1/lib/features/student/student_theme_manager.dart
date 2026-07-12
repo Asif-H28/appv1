@@ -32,9 +32,9 @@ class StudentThemeManager {
 
   static final List<StudentThemeConfig> availableThemes = [
     const StudentThemeConfig(
-      id: 'blue',
-      name: 'Blue',
-      primary: Color(0xFF2563EB),
+      id: 'navy',
+      name: 'Navy Blue',
+      primary: Color(0xFF1E3A8A),
       gradientEnd: Color(0xFF1D4ED8),
       highlight: Color(0xFF3B82F6),
     ),
@@ -44,13 +44,6 @@ class StudentThemeManager {
       primary: Colors.teal,
       gradientEnd: Color(0xFF00695C),
       highlight: Color(0xFF059669),
-    ),
-    const StudentThemeConfig(
-      id: 'navy',
-      name: 'Navy Blue',
-      primary: Color(0xFF1E3A8A),
-      gradientEnd: Color(0xFF1D4ED8),
-      highlight: Color(0xFF3B82F6),
     ),
     const StudentThemeConfig(
       id: 'orange',
@@ -80,31 +73,22 @@ class StudentThemeManager {
       gradientEnd: Color(0xFF16A34A),
       highlight: Color(0xFF22C55E),
     ),
-    // DARK THEME
-    const StudentThemeConfig(
-      id: 'dark',
-      name: 'Dark (Gold)',
-      primary: Color(0xFFD4AF37), // Gold
-      gradientEnd: Color(0xFFB8860B), // Dark Gold
-      highlight: Color(0xFFC0C0C0), // Silver
-      background: Color(0xFF000000), // Pure Black
-      cardBackground: Color(0xFF171717), // Very Dark Gray for cards
-      textPrimary: Colors.white,
-      textSecondary: Color(0xFF9CA3AF), // Lighter gray for secondary text
-      dividerColor: Color(0xFF333333), // Dark border
-    ),
   ];
 
   static final ValueNotifier<StudentThemeConfig> themeNotifier =
-      ValueNotifier<StudentThemeConfig>(availableThemes.first);
+      ValueNotifier<StudentThemeConfig>(
+    availableThemes.firstWhere((t) => t.id == 'navy', orElse: () => availableThemes.first),
+  );
 
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     final savedThemeId = prefs.getString(_prefKey);
+    final defaultTheme = availableThemes.firstWhere((t) => t.id == 'navy', orElse: () => availableThemes.first);
+    
     if (savedThemeId != null) {
       final match = availableThemes.firstWhere(
         (t) => t.id == savedThemeId,
-        orElse: () => availableThemes.first,
+        orElse: () => defaultTheme,
       );
       themeNotifier.value = match;
     }

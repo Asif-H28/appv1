@@ -1,10 +1,12 @@
-import 'package:appv1/core/constants/api_constants.dart';
-import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:appv1/core/constants/api_constants.dart';
 import 'package:appv1/core/services/api_service.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SchoolSetupPage extends StatefulWidget {
@@ -48,6 +50,10 @@ class _SchoolSetupPageState extends State<SchoolSetupPage> {
   bool _hasData = false;
   String _orgId = '';
   String _orgName = '';
+
+  File? _selectedLogo;
+  String? _existingLogoUrl;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -95,6 +101,7 @@ class _SchoolSetupPageState extends State<SchoolSetupPage> {
         _campusAddressCtrl.text = data['campusAddress'] ?? '';
         _schoolEmailCtrl.text = data['schoolEmail'] ?? '';
         _primaryContactCtrl.text = data['primaryContact'] ?? '';
+        _existingLogoUrl = data['logoUrl'];
         _hasData = _schoolNameCtrl.text.isNotEmpty;
       }
     } catch (_) {}
@@ -113,20 +120,59 @@ class _SchoolSetupPageState extends State<SchoolSetupPage> {
 
     setState(() => _saving = true);
     try {
-      final res = await ApiService.put(
-        Uri.parse('$_base/$_orgId/school-details'),
-        headers: await ApiService.getHeaders(),
-        body: jsonEncode({
-          'schoolName': _schoolNameCtrl.text.trim(),
-          'campusAddress': _campusAddressCtrl.text.trim(),
-          'schoolEmail': _schoolEmailCtrl.text.trim(),
-          'primaryContact': _primaryContactCtrl.text.trim(),
-        }),
+      final headers = await ApiService.getHeaders();
+      var request = http.MultipartRequest(
+        'PUT',
+        Uri.parse('$_base/school/basic'),
       );
+      
+      headers.forEach((key, value) {
+        if (key.toLowerCase() != 'content-type') {
+          request.headers[key] = value;
+        }
+      });
+
+      request.fields['orgId'] = _orgId;
+      request.fields['schoolName'] = _schoolNameCtrl.text.trim();
+      request.fields['campusAddress'] = _campusAddressCtrl.text.trim();
+      request.fields['schoolEmail'] = _schoolEmailCtrl.text.trim();
+      request.fields['primaryContact'] = _primaryContactCtrl.text.trim();
+
+      if (_selectedLogo != null) {
+        final path = _selectedLogo!.path;
+        final ext = path.split('.').last.toLowerCase();
+        
+        MediaType mediaType;
+        if (ext == 'png') {
+          mediaType = MediaType('image', 'png');
+        } else if (ext == 'jpg' || ext == 'jpeg') {
+          mediaType = MediaType('image', 'jpeg');
+        } else if (ext == 'webp') {
+          mediaType = MediaType('image', 'webp');
+        } else {
+          mediaType = MediaType('image', 'jpeg'); // fallback
+        }
+
+        request.files.add(await http.MultipartFile.fromPath(
+          'logo', 
+          path,
+          contentType: mediaType,
+        ));
+      }
+
+      final streamedResponse = await request.send();
+      final res = await http.Response.fromStream(streamedResponse);
+
       if (!mounted) return;
       final body = jsonDecode(res.body) as Map<String, dynamic>;
       if (res.statusCode == 200 && body['success'] == true) {
-        setState(() => _hasData = true);
+        setState(() {
+          _hasData = true;
+          if (body['data'] != null && body['data']['logoUrl'] != null) {
+            _existingLogoUrl = body['data']['logoUrl'];
+            _selectedLogo = null;
+          }
+        });
         _snack('Configuration saved successfully.');
       } else {
         _snack(body['message'] ?? 'Save failed.', isError: true);
@@ -329,6 +375,12 @@ class _SchoolSetupPageState extends State<SchoolSetupPage> {
           ),
           const SizedBox(height: 24),
 
+          // Logo Upload
+          _fieldLabel('SCHOOL LOGO (OPTIONAL)'),
+          const SizedBox(height: 8),
+          _buildLogoPicker(),
+          const SizedBox(height: 20),
+
           // Official school name
           _fieldLabel('OFFICIAL SCHOOL NAME'),
           const SizedBox(height: 8),
@@ -355,6 +407,54 @@ class _SchoolSetupPageState extends State<SchoolSetupPage> {
         ],
       ),
     );
+  }
+
+  // ── Logo Picker ───────────────────────────────────────
+  Widget _buildLogoPicker() {
+    return GestureDetector(
+      onTap: _pickLogo,
+      child: Container(
+        height: 80,
+        width: 80,
+        decoration: BoxDecoration(
+          color: _bgField,
+          border: Border.all(color: _borderField),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: _selectedLogo != null
+              ? Image.file(_selectedLogo!, fit: BoxFit.cover)
+              : (_existingLogoUrl != null && _existingLogoUrl!.isNotEmpty)
+                  ? Image.network(
+                      _existingLogoUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => const Icon(Icons.school, size: 30, color: _textLight),
+                    )
+                  : const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.add_a_photo, color: _textLight, size: 24),
+                        SizedBox(height: 4),
+                        Text('Logo', style: TextStyle(color: _textLight, fontSize: 10, fontWeight: FontWeight.w600)),
+                      ],
+                    ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickLogo() async {
+    try {
+      final pickedFile = await _picker.pickImage(source: ImageSource.gallery, maxWidth: 800, maxHeight: 800);
+      if (pickedFile != null) {
+        setState(() {
+          _selectedLogo = File(pickedFile.path);
+        });
+      }
+    } catch (_) {
+      _snack('Failed to pick image.', isError: true);
+    }
   }
 
   // ── Contact Details card ──────────────────────────────

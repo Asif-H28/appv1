@@ -15,7 +15,7 @@
 
 
     <application
-        android:label="SchoolSync"
+        android:label="EduSpark Tuition Classes"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true"

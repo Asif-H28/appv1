@@ -44,6 +44,34 @@ class TeacherDrawer extends StatefulWidget {
 }
 
 class _TeacherDrawerState extends State<TeacherDrawer> {
+  String _schoolName = 'SchoolSync';
+  String _logoUrl = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchSchoolProfile();
+  }
+
+  Future<void> _fetchSchoolProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    final orgId = prefs.getString('orgId') ?? '';
+    if (orgId.isNotEmpty) {
+      try {
+        final res = await ApiService.get('/org/school/$orgId/public');
+        if (res.statusCode == 200) {
+          final body = jsonDecode(res.body);
+          if (body['success'] == true && mounted) {
+            setState(() {
+              _schoolName = body['data']['schoolName'] ?? 'SchoolSync';
+              _logoUrl = body['data']['logoUrl'] ?? '';
+            });
+          }
+        }
+      } catch (_) {}
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -66,34 +94,48 @@ class _TeacherDrawerState extends State<TeacherDrawer> {
             ),
             child: Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.school_rounded,
-                    color: Colors.white,
-                    size: 32,
-                  ),
-                ),
+                _logoUrl.isNotEmpty
+                    ? Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white.withOpacity(0.5), width: 2),
+                          image: DecorationImage(
+                            image: NetworkImage(_logoUrl),
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      )
+                    : Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.school_rounded,
+                          color: Colors.white,
+                          size: 32,
+                        ),
+                      ),
                 const SizedBox(width: 16),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'SchoolSync',
-                        style: TextStyle(
+                        _schoolName,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 0.5,
                         ),
                       ),
-                      SizedBox(height: 4),
-                      Text(
+                      const SizedBox(height: 4),
+                      const Text(
                         'Teacher Portal',
                         style: TextStyle(
                           color: Colors.white70,

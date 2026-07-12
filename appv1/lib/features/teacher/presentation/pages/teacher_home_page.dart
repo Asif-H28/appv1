@@ -34,6 +34,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
   String _name = '';
   String _teacherId = '';
   String _orgId = '';
+  String _schoolName = 'SchoolSync';
 
   // ── Schedule ─────────────────────────────────────────
   bool _schedLoading = true;
@@ -82,6 +83,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
         Future(() => setState(() => _schedLoading = false)),
       _fetchClassrooms(),
       _fetchNotices(),
+      _fetchSchoolProfile(),
     ]);
     await _fetchPendingLeaveCounts();
   }
@@ -224,6 +226,21 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     }
   }
 
+  Future<void> _fetchSchoolProfile() async {
+    if (_orgId.isEmpty) return;
+    try {
+      final res = await ApiService.get('/org/school/$_orgId/public');
+      if (res.statusCode == 200) {
+        final body = jsonDecode(res.body);
+        if (body['success'] == true && mounted) {
+          setState(() {
+            _schoolName = body['data']['schoolName'] ?? 'SchoolSync';
+          });
+        }
+      }
+    } catch (_) {}
+  }
+
   // ── Helpers ──────────────────────────────────────────
 
   String _todayKey() {
@@ -337,13 +354,13 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
                 ),
               ),
               const SizedBox(width: 10),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'SchoolSync',
-                      style: TextStyle(
+                      _schoolName,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                         fontSize: 15,

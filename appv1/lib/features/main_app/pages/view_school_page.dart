@@ -1,9 +1,12 @@
 // view_school_page.dart
 // View My School
 
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:appv1/core/services/api_service.dart';
+import 'package:appv1/core/constants/api_constants.dart';
 import 'view_school_data.dart';
 
 // ── Palette ───────────────────────────────────────────
@@ -31,6 +34,7 @@ class _ViewSchoolPageState extends State<ViewSchoolPage> {
   String _orgName = '';
   bool _loading = true;
   bool _showAllRoles = false;
+  String? _fetchedLogoUrl;
 
   SchoolViewModel? _data;
 
@@ -44,7 +48,30 @@ class _ViewSchoolPageState extends State<ViewSchoolPage> {
     final prefs = await SharedPreferences.getInstance();
     _orgId = prefs.getString('orgId') ?? '';
     _orgName = prefs.getString('userOrg') ?? 'My School';
-    await _load();
+    await Future.wait([
+      _load(),
+      _loadLogo(),
+    ]);
+  }
+
+  Future<void> _loadLogo() async {
+    if (_orgId.isEmpty) return;
+    try {
+      final res = await ApiService.get(
+        Uri.parse('${ApiConstants.apiBaseUrl}/org/school/logo/$_orgId'),
+        headers: await ApiService.getHeaders(),
+      );
+      if (res.statusCode == 200) {
+        final body = jsonDecode(res.body);
+        if (body['success'] == true) {
+          if (mounted) {
+            setState(() {
+              _fetchedLogoUrl = body['logoUrl'];
+            });
+          }
+        }
+      }
+    } catch (_) {}
   }
 
   Future<void> _load() async {
@@ -122,27 +149,23 @@ class _ViewSchoolPageState extends State<ViewSchoolPage> {
         background: Stack(
           fit: StackFit.expand,
           children: [
-            // School building image
-            Image.asset(
-              'assets/images/school_building.png',
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF00695C), Color(0xFF004D40)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.account_balance_rounded,
-                    size: 64,
-                    color: Colors.white24,
-                  ),
-                ),
-              ),
-            ),
+            // School logo or building image
+            _fetchedLogoUrl != null && _fetchedLogoUrl!.isNotEmpty
+                ? Container(
+                    color: Colors.white,
+                    child: SafeArea(
+                      bottom: false,
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 60, top: 10, left: 20, right: 20),
+                        child: Image.network(
+                          _fetchedLogoUrl!,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => _buildFallbackImage(),
+                        ),
+                      ),
+                    ),
+                  )
+                : _buildFallbackImage(),
             // Dark gradient overlay
             Container(
               decoration: const BoxDecoration(
@@ -201,6 +224,29 @@ class _ViewSchoolPageState extends State<ViewSchoolPage> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFallbackImage() {
+    return Image.asset(
+      'assets/images/school_building.png',
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF00695C), Color(0xFF004D40)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: const Center(
+          child: Icon(
+            Icons.account_balance_rounded,
+            size: 64,
+            color: Colors.white24,
+          ),
         ),
       ),
     );
