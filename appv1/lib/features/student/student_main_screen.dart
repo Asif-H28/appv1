@@ -33,6 +33,8 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
   late int _currentTab;
   String _orgId = '';
   bool _isChildLockEnabled = false;
+  String _schoolName = 'SchoolSync';
+  String _logoUrl = '';
 
   @override
   void initState() {
@@ -44,11 +46,26 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
   Future<void> _loadData() async {
     final prefs = await SharedPreferences.getInstance();
     final childLock = await ChildLockService.instance.isChildLockEnabled();
+    final orgId = prefs.getString('orgId') ?? '';
     if (mounted) {
       setState(() {
-        _orgId = prefs.getString('orgId') ?? '';
+        _orgId = orgId;
         _isChildLockEnabled = childLock;
       });
+    }
+    if (orgId.isNotEmpty) {
+      try {
+        final res = await ApiService.get('/org/school/$orgId/public');
+        if (res.statusCode == 200) {
+          final body = jsonDecode(res.body);
+          if (body['success'] == true && mounted) {
+            setState(() {
+              _schoolName = body['data']['schoolName'] ?? 'SchoolSync';
+              _logoUrl = body['data']['logoUrl'] ?? '';
+            });
+          }
+        }
+      } catch (_) {}
     }
   }
 
@@ -136,13 +153,13 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
                 ),
               ),
               const SizedBox(width: 10),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'SchoolSync',
-                      style: TextStyle(
+                      _schoolName,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
                         fontSize: 15,
@@ -347,26 +364,40 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
             ),
             child: Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.school_rounded,
-                    color: Colors.white,
-                    size: 32,
-                  ),
-                ),
+                _logoUrl.isNotEmpty
+                    ? Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white.withOpacity(0.5), width: 2),
+                          image: DecorationImage(
+                            image: NetworkImage(_logoUrl),
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      )
+                    : Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.school_rounded,
+                          color: Colors.white,
+                          size: 32,
+                        ),
+                      ),
                 const SizedBox(width: 16),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'SchoolSync',
-                        style: TextStyle(
+                        _schoolName,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 20,
                           fontWeight: FontWeight.bold,

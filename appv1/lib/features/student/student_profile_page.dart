@@ -592,17 +592,19 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
       child: Container(
         decoration: BoxDecoration(
           color: currentTheme.cardBackground,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: currentTheme.dividerColor),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 15,
-              offset: const Offset(0, 5),
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               'App Theme',
@@ -612,51 +614,57 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
                 color: currentTheme.textPrimary,
               ),
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                child: Row(
-                  children: StudentThemeManager.availableThemes.map((t) {
-                    final isSelected = t.id == currentTheme.id;
-                    return GestureDetector(
-                      onTap: () => StudentThemeManager.setTheme(t.id),
-                      child: Container(
-                        margin: const EdgeInsets.only(right: 12),
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            colors: [t.primary, t.gradientEnd],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          border: isSelected
-                              ? Border.all(color: Colors.white, width: 2)
-                              : null,
-                          boxShadow: isSelected
-                              ? [
-                                  BoxShadow(
-                                    color: t.primary.withOpacity(0.4),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ]
-                              : [],
+            const SizedBox(height: 14),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                children: StudentThemeManager.availableThemes.map((t) {
+                  final isSelected = t.id == currentTheme.id;
+                  return GestureDetector(
+                    onTap: () => StudentThemeManager.setTheme(t.id),
+                    child: Container(
+                      margin: const EdgeInsets.only(right: 14),
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: t.primary,
+                        gradient: LinearGradient(
+                          colors: [t.primary, t.gradientEnd],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
-                        child: isSelected
-                            ? const Icon(
-                                Icons.check,
-                                color: Colors.white,
-                                size: 18,
-                              )
+                        border: isSelected
+                            ? Border.all(color: currentTheme.cardBackground, width: 3)
                             : null,
+                        boxShadow: isSelected
+                            ? [
+                                BoxShadow(
+                                  color: t.primary.withOpacity(0.5),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 3),
+                                  spreadRadius: 1,
+                                ),
+                              ]
+                            : [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
                       ),
-                    );
-                  }).toList(),
-                ),
+                      child: isSelected
+                          ? const Icon(
+                              Icons.check_rounded,
+                              color: Colors.white,
+                              size: 20,
+                            )
+                          : null,
+                    ),
+                  );
+                }).toList(),
               ),
             ),
           ],
@@ -668,7 +676,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
   // ── Edit / Logout action row ───────────────────────
   Widget _buildActionRow(StudentThemeConfig theme) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 14, 14, 0),
+      padding: const EdgeInsets.fromLTRB(14, 16, 14, 0),
       child: Row(
         children: [
           // Edit / Cancel button
@@ -679,17 +687,21 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
                 setState(() => _isEditing = !_isEditing);
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 11),
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
                   color: _isEditing
-                      ? Colors.grey.shade100
-                      : theme.primary.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: _isEditing
-                        ? Colors.grey.shade300
-                        : theme.primary.withOpacity(0.3),
-                  ),
+                      ? Colors.grey.shade200
+                      : theme.primary,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: _isEditing
+                      ? []
+                      : [
+                          BoxShadow(
+                            color: theme.primary.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -697,15 +709,15 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
                     Icon(
                       _isEditing ? Icons.close_rounded : Icons.edit_rounded,
                       size: 18,
-                      color: _isEditing ? Colors.grey[600] : theme.primary,
+                      color: _isEditing ? Colors.grey[700] : Colors.white,
                     ),
                     const SizedBox(width: 8),
                     Text(
                       _isEditing ? 'Cancel Edit' : 'Edit Profile',
                       style: TextStyle(
-                        color: _isEditing ? Colors.grey[600] : theme.primary,
+                        color: _isEditing ? Colors.grey[700] : Colors.white,
                         fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
@@ -713,28 +725,35 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
               ),
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 12),
 
           // Logout button
           GestureDetector(
             onTap: _logout,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               decoration: BoxDecoration(
                 color: theme.cardBackground,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: theme.dividerColor),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.red.withOpacity(0.3)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.02),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
-                  Icon(Icons.logout_rounded, size: 15, color: Colors.red[600]),
+                  Icon(Icons.logout_rounded, size: 16, color: Colors.red[600]),
                   const SizedBox(width: 6),
                   Text(
                     'Logout',
                     style: TextStyle(
                       color: Colors.red[600],
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ],

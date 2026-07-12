@@ -99,6 +99,38 @@ class _AdminPaymentUploadsPageState extends State<AdminPaymentUploadsPage> {
     }
   }
 
+  void _showFullImage(BuildContext context, String imageUrl) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(10),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            InteractiveViewer(
+              panEnabled: true,
+              minScale: 0.5,
+              maxScale: 4.0,
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.contain,
+              ),
+            ),
+            Positioned(
+              top: 10,
+              right: 10,
+              child: IconButton(
+                icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -185,7 +217,10 @@ class _AdminPaymentUploadsPageState extends State<AdminPaymentUploadsPage> {
                       return const Center(child: Padding(padding: EdgeInsets.all(16.0), child: CircularProgressIndicator(color: Colors.teal)));
                     }
                     final upload = _uploads[index];
-                    final title = upload['title'] ?? 'Untitled';
+                    final rawTitle = upload['title'] ?? 'Untitled';
+                    final title = rawTitle.isNotEmpty 
+                        ? '${rawTitle[0].toUpperCase()}${rawTitle.substring(1)}'
+                        : rawTitle;
                     final uploaderName = upload['uploadedByName'] ?? 'Unknown';
                     final teacherName = upload['teacherName'] ?? '';
                     final imageUrl = upload['imageUrl'];
@@ -193,49 +228,163 @@ class _AdminPaymentUploadsPageState extends State<AdminPaymentUploadsPage> {
                         ? DateFormat('dd MMM yyyy, hh:mm a').format(DateTime.parse(upload['createdAt']).toLocal())
                         : '';
                     
-                    return Card(
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.teal.shade100, width: 1),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.teal.withOpacity(0.05),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
                       child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    title,
-                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                                  ),
-                                ),
-                                Text(
-                                  date,
-                                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Text('Uploaded By: $uploaderName', style: const TextStyle(fontSize: 14)),
-                            if (teacherName.isNotEmpty)
-                              Text('Teacher: $teacherName', style: const TextStyle(fontSize: 14)),
-                            const SizedBox(height: 12),
                             if (imageUrl != null && imageUrl.toString().isNotEmpty)
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Image.network(
-                                  imageUrl,
-                                  width: double.infinity,
-                                  height: 200,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => Container(
-                                    height: 100,
-                                    color: Colors.grey[200],
-                                    child: const Center(child: Icon(Icons.broken_image, color: Colors.grey)),
+                              GestureDetector(
+                                onTap: () => _showFullImage(context, imageUrl),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.network(
+                                    imageUrl,
+                                    width: 85,
+                                    height: 85,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) => Container(
+                                      width: 85,
+                                      height: 85,
+                                      color: Colors.teal.shade50,
+                                      child: const Icon(Icons.broken_image, color: Colors.teal),
+                                    ),
                                   ),
                                 ),
+                              )
+                            else
+                              Container(
+                                width: 85,
+                                height: 85,
+                                decoration: BoxDecoration(
+                                  color: Colors.teal.shade50,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Icon(Icons.image_not_supported, color: Colors.teal),
                               ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    title,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                      color: Colors.teal,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.person_outline, size: 14, color: Colors.teal),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                        child: Text(
+                                          uploaderName,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(fontSize: 13, color: Colors.teal),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  if (teacherName.isNotEmpty) ...[
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.school_outlined, size: 14, color: Colors.teal),
+                                        const SizedBox(width: 6),
+                                        Expanded(
+                                          child: Text(
+                                            teacherName,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(fontSize: 13, color: Colors.teal),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Expanded(
+                                        child: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            const Padding(
+                                              padding: EdgeInsets.only(top: 2),
+                                              child: Icon(Icons.calendar_today_outlined, size: 12, color: Colors.teal),
+                                            ),
+                                            const SizedBox(width: 6),
+                                            Expanded(
+                                              child: Text(
+                                                date,
+                                                style: const TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.teal,
+                                                ),
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      if (imageUrl != null && imageUrl.toString().isNotEmpty) ...[
+                                        const SizedBox(width: 8),
+                                        InkWell(
+                                          onTap: () => _showFullImage(context, imageUrl),
+                                          borderRadius: BorderRadius.circular(8),
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                            decoration: BoxDecoration(
+                                              color: Colors.teal,
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            child: const Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(Icons.visibility, size: 14, color: Colors.white),
+                                                SizedBox(width: 4),
+                                                Text(
+                                                  'View',
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
                           ],
                         ),
                       ),
