@@ -25,11 +25,22 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
   bool _hasError = false;
   String _errorDetails = '';
   List<Map<String, dynamic>> _classrooms = [];
+  int _currentPage = 1;
+  int _totalPages = 1;
+  int _totalCount = 0;
+  bool _isFetchingMore = false;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _initPage();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _initPage() async {
@@ -55,48 +66,67 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
     });
     try {
       List<dynamic> raw = [];
+      int totalPages = 1;
+      int totalCount = 0;
+      _currentPage = 1;
 
       if (_orgId.isNotEmpty) {
         final res = await http.get(
           Uri.parse(
-            '${ApiConstants.apiBaseUrl}/classroom/org/$_orgId',
+            '${ApiConstants.apiBaseUrl}/classroom/org/$_orgId?page=1&limit=10',
           ),
           headers: await ApiService.getHeaders(),
         );
         if (!mounted) return;
         if (res.statusCode == 200) {
           final body = jsonDecode(res.body);
-          if (body is List)
+          if (body is List) {
             raw = body;
-          else if (body['classrooms'] != null)
-            raw = body['classrooms'] as List;
-          else if (body['data'] != null)
-            raw = body['data'] as List;
+            totalPages = 1;
+            totalCount = body.length;
+          } else {
+            if (body['classrooms'] != null) {
+              raw = body['classrooms'] as List;
+            } else if (body['data'] != null) {
+              raw = body['data'] as List;
+            }
+            totalPages = body['totalPages'] ?? 1;
+            totalCount = body['total'] ?? raw.length;
+          }
         }
       }
 
       if (raw.isEmpty && _teacherId.isNotEmpty) {
         final res = await http.get(
           Uri.parse(
-            '${ApiConstants.apiBaseUrl}/classroom/teacher/$_teacherId',
+            '${ApiConstants.apiBaseUrl}/classroom/teacher/$_teacherId?page=1&limit=10',
           ),
           headers: await ApiService.getHeaders(),
         );
         if (!mounted) return;
         if (res.statusCode == 200) {
           final body = jsonDecode(res.body);
-          if (body is List)
+          if (body is List) {
             raw = body;
-          else if (body['classrooms'] != null)
-            raw = body['classrooms'] as List;
-          else if (body['data'] != null)
-            raw = body['data'] as List;
+            totalPages = 1;
+            totalCount = body.length;
+          } else {
+            if (body['classrooms'] != null) {
+              raw = body['classrooms'] as List;
+            } else if (body['data'] != null) {
+              raw = body['data'] as List;
+            }
+            totalPages = body['totalPages'] ?? 1;
+            totalCount = body['total'] ?? raw.length;
+          }
         }
       }
 
       if (!mounted) return;
       setState(() {
         _classrooms = raw.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+        _totalPages = totalPages;
+        _totalCount = totalCount;
         _isLoading = false;
         _hasError = false;
       });
@@ -107,6 +137,91 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
         _isLoading = false;
         _hasError = true;
         _errorDetails = '$e\n$st';
+      });
+    }
+  }
+
+  Future<void> _fetchMoreClassrooms() async {
+    if (_isFetchingMore) return;
+    setState(() {
+      _isFetchingMore = true;
+    });
+
+    try {
+      List<dynamic> raw = [];
+      final nextPage = _currentPage + 1;
+      int totalPages = _totalPages;
+      int totalCount = _totalCount;
+
+      if (_orgId.isNotEmpty) {
+        final res = await http.get(
+          Uri.parse(
+            '${ApiConstants.apiBaseUrl}/classroom/org/$_orgId?page=$nextPage&limit=10',
+          ),
+          headers: await ApiService.getHeaders(),
+        );
+        if (!mounted) return;
+        if (res.statusCode == 200) {
+          final body = jsonDecode(res.body);
+          if (body is List) {
+            raw = body;
+            totalPages = 1;
+            totalCount = body.length;
+          } else {
+            if (body['classrooms'] != null) {
+              raw = body['classrooms'] as List;
+            } else if (body['data'] != null) {
+              raw = body['data'] as List;
+            }
+            totalPages = body['totalPages'] ?? _totalPages;
+            totalCount = body['total'] ?? _totalCount;
+          }
+        }
+      }
+
+      if (raw.isEmpty && _teacherId.isNotEmpty) {
+        final res = await http.get(
+          Uri.parse(
+            '${ApiConstants.apiBaseUrl}/classroom/teacher/$_teacherId?page=$nextPage&limit=10',
+          ),
+          headers: await ApiService.getHeaders(),
+        );
+        if (!mounted) return;
+        if (res.statusCode == 200) {
+          final body = jsonDecode(res.body);
+          if (body is List) {
+            raw = body;
+            totalPages = 1;
+            totalCount = body.length;
+          } else {
+            if (body['classrooms'] != null) {
+              raw = body['classrooms'] as List;
+            } else if (body['data'] != null) {
+              raw = body['data'] as List;
+            }
+            totalPages = body['totalPages'] ?? _totalPages;
+            totalCount = body['total'] ?? _totalCount;
+          }
+        }
+      }
+
+      if (!mounted) return;
+      setState(() {
+        if (raw.isNotEmpty) {
+          _classrooms.addAll(
+            raw.map((e) => Map<String, dynamic>.from(e as Map)).toList(),
+          );
+          _currentPage = nextPage;
+          _totalPages = totalPages;
+          _totalCount = totalCount;
+        }
+        _isFetchingMore = false;
+      });
+    } catch (e, st) {
+      debugPrint('[FetchMoreClassrooms] ❌ EXCEPTION: $e\n$st');
+      if (!mounted) return;
+      setState(() {
+        _isFetchingMore = false;
       });
     }
   }
@@ -310,8 +425,8 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
                             _isLoading
                                 ? 'Loading...'
                                 : _orgId.isNotEmpty
-                                ? '${_classrooms.length} org classroom${_classrooms.length == 1 ? '' : 's'}'
-                                : '${_classrooms.length} your classroom${_classrooms.length == 1 ? '' : 's'}',
+                                ? '$_totalCount org classroom${_totalCount == 1 ? '' : 's'}'
+                                : '$_totalCount your classroom${_totalCount == 1 ? '' : 's'}',
                             style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 10.5,
@@ -434,15 +549,57 @@ class _TeacherClassroomPageState extends State<TeacherClassroomPage> {
                       color: _accent,
                       onRefresh: _fetchClassrooms,
                       child: ListView.separated(
+                        controller: _scrollController,
+                        physics: const AlwaysScrollableScrollPhysics(),
                         padding: EdgeInsets.fromLTRB(
                           14,
                           14,
                           14,
                           40 + MediaQuery.of(context).padding.bottom,
                         ),
-                        itemCount: _classrooms.length,
+                        itemCount: _classrooms.length +
+                            ((_currentPage < _totalPages || _isFetchingMore) ? 1 : 0),
                         separatorBuilder: (_, __) => const SizedBox(height: 8),
                         itemBuilder: (context, index) {
+                          if (index == _classrooms.length) {
+                            if (_isFetchingMore) {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    color: _accent,
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              );
+                            }
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              child: Center(
+                                child: SizedBox(
+                                  height: 38,
+                                  width: double.infinity,
+                                  child: OutlinedButton(
+                                    onPressed: _fetchMoreClassrooms,
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: _accent,
+                                      side: BorderSide(color: _accent.withOpacity(0.5)),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(3),
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      'Load More',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
                           final cls = _classrooms[index];
                           final classId = cls['classId']?.toString() ?? '';
                           final className =
