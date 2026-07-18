@@ -159,6 +159,8 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
                   children: [
                     Text(
                       _schoolName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -397,6 +399,8 @@ class _StudentMainScreenState extends State<StudentMainScreen> {
                     children: [
                       Text(
                         _schoolName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 20,

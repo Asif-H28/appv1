@@ -360,6 +360,8 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
                   children: [
                     Text(
                       _schoolName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,

@@ -127,6 +127,8 @@ class _TeacherDrawerState extends State<TeacherDrawer> {
                     children: [
                       Text(
                         _schoolName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 20,
