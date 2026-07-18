@@ -238,6 +238,7 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
   @override
   Widget build(BuildContext context) {
     final className = widget.classData['className'] ?? 'Unknown Class';
+    final teacherName = widget.classData['teacherName']?.toString() ?? '';
     final studentCount = (widget.classData['students'] as List<dynamic>? ??
             widget.classData['studentIds'] as List<dynamic>? ??
             [])
@@ -301,6 +302,32 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (teacherName.isNotEmpty) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF009688).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(color: const Color(0xFF009688).withOpacity(0.2)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.person_rounded, size: 14, color: Color(0xFF009688)),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Teacher: $teacherName',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF009688),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
                 _buildStatCard(
                   icon: Icons.groups_rounded,
                   title: 'Total Students Enrolled',
@@ -851,31 +878,39 @@ class _ClassDetailPageState extends State<ClassDetailPage> {
             child: Icon(icon, color: const Color(0xFF009688), size: 28),
           ),
           const SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF2D3748),
-                  height: 1,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      value,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF2D3748),
+                        height: 1,
+                      ),
+                    ),
+                    if (action != null) ...[
+                      const SizedBox(width: 12),
+                      action,
+                    ],
+                  ],
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF718096),
+                const SizedBox(height: 4),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF718096),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-          if (action != null) const Spacer(),
-          if (action != null) action,
         ],
       ),
     );
