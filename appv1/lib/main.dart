@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'core/services/update_service.dart';
 import 'core/theme/app_theme.dart';
-import 'core/network/dio_client.dart';
 import 'features/main_app/pages/login_page.dart';
 import 'features/main_app/main_app_screen.dart';
 import 'features/student/student_main_screen.dart';
@@ -15,6 +14,7 @@ import 'features/student/student_rejected_screen.dart';
 import 'features/teacher/presentation/pages/teacher_main_screen.dart';
 import 'features/teacher/presentation/pages/teacher_pending_screen.dart';
 import 'core/services/chat_socket_service.dart';
+import 'core/services/pending_document_upload_service.dart';
 import 'features/notification_studio/controllers/notification_studio_controller.dart';
 import 'package:appv1/features/student/student_theme_manager.dart';
 
@@ -498,6 +498,18 @@ class __StartupRouterState extends State<_StartupRouter>
       }
     }
     if (!mounted) return;
+
+    final isPendingUpload = await PendingDocumentUploadService.isPendingUpload();
+    if (isPendingUpload) {
+      if (mounted) {
+        setState(() {
+          _startScreen = screen;
+          _isChecking = false;
+        });
+      }
+      return;
+    }
+
     setState(() {
       _startScreen = screen;
       _isChecking = false;

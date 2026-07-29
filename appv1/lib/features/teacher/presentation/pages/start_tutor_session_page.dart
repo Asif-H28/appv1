@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/services/api_service.dart';
 import '../../../../core/network/dio_http_adapter.dart' as http;
+import '../../../../core/widgets/in_app_camera_sheet.dart';
 
 class StartTutorSessionPage extends StatefulWidget {
   const StartTutorSessionPage({Key? key}) : super(key: key);
@@ -43,6 +44,12 @@ class _StartTutorSessionPageState extends State<StartTutorSessionPage> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _checkLostData();
+  }
+
+  @override
   void dispose() {
     for (var controller in _studentIdControllers) {
       controller.dispose();
@@ -63,16 +70,45 @@ class _StartTutorSessionPageState extends State<StartTutorSessionPage> {
     });
   }
 
+
+
+  Future<void> _checkLostData() async {
+    try {
+      final LostDataResponse response = await _picker.retrieveLostData();
+      if (response.isEmpty) return;
+      if (response.file != null) {
+        _uploadXFile(response.file!);
+      } else if (response.exception != null) {
+        _showSnackBar('Error retrieving photo: ${response.exception}', isError: true);
+      }
+    } catch (e) {
+      debugPrint('Error retrieving lost data: $e');
+    }
+  }
+
   Future<void> _takePicture() async {
     try {
-      final XFile? image = await _picker.pickImage(source: ImageSource.camera, imageQuality: 70);
+      final XFile? image = await InAppCameraSheet.show(context);
       if (image == null) return;
-      
-      setState(() => _isUploadingImage = true);
+      await _uploadXFile(image);
+    } catch (e) {
+      _showSnackBar('Error capturing photo: $e', isError: true);
+    }
+  }
 
+  Future<void> _uploadXFile(XFile image) async {
+    setState(() => _isUploadingImage = true);
+
+    try {
       final url = '${ApiConstants.apiBaseUrl}/upload/image';
       final request = http.MultipartRequest('POST', Uri.parse(url));
-      request.files.add(await http.MultipartFile.fromPath('file', image.path));
+      
+      final bytes = await image.readAsBytes();
+      request.files.add(http.MultipartFile.fromBytes(
+        'file',
+        bytes,
+        filename: image.name,
+      ));
       
       final headers = await ApiService.getHeaders();
       request.headers.addAll(headers);
@@ -102,46 +138,13 @@ class _StartTutorSessionPageState extends State<StartTutorSessionPage> {
   }
 
   Future<Position?> _determinePosition() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      if (!mounted) return null;
-      bool? shouldOpenSettings = await showDialog<bool>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: const Text('Location Disabled'),
-          content: const Text('Location services are disabled. Please enable them to start a session.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Enable Location'),
-            ),
-          ],
-        ),
-      );
-
-      if (shouldOpenSettings == true) {
-        await Geolocator.openLocationSettings();
-        serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      }
-
-      if (!serviceEnabled) {
-        _showSnackBar('Location services are still disabled. Cannot start session.', isError: true);
-        return null;
-      }
+      _showSnackBar('Please enable Location/GPS on your device.', isError: true);
+      return null;
     }
 
-    permission = await Geolocator.checkPermission();
+    LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
@@ -151,7 +154,7 @@ class _StartTutorSessionPageState extends State<StartTutorSessionPage> {
     }
     
     if (permission == LocationPermission.deniedForever) {
-      _showSnackBar('Location permissions are permanently denied, we cannot request permissions.', isError: true);
+      _showSnackBar('Location permissions are denied. Please grant location access.', isError: true);
       return null;
     } 
 

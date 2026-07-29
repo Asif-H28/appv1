@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'dart:convert';
 import '../../../../core/services/api_service.dart';
+import '../../../../core/services/pending_document_upload_service.dart';
 import '../widgets/teacher_drawer.dart';
 import 'start_tutor_session_page.dart';
 import '../widgets/end_tutor_session_sheet.dart';
@@ -32,7 +33,18 @@ class _TutorSessionHistoryPageState extends State<TutorSessionHistoryPage> {
     setState(() {
       _orgId = prefs.getString('orgId') ?? '';
     });
-    _fetchSessions();
+    await _fetchSessions();
+
+    final pending = await PendingDocumentUploadService.getPendingData();
+    if (pending != null && mounted) {
+      final extra = pending['extra'] as Map<String, dynamic>?;
+      final sessionId = extra?['sessionId'] ?? '';
+      if (sessionId.toString().isNotEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _showEndSessionSheet(sessionId.toString());
+        });
+      }
+    }
   }
 
   Future<void> _fetchSessions() async {
