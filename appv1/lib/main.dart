@@ -13,6 +13,7 @@ import 'features/student/student_pending_screen.dart';
 import 'features/student/student_rejected_screen.dart';
 import 'features/teacher/presentation/pages/teacher_main_screen.dart';
 import 'features/teacher/presentation/pages/teacher_pending_screen.dart';
+import 'features/teacher/presentation/pages/tutor_session_history_page.dart';
 import 'core/services/chat_socket_service.dart';
 import 'core/services/pending_document_upload_service.dart';
 import 'features/notification_studio/controllers/notification_studio_controller.dart';
@@ -501,6 +502,16 @@ class __StartupRouterState extends State<_StartupRouter>
 
     final isPendingUpload = await PendingDocumentUploadService.isPendingUpload();
     if (isPendingUpload) {
+      // The OS killed our process while an external file-manager/camera Activity
+      // was in front (file_picker/image_picker launch a separate Activity). Land
+      // the user back on the tutor session flow instead of the normal home
+      // screen so they can resume attaching the file, instead of appearing to
+      // "restart to home".
+      final pending = await PendingDocumentUploadService.getPendingData();
+      final pendingScreen = pending?['screen'] as String? ?? '';
+      if (pendingScreen == 'TUTOR_SESSION' && userRole == 'teacher') {
+        screen = const TutorSessionHistoryPage();
+      }
       if (mounted) {
         setState(() {
           _startScreen = screen;

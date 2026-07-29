@@ -166,7 +166,10 @@ class _InAppPdfPickerSheetState extends State<InAppPdfPickerSheet> {
 
   Future<void> _selectSystemFilePicker() async {
     try {
-      await PendingDocumentUploadService.markPendingUpload(targetScreen: 'TUTOR_SESSION');
+      // Note: the caller (EndTutorSessionSheet) already marks the pending
+      // upload with the full context (sessionId/orgId/forHomework) before
+      // opening this sheet — don't overwrite it with a bare flag here, or
+      // that context is lost right before the risky external Activity launch.
 
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
