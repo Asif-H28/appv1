@@ -7,6 +7,7 @@ import 'package:appv1/core/constants/api_constants.dart';
 import 'package:appv1/core/services/api_service.dart';
 import 'package:intl/intl.dart';
 import 'package:appv1/features/student/student_theme_manager.dart';
+import 'package:appv1/core/widgets/in_app_camera_sheet.dart';
 
 class MarkTeacherAttendancePage extends StatefulWidget {
   const MarkTeacherAttendancePage({super.key});
@@ -33,8 +34,19 @@ class _MarkTeacherAttendancePageState extends State<MarkTeacherAttendancePage> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    _checkLostData();
     _fetchTeachers();
     _fetchUploads();
+  }
+
+  Future<void> _checkLostData() async {
+    try {
+      final LostDataResponse response = await _picker.retrieveLostData();
+      if (response.isEmpty) return;
+      if (response.file != null) {
+        _uploadXFile(response.file!);
+      }
+    } catch (_) {}
   }
 
   Future<void> _fetchTeachers() async {
@@ -133,15 +145,28 @@ class _MarkTeacherAttendancePageState extends State<MarkTeacherAttendancePage> {
 
   Future<void> _takePictureAndUpload() async {
     try {
-      final XFile? image = await _picker.pickImage(source: ImageSource.camera, imageQuality: 70);
+      final XFile? image = await InAppCameraSheet.show(context);
       if (image == null) return;
+      await _uploadXFile(image);
+    } catch (e) {
+      _showSnackBar('Error taking picture: $e', true);
+    }
+  }
 
-      setState(() => _isUploadingImage = true);
+  Future<void> _uploadXFile(XFile image) async {
+    setState(() => _isUploadingImage = true);
 
+    try {
       // Upload Image
       final uploadUrl = '${ApiConstants.apiBaseUrl}/upload/image';
       final request = http.MultipartRequest('POST', Uri.parse(uploadUrl));
-      request.files.add(await http.MultipartFile.fromPath('file', image.path));
+      
+      final bytes = await image.readAsBytes();
+      request.files.add(http.MultipartFile.fromBytes(
+        'file',
+        bytes,
+        filename: image.name,
+      ));
       
       final headers = await ApiService.getHeaders();
       request.headers.addAll(headers);

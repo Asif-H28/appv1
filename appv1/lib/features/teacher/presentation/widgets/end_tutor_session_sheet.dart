@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:file_picker/file_picker.dart';
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/services/api_service.dart';
 import '../../../../core/network/dio_http_adapter.dart' as http;
+import '../../../../core/widgets/in_app_camera_sheet.dart';
+import '../../../../core/widgets/in_app_media_picker_sheet.dart';
+import '../../../../core/services/pending_document_upload_service.dart';
+import '../../../../core/services/document_picker_service.dart';
 import 'pdf_viewer_page.dart';
 
 class EndTutorSessionSheet extends StatefulWidget {
@@ -26,12 +28,32 @@ class _EndTutorSessionSheetState extends State<EndTutorSessionSheet> {
   bool _isHomeworkProvided = false;
   bool _isTestProvided = false;
 
-  List<Map<String, String>> _homeworkFiles = [];
-  List<Map<String, String>> _testFiles = [];
+  final List<Map<String, String>> _homeworkFiles = [];
+  final List<Map<String, String>> _testFiles = [];
 
   bool _isSubmitting = false;
   bool _isUploading = false;
-  final ImagePicker _picker = ImagePicker();
+
+  @override
+  void initState() {
+    super.initState();
+    _collectParkedPick();
+  }
+
+  /// If Android tore us down while the file manager was open, the pick was
+  /// written to disk natively and is waiting. Pick it up and upload it, so the
+  /// teacher doesn't have to choose the same file twice.
+  Future<void> _collectParkedPick() async {
+    final file = await DocumentPickerService.consumePending();
+    if (file == null || !mounted) return;
+
+    final pending = await PendingDocumentUploadService.getPendingData();
+    final forHomework = pending?['extra']?['forHomework'] as bool? ?? true;
+    if (!mounted) return;
+
+    setState(() => _isHomeworkProvided = _isHomeworkProvided || forHomework);
+    await _uploadPicked(file, forHomework);
+  }
 
   @override
   void dispose() {
@@ -41,34 +63,54 @@ class _EndTutorSessionSheetState extends State<EndTutorSessionSheet> {
 
   Future<void> _uploadFile(bool forHomework, {bool isCamera = false}) async {
     try {
-      String? path;
-      String? fileName;
+      await PendingDocumentUploadService.markPendingUpload(
+        targetScreen: 'TUTOR_SESSION',
+        extraData: {
+          'sessionId': widget.sessionId,
+          'orgId': widget.orgId,
+          'forHomework': forHomework,
+        },
+      );
 
-      if (isCamera) {
-        final image = await _picker.pickImage(source: ImageSource.camera, imageQuality: 70);
-        if (image == null) return;
-        path = image.path;
-        fileName = image.name;
-      } else {
-        final result = await FilePicker.platform.pickFiles(
-          type: FileType.custom,
-          allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
-        );
-        if (result == null || result.files.isEmpty) return;
-        path = result.files.single.path;
-        fileName = result.files.single.name;
+      final PickedMediaFile? file = isCamera
+          ? (await () async {
+              final image = await InAppCameraSheet.show(context);
+              if (image == null) return null;
+              final b = await image.readAsBytes();
+              return PickedMediaFile(path: image.path, name: image.name, bytes: b, isPdf: false);
+            }())
+          : await InAppMediaPickerSheet.show(context);
+
+      if (file == null) {
+        await PendingDocumentUploadService.clearPending();
+        return;
       }
 
-      if (path == null) return;
+      await _uploadPicked(file, forHomework);
+    } catch (e) {
+      _showSnackBar('Error uploading: $e', isError: true);
+    } finally {
+      await PendingDocumentUploadService.clearPending();
+      if (mounted) setState(() => _isUploading = false);
+    }
+  }
 
+  Future<void> _uploadPicked(PickedMediaFile file, bool forHomework) async {
+    try {
       setState(() => _isUploading = true);
 
-      final isPdf = path.toLowerCase().endsWith('.pdf');
-      final endpoint = isPdf ? '/upload/pdf' : '/upload/image';
+      final endpoint = file.isPdf ? '/upload/pdf' : '/upload/image';
       final url = '${ApiConstants.apiBaseUrl}$endpoint';
 
       final request = http.MultipartRequest('POST', Uri.parse(url));
-      request.files.add(await http.MultipartFile.fromPath('file', path));
+      
+      if (file.bytes != null) {
+        request.files.add(http.MultipartFile.fromBytes('file', file.bytes!, filename: file.name));
+      } else if (file.path != null) {
+        request.files.add(await http.MultipartFile.fromPath('file', file.path!));
+      } else {
+        return;
+      }
       
       final headers = await ApiService.getHeaders();
       request.headers.addAll(headers);
@@ -82,9 +124,9 @@ class _EndTutorSessionSheetState extends State<EndTutorSessionSheet> {
         
         setState(() {
           if (forHomework) {
-            _homeworkFiles.add({'url': fileUrl, 'name': fileName ?? 'file'});
+            _homeworkFiles.add({'url': fileUrl, 'name': file.name});
           } else {
-            _testFiles.add({'url': fileUrl, 'name': fileName ?? 'file'});
+            _testFiles.add({'url': fileUrl, 'name': file.name});
           }
         });
       } else {
@@ -93,6 +135,7 @@ class _EndTutorSessionSheetState extends State<EndTutorSessionSheet> {
     } catch (e) {
       _showSnackBar('Error uploading: $e', isError: true);
     } finally {
+      await PendingDocumentUploadService.clearPending();
       if (mounted) setState(() => _isUploading = false);
     }
   }
@@ -165,10 +208,17 @@ class _EndTutorSessionSheetState extends State<EndTutorSessionSheet> {
   }
   
   void _viewFile(String url, String name) {
-    if (url.toLowerCase().endsWith('.pdf')) {
+    final isPdf = url.toLowerCase().endsWith('.pdf') || name.toLowerCase().endsWith('.pdf');
+    if (isPdf) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (_) => PdfViewerPage(url: url, fileName: name)),
+        MaterialPageRoute(
+          builder: (_) => PdfViewerPage(
+            url: url.startsWith('http') ? url : null,
+            filePath: !url.startsWith('http') ? url : null,
+            fileName: name,
+          ),
+        ),
       );
     } else {
       // Basic image viewer
@@ -252,6 +302,20 @@ class _EndTutorSessionSheetState extends State<EndTutorSessionSheet> {
               'End Session Activity',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.teal),
             ),
+            if (_isUploading) ...[
+              const SizedBox(height: 12),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: const LinearProgressIndicator(color: Colors.teal, backgroundColor: Color(0xFFE0F2F1)),
+              ),
+              const SizedBox(height: 6),
+              const Center(
+                child: Text(
+                  'Uploading document, please wait...',
+                  style: TextStyle(fontSize: 12, color: Colors.teal, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
             const SizedBox(height: 16),
             const Text('Session Description', style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
