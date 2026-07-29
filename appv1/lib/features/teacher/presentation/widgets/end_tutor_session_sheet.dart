@@ -6,6 +6,7 @@ import '../../../../core/network/dio_http_adapter.dart' as http;
 import '../../../../core/widgets/in_app_camera_sheet.dart';
 import '../../../../core/widgets/in_app_media_picker_sheet.dart';
 import '../../../../core/services/pending_document_upload_service.dart';
+import '../../../../core/services/document_picker_service.dart';
 import 'pdf_viewer_page.dart';
 
 class EndTutorSessionSheet extends StatefulWidget {
@@ -32,6 +33,27 @@ class _EndTutorSessionSheetState extends State<EndTutorSessionSheet> {
 
   bool _isSubmitting = false;
   bool _isUploading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _collectParkedPick();
+  }
+
+  /// If Android tore us down while the file manager was open, the pick was
+  /// written to disk natively and is waiting. Pick it up and upload it, so the
+  /// teacher doesn't have to choose the same file twice.
+  Future<void> _collectParkedPick() async {
+    final file = await DocumentPickerService.consumePending();
+    if (file == null || !mounted) return;
+
+    final pending = await PendingDocumentUploadService.getPendingData();
+    final forHomework = pending?['extra']?['forHomework'] as bool? ?? true;
+    if (!mounted) return;
+
+    setState(() => _isHomeworkProvided = _isHomeworkProvided || forHomework);
+    await _uploadPicked(file, forHomework);
+  }
 
   @override
   void dispose() {
@@ -64,6 +86,17 @@ class _EndTutorSessionSheetState extends State<EndTutorSessionSheet> {
         return;
       }
 
+      await _uploadPicked(file, forHomework);
+    } catch (e) {
+      _showSnackBar('Error uploading: $e', isError: true);
+    } finally {
+      await PendingDocumentUploadService.clearPending();
+      if (mounted) setState(() => _isUploading = false);
+    }
+  }
+
+  Future<void> _uploadPicked(PickedMediaFile file, bool forHomework) async {
+    try {
       setState(() => _isUploading = true);
 
       final endpoint = file.isPdf ? '/upload/pdf' : '/upload/image';
