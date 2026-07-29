@@ -1,6 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
-import 'in_app_pdf_picker_sheet.dart';
 
 class PickedMediaFile {
   final String? path;
@@ -71,10 +73,44 @@ class InAppMediaPickerSheet extends StatelessWidget {
     }
   }
 
+  /// Opens the system file manager (SAF). This needs no storage permission and
+  /// reaches cloud providers too. It does hand control to another Activity —
+  /// safe because MainActivity now keeps its FlutterEngine cached, so coming
+  /// back reattaches to the running isolate instead of restarting the app.
   Future<void> _handleDocument(BuildContext context) async {
-    final file = await InAppPdfPickerSheet.show(context);
-    if (file != null && context.mounted) {
-      Navigator.pop(context, file);
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+        withData: kIsWeb,
+      );
+      if (result == null || result.files.isEmpty || !context.mounted) return;
+
+      final file = result.files.single;
+      List<int>? bytes = file.bytes;
+      if (bytes == null && !kIsWeb && file.path != null) {
+        bytes = await File(file.path!).readAsBytes();
+      }
+      if (!context.mounted) return;
+
+      Navigator.pop(
+        context,
+        PickedMediaFile(
+          path: file.path,
+          name: file.name,
+          bytes: bytes,
+          isPdf: true,
+        ),
+      );
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to pick file: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
