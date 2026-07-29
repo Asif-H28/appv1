@@ -137,26 +137,88 @@ class _StartTutorSessionPageState extends State<StartTutorSessionPage> {
     });
   }
 
+  /// Explains why location is needed and offers the fix, rather than dropping
+  /// a snackbar the teacher has to decode. Returns whether they chose to act.
+  Future<bool> _promptForLocation({
+    required String title,
+    required String message,
+    required String actionLabel,
+  }) async {
+    final act = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: Row(
+          children: [
+            const Icon(Icons.location_on_rounded, color: Colors.teal),
+            const SizedBox(width: 10),
+            Expanded(child: Text(title)),
+          ],
+        ),
+        content: Text(message, style: const TextStyle(height: 1.4)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.teal,
+              foregroundColor: Colors.white,
+            ),
+            child: Text(actionLabel),
+          ),
+        ],
+      ),
+    );
+    return act == true;
+  }
+
   Future<Position?> _determinePosition() async {
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      _showSnackBar('Please enable Location/GPS on your device.', isError: true);
-      return null;
+    if (!await Geolocator.isLocationServiceEnabled()) {
+      final open = await _promptForLocation(
+        title: 'Turn on Location',
+        message:
+            'Location is off on your device. A tutor session records where it '
+            'was started, so please switch on Location and come back.',
+        actionLabel: 'Open Settings',
+      );
+      if (!open) return null;
+
+      await Geolocator.openLocationSettings();
+      // Re-check rather than trusting the trip: the teacher may have come back
+      // without flipping the switch.
+      if (!await Geolocator.isLocationServiceEnabled()) {
+        _showSnackBar('Location is still off — session not started.',
+            isError: true);
+        return null;
+      }
     }
 
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        _showSnackBar('Location permissions are denied', isError: true);
-        return null;
-      }
     }
-    
+
     if (permission == LocationPermission.deniedForever) {
-      _showSnackBar('Location permissions are denied. Please grant location access.', isError: true);
+      // The OS won't show its prompt again — app settings is the only way back.
+      final open = await _promptForLocation(
+        title: 'Location Permission Needed',
+        message:
+            'Location access is blocked for this app, so a session can\'t be '
+            'started. You can turn it back on in app settings.',
+        actionLabel: 'Open App Settings',
+      );
+      if (open) await Geolocator.openAppSettings();
       return null;
-    } 
+    }
+
+    if (permission == LocationPermission.denied) {
+      _showSnackBar('Location permission is needed to start a session.',
+          isError: true);
+      return null;
+    }
 
     return await Geolocator.getCurrentPosition();
   }
