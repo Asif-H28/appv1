@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'dart:convert';
 import '../../../../core/services/api_service.dart';
 import '../../../../core/services/pending_document_upload_service.dart';
+import '../../../../core/services/storage_access_service.dart';
 import '../widgets/teacher_drawer.dart';
 import 'start_tutor_session_page.dart';
 import '../widgets/end_tutor_session_sheet.dart';
@@ -43,8 +44,14 @@ class _TutorSessionHistoryPageState extends State<TutorSessionHistoryPage> {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _showEndSessionSheet(sessionId.toString());
         });
+        return;
       }
     }
+
+    // Get all-files access out of the way now, on an empty screen. Granting it
+    // means a trip to Android's Settings, which can cost us the Activity — far
+    // better to pay that here than halfway through the end-session form.
+    if (mounted) await StorageAccessService.prepare(context);
   }
 
   Future<void> _fetchSessions() async {

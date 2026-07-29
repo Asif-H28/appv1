@@ -3,8 +3,8 @@ import 'dart:isolate';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/foundation.dart';
+import '../services/storage_access_service.dart';
 import 'in_app_media_picker_sheet.dart';
 
 /// One PDF found on the device. Plain data so it can be sent back from the
@@ -154,28 +154,8 @@ class _InAppPdfPickerSheetState extends State<InAppPdfPickerSheet> {
     }
   }
 
-  /// True when we can read shared storage with the plain `dart:io` File API.
-  ///
-  /// On Android 11+ scoped storage makes READ_EXTERNAL_STORAGE useless for
-  /// this — `Directory('/storage/emulated/0/Download').listSync()` throws.
-  /// All-files access is what lets us browse documents in-app instead of
-  /// handing the user off to the system file manager.
-  Future<bool> _hasStorageAccess() async {
-    if (!Platform.isAndroid) return true;
-    if (await Permission.manageExternalStorage.isGranted) return true;
-    // Android 10 and below: legacy storage permission is enough.
-    if (await Permission.storage.isGranted) return true;
-    return false;
-  }
-
   Future<void> _requestStorageAccess() async {
-    if (await Permission.storage.request().isGranted) {
-      await _load();
-      return;
-    }
-    // Opens the system "All files access" screen. One-time, and unlike the
-    // file manager it isn't part of the attach flow.
-    await Permission.manageExternalStorage.request();
+    await StorageAccessService.request();
     await _load();
   }
 
@@ -192,7 +172,7 @@ class _InAppPdfPickerSheetState extends State<InAppPdfPickerSheet> {
       return;
     }
 
-    if (!await _hasStorageAccess()) {
+    if (!await StorageAccessService.hasAccess()) {
       if (mounted) {
         setState(() {
           _isLoading = false;
