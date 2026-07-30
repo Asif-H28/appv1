@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/services/api_service.dart';
 import '../../../../core/network/dio_http_adapter.dart' as http;
+import '../../../../core/network/upload_part.dart';
 import '../../../../core/widgets/in_app_camera_sheet.dart';
 
 class StartTutorSessionPage extends StatefulWidget {
@@ -104,10 +105,11 @@ class _StartTutorSessionPageState extends State<StartTutorSessionPage> {
       final request = http.MultipartRequest('POST', Uri.parse(url));
       
       final bytes = await image.readAsBytes();
-      request.files.add(http.MultipartFile.fromBytes(
+      request.files.add(buildUploadPart(
         'file',
         bytes,
-        filename: image.name,
+        name: image.name,
+        mimeType: image.mimeType,
       ));
       
       final headers = await ApiService.getHeaders();
