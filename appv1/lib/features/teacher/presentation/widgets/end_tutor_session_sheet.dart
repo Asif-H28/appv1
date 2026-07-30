@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/services/api_service.dart';
 import '../../../../core/network/dio_http_adapter.dart' as http;
+import '../../../../core/network/upload_part.dart';
 import '../../../../core/widgets/in_app_camera_sheet.dart';
 import '../../../../core/widgets/in_app_media_picker_sheet.dart';
 import '../../../../core/services/pending_document_upload_service.dart';
@@ -104,13 +105,16 @@ class _EndTutorSessionSheetState extends State<EndTutorSessionSheet> {
 
       final request = http.MultipartRequest('POST', Uri.parse(url));
       
-      if (file.bytes != null) {
-        request.files.add(http.MultipartFile.fromBytes('file', file.bytes!, filename: file.name));
-      } else if (file.path != null) {
-        request.files.add(await http.MultipartFile.fromPath('file', file.path!));
-      } else {
-        return;
-      }
+      // Always send bytes: MultipartFile.fromPath needs dart:io and throws on
+      // web, which is where the PWA runs.
+      final bytes = file.bytes;
+      if (bytes == null) return;
+      request.files.add(buildUploadPart(
+        'file',
+        bytes,
+        name: file.name,
+        isPdf: file.isPdf,
+      ));
       
       final headers = await ApiService.getHeaders();
       request.headers.addAll(headers);
