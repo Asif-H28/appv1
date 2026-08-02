@@ -20,8 +20,7 @@ class MainActivity : FlutterActivity() {
         private const val DOC_CHANNEL = "com.example.appv1/documents"
         private const val REQ_PICK_DOCUMENT = 4711
         private const val PICK_PREFS = "appv1_document_picks"
-        private const val KEY_PATH = "pending_path"
-        private const val KEY_NAME = "pending_name"
+        private const val KEY_PATHS = "pending_files"
         private const val KEY_STATUS = "pending_status"
         private const val STATUS_WAITING = "waiting"
         private const val STATUS_PICKED = "picked"
@@ -86,9 +85,16 @@ class MainActivity : FlutterActivity() {
                 when (call.method) {
                     "pickDocument" -> {
                         markWaiting()
+                        val mimes = call.argument<List<String>>("mimeTypes")
+                            ?: listOf("application/pdf")
+                        val multiple = call.argument<Boolean>("multiple") ?: false
                         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
                             addCategory(Intent.CATEGORY_OPENABLE)
-                            type = "application/pdf"
+                            type = if (mimes.size == 1) mimes[0] else "*/*"
+                            if (mimes.size > 1) {
+                                putExtra(Intent.EXTRA_MIME_TYPES, mimes.toTypedArray())
+                            }
+                            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, multiple)
                         }
                         startActivityForResult(intent, REQ_PICK_DOCUMENT)
                         // Returns straight away on purpose. The answer is
@@ -144,20 +150,27 @@ class MainActivity : FlutterActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode != REQ_PICK_DOCUMENT) return
 
-        val uri = data?.data
-        if (resultCode != RESULT_OK || uri == null) {
+        val uris = mutableListOf<Uri>()
+        data?.data?.let { uris.add(it) }
+        data?.clipData?.let { clip ->
+            for (i in 0 until clip.itemCount) clip.getItemAt(i).uri?.let { uris.add(it) }
+        }
+
+        if (resultCode != RESULT_OK || uris.isEmpty()) {
             setStatus(STATUS_CANCELLED)
             return
         }
 
-        // Copy off the main thread — a large PDF would otherwise risk an ANR.
+        // Copy off the main thread — large files would otherwise risk an ANR.
         Thread {
-            val picked = try {
-                copyToCache(uri)
-            } catch (e: Exception) {
-                null
+            val picked = uris.mapNotNull {
+                try {
+                    copyToCache(it)
+                } catch (e: Exception) {
+                    null
+                }
             }
-            if (picked != null) storePick(picked) else setStatus(STATUS_CANCELLED)
+            if (picked.isNotEmpty()) storePicks(picked) else setStatus(STATUS_CANCELLED)
         }.start()
     }
 
@@ -195,10 +208,10 @@ class MainActivity : FlutterActivity() {
         prefs().edit().putString(KEY_STATUS, status).apply()
     }
 
-    private fun storePick(picked: HashMap<String, String>) {
+    /** Records every picked file as one newline-free JSON-ish line each. */
+    private fun storePicks(picked: List<HashMap<String, String>>) {
         prefs().edit()
-            .putString(KEY_PATH, picked["path"])
-            .putString(KEY_NAME, picked["name"])
+            .putStringSet(KEY_PATHS, picked.map { "${it["path"]}\u0000${it["name"]}" }.toSet())
             .putString(KEY_STATUS, STATUS_PICKED)
             .apply()
     }
@@ -209,19 +222,23 @@ class MainActivity : FlutterActivity() {
      *
      * "waiting" means the copy is still in flight — Dart polls until it isn't.
      */
-    private fun takeStoredPick(): HashMap<String, String?> {
+    private fun takeStoredPick(): HashMap<String, Any?> {
         val p = prefs()
         val status = p.getString(KEY_STATUS, null) ?: STATUS_CANCELLED
         if (status == STATUS_WAITING) return hashMapOf("status" to STATUS_WAITING)
 
-        val path = p.getString(KEY_PATH, null)
-        val name = p.getString(KEY_NAME, null)
-        p.edit().remove(KEY_PATH).remove(KEY_NAME).remove(KEY_STATUS).apply()
+        val raw = p.getStringSet(KEY_PATHS, null)
+        p.edit().remove(KEY_PATHS).remove(KEY_STATUS).apply()
 
         // Cache can be evicted by the OS between the pick and the collection.
-        if (status != STATUS_PICKED || path == null || name == null || !File(path).exists()) {
+        val files = raw.orEmpty().mapNotNull {
+            val parts = it.split("\u0000")
+            if (parts.size != 2 || !File(parts[0]).exists()) null
+            else hashMapOf("path" to parts[0], "name" to parts[1])
+        }
+        if (status != STATUS_PICKED || files.isEmpty()) {
             return hashMapOf("status" to STATUS_CANCELLED)
         }
-        return hashMapOf("status" to STATUS_PICKED, "path" to path, "name" to name)
+        return hashMapOf("status" to STATUS_PICKED, "files" to files)
     }
 }

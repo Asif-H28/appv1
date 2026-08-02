@@ -7,7 +7,9 @@ import 'package:appv1/core/services/api_service.dart';
 import 'package:appv1/core/network/dio_http_adapter.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../../core/widgets/in_app_camera_sheet.dart';
 import 'package:file_picker/file_picker.dart';
+import '../../../../core/services/document_picker_service.dart';
 import '../../../../core/constants/app_colors.dart';
 
 class CreateNoteSheet extends StatefulWidget {
@@ -52,15 +54,21 @@ class _CreateNoteSheetState extends State<CreateNoteSheet> {
   }
 
   Future<void> _pickCamera() async {
-    final picker = ImagePicker();
-    final photo = await picker.pickImage(
-      source: ImageSource.camera,
-      imageQuality: 80,
-    );
+    final photo = await InAppCameraSheet.show(context);
     if (photo != null) setState(() => _images.add(File(photo.path)));
   }
 
   Future<void> _pickPdf() async {
+    if (DocumentPickerService.isSupported) {
+      final picked = await DocumentPickerService.pick(
+        mimeTypes: DocumentPickerService.pdfOnly,
+        multiple: true,
+      );
+      if (picked.isNotEmpty) {
+        setState(() => _pdfs.addAll(picked.map((f) => File(f.path!)).toList()));
+      }
+      return;
+    }
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf'],

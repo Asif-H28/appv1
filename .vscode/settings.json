@@ -1,4 +1,5 @@
 {
     "cmake.sourceDirectory": "C:/Users/asif0/OneDrive/Desktop/Flutter/appv1-1/appv1/windows",
-    "git.path": "C:\\Program Files\\Git\\cmd\\git.exe"
+    "git.path": "C:\\Program Files\\Git\\cmd\\git.exe",
+    "java.configuration.updateBuildConfiguration": "interactive"
 }
