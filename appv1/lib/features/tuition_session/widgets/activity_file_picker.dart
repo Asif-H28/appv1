@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../core/widgets/in_app_camera_sheet.dart';
+import '../../../core/services/document_picker_service.dart';
 import 'package:path/path.dart' as p;
 
 class ActivityFilePicker extends StatefulWidget {
@@ -38,7 +40,7 @@ class _ActivityFilePickerState extends State<ActivityFilePicker> {
                 title: const Text('Take Photo'),
                 onTap: () async {
                   Navigator.pop(context);
-                  final picked = await _picker.pickImage(source: ImageSource.camera);
+                  final picked = await InAppCameraSheet.show(context);
                   if (picked != null) {
                     setState(() => _filePaths.add(picked.path));
                     widget.onFilesChanged(_filePaths);
@@ -62,16 +64,33 @@ class _ActivityFilePickerState extends State<ActivityFilePicker> {
                 title: const Text('Choose Files (PDF)'),
                 onTap: () async {
                   Navigator.pop(context);
-                  final result = await FilePicker.platform.pickFiles(
-                    allowMultiple: true,
-                    type: FileType.custom,
-                    allowedExtensions: ['pdf', 'jpg', 'png', 'jpeg'],
-                  );
-                  if (result != null) {
-                    setState(() {
-                      _filePaths.addAll(result.paths.whereType<String>());
-                    });
-                    widget.onFilesChanged(_filePaths);
+                  // Durable picker on Android: survives the OS destroying our
+                  // Activity while the file manager is in front.
+                  if (DocumentPickerService.isSupported) {
+                    final files = await DocumentPickerService.pick(
+                      mimeTypes: DocumentPickerService.imagesAndPdf,
+                      multiple: true,
+                    );
+                    if (files.isNotEmpty) {
+                      setState(() {
+                        _filePaths.addAll(
+                          files.map((f) => f.path).whereType<String>(),
+                        );
+                      });
+                      widget.onFilesChanged(_filePaths);
+                    }
+                  } else {
+                    final result = await FilePicker.platform.pickFiles(
+                      allowMultiple: true,
+                      type: FileType.custom,
+                      allowedExtensions: ['pdf', 'jpg', 'png', 'jpeg'],
+                    );
+                    if (result != null) {
+                      setState(() {
+                        _filePaths.addAll(result.paths.whereType<String>());
+                      });
+                      widget.onFilesChanged(_filePaths);
+                    }
                   }
                 },
               ),

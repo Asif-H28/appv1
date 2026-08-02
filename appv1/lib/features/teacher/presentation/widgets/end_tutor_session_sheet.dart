@@ -45,7 +45,7 @@ class _EndTutorSessionSheetState extends State<EndTutorSessionSheet> {
   /// written to disk natively and is waiting. Pick it up and upload it, so the
   /// teacher doesn't have to choose the same file twice.
   Future<void> _collectParkedPick() async {
-    final file = await DocumentPickerService.consumePending();
+    final file = await DocumentPickerService.consumePendingSingle();
     if (file == null || !mounted) return;
 
     final pending = await PendingDocumentUploadService.getPendingData();

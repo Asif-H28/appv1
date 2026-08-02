@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:appv1/core/network/dio_http_adapter.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:file_picker/file_picker.dart';
+import '../../../../core/services/document_picker_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/constants/app_colors.dart';
@@ -790,25 +791,39 @@ class __CreateHomeworkSheetState extends State<_CreateHomeworkSheet> {
   }
 
   Future<void> _pickFiles() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf', 'png', 'jpg', 'jpeg'],
-      allowMultiple: true,
-    );
-    if (result != null) {
+    final paths = await _pickAttachmentPaths();
+    if (paths.isNotEmpty) {
       final List<File> valid = [];
-      for (final f in result.files) {
-        if (f.path != null) {
-          final file = File(f.path!);
-          final length = await file.length();
-          if (length <= 8 * 1024 * 1024) {
-            valid.add(file);
-          }
+      for (final path in paths) {
+        final file = File(path);
+        final length = await file.length();
+        if (length <= 8 * 1024 * 1024) {
+          valid.add(file);
         }
       }
       setState(() => _files.addAll(valid));
     }
   }
+
+  /// Durable native picker on Android, file_picker elsewhere. Returns paths so
+  /// the caller's existing size/validation logic stays untouched.
+  Future<List<String>> _pickAttachmentPaths() async {
+    if (DocumentPickerService.isSupported) {
+      final picked = await DocumentPickerService.pick(
+        mimeTypes: DocumentPickerService.imagesAndPdf,
+        multiple: true,
+      );
+      return picked.map((f) => f.path).whereType<String>().toList();
+    }
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf', 'png', 'jpg', 'jpeg'],
+      allowMultiple: true,
+    );
+    return result?.files.map((f) => f.path).whereType<String>().toList() ??
+        const [];
+  }
+
 
   Future<void> _pickDeadline() async {
     final date = await showDatePicker(
@@ -1105,25 +1120,39 @@ class __EditHomeworkSheetState extends State<_EditHomeworkSheet> {
   }
 
   Future<void> _pickFiles() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf', 'png', 'jpg', 'jpeg'],
-      allowMultiple: true,
-    );
-    if (result != null) {
+    final paths = await _pickAttachmentPaths();
+    if (paths.isNotEmpty) {
       final List<File> valid = [];
-      for (final f in result.files) {
-        if (f.path != null) {
-          final file = File(f.path!);
-          final length = await file.length();
-          if (length <= 8 * 1024 * 1024) {
-            valid.add(file);
-          }
+      for (final path in paths) {
+        final file = File(path);
+        final length = await file.length();
+        if (length <= 8 * 1024 * 1024) {
+          valid.add(file);
         }
       }
       setState(() => _files.addAll(valid));
     }
   }
+
+  /// Durable native picker on Android, file_picker elsewhere. Returns paths so
+  /// the caller's existing size/validation logic stays untouched.
+  Future<List<String>> _pickAttachmentPaths() async {
+    if (DocumentPickerService.isSupported) {
+      final picked = await DocumentPickerService.pick(
+        mimeTypes: DocumentPickerService.imagesAndPdf,
+        multiple: true,
+      );
+      return picked.map((f) => f.path).whereType<String>().toList();
+    }
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf', 'png', 'jpg', 'jpeg'],
+      allowMultiple: true,
+    );
+    return result?.files.map((f) => f.path).whereType<String>().toList() ??
+        const [];
+  }
+
 
   Future<void> _pickDeadline() async {
     final date = await showDatePicker(

@@ -7,7 +7,9 @@ import 'package:appv1/core/services/api_service.dart';
 import 'package:appv1/core/network/dio_http_adapter.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../../core/widgets/in_app_camera_sheet.dart';
 import 'package:file_picker/file_picker.dart';
+import '../../../../core/services/document_picker_service.dart';
 import '../../../../core/constants/app_colors.dart';
 
 class CreateNoticeSheet extends StatefulWidget {
@@ -75,11 +77,7 @@ class _CreateNoticeSheetState extends State<CreateNoticeSheet> {
   }
 
   Future<void> _pickCamera() async {
-    final picker = ImagePicker();
-    final XFile? photo = await picker.pickImage(
-      source: ImageSource.camera,
-      imageQuality: 80,
-    );
+    final XFile? photo = await InAppCameraSheet.show(context);
     if (photo != null) {
       final file = File(photo.path);
       final sizeInBytes = await file.length();
@@ -95,17 +93,13 @@ class _CreateNoticeSheetState extends State<CreateNoticeSheet> {
   }
 
   Future<void> _pickPdf() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf'],
-      allowMultiple: true,
-    );
-    if (result != null) {
+    final List<String> paths = await _pickPdfPaths();
+    if (paths.isNotEmpty) {
       bool hasLargeFile = false;
       final List<File> validFiles = [];
-      for (final f in result.files) {
-        if (f.path != null) {
-          final file = File(f.path!);
+      for (final path in paths) {
+        {
+          final file = File(path);
           final sizeInBytes = await file.length();
           if (sizeInBytes > 5 * 1024 * 1024) {
             hasLargeFile = true;
@@ -124,6 +118,24 @@ class _CreateNoticeSheetState extends State<CreateNoticeSheet> {
         });
       }
     }
+  }
+
+  /// Durable native picker on Android, file_picker elsewhere.
+  Future<List<String>> _pickPdfPaths() async {
+    if (DocumentPickerService.isSupported) {
+      final picked = await DocumentPickerService.pick(
+        mimeTypes: DocumentPickerService.pdfOnly,
+        multiple: true,
+      );
+      return picked.map((f) => f.path).whereType<String>().toList();
+    }
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+      allowMultiple: true,
+    );
+    return result?.files.map((f) => f.path).whereType<String>().toList() ??
+        const [];
   }
 
   void _removeImage(int i) => setState(() {

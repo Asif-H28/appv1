@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../widgets/enter_ca_marks_sheet.dart';
 import 'package:file_picker/file_picker.dart';
+import '../../../../core/services/document_picker_service.dart';
 import 'package:excel/excel.dart' hide Border, BorderStyle;
 import 'package:http_parser/http_parser.dart';
 import 'dart:io';
@@ -711,13 +712,22 @@ class __ImportResultsSheetState extends State<_ImportResultsSheet> {
 
   Future<void> _pickFile() async {
     try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['xlsx'],
-      );
+      String? path;
+      if (DocumentPickerService.isSupported) {
+        final picked = await DocumentPickerService.pick(
+          mimeTypes: DocumentPickerService.spreadsheets,
+        );
+        path = picked.isEmpty ? null : picked.first.path;
+      } else {
+        final result = await FilePicker.platform.pickFiles(
+          type: FileType.custom,
+          allowedExtensions: ['xlsx'],
+        );
+        path = result?.files.single.path;
+      }
 
-      if (result != null && result.files.single.path != null) {
-        final file = File(result.files.single.path!);
+      if (path != null) {
+        final file = File(path);
         setState(() {
           _selectedFile = file;
           _showPreview = false;

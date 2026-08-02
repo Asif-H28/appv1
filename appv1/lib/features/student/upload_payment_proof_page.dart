@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import '../../core/widgets/in_app_camera_sheet.dart';
+import '../../core/network/upload_part.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:appv1/core/constants/api_constants.dart';
 import 'package:appv1/core/services/api_service.dart';
@@ -115,7 +117,7 @@ class _UploadPaymentProofPageState extends State<UploadPaymentProofPage> {
                 title: const Text('Camera'),
                 onTap: () {
                   Navigator.of(context).pop();
-                  _pickImageAndUpload(ImageSource.camera);
+                  _captureAndUpload();
                 },
               ),
             ],
@@ -125,17 +127,33 @@ class _UploadPaymentProofPageState extends State<UploadPaymentProofPage> {
     );
   }
 
-  Future<void> _pickImageAndUpload(ImageSource source) async {
-    try {
-      final XFile? image = await _picker.pickImage(source: source, imageQuality: 70);
-      if (image == null) return;
+  /// Camera goes through the in-app sheet so leaving for the system camera
+  /// can't cost us the Activity — and with it the captured photo.
+  Future<void> _captureAndUpload() async {
+    final XFile? image = await InAppCameraSheet.show(context);
+    if (image != null) await _uploadImage(image);
+  }
 
+  Future<void> _pickImageAndUpload(ImageSource source) async {
+    final XFile? image = await _picker.pickImage(source: source, imageQuality: 70);
+    if (image == null) return;
+    await _uploadImage(image);
+  }
+
+  Future<void> _uploadImage(XFile image) async {
+    try {
       setState(() => _isUploadingImage = true);
 
       // Upload Image
       final uploadUrl = '${ApiConstants.apiBaseUrl}/upload/image';
       final request = http.MultipartRequest('POST', Uri.parse(uploadUrl));
-      request.files.add(await http.MultipartFile.fromPath('file', image.path));
+      // Bytes, not fromPath: fromPath needs dart:io and throws on the PWA.
+      request.files.add(buildUploadPart(
+        'file',
+        await image.readAsBytes(),
+        name: image.name,
+        mimeType: image.mimeType,
+      ));
       
       final headers = await ApiService.getHeaders();
       request.headers.addAll(headers);

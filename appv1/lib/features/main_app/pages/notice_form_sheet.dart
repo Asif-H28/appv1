@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:appv1/core/constants/api_constants.dart';
 import 'package:appv1/core/services/api_service.dart';
 import 'dart:convert';
@@ -5,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:file_picker/file_picker.dart';
+import '../../../core/services/document_picker_service.dart';
 import 'package:path/path.dart' as path;
 
 import '../../teacher/presentation/widgets/pdf_viewer_page.dart';
@@ -118,17 +120,37 @@ class _NoticeFormSheetState extends State<NoticeFormSheet> {
       return;
     }
 
-    final result = await FilePicker.platform.pickFiles(
-      allowMultiple: true,
-      type: FileType.custom,
-      allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
-    );
-    if (result == null) return;
+    // Durable native picker on Android; file_picker elsewhere. Both are
+    // normalised to PlatformFile so the logic below is untouched.
+    final List<PlatformFile> picked;
+    if (DocumentPickerService.isSupported) {
+      final native = await DocumentPickerService.pick(
+        mimeTypes: DocumentPickerService.imagesAndPdf,
+        multiple: true,
+      );
+      if (native.isEmpty) return;
+      picked = native
+          .map((f) => PlatformFile(
+                name: f.name,
+                size: f.bytes?.length ?? 0,
+                path: f.path,
+                bytes: f.bytes == null ? null : Uint8List.fromList(f.bytes!),
+              ))
+          .toList();
+    } else {
+      final result = await FilePicker.platform.pickFiles(
+        allowMultiple: true,
+        type: FileType.custom,
+        allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
+      );
+      if (result == null) return;
+      picked = result.files;
+    }
 
     final tooLargeNames = <String>[];
     final validPicked = <PlatformFile>[];
 
-    for (final f in result.files) {
+    for (final f in picked) {
       if (f.size > 5 * 1024 * 1024) {
         tooLargeNames.add(f.name);
       } else {
